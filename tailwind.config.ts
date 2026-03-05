@@ -1,0 +1,85 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"SF Pro Display"', '"SF Pro Text"', '-apple-system', 'BlinkMacSystemFont', '"Helvetica Neue"', 'sans-serif'],
+        mono: ['"SF Mono"', '"Fira Code"', '"Fira Mono"', 'monospace'],
+      },
+      colors: {
+        // Apple-inspired mono palette
+        apple: {
+          white: '#ffffff',
+          snow: '#f5f5f7',
+          mist: '#ebebeb',
+          silver: '#d2d2d7',
+          steel: '#a1a1a6',
+          smoke: '#6e6e73',
+          ash: '#424245',
+          charcoal: '#1d1d1f',
+          black: '#000000',
+        },
+      },
+      fontSize: {
+        '2xs': ['0.65rem', { lineHeight: '1rem' }],
+      },
+      letterSpacing: {
+        tightest: '-0.04em',
+        tighter: '-0.03em',
+        tight: '-0.02em',
+      },
+      boxShadow: {
+        'apple-sm': '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        'apple': '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06)',
+        'apple-lg': '0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.07)',
+        'apple-xl': '0 24px 64px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.08)',
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        '4xl': '2rem',
+      },
+      transitionTimingFunction: {
+        apple: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'apple-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+      animation: {
+        'fade-up': 'fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) forwards',
+        'fade-in': 'fadeIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards',
+        'slide-down': 'slideDown 0.3s cubic-bezier(0.4,0,0.2,1) forwards',
+        'scale-in': 'scaleIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards',
+        shimmer: 'shimmer 1.8s linear infinite',
+      },
+      keyframes: {
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideDown: {
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;
