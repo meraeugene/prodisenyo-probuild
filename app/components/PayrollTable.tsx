@@ -156,9 +156,7 @@ export default function PayrollTable({
               : "bg-white text-apple-charcoal border-apple-silver hover:bg-apple-snow"
           }`}
         >
-          {showWithDurationOnly
-            ? "Showing: Active Employees"
-            : "Filter: Active Employees"}
+          Active Employees
         </button>
 
         <span className="sm:ml-auto text-xs text-apple-steel font-medium">
