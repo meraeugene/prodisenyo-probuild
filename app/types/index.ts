@@ -1,3 +1,26 @@
+export interface EmployeeDailyLog {
+  dateWeek: string;
+  time1In: string;
+  time1Out: string;
+  time2In: string;
+  time2Out: string;
+  otIn: string;
+  otOut: string;
+}
+
+export interface EmployeeCalcDetails {
+  sourceSheet?: string;
+  absencesDay?: number;
+  leaveDay?: number;
+  businessTripDay?: number;
+  attendanceDay?: number;
+  otNormalRaw?: string;
+  otSpecialRaw?: string;
+  otNormalHours?: number;
+  otSpecialHours?: number;
+  dailyLogs?: EmployeeDailyLog[];
+}
+
 export interface Employee {
   id: number;
   name: string;
@@ -7,6 +30,7 @@ export interface Employee {
   otHours: number;
   customRateDay: number | null;
   customRateHour: number | null;
+  calcDetails?: EmployeeCalcDetails;
 }
 
 export interface EmployeeCalculated extends Employee {

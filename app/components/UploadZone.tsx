@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useRef, useState, DragEvent, ChangeEvent } from "react";
+import { useRef, useState, useEffect, DragEvent, ChangeEvent } from "react";
 import { Upload, FileSpreadsheet, X, AlertCircle, Loader2 } from "lucide-react";
 import type { Employee } from "@/app/types";
 import { parseAttendanceFile } from "@/app/lib/parser";
@@ -16,26 +16,44 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function isAcceptedFile(target: File): boolean {
+    const ext = target.name.split(".").pop()?.toLowerCase();
+    return ext === "xls" || ext === "xlsx" || ext === "csv";
+  }
+
   function handleDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setDragging(false);
     const dropped = e.dataTransfer.files[0];
-    if (dropped) setFile(dropped);
+    if (!dropped) return;
+    if (!isAcceptedFile(dropped)) {
+      setError("Only XLS, XLSX, and CSV files are supported.");
+      return;
+    }
+    setError(null);
+    setFile(dropped);
   }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0];
-    if (selected) setFile(selected);
+    if (!selected) return;
+    if (!isAcceptedFile(selected)) {
+      setError("Only XLS, XLSX, and CSV files are supported.");
+      return;
+    }
+    setError(null);
+    setFile(selected);
   }
 
-  async function handleProcess() {
-    if (!file) return;
+  async function handleProcess(target: File) {
     setLoading(true);
     setError(null);
     try {
-      const result = await parseAttendanceFile(file);
+      const result = await parseAttendanceFile(target);
       if (result.employees.length === 0) {
-        throw new Error("No employee records found. Try exporting as CSV.");
+        throw new Error(
+          "No employee records found. Try exporting as XLS, XLSX, or CSV.",
+        );
       }
       onParsed(result.employees, result.period);
     } catch (err) {
@@ -44,6 +62,12 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!file) return;
+    handleProcess(file);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file]);
 
   const ext = file?.name.split(".").pop()?.toUpperCase();
 
@@ -72,7 +96,7 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.xls,.xlsx,.csv"
+          accept=".xls,.xlsx,.csv"
           onChange={handleChange}
           className="hidden"
         />
@@ -93,7 +117,7 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
               or click to browse from your computer
             </p>
             <div className="flex items-center gap-2">
-              {["PDF", "XLS", "XLSX", "CSV"].map((f) => (
+              {["XLS", "XLSX", "CSV"].map((f) => (
                 <span
                   key={f}
                   className="text-2xs font-mono font-medium px-2.5 py-1 rounded-md bg-apple-mist text-apple-ash border border-apple-silver"
@@ -141,36 +165,16 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={handleProcess}
-          disabled={!file || loading}
-          className={`
-            flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold
-            transition-all duration-200
-            ${
-              file && !loading
-                ? "bg-apple-charcoal text-white hover:bg-apple-black active:scale-[0.98] shadow-apple"
-                : "bg-apple-mist text-apple-steel cursor-not-allowed"
-            }
-          `}
-        >
-          {loading ? (
-            <>
-              <Loader2 size={15} className="animate-spin" /> Processing…
-            </>
-          ) : (
-            <>
-              <Upload size={15} /> Process File
-            </>
-          )}
-        </button>
-      </div>
+      {loading && (
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-apple-snow border border-apple-mist text-sm text-apple-charcoal">
+          <Loader2 size={15} className="animate-spin" />
+          Processing file...
+        </div>
+      )}
 
       {/* Info note */}
       <p className="text-xs text-apple-steel leading-relaxed">
-        Your file is processed entirely in the browser.{" "}
+        Your file is processed entirely in the browser. {" "}
         <span className="font-medium text-apple-smoke">
           No data is uploaded to any server.
         </span>
@@ -178,3 +182,4 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
     </div>
   );
 }
+

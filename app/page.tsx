@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { Download, Printer, RotateCcw, ChevronRight } from "lucide-react";
+import { Download, Printer, RotateCcw } from "lucide-react";
 
 import StepIndicator from "@/app/components/StepIndicator";
 import UploadZone from "@/app/components/UploadZone";
@@ -10,7 +10,7 @@ import SummaryCards from "@/app/components/SummaryCards";
 import PayrollTable from "@/app/components/PayrollTable";
 
 import type { Employee, PayrollConfig, Step } from "@/app/types";
-import { calculateAll, getSummary, exportToCSV } from "@/app/lib/payroll";
+import { calculateAll, getSummary, exportToExcel } from "@/app/lib/payroll";
 import Footer from "./components/Footer";
 import Nav from "./components/Nav";
 
@@ -26,6 +26,7 @@ export default function HomePage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [config, setConfig] = useState<PayrollConfig>(DEFAULT_CONFIG);
   const [period, setPeriod] = useState("Current Period");
+  const [uploadResetKey, setUploadResetKey] = useState(0);
 
   // Calculate payroll whenever employees or config changes
   const calculated = useMemo(
@@ -55,21 +56,18 @@ export default function HomePage() {
     setConfig(DEFAULT_CONFIG);
     setPeriod("Current Period");
     setStep(1);
+    setUploadResetKey((k) => k + 1);
   }
 
   return (
     <div className="min-h-screen bg-apple-snow">
-      {/* ── Nav ─────────────────────────────────────── */}
       <Nav step={step} handleReset={handleReset} />
 
-      {/* ── Steps mobile ─────────────────────────── */}
       <div className="md:hidden border-b border-apple-mist bg-white px-5 py-3">
         <StepIndicator current={step} />
       </div>
 
-      {/* ── Main ─────────────────────────────────── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        {/* ── STEP 1: Upload ───────────────────── */}
+      <main className="max-w-[1500px] mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
         <section
           className="animate-fade-up"
           style={{ animationFillMode: "both" }}
@@ -100,19 +98,18 @@ export default function HomePage() {
             <div
               className={`px-5 sm:px-8 py-6 sm:py-8 transition-opacity duration-300 ${step > 1 ? "opacity-50 pointer-events-none" : ""}`}
             >
-              <UploadZone onParsed={handleParsed} />
+              <UploadZone key={uploadResetKey} onParsed={handleParsed} />
             </div>
           </div>
         </section>
 
-        {/* ── STEP 2: Rates + Table ────────────── */}
         {step >= 2 && (
           <>
             <section
               className="animate-fade-up"
               style={{ animationFillMode: "both", animationDelay: "40ms" }}
             >
-              <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-hidden">
+              <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-visible">
                 <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-apple-mist">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
@@ -140,7 +137,11 @@ export default function HomePage() {
               className="animate-fade-up"
               style={{ animationFillMode: "both", animationDelay: "80ms" }}
             >
-              <SummaryCards summary={summary} period={period} />
+              <SummaryCards
+                summary={summary}
+                period={period}
+                employees={calculated}
+              />
             </section>
 
             {/* Table */}
@@ -167,19 +168,16 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  {/* Export actions */}
-                  <div className="flex items-center gap-2 no-print w-full sm:w-auto">
-                    <button
-                      onClick={() => exportToCSV(calculated, period)}
-                      className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2.5 rounded-2xl
-                        bg-apple-charcoal text-white text-sm font-semibold
-                        hover:bg-apple-black transition-all duration-150 active:scale-[0.98]
-                        shadow-apple"
-                    >
-                      <Download size={14} />
-                      Export CSV
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => exportToExcel(calculated, period)}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 rounded-2xl
+                      bg-apple-charcoal text-white text-sm font-semibold
+                      hover:bg-apple-black transition-all duration-150 active:scale-[0.98]
+                      shadow-apple-lg"
+                  >
+                    <Download size={14} />
+                    Export Excel
+                  </button>
                 </div>
 
                 <div className="px-5 sm:px-8 py-6 sm:py-8">
@@ -192,25 +190,10 @@ export default function HomePage() {
                 </div>
               </div>
             </section>
-
-            {/* Proceed button */}
-            <div className="flex justify-end pb-4 no-print">
-              <button
-                onClick={() => setStep(3)}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl
-                  bg-apple-charcoal text-white text-sm font-semibold
-                  hover:bg-apple-black transition-all duration-150 active:scale-[0.98]
-                  shadow-apple-lg"
-              >
-                Finalise Payroll
-                <ChevronRight size={15} />
-              </button>
-            </div>
           </>
         )}
       </main>
 
-      {/* ── Footer ───────────────────────────────── */}
       <Footer />
     </div>
   );

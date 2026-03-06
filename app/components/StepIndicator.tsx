@@ -9,7 +9,7 @@ interface StepIndicatorProps {
 
 const STEPS: { label: string; sub: string }[] = [
   { label: "Upload Report", sub: "Attendance file" },
-  { label: "Configure Rates", sub: "Pay settings" },
+  { label: "Override Rates", sub: "Pay Override" },
   { label: "Review & Export", sub: "Final payroll" },
 ];
 
@@ -30,11 +30,12 @@ export default function StepIndicator({ current }: StepIndicatorProps) {
                 className={`
                   w-7 h-7 rounded-full flex items-center justify-center
                   text-xs font-semibold transition-all duration-300
-                  ${isDone
-                    ? "bg-apple-charcoal text-white"
-                    : isActive
-                    ? "bg-apple-charcoal text-white ring-4 ring-apple-charcoal/10"
-                    : "bg-apple-mist text-apple-steel border border-apple-silver"
+                  ${
+                    isDone
+                      ? "bg-apple-charcoal text-white"
+                      : isActive
+                        ? "bg-apple-charcoal text-white ring-4 ring-apple-charcoal/10"
+                        : "bg-apple-mist text-apple-steel border border-apple-silver"
                   }
                 `}
               >

@@ -24,7 +24,7 @@ function InlineInput({
           transition-all
           ${
             highlight
-              ? "bg-apple-snow border-apple-silver text-apple-charcoal"
+              ? " border-apple-silver text-apple-charcoal"
               : "bg-transparent border-transparent hover:border-apple-silver hover:bg-apple-snow"
           }`}
       />

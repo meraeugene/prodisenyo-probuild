@@ -10,7 +10,7 @@ interface NavProps {
 const Nav = ({ step, handleReset }: NavProps) => {
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-apple-mist">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <div className="max-w-[1500px] mx-auto px-5 sm:px-8">
         <div className="h-14 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">

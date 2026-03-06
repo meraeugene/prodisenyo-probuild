@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   Employee,
   EmployeeCalculated,
   PayrollConfig,
@@ -54,65 +54,51 @@ export function capitalize(str: string): string {
   return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function exportToCSV(
+export async function exportToExcel(
   calculated: EmployeeCalculated[],
   period: string,
-): void {
+): Promise<void> {
+  const XLSX = await import("xlsx");
   const headers = [
     "#",
-    "Name",
-    "Department",
-    "Days Present",
-    "Regular Hours",
+    "Employee",
+    "Days",
+    "Reg. Hours",
     "OT Hours",
-    "Rate/Day (₱)",
-    "Rate/Hour (₱)",
-    "Day Pay (₱)",
-    "OT Pay (₱)",
-    "Gross Pay (₱)",
+    "Rate/Day",
+    "Rate/Hour",
+    "Day Pay",
+    "OT Pay",
+    "Gross Pay",
   ];
   const rows = calculated.map((e, i) => [
     i + 1,
     capitalize(e.name),
-    // e.dept,
-    e.days,
-    e.regularHours,
-    e.otHours,
-    e.rateDay.toFixed(2),
-    e.rateHour.toFixed(2),
-    e.dayPay.toFixed(2),
-    e.otPay.toFixed(2),
-    e.grossPay.toFixed(2),
+    Number(e.days.toFixed(1)),
+    Number(e.regularHours.toFixed(1)),
+    Number(e.otHours.toFixed(1)),
+    Number(e.rateDay.toFixed(2)),
+    Number(e.rateHour.toFixed(2)),
+    Number(e.dayPay.toFixed(2)),
+    Number(e.otPay.toFixed(2)),
+    Number(e.grossPay.toFixed(2)),
   ]);
+  const sheetRows = [headers, ...rows];
 
-  const csv = [
-    [`PayCalc Payroll Report — ${period}`],
-    [],
-    headers,
-    ...rows,
-    [],
-    [
-      "TOTAL",
-      "",
-      "",
-      calculated.reduce((s, e) => s + e.days, 0),
-      calculated.reduce((s, e) => s + e.regularHours, 0),
-      calculated.reduce((s, e) => s + e.otHours, 0),
-      "",
-      "",
-      "",
-      "",
-      calculated.reduce((s, e) => s + e.grossPay, 0).toFixed(2),
-    ],
-  ]
-    .map((r) => r.map((c) => `"${c}"`).join(","))
-    .join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `payroll_${period.replace(/\s/g, "_")}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(sheetRows);
+  ws["!cols"] = [
+    { wch: 6 },
+    { wch: 28 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 14 },
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, "Payroll");
+  XLSX.writeFile(wb, `payroll_${period.replace(/\s/g, "_")}.xlsx`);
 }

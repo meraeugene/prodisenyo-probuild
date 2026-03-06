@@ -1,4 +1,4 @@
-// ── Rate input with custom/default badge ───────────────
+﻿// â”€â”€ Rate input with custom/default badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function RateInput({
   value,
   isCustom,
@@ -12,10 +12,10 @@ export function RateInput({
 }) {
   return (
     <div className="relative flex items-center gap-1">
-      <span className="text-xs text-apple-steel">₱</span>
+      <span className="text-xs text-apple-steel">{"\u20B1"}</span>
       <input
         type="number"
-        value={value || ""}
+        value={value ?? ""}
         min={0}
         step="0.01"
         onChange={(e) => onChange(e.target.value)}
@@ -34,3 +34,4 @@ export function RateInput({
     </div>
   );
 }
+
