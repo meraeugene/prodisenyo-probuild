@@ -13,7 +13,7 @@ import { RateInput } from "./RateInput";
 import { InlineInput } from "./InlineInput";
 import { PageButton } from "./PageButton";
 
-const PER_PAGE = 12;
+const PER_PAGE = 10;
 
 interface PayrollTableProps {
   employees: Employee[];

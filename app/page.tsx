@@ -155,6 +155,9 @@ export default function HomePage() {
                       <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
                         Step 3
                       </span>
+                      <span className="text-2xs font-semibold text-apple-smoke bg-apple-snow px-2 py-0.5 rounded-full border border-apple-mist">
+                        {period}
+                      </span>
                     </div>
                     <h2 className="text-[22px] font-bold text-apple-charcoal tracking-tight">
                       Employee Payroll Details
