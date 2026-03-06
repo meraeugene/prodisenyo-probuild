@@ -66,9 +66,18 @@ export default function PayrollTable({
     val: string,
   ) {
     const parsed = parseFloat(val);
-    if (!isNaN(parsed) && parsed >= 0) {
-      onUpdateEmployee(id, { [field]: parsed });
+    if (isNaN(parsed) || parsed < 0) return;
+
+    if (field === "days") {
+      const days = parsed;
+      onUpdateEmployee(id, {
+        days,
+        regularHours: days * 8, // <- auto-sync reg hours to days
+      });
+      return;
     }
+
+    onUpdateEmployee(id, { [field]: parsed });
   }
 
   useEffect(() => {
@@ -147,7 +156,9 @@ export default function PayrollTable({
               : "bg-white text-apple-charcoal border-apple-silver hover:bg-apple-snow"
           }`}
         >
-          {showWithDurationOnly ? "Showing: With Duration" : "Filter: With Duration"}
+          {showWithDurationOnly
+            ? "Showing: Active Employees"
+            : "Filter: Active Employees"}
         </button>
 
         <span className="sm:ml-auto text-xs text-apple-steel font-medium">
@@ -356,7 +367,7 @@ export default function PayrollTable({
             onClick={() => setSelectedDetails(null)}
           >
             <div
-              className="max-w-6xl mx-auto my-4 bg-white rounded-lg border border-apple-mist shadow-apple-lg max-h-[90vh] overflow-y-auto animate-modal-in"
+              className="max-w-6xl mx-auto  bg-white rounded-lg border border-apple-mist shadow-apple-lg max-h-[90vh] overflow-y-auto animate-modal-in"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-5 sm:px-8 py-4 border-b border-apple-mist flex items-center justify-between sticky top-0 bg-white">
