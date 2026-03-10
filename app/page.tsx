@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { Download, ChevronRight } from "lucide-react";
@@ -9,8 +9,18 @@ import RateConfig from "@/app/components/RateConfig";
 import SummaryCards from "@/app/components/SummaryCards";
 import PayrollTable from "@/app/components/PayrollTable";
 
-import type { AttendanceRecord, Employee, PayrollConfig, Step } from "@/app/types";
-import { calculateAll, getSummary, exportToCSV, exportLogsToCSV } from "@/app/lib/payroll";
+import type {
+  AttendanceRecord,
+  Employee,
+  PayrollConfig,
+  Step,
+} from "@/app/types";
+import {
+  calculateAll,
+  getSummary,
+  exportToCSV,
+  exportLogsToCSV,
+} from "@/app/lib/payroll";
 import type { ParseResult } from "@/app/lib/parser";
 import Footer from "./components/Footer";
 import Nav from "./components/Nav";
@@ -22,7 +32,7 @@ const DEFAULT_CONFIG: PayrollConfig = {
   periodLabel: "Current Period",
 };
 
-const PREVIEW_LIMIT = 40;
+const PREVIEW_LIMIT = 10;
 
 type Step2View = "daily" | "detailed";
 type Step2Sort = "date-asc" | "date-desc" | "name-asc" | "name-desc";
@@ -115,8 +125,6 @@ export default function HomePage() {
   const [config, setConfig] = useState<PayrollConfig>(DEFAULT_CONFIG);
   const [period, setPeriod] = useState("Current Period");
   const [site, setSite] = useState("Unknown Site");
-  const [rawRows, setRawRows] = useState(0);
-  const [removedEntries, setRemovedEntries] = useState(0);
 
   const calculated = useMemo(
     () => calculateAll(employees, config),
@@ -166,11 +174,14 @@ export default function HomePage() {
       const regularOut = latestNonEmptyTime(row.time1Out, row.time2Out);
 
       // Some exports place late end-of-day punches in OT In/Out instead of regular Out.
-      const otAsRegularOut = !regularOut ? latestNonEmptyTime(row.otOut, row.otIn) : "";
+      const otAsRegularOut = !regularOut
+        ? latestNonEmptyTime(row.otOut, row.otIn)
+        : "";
       const effectiveRegularOut = regularOut || otAsRegularOut;
       const regularMinutes = pairMinutes(regularIn, effectiveRegularOut);
 
-      const usedOtAsRegularBoundary = !regularOut && Boolean(otAsRegularOut) && Boolean(regularIn);
+      const usedOtAsRegularBoundary =
+        !regularOut && Boolean(otAsRegularOut) && Boolean(regularIn);
       const otMinutes =
         row.otIn && row.otOut && !usedOtAsRegularBoundary
           ? pairMinutes(row.otIn, row.otOut)
@@ -189,7 +200,9 @@ export default function HomePage() {
   const availableSites = useMemo(() => {
     return Array.from(
       new Set(
-        records.map((record) => record.site.trim()).filter((value) => value.length > 0),
+        records
+          .map((record) => record.site.trim())
+          .filter((value) => value.length > 0),
       ),
     ).sort((a, b) => a.localeCompare(b));
   }, [records]);
@@ -199,9 +212,11 @@ export default function HomePage() {
     const dateFilter = step2DateFilter.trim();
 
     const filtered = records.filter((record) => {
-      if (step2SiteFilter !== "ALL" && record.site !== step2SiteFilter) return false;
+      if (step2SiteFilter !== "ALL" && record.site !== step2SiteFilter)
+        return false;
       if (dateFilter && record.date !== dateFilter) return false;
-      if (nameFilter && !record.employee.toLowerCase().includes(nameFilter)) return false;
+      if (nameFilter && !record.employee.toLowerCase().includes(nameFilter))
+        return false;
       return true;
     });
 
@@ -227,9 +242,11 @@ export default function HomePage() {
     const dateFilter = step2DateFilter.trim();
 
     const filtered = dailyRows.filter((row) => {
-      if (step2SiteFilter !== "ALL" && row.site !== step2SiteFilter) return false;
+      if (step2SiteFilter !== "ALL" && row.site !== step2SiteFilter)
+        return false;
       if (dateFilter && row.date !== dateFilter) return false;
-      if (nameFilter && !row.employee.toLowerCase().includes(nameFilter)) return false;
+      if (nameFilter && !row.employee.toLowerCase().includes(nameFilter))
+        return false;
       return true;
     });
 
@@ -256,7 +273,9 @@ export default function HomePage() {
   );
 
   const activeRowsCount =
-    step2View === "daily" ? filteredDailyRows.length : filteredDetailedRecords.length;
+    step2View === "daily"
+      ? filteredDailyRows.length
+      : filteredDetailedRecords.length;
   const totalRowsForCurrentView =
     step2View === "daily" ? dailyRows.length : records.length;
 
@@ -303,7 +322,10 @@ export default function HomePage() {
   }, [step2View, step2Sort, step2SiteFilter, step2NameFilter, step2DateFilter]);
 
   useEffect(() => {
-    if (step2SiteFilter !== "ALL" && !availableSites.includes(step2SiteFilter)) {
+    if (
+      step2SiteFilter !== "ALL" &&
+      !availableSites.includes(step2SiteFilter)
+    ) {
       setStep2SiteFilter("ALL");
     }
   }, [availableSites, step2SiteFilter]);
@@ -319,8 +341,6 @@ export default function HomePage() {
     setRecordsPage(1);
     setPeriod(result.period);
     setSite(result.site);
-    setRawRows(result.rawRows);
-    setRemovedEntries(result.removedEntries);
     setConfig((c) => ({ ...c, periodLabel: result.period }));
     setStep(2);
   }, []);
@@ -346,8 +366,6 @@ export default function HomePage() {
     setConfig(DEFAULT_CONFIG);
     setPeriod("Current Period");
     setSite("Unknown Site");
-    setRawRows(0);
-    setRemovedEntries(0);
     setStep(1);
   }
 
@@ -359,8 +377,12 @@ export default function HomePage() {
         <StepIndicator current={step} />
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        <section className="animate-fade-up" style={{ animationFillMode: "both" }}>
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        {" "}
+        <section
+          className="animate-fade-up"
+          style={{ animationFillMode: "both" }}
+        >
           <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-hidden">
             <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-apple-mist flex items-center justify-between">
               <div>
@@ -378,7 +400,8 @@ export default function HomePage() {
                   Upload Attendance Reports
                 </h2>
                 <p className="text-sm text-apple-smoke mt-1">
-                  Upload one or more biometric attendance exports as XLS, XLSX, or CSV.
+                  Upload one or more biometric attendance exports as XLS, XLSX,
+                  or CSV.
                 </p>
               </div>
             </div>
@@ -390,7 +413,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         {step >= 2 && (
           <section
             className="animate-fade-up"
@@ -415,44 +437,12 @@ export default function HomePage() {
                   Review Attendance Logs
                 </h2>
                 <p className="text-sm text-apple-smoke mt-1">
-                  Your biometric files are cleaned and converted into readable daily time logs.
+                  Your biometric files are cleaned and converted into readable
+                  daily time logs.
                 </p>
               </div>
 
               <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-5">
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">Raw Rows</p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">{rawRows}</p>
-                  </div>
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">Clean Logs</p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">{records.length}</p>
-                  </div>
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">Removed</p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">{removedEntries}</p>
-                  </div>
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">
-                      Employees Processed
-                    </p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">
-                      {employees.length}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">Total Hrs</p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">{totalDailyHours.toFixed(2)}</p>
-                  </div>
-                  <div className="rounded-2xl border border-apple-mist bg-apple-snow px-4 py-3">
-                    <p className="text-2xs text-apple-steel uppercase tracking-widest">Avg Hrs/Day</p>
-                    <p className="text-xl font-bold text-apple-charcoal mt-1">
-                      {averageHoursPerWorkedDay.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-
                 {branchSummaries.length > 0 && (
                   <div className="rounded-2xl border border-apple-mist bg-white px-4 py-3">
                     <p className="text-2xs font-semibold text-apple-steel uppercase tracking-widest mb-1.5">
@@ -464,10 +454,14 @@ export default function HomePage() {
                           key={branch.siteName}
                           className="inline-flex items-center gap-1 rounded-full border border-apple-mist bg-apple-snow px-3 py-1 text-[11px] text-apple-charcoal"
                         >
-                          <span className="font-semibold">{branch.siteName}</span>
+                          <span className="font-semibold">
+                            {branch.siteName}
+                          </span>
                           <span className="text-apple-steel">
                             – {branch.employeeCount}{" "}
-                            {branch.employeeCount === 1 ? "employee" : "employees"}
+                            {branch.employeeCount === 1
+                              ? "employee"
+                              : "employees"}
                           </span>
                         </span>
                       ))}
@@ -482,9 +476,10 @@ export default function HomePage() {
                         setStep2View("daily");
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
-                        ${step2View === "daily"
-                          ? "bg-apple-charcoal text-white border-apple-charcoal"
-                          : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                        ${
+                          step2View === "daily"
+                            ? "bg-apple-charcoal text-white border-apple-charcoal"
+                            : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
                         }`}
                     >
                       Daily View
@@ -494,9 +489,10 @@ export default function HomePage() {
                         setStep2View("detailed");
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
-                        ${step2View === "detailed"
-                          ? "bg-apple-charcoal text-white border-apple-charcoal"
-                          : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                        ${
+                          step2View === "detailed"
+                            ? "bg-apple-charcoal text-white border-apple-charcoal"
+                            : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
                         }`}
                     >
                       Detailed Logs
@@ -540,7 +536,9 @@ export default function HomePage() {
 
                     <select
                       value={step2Sort}
-                      onChange={(e) => setStep2Sort(e.target.value as Step2Sort)}
+                      onChange={(e) =>
+                        setStep2Sort(e.target.value as Step2Sort)
+                      }
                       className="w-full px-3 py-2.5 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal
                         focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
                     >
@@ -567,8 +565,8 @@ export default function HomePage() {
 
                 {records.length > 0 ? (
                   step2View === "daily" ? (
-                    <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
-                      <table className="w-full text-sm min-w-[1120px]">
+                    <div className="rounded-3xl border border-apple-mist bg-white shadow-apple-xs w-full">
+                      <table className="w-full text-sm table-auto">
                         <thead>
                           <tr className="border-b border-apple-mist">
                             {[
@@ -593,29 +591,61 @@ export default function HomePage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {previewDailyRows.map((row) => (
-                            <tr
-                              key={`${row.date}-${row.employee}`}
-                              className="border-b border-apple-mist/60 last:border-0"
-                            >
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.date}</td>
-                              <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">{row.employee}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.time1In || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.time1Out || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.time2In || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.time2Out || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.otIn || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{row.otOut || "--:--"}</td>
-                              <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">{row.hours.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-xs text-apple-smoke">{row.site}</td>
+                          {previewDailyRows.length === 0 ? (
+                            <tr>
+                              <td
+                                colSpan={10}
+                                className="p-4 text-center text-sm text-apple-steel"
+                              >
+                                No matching records found
+                              </td>
                             </tr>
-                          ))}
+                          ) : (
+                            previewDailyRows.map((row) => (
+                              <tr
+                                key={`${row.date}-${row.employee}`}
+                                className="border-b border-apple-mist/60 last:border-0"
+                              >
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.date}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                                  {row.employee}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.time1In || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.time1Out || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.time2In || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.time2Out || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.otIn || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                  {row.otOut || "--:--"}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
+                                  {row.hours.toFixed(2)}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-apple-smoke">
+                                  {row.site}
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
-                      <table className="w-full text-sm min-w-[720px]">
+                      <table className="w-full text-sm table-auto">
+                        {" "}
                         <thead>
                           <tr className="border-b border-apple-mist">
                             {[
@@ -641,12 +671,24 @@ export default function HomePage() {
                               key={`${r.employee}-${r.date}-${r.logTime}-${r.type}-${idx}`}
                               className="border-b border-apple-mist/60 last:border-0"
                             >
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{r.date}</td>
-                              <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">{r.employee}</td>
-                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">{r.logTime}</td>
-                              <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">{r.type}</td>
-                              <td className="px-4 py-3 text-xs font-semibold text-apple-steel">{r.source}</td>
-                              <td className="px-4 py-3 text-xs text-apple-smoke">{r.site}</td>
+                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                {r.date}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                                {r.employee}
+                              </td>
+                              <td className="px-4 py-3 text-xs font-mono text-apple-ash">
+                                {r.logTime}
+                              </td>
+                              <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
+                                {r.type}
+                              </td>
+                              <td className="px-4 py-3 text-xs font-semibold text-apple-steel">
+                                {r.source}
+                              </td>
+                              <td className="px-4 py-3 text-xs text-apple-smoke">
+                                {r.site}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -655,15 +697,21 @@ export default function HomePage() {
                   )
                 ) : (
                   <p className="text-sm text-apple-smoke">
-                    No detailed time logs detected. Upload a raw biometric attendance sheet with Date/Week or Date/Weekday and IN/OUT time columns.
+                    No detailed time logs detected. Upload a raw biometric
+                    attendance sheet with Date/Week or Date/Weekday and IN/OUT
+                    time columns.
                   </p>
                 )}
 
                 {activeRowsCount > 0 && (
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <p className="text-xs text-apple-steel">
-                      Showing {previewStart + 1}-{Math.min(previewEnd, activeRowsCount)} of {activeRowsCount}{" "}
-                      {step2View === "daily" ? "employee-day rows" : "cleaned logs"}
+                      Showing {previewStart + 1}-
+                      {Math.min(previewEnd, activeRowsCount)} of{" "}
+                      {activeRowsCount}{" "}
+                      {step2View === "daily"
+                        ? "employee-day rows"
+                        : "cleaned logs"}
                       {activeRowsCount !== totalRowsForCurrentView
                         ? ` (filtered from ${totalRowsForCurrentView}).`
                         : "."}
@@ -672,12 +720,15 @@ export default function HomePage() {
                     {activeRowsCount > PREVIEW_LIMIT && (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setRecordsPage((p) => Math.max(1, p - 1))}
+                          onClick={() =>
+                            setRecordsPage((p) => Math.max(1, p - 1))
+                          }
                           disabled={recordsPage === 1}
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
-                            ${recordsPage === 1
-                              ? "border-apple-mist text-apple-silver cursor-not-allowed"
-                              : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+                            ${
+                              recordsPage === 1
+                                ? "border-apple-mist text-apple-silver cursor-not-allowed"
+                                : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
                             }`}
                         >
                           Previous
@@ -688,12 +739,17 @@ export default function HomePage() {
                         </span>
 
                         <button
-                          onClick={() => setRecordsPage((p) => Math.min(totalRecordPages, p + 1))}
+                          onClick={() =>
+                            setRecordsPage((p) =>
+                              Math.min(totalRecordPages, p + 1),
+                            )
+                          }
                           disabled={recordsPage === totalRecordPages}
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
-                            ${recordsPage === totalRecordPages
-                              ? "border-apple-mist text-apple-silver cursor-not-allowed"
-                              : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+                            ${
+                              recordsPage === totalRecordPages
+                                ? "border-apple-mist text-apple-silver cursor-not-allowed"
+                                : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
                             }`}
                         >
                           Next
@@ -702,36 +758,10 @@ export default function HomePage() {
                     )}
                   </div>
                 )}
-
-                <div className="flex justify-end">
-                  {step === 2 ? (
-                    <button
-                      onClick={() => setStep(3)}
-                      className="flex items-center gap-2 px-6 py-3 rounded-2xl
-                        bg-apple-charcoal text-white text-sm font-semibold
-                        hover:bg-apple-black transition-all duration-150 active:scale-[0.98]
-                        shadow-apple-lg"
-                    >
-                      Continue to Configure Rates
-                      <ChevronRight size={15} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setStep(3)}
-                      className="flex items-center gap-2 px-6 py-3 rounded-2xl
-                        bg-white border border-apple-silver text-apple-charcoal text-sm font-semibold
-                        hover:border-apple-charcoal transition-all duration-150 active:scale-[0.98]"
-                    >
-                      Open Configure Rates
-                      <ChevronRight size={15} />
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
           </section>
         )}
-
         {step >= 3 && (
           <>
             <section
@@ -752,7 +782,8 @@ export default function HomePage() {
                     Review Payroll Settings
                   </h2>
                   <p className="text-sm text-apple-smoke mt-1">
-                    Set default daily and hourly rates. You can fine-tune per employee in the table.
+                    Set default daily and hourly rates. You can fine-tune per
+                    employee in the table.
                   </p>
                 </div>
                 <div className="px-5 sm:px-8 py-6 sm:py-8">
@@ -803,7 +834,6 @@ export default function HomePage() {
             </div>
           </>
         )}
-
         {step >= 4 && (
           <section
             className="animate-fade-up"
@@ -824,7 +854,8 @@ export default function HomePage() {
                     Review & Export Payroll
                   </h2>
                   <p className="text-sm text-apple-smoke mt-1">
-                    Final review before downloading the payroll report and detailed attendance logs.
+                    Final review before downloading the payroll report and
+                    detailed attendance logs.
                   </p>
                 </div>
 
@@ -833,9 +864,10 @@ export default function HomePage() {
                     onClick={() => exportLogsToCSV(records, site, period)}
                     disabled={records.length === 0}
                     className={`flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-150 active:scale-[0.98]
-                      ${records.length > 0
-                        ? "bg-white border border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
-                        : "bg-apple-mist border border-apple-mist text-apple-steel cursor-not-allowed"
+                      ${
+                        records.length > 0
+                          ? "bg-white border border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+                          : "bg-apple-mist border border-apple-mist text-apple-steel cursor-not-allowed"
                       }`}
                   >
                     <Download size={14} />
