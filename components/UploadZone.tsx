@@ -35,7 +35,9 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
     try {
       const result = await parseAttendanceFiles(files);
       if (result.employees.length === 0 && result.records.length === 0) {
-        throw new Error("No employee records found. Check export format and try again.");
+        throw new Error(
+          "No employee records found. Check export format and try again.",
+        );
       }
       onParsed(result);
     } catch (err) {
@@ -114,7 +116,10 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
                   {files.length} file{files.length > 1 ? "s" : ""} selected
                 </p>
                 <p className="text-xs text-apple-smoke mt-0.5">
-                  {(files.reduce((sum, current) => sum + current.size, 0) / 1024).toFixed(1)} KB total
+                  {(
+                    files.reduce((sum, current) => sum + current.size, 0) / 1024
+                  ).toFixed(1)}{" "}
+                  KB total
                 </p>
               </div>
               <button
@@ -133,20 +138,20 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
               <p className="text-2xs font-semibold text-apple-steel uppercase tracking-widest">
                 Uploaded Reports
               </p>
-              <div className="rounded-2xl border border-apple-mist bg-apple-snow px-3 py-2 max-h-28 overflow-auto">
-              {files.slice(0, 8).map((current) => (
-                <p
-                  key={`${current.name}-${current.size}`}
-                  className="text-xs text-apple-ash truncate"
-                >
-                  {current.name}
-                </p>
-              ))}
-              {files.length > 8 && (
-                <p className="text-xs text-apple-smoke mt-1">
-                  +{files.length - 8} more files
-                </p>
-              )}
+              <div className="rounded-2xl border border-apple-mist bg-apple-snow px-3 py-2 h-full overflow-auto">
+                {files.slice(0, 8).map((current) => (
+                  <p
+                    key={`${current.name}-${current.size}`}
+                    className="text-xs text-apple-ash truncate"
+                  >
+                    {current.name}
+                  </p>
+                ))}
+                {files.length > 8 && (
+                  <p className="text-xs text-apple-smoke mt-1">
+                    +{files.length - 8} more files
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -182,9 +187,9 @@ export default function UploadZone({ onParsed }: UploadZoneProps) {
               <Loader2 size={15} className="animate-spin" /> Processing...
             </>
           ) : (
-              <>
-                <Upload size={15} /> Review Attendance Reports
-              </>
+            <>
+              <Upload size={15} /> Review Attendance Reports
+            </>
           )}
         </button>
       </div>

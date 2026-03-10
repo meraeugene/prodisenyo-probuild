@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import type { Step } from "@/app/types";
+import type { Step } from "@/types";
 
 interface StepIndicatorProps {
   current: Step;

@@ -2,108 +2,36 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { X, Search, ArrowRight, ArrowLeft } from "lucide-react";
-import StepIndicator from "@/app/components/StepIndicator";
-import UploadZone from "@/app/components/UploadZone";
-import type { AttendanceRecord, Step } from "@/app/types";
+import StepIndicator from "@/components/StepIndicator";
+import UploadZone from "@/components/UploadZone";
+import type { AttendanceRecord, Employee, Step } from "@/types";
 import type { ParseResult } from "@/app/lib/parser";
-import Footer from "./components/Footer";
-import Nav from "./components/Nav";
+import Footer from "@/components/Footer";
+import Nav from "@/components/Nav";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  Area,
+  Cell,
+  AreaChart,
+} from "recharts";
+import { DailyLogRow, Step2Sort, Step2View } from "@/types/index";
+import {
+  compareStep2Rows,
+  earlierTime,
+  earliestNonEmptyTime,
+  laterTime,
+  latestNonEmptyTime,
+  pairMinutes,
+} from "@/lib/utils";
+import { highlight } from "@/components/Highlight";
 
 const PREVIEW_LIMIT = 8;
-
-type Step2View = "daily" | "detailed";
-type Step2Sort = "date-asc" | "date-desc" | "name-asc" | "name-desc";
-
-interface DailyLogRow {
-  date: string;
-  employee: string;
-  time1In: string;
-  time1Out: string;
-  time2In: string;
-  time2Out: string;
-  otIn: string;
-  otOut: string;
-  hours: number;
-  site: string;
-}
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function earlierTime(current: string, incoming: string): string {
-  if (!current) return incoming;
-  return timeToMinutes(incoming) < timeToMinutes(current) ? incoming : current;
-}
-
-function laterTime(current: string, incoming: string): string {
-  if (!current) return incoming;
-  return timeToMinutes(incoming) > timeToMinutes(current) ? incoming : current;
-}
-
-function pairMinutes(inTime: string, outTime: string): number {
-  if (!inTime || !outTime) return 0;
-  const inMinutes = timeToMinutes(inTime);
-  const outMinutes = timeToMinutes(outTime);
-  if (outMinutes >= inMinutes) return outMinutes - inMinutes;
-  return outMinutes + 24 * 60 - inMinutes;
-}
-
-function earliestNonEmptyTime(...times: string[]): string {
-  const valid = times.filter(Boolean);
-  if (valid.length === 0) return "";
-  return valid.reduce((earliest, current) =>
-    timeToMinutes(current) < timeToMinutes(earliest) ? current : earliest,
-  );
-}
-
-function latestNonEmptyTime(...times: string[]): string {
-  const valid = times.filter(Boolean);
-  if (valid.length === 0) return "";
-  return valid.reduce((latest, current) =>
-    timeToMinutes(current) > timeToMinutes(latest) ? current : latest,
-  );
-}
-
-function compareStep2Rows(
-  aDate: string,
-  aName: string,
-  bDate: string,
-  bName: string,
-  sortMode: Step2Sort,
-): number {
-  if (sortMode === "date-asc") {
-    if (aDate !== bDate) return aDate.localeCompare(bDate);
-    return aName.localeCompare(bName);
-  }
-  if (sortMode === "date-desc") {
-    if (aDate !== bDate) return bDate.localeCompare(aDate);
-    return aName.localeCompare(bName);
-  }
-  if (sortMode === "name-asc") {
-    if (aName !== bName) return aName.localeCompare(bName);
-    return aDate.localeCompare(bDate);
-  }
-  if (aName !== bName) return bName.localeCompare(aName);
-  return aDate.localeCompare(bDate);
-}
-
-function highlight(text: string, query: string) {
-  if (!query) return text;
-
-  const parts = text.split(new RegExp(`(${query})`, "gi"));
-
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase() ? (
-      <span key={i} className="bg-amber-200/70  rounded px-0.5">
-        {part}
-      </span>
-    ) : (
-      part
-    ),
-  );
-}
 
 export default function HomePage() {
   const [step, setStep] = useState<Step>(1);
@@ -115,6 +43,7 @@ export default function HomePage() {
   const [step2DateFilter, setStep2DateFilter] = useState("");
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [site, setSite] = useState("Unknown Site");
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const dailyRows = useMemo<DailyLogRow[]>(() => {
     const grouped = new Map<string, DailyLogRow>();
@@ -282,6 +211,74 @@ export default function HomePage() {
       .sort((a, b) => a.siteName.localeCompare(b.siteName));
   }, [records]);
 
+  // Overtime by Branch
+  const overtimeByBranch = useMemo(() => {
+    const map = new Map<string, number>();
+
+    employees.forEach((emp) => {
+      const rec = records.find(
+        (r) =>
+          r.employee.trim().toLowerCase() === emp.name.trim().toLowerCase(),
+      );
+
+      const branch = rec?.site?.split(" ")[0] ?? "Unknown";
+
+      map.set(branch, (map.get(branch) ?? 0) + emp.otHours);
+    });
+
+    return Array.from(map.entries())
+      .map(([branch, hours]) => ({
+        branch,
+        hours: Number(hours.toFixed(2)),
+      }))
+      .sort((a, b) => b.hours - a.hours);
+  }, [employees, records]);
+
+  // Workforce by Branch
+  const workforceByBranch = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+
+    records.forEach((r) => {
+      const branch = r.site.split(" ")[0];
+      if (!map.has(branch)) map.set(branch, new Set());
+      map.get(branch)!.add(r.employee);
+    });
+
+    return Array.from(map.entries())
+      .map(([branch, set]) => ({
+        branch,
+        employees: set.size,
+      }))
+      .sort((a, b) => b.employees - a.employees);
+  }, [records]);
+
+  // Daily Labor Hours
+  const dailyLaborHours = useMemo(() => {
+    const map = new Map<string, number>();
+
+    records.forEach((r) => {
+      map.set(r.date, (map.get(r.date) ?? 0) + 1);
+    });
+
+    return Array.from(map.entries())
+      .map(([date, logs]) => ({
+        date,
+        hours: logs / 2,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [records]);
+
+  // Top Overtime Employees
+  const topOTEmployees = useMemo(() => {
+    return [...employees]
+      .sort((a, b) => b.otHours - a.otHours)
+      .slice(0, 5)
+      .map((e) => ({
+        name: e.name,
+        hours: e.otHours,
+      }));
+  }, [employees]);
+
   useEffect(() => {
     setRecordsPage((prev) => Math.min(prev, totalRecordPages));
   }, [totalRecordPages]);
@@ -332,6 +329,7 @@ export default function HomePage() {
   }, [totalRecordPages]);
 
   const handleParsed = useCallback((result: ParseResult) => {
+    setEmployees(result.employees);
     setRecords(result.records);
     setStep2View("daily");
     setStep2Sort("date-asc");
@@ -382,7 +380,6 @@ export default function HomePage() {
       </div>
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        {" "}
         <section
           className="animate-fade-up"
           style={{ animationFillMode: "both" }}
@@ -662,7 +659,7 @@ export default function HomePage() {
                                   {row.hours.toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3 text-xs text-apple-smoke">
-                                  {row.site}
+                                  {row.site.split(" ")[0]}
                                 </td>
                               </tr>
                             ))
@@ -673,7 +670,6 @@ export default function HomePage() {
                   ) : (
                     <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
                       <table className="w-full text-sm table-auto">
-                        {" "}
                         <thead>
                           <tr className="border-b border-apple-mist">
                             {[
@@ -828,6 +824,254 @@ export default function HomePage() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Charts */}
+        {employees.length > 0 && records.length > 0 && (
+          <section
+            className="animate-fade-up"
+            style={{ animationFillMode: "both", animationDelay: "40ms" }}
+          >
+            <div className="bg-white rounded-3xl border border-[#F5F5F7] shadow-sm overflow-hidden">
+              {/* Header - Styled like your preferred theme */}
+              <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-[#F5F5F7]">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-[10px] font-mono font-semibold text-[#86868B] uppercase tracking-widest">
+                    Data Analytics
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#1D1D1F] tracking-tight">
+                  Visualized Attendance Data
+                </h2>
+                <p className="text-sm text-[#86868B] mt-1">
+                  Overview of labor distribution and overtime trends across all
+                  sites.
+                </p>
+              </div>
+
+              {/* Content Area */}
+              <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Overtime Hours - Black Bars */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider ">
+                      Overtime Hours by Branch
+                    </h3>
+                    <div className="h-[300px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-4">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={overtimeByBranch}
+                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        >
+                          <XAxis
+                            dataKey="branch"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#86868B", fontSize: 11 }}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#86868B", fontSize: 11 }}
+                          />
+                          <Tooltip
+                            cursor={{ fill: "#F5F5F7" }}
+                            contentStyle={{
+                              backgroundColor: "#fff",
+                              borderRadius: "12px",
+                              border: "1px solid #F5F5F7",
+                              fontSize: "12px",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                            }}
+                          />
+                          <Bar
+                            dataKey="hours"
+                            fill="#1D1D1F"
+                            radius={[4, 4, 0, 0]}
+                            barSize={48}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Workforce - Black Bars */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider">
+                      Employees per Branch
+                    </h3>
+                    <div className="h-[300px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-4">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={workforceByBranch}
+                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        >
+                          <XAxis
+                            dataKey="branch"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#86868B", fontSize: 11 }}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#86868B", fontSize: 11 }}
+                          />
+                          <Tooltip
+                            cursor={{ fill: "#F5F5F7" }}
+                            contentStyle={{
+                              backgroundColor: "#fff",
+                              borderRadius: "12px",
+                              border: "1px solid #F5F5F7",
+                            }}
+                          />
+                          <Bar
+                            dataKey="employees"
+                            fill="#1D1D1F"
+                            radius={[4, 4, 0, 0]}
+                            barSize={48}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Daily Labor - Technical Precision Theme */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider">
+                        Daily Labor Utilization
+                      </h3>
+                      <span className="text-[10px] font-mono text-[#86868B]">
+                        PRECISION VIEW
+                      </span>
+                    </div>
+                    <div className="h-[320px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={dailyLaborHours}
+                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="chartGradient"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor="#1D1D1F"
+                                stopOpacity={0.08}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="#1D1D1F"
+                                stopOpacity={0.01}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            stroke="#F5F5F7"
+                            strokeDasharray="0"
+                            vertical={false}
+                          />
+                          <XAxis
+                            dataKey="date"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "#86868B",
+                              fontSize: 10,
+                              fontWeight: 500,
+                            }}
+                            dy={10}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#86868B", fontSize: 10 }}
+                          />
+                          <Tooltip
+                            cursor={{
+                              stroke: "#1D1D1F",
+                              strokeWidth: 1,
+                              strokeDasharray: "4 4",
+                            }}
+                            contentStyle={{
+                              backgroundColor: "#fff",
+                              borderRadius: "8px",
+                              border: "1px solid #1D1D1F",
+                              fontSize: "12px",
+                              padding: "8px 12px",
+                            }}
+                          />
+                          {/* Switched type to "stepAfter" for a sharp, professional look */}
+                          <Area
+                            type="stepAfter"
+                            dataKey="hours"
+                            stroke="#1D1D1F"
+                            strokeWidth={1}
+                            fill="url(#chartGradient)"
+                            activeDot={{
+                              r: 4,
+                              fill: "#1D1D1F",
+                              strokeWidth: 0,
+                            }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Top OT Employees - Horizontal Black Bars */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider">
+                      Top Overtime Performers
+                    </h3>
+                    <div className="h-[350px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-6">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={topOTEmployees}
+                          layout="vertical"
+                          margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                        >
+                          <XAxis type="number" hide />
+                          <YAxis
+                            dataKey="name"
+                            type="category"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "#1D1D1F",
+                              fontSize: 12,
+                              fontWeight: 500,
+                            }}
+                            width={140}
+                          />
+                          <Tooltip
+                            cursor={{ fill: "#F5F5F7" }}
+                            contentStyle={{
+                              backgroundColor: "#fff",
+                              borderRadius: "12px",
+                              border: "1px solid #F5F5F7",
+                            }}
+                          />
+                          <Bar
+                            dataKey="hours"
+                            fill="#1D1D1F"
+                            radius={[0, 4, 4, 0]}
+                            barSize={32}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

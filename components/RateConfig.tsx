@@ -1,6 +1,6 @@
 "use client";
 
-import type { PayrollConfig } from "@/app/types";
+import type { PayrollConfig } from "@/types";
 
 interface RateConfigProps {
   config: PayrollConfig;
@@ -16,11 +16,20 @@ interface FieldProps {
   onChange: (v: number) => void;
 }
 
-function Field({ label, hint, value, prefix = "₱", step = "0.01", onChange }: FieldProps) {
+function Field({
+  label,
+  hint,
+  value,
+  prefix = "₱",
+  step = "0.01",
+  onChange,
+}: FieldProps) {
   return (
     <div className="space-y-2">
       <div>
-        <label className="text-xs font-semibold text-apple-charcoal tracking-tight">{label}</label>
+        <label className="text-xs font-semibold text-apple-charcoal tracking-tight">
+          {label}
+        </label>
         <p className="text-2xs text-apple-steel mt-0.5">{hint}</p>
       </div>
       <div className="relative">
@@ -90,7 +99,9 @@ export default function RateConfig({ config, onChange }: RateConfigProps) {
             = Rate/Day × Days Worked
           </p>
           <p>
-            <span className="font-semibold text-apple-charcoal">Overtime Pay</span>{" "}
+            <span className="font-semibold text-apple-charcoal">
+              Overtime Pay
+            </span>{" "}
             = Rate/Hour × OT Multiplier × OT Hours
           </p>
           <p className="pt-1">
@@ -98,7 +109,8 @@ export default function RateConfig({ config, onChange }: RateConfigProps) {
             = Daily Pay + Overtime Pay
           </p>
           <p className="text-[11px] text-apple-steel pt-1">
-            You can review and override individual employee rates in the payroll table below.
+            You can review and override individual employee rates in the payroll
+            table below.
           </p>
         </div>
       </div>

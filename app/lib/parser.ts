@@ -1,4 +1,4 @@
-import type { AttendanceRecord, Employee, LogSource } from "@/app/types";
+import type { AttendanceRecord, Employee, LogSource } from "@/types";
 
 export interface ParseResult {
   employees: Employee[];
@@ -26,7 +26,9 @@ export async function parseAttendanceFile(file: File): Promise<ParseResult> {
   throw new Error(`Unsupported file type: .${ext}`);
 }
 
-export async function parseAttendanceFiles(files: File[]): Promise<ParseResult> {
+export async function parseAttendanceFiles(
+  files: File[],
+): Promise<ParseResult> {
   if (files.length === 0) {
     throw new Error("No files selected.");
   }
@@ -86,7 +88,8 @@ async function parseSpreadsheet(file: File): Promise<ParseResult> {
   if (records.length > 0) {
     records.sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
-      if (a.employee !== b.employee) return a.employee.localeCompare(b.employee);
+      if (a.employee !== b.employee)
+        return a.employee.localeCompare(b.employee);
       if (a.logTime !== b.logTime) return a.logTime.localeCompare(b.logTime);
       if (a.type !== b.type) return a.type.localeCompare(b.type);
       return a.source.localeCompare(b.source);
@@ -239,10 +242,7 @@ function isDetailedAttendanceSheet(rows: unknown[][]): boolean {
       text.includes("before noon") &&
       (text.includes("after noon") || text.includes("overtime"));
 
-    return (
-      hasDateColumn &&
-      (hasLegacyTimeBlocks || hasAltTimeBlocks)
-    );
+    return hasDateColumn && (hasLegacyTimeBlocks || hasAltTimeBlocks);
   });
 }
 
@@ -622,7 +622,9 @@ function mergeParseResults(results: ParseResult[]): ParseResult {
     return a.source.localeCompare(b.source);
   });
 
-  const allEmployees = mergeEmployees(results.flatMap((result) => result.employees));
+  const allEmployees = mergeEmployees(
+    results.flatMap((result) => result.employees),
+  );
   const uniqueSites = Array.from(
     new Set(
       results
@@ -753,9 +755,7 @@ function resolveMergedPeriod(
 }
 
 function parsePeriodLabelRange(label: string): DateRange | null {
-  const match = label.match(
-    /(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})/,
-  );
+  const match = label.match(/(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})/);
   if (!match) return null;
 
   const start = parseDate(match[1]);

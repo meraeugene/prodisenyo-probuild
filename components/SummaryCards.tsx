@@ -1,7 +1,7 @@
 "use client";
 
 import { Users, Calendar, Clock, Banknote } from "lucide-react";
-import type { PayrollSummary } from "@/app/types";
+import type { PayrollSummary } from "@/types";
 import { formatNumber } from "@/app/lib/payroll";
 
 interface SummaryCardsProps {

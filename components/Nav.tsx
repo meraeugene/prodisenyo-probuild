@@ -1,6 +1,6 @@
 import { RotateCcw } from "lucide-react";
 import StepIndicator from "./StepIndicator";
-import { Step } from "../types";
+import { Step } from "@/types";
 
 interface NavProps {
   step: Step;

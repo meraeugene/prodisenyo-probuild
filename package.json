@@ -9,15 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
-    "next": "14.2.5",
+    "next": "^16.1.6",
     "pdfjs-dist": "^4.3.136",
+    "radix-ui": "^1.4.3",
     "react": "^18",
     "react-dom": "^18",
+    "recharts": "^2.15.4",
+    "shadcn": "^4.0.2",
+    "tailwind-merge": "^3.5.0",
+    "tw-animate-css": "^1.4.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/next": "^8.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

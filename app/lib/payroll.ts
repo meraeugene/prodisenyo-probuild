@@ -4,7 +4,7 @@ import type {
   EmployeeCalculated,
   PayrollConfig,
   PayrollSummary,
-} from "@/app/types";
+} from "@/types";
 
 export function calculateEmployee(
   emp: Employee,

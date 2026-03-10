@@ -45,3 +45,19 @@ export interface PayrollSummary {
 }
 
 export type Step = 1 | 2 | 3 | 4;
+
+export type Step2View = "daily" | "detailed";
+export type Step2Sort = "date-asc" | "date-desc" | "name-asc" | "name-desc";
+
+export interface DailyLogRow {
+  date: string;
+  employee: string;
+  time1In: string;
+  time1Out: string;
+  time2In: string;
+  time2Out: string;
+  otIn: string;
+  otOut: string;
+  hours: number;
+  site: string;
+}
