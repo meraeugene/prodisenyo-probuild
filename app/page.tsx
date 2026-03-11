@@ -844,7 +844,7 @@ export default function HomePage() {
             style={{ animationFillMode: "both", animationDelay: "40ms" }}
           >
             <div className="bg-white rounded-3xl border border-[#F5F5F7] shadow-sm overflow-hidden">
-              {/* Header - Styled like your preferred theme */}
+              {/* Header */}
               <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-[#F5F5F7]">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="text-[10px] font-mono font-semibold text-[#86868B] uppercase tracking-widest">
@@ -863,7 +863,7 @@ export default function HomePage() {
               {/* Content Area */}
               <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Overtime Hours - Black Bars */}
+                  {/* Overtime Hours */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider ">
                       Overtime Hours by Branch
@@ -906,7 +906,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Workforce - Black Bars */}
+                  {/* Workforce */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider">
                       Employees per Branch
@@ -947,25 +947,36 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Daily Labor - Technical Precision Theme */}
+                  {/* Interactive Daily Labor Utilization */}
                   <div className="lg:col-span-2 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-semibold uppercase tracking-wider">
                         Daily Labor Utilization
                       </h3>
-                      <span className="text-[10px] font-mono text-[#86868B]">
-                        PRECISION VIEW
-                      </span>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-[#1D1D1F]"></div>
+                          <span className="text-[10px] font-medium text-[#1D1D1F]">
+                            Current Period
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#86868B]">
+                          LIVE TRACKING
+                        </span>
+                      </div>
                     </div>
-                    <div className="h-[320px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+                    <div className="h-[360px] w-full bg-white rounded-2xl border border-[#F5F5F7] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={dailyLaborHours}
-                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+                          onMouseMove={(e) => {
+                            /* You can hook into state here for custom hover effects elsewhere */
+                          }}
                         >
                           <defs>
                             <linearGradient
-                              id="chartGradient"
+                              id="colorHours"
                               x1="0"
                               y1="0"
                               x2="0"
@@ -974,7 +985,7 @@ export default function HomePage() {
                               <stop
                                 offset="5%"
                                 stopColor="#1D1D1F"
-                                stopOpacity={0.08}
+                                stopOpacity={0.15}
                               />
                               <stop
                                 offset="95%"
@@ -984,9 +995,9 @@ export default function HomePage() {
                             </linearGradient>
                           </defs>
                           <CartesianGrid
-                            stroke="#F5F5F7"
-                            strokeDasharray="0"
+                            strokeDasharray="3 3"
                             vertical={false}
+                            stroke="#F5F5F7"
                           />
                           <XAxis
                             dataKey="date"
@@ -1007,28 +1018,48 @@ export default function HomePage() {
                           <Tooltip
                             cursor={{
                               stroke: "#1D1D1F",
-                              strokeWidth: 1,
-                              strokeDasharray: "4 4",
+                              strokeWidth: 2,
+                              strokeDasharray: "6 6",
                             }}
-                            contentStyle={{
-                              backgroundColor: "#fff",
-                              borderRadius: "8px",
-                              border: "1px solid #1D1D1F",
-                              fontSize: "12px",
-                              padding: "8px 12px",
+                            content={({ active, payload, label }) => {
+                              if (active && payload && payload.length) {
+                                return (
+                                  <div className="bg-[#1D1D1F] text-white p-3 rounded-xl shadow-xl border border-white/10 backdrop-blur-md">
+                                    <p className="text-[10px] uppercase tracking-widest opacity-60 mb-1">
+                                      {label}
+                                    </p>
+                                    <div className="flex items-baseline gap-1">
+                                      <span className="text-lg font-bold">
+                                        {payload[0].value}
+                                      </span>
+                                      <span className="text-[10px] opacity-80">
+                                        hrs utilized
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
                             }}
                           />
-                          {/* Switched type to "stepAfter" for a sharp, professional look */}
                           <Area
-                            type="stepAfter"
+                            type="monotone"
                             dataKey="hours"
                             stroke="#1D1D1F"
-                            strokeWidth={1}
-                            fill="url(#chartGradient)"
+                            strokeWidth={3}
+                            fillOpacity={1}
+                            fill="url(#colorHours)"
+                            animationBegin={200}
+                            animationDuration={1200}
                             activeDot={{
-                              r: 4,
+                              r: 6,
                               fill: "#1D1D1F",
-                              strokeWidth: 0,
+                              stroke: "#fff",
+                              strokeWidth: 3,
+                              style: {
+                                filter:
+                                  "drop-shadow(0px 2px 4px rgba(0,0,0,0.2))",
+                              },
                             }}
                           />
                         </AreaChart>
@@ -1036,7 +1067,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Top OT Employees - Horizontal Black Bars */}
+                  {/* Top OT Employees */}
                   <div className="lg:col-span-2 space-y-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider">
                       Top Overtime Performers
