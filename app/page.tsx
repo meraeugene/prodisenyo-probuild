@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { X, Search, ArrowRight, ArrowLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import type { AttendanceRecord, Employee, Step } from "@/types";
@@ -211,7 +211,6 @@ export default function HomePage() {
       .sort((a, b) => a.siteName.localeCompare(b.siteName));
   }, [records]);
 
-  // Overtime by Branch
   const overtimeByBranch = useMemo(() => {
     const map = new Map<string, number>();
 
@@ -234,7 +233,6 @@ export default function HomePage() {
       .sort((a, b) => b.hours - a.hours);
   }, [employees, records]);
 
-  // Workforce by Branch
   const workforceByBranch = useMemo(() => {
     const map = new Map<string, Set<string>>();
 
@@ -252,7 +250,6 @@ export default function HomePage() {
       .sort((a, b) => b.employees - a.employees);
   }, [records]);
 
-  // Daily Labor Hours
   const dailyLaborHours = useMemo(() => {
     const map = new Map<string, number>();
 
@@ -268,7 +265,6 @@ export default function HomePage() {
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [records]);
 
-  // Top Overtime Employees
   const topOTEmployees = useMemo(() => {
     return [...employees]
       .sort((a, b) => b.otHours - a.otHours)
@@ -278,6 +274,49 @@ export default function HomePage() {
         hours: e.otHours,
       }));
   }, [employees]);
+
+  const handleParsed = useCallback((result: ParseResult) => {
+    setEmployees(result.employees);
+    setRecords(result.records);
+    setStep2View("daily");
+    setStep2Sort("date-asc");
+    setStep2SiteFilter("ALL");
+    setStep2NameFilter("");
+    setStep2DateFilter("");
+    setRecordsPage(1);
+    setSite(result.site);
+    setStep(2);
+  }, []);
+
+  function handleReset() {
+    setRecords([]);
+    setStep2View("daily");
+    setStep2Sort("date-asc");
+    setStep2SiteFilter("ALL");
+    setStep2NameFilter("");
+    setStep2DateFilter("");
+    setRecordsPage(1);
+    setSite("Unknown Site");
+    setStep(1);
+  }
+
+  const pages = useMemo(() => {
+    const arr = [];
+    const maxVisible = 5;
+
+    let start = Math.max(1, recordsPage - 2);
+    let end = Math.min(totalRecordPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      arr.push(i);
+    }
+
+    return arr;
+  }, [recordsPage, totalRecordPages]);
 
   useEffect(() => {
     setRecordsPage((prev) => Math.min(prev, totalRecordPages));
@@ -327,49 +366,6 @@ export default function HomePage() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [totalRecordPages]);
-
-  const handleParsed = useCallback((result: ParseResult) => {
-    setEmployees(result.employees);
-    setRecords(result.records);
-    setStep2View("daily");
-    setStep2Sort("date-asc");
-    setStep2SiteFilter("ALL");
-    setStep2NameFilter("");
-    setStep2DateFilter("");
-    setRecordsPage(1);
-    setSite(result.site);
-    setStep(2);
-  }, []);
-
-  function handleReset() {
-    setRecords([]);
-    setStep2View("daily");
-    setStep2Sort("date-asc");
-    setStep2SiteFilter("ALL");
-    setStep2NameFilter("");
-    setStep2DateFilter("");
-    setRecordsPage(1);
-    setSite("Unknown Site");
-    setStep(1);
-  }
-
-  const pages = useMemo(() => {
-    const arr = [];
-    const maxVisible = 5;
-
-    let start = Math.max(1, recordsPage - 2);
-    let end = Math.min(totalRecordPages, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      arr.push(i);
-    }
-
-    return arr;
-  }, [recordsPage, totalRecordPages]);
 
   return (
     <div className="min-h-screen bg-apple-snow">
