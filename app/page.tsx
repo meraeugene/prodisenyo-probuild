@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { X, Search, ArrowRight, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import StepIndicator from "@/components/StepIndicator";
 import UploadZone from "@/components/UploadZone";
 import type { AttendanceRecord, Employee, Step } from "@/types";
@@ -452,9 +453,12 @@ export default function HomePage() {
                     </p>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {branchSummaries.map((branch) => (
-                        <div
+                      {branchSummaries.map((branch, i) => (
+                        <motion.div
                           key={branch.siteName}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
                           className="rounded-xl border border-apple-mist bg-apple-snow px-4 py-3 hover:shadow-sm transition"
                         >
                           <p className="text-[11px] text-apple-steel uppercase tracking-wider">
@@ -471,7 +475,7 @@ export default function HomePage() {
                               ? "employee"
                               : "employees"}
                           </p>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
@@ -753,7 +757,9 @@ export default function HomePage() {
                     {activeRowsCount > PREVIEW_LIMIT && (
                       <div className="flex items-center gap-1 flex-wrap">
                         {/* First */}
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
                           onClick={() => setRecordsPage(1)}
                           disabled={recordsPage === 1}
                           className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
@@ -764,10 +770,12 @@ export default function HomePage() {
       }`}
                         >
                           First
-                        </button>
+                        </motion.button>
 
                         {/* Previous */}
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
                           onClick={() =>
                             setRecordsPage((p) => Math.max(1, p - 1))
                           }
@@ -780,11 +788,13 @@ export default function HomePage() {
       }`}
                         >
                           <ArrowLeft size={16} />
-                        </button>
+                        </motion.button>
 
                         {/* Page numbers */}
                         {pages.map((p) => (
-                          <button
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05 }}
                             key={p}
                             onClick={() => setRecordsPage(p)}
                             className={`w-8 h-8 rounded-lg text-xs font-semibold border transition
@@ -795,11 +805,13 @@ export default function HomePage() {
         }`}
                           >
                             {p}
-                          </button>
+                          </motion.button>
                         ))}
 
                         {/* Next */}
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
                           onClick={() =>
                             setRecordsPage((p) =>
                               Math.min(totalRecordPages, p + 1),
@@ -814,10 +826,12 @@ export default function HomePage() {
       }`}
                         >
                           <ArrowRight size={16} />
-                        </button>
+                        </motion.button>
 
                         {/* Last */}
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
                           onClick={() => setRecordsPage(totalRecordPages)}
                           disabled={recordsPage === totalRecordPages}
                           className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
@@ -828,7 +842,7 @@ export default function HomePage() {
       }`}
                         >
                           Last
-                        </button>
+                        </motion.button>
                       </div>
                     )}
                   </div>
