@@ -31,8 +31,51 @@ import {
 } from "@/lib/utils";
 import { highlight } from "@/components/Highlight";
 import ChartTooltip from "@/components/charts/ChartTooltip";
+import {
+  DEFAULT_DAILY_RATE_BY_ROLE,
+  DEFAULT_OVERTIME_MULTIPLIER,
+  HOURS_PER_DAY,
+  ROLE_CODES,
+  ROLE_CODE_TO_NAME,
+  normalizeRoleCode,
+  type RoleCode,
+} from "@/lib/payrollConfig";
+import {
+  generatePayroll,
+  recalculatePayrollRow,
+  type AttendanceRecordInput,
+  type PayrollRow,
+} from "@/lib/payrollEngine";
+import { exportPayrollToExcel } from "@/lib/payrollExport";
 
 const PREVIEW_LIMIT = 8;
+
+interface PayrollEditDraft {
+  date: string;
+  hoursWorked: string;
+  rate: string;
+  overtimeHours: string;
+}
+
+interface PayrollRowOverride {
+  date: string;
+  hoursWorked: number;
+  overtimeHours: number;
+  customRate: number | null;
+}
+
+function formatPayrollNumber(value: number): string {
+  return value.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function parseNonNegativeOrFallback(value: string, fallback: number): number {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return parsed;
+}
 
 export default function HomePage() {
   const [step, setStep] = useState<Step>(1);
@@ -45,6 +88,28 @@ export default function HomePage() {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [site, setSite] = useState("Unknown Site");
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [payrollRoleRates, setPayrollRoleRates] = useState<
+    Record<RoleCode, number>
+  >(DEFAULT_DAILY_RATE_BY_ROLE);
+  const [payrollGenerated, setPayrollGenerated] = useState(false);
+  const [payrollTab, setPayrollTab] = useState<"payroll" | "logs">("payroll");
+  const [payrollPage, setPayrollPage] = useState(1);
+  const [payrollSiteFilter, setPayrollSiteFilter] = useState("ALL");
+  const [payrollNameFilter, setPayrollNameFilter] = useState("");
+  const [payrollDateFilter, setPayrollDateFilter] = useState("");
+  const [payrollSort, setPayrollSort] = useState<Step2Sort>("date-asc");
+  const [showPayrollRateModal, setShowPayrollRateModal] = useState(false);
+  const [payrollRateDraft, setPayrollRateDraft] = useState<
+    Record<RoleCode, number>
+  >(DEFAULT_DAILY_RATE_BY_ROLE);
+  const [editingPayrollRowId, setEditingPayrollRowId] = useState<string | null>(
+    null,
+  );
+  const [payrollEditDraft, setPayrollEditDraft] =
+    useState<PayrollEditDraft | null>(null);
+  const [payrollOverrides, setPayrollOverrides] = useState<
+    Record<string, PayrollRowOverride>
+  >({});
 
   const dailyRows = useMemo<DailyLogRow[]>(() => {
     const grouped = new Map<string, DailyLogRow>();
@@ -276,6 +341,182 @@ export default function HomePage() {
       }));
   }, [employees]);
 
+  const payrollAttendanceInputs = useMemo<AttendanceRecordInput[]>(() => {
+    return dailyRows
+      .map((row) => {
+        const normalizedEmployee = row.employee.replace(/\s+/g, " ").trim();
+        const [firstToken, ...rest] = normalizedEmployee.split(" ");
+        const roleFromPrefix = normalizeRoleCode(firstToken);
+
+        const role = roleFromPrefix ?? "UNKNOWN";
+        const name =
+          roleFromPrefix && rest.length > 0
+            ? rest.join(" ").trim()
+            : normalizedEmployee;
+
+        return {
+          name,
+          role,
+          site: row.site,
+          date: row.date,
+          hours: row.hours,
+        };
+      })
+      .filter((record) => record.name.length > 0 && record.hours > 0);
+  }, [dailyRows]);
+
+  const payrollBaseRows = useMemo<PayrollRow[]>(() => {
+    return generatePayroll(payrollAttendanceInputs, {
+      roleRates: payrollRoleRates,
+      hoursPerDay: HOURS_PER_DAY,
+      overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+    });
+  }, [payrollAttendanceInputs, payrollRoleRates]);
+
+  const payrollRows = useMemo<PayrollRow[]>(() => {
+    return payrollBaseRows.map((row) => {
+      const override = payrollOverrides[row.id];
+      if (!override) return row;
+      return recalculatePayrollRow(
+        {
+          ...row,
+          date: override.date,
+          hoursWorked: override.hoursWorked,
+          overtimeHours: override.overtimeHours,
+          customRate: override.customRate,
+        },
+        DEFAULT_OVERTIME_MULTIPLIER,
+      );
+    });
+  }, [payrollBaseRows, payrollOverrides]);
+
+  const filteredPayrollRows = useMemo(() => {
+    const nameFilter = payrollNameFilter.trim().toLowerCase();
+    const dateFilter = payrollDateFilter.trim();
+
+    const filtered = payrollRows.filter((row) => {
+      if (
+        payrollSiteFilter !== "ALL" &&
+        !row.site
+          .split(",")
+          .map((siteName) => siteName.trim())
+          .includes(payrollSiteFilter)
+      ) {
+        return false;
+      }
+      if (dateFilter && !row.date.includes(dateFilter)) return false;
+      if (nameFilter && !row.worker.toLowerCase().includes(nameFilter))
+        return false;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const dateA = a.date.split(" to ")[0] ?? a.date;
+      const dateB = b.date.split(" to ")[0] ?? b.date;
+      return compareStep2Rows(dateA, a.worker, dateB, b.worker, payrollSort);
+    });
+
+    return filtered;
+  }, [
+    payrollRows,
+    payrollSiteFilter,
+    payrollNameFilter,
+    payrollDateFilter,
+    payrollSort,
+  ]);
+
+  const filteredPayrollLogs = useMemo(() => {
+    const nameFilter = payrollNameFilter.trim().toLowerCase();
+    const dateFilter = payrollDateFilter.trim();
+
+    const filtered = payrollAttendanceInputs.filter((record) => {
+      if (payrollSiteFilter !== "ALL" && record.site !== payrollSiteFilter)
+        return false;
+      if (dateFilter && record.date !== dateFilter) return false;
+      if (nameFilter && !record.name.toLowerCase().includes(nameFilter))
+        return false;
+      return true;
+    });
+
+    filtered.sort((a, b) =>
+      compareStep2Rows(a.date, a.name, b.date, b.name, payrollSort),
+    );
+
+    return filtered;
+  }, [
+    payrollAttendanceInputs,
+    payrollSiteFilter,
+    payrollNameFilter,
+    payrollDateFilter,
+    payrollSort,
+  ]);
+
+  const payrollActiveRowsCount =
+    payrollTab === "payroll"
+      ? filteredPayrollRows.length
+      : filteredPayrollLogs.length;
+  const payrollTotalPages = useMemo(
+    () => Math.max(1, Math.ceil(payrollActiveRowsCount / PREVIEW_LIMIT)),
+    [payrollActiveRowsCount],
+  );
+  const payrollPreviewStart = (payrollPage - 1) * PREVIEW_LIMIT;
+  const payrollPreviewEnd = payrollPreviewStart + PREVIEW_LIMIT;
+
+  const payrollPreviewRows = useMemo(() => {
+    return filteredPayrollRows.slice(payrollPreviewStart, payrollPreviewEnd);
+  }, [filteredPayrollRows, payrollPreviewStart, payrollPreviewEnd]);
+
+  const payrollPreviewLogs = useMemo(() => {
+    return filteredPayrollLogs.slice(payrollPreviewStart, payrollPreviewEnd);
+  }, [filteredPayrollLogs, payrollPreviewStart, payrollPreviewEnd]);
+
+  const payrollTotals = useMemo(() => {
+    return filteredPayrollRows.reduce(
+      (acc, row) => {
+        acc.hours += row.hoursWorked;
+        acc.pay += row.totalPay;
+        return acc;
+      },
+      { hours: 0, pay: 0 },
+    );
+  }, [filteredPayrollRows]);
+
+  const editingPayrollRow = useMemo(
+    () => payrollRows.find((row) => row.id === editingPayrollRowId) ?? null,
+    [payrollRows, editingPayrollRowId],
+  );
+
+  const payrollEditPreview = useMemo(() => {
+    if (!editingPayrollRow || !payrollEditDraft) return null;
+
+    const nextHours = parseNonNegativeOrFallback(
+      payrollEditDraft.hoursWorked,
+      editingPayrollRow.hoursWorked,
+    );
+    const nextOvertime = parseNonNegativeOrFallback(
+      payrollEditDraft.overtimeHours,
+      editingPayrollRow.overtimeHours,
+    );
+    const nextCustomRate =
+      payrollEditDraft.rate.trim() === ""
+        ? null
+        : parseNonNegativeOrFallback(
+            payrollEditDraft.rate,
+            editingPayrollRow.customRate ?? editingPayrollRow.defaultRate,
+          );
+
+    return recalculatePayrollRow(
+      {
+        ...editingPayrollRow,
+        date: payrollEditDraft.date.trim(),
+        hoursWorked: nextHours,
+        overtimeHours: nextOvertime,
+        customRate: nextCustomRate,
+      },
+      DEFAULT_OVERTIME_MULTIPLIER,
+    );
+  }, [editingPayrollRow, payrollEditDraft]);
+
   const handleParsed = useCallback((result: ParseResult) => {
     setEmployees(result.employees);
     setRecords(result.records);
@@ -286,6 +527,16 @@ export default function HomePage() {
     setStep2DateFilter("");
     setRecordsPage(1);
     setSite(result.site);
+    setPayrollOverrides({});
+    setPayrollGenerated(false);
+    setPayrollTab("payroll");
+    setPayrollPage(1);
+    setPayrollSiteFilter("ALL");
+    setPayrollNameFilter("");
+    setPayrollDateFilter("");
+    setPayrollSort("date-asc");
+    setEditingPayrollRowId(null);
+    setPayrollEditDraft(null);
     setStep(2);
   }, []);
 
@@ -298,10 +549,102 @@ export default function HomePage() {
     setStep2DateFilter("");
     setRecordsPage(1);
     setSite("Unknown Site");
+    setPayrollOverrides({});
+    setPayrollGenerated(false);
+    setPayrollTab("payroll");
+    setPayrollPage(1);
+    setPayrollSiteFilter("ALL");
+    setPayrollNameFilter("");
+    setPayrollDateFilter("");
+    setPayrollSort("date-asc");
+    setShowPayrollRateModal(false);
+    setEditingPayrollRowId(null);
+    setPayrollEditDraft(null);
     setStep(1);
   }
 
-  const pages = useMemo(() => {
+  function handleGeneratePayroll() {
+    if (payrollRows.length === 0) return;
+    setPayrollGenerated(true);
+    setPayrollTab("payroll");
+    setPayrollPage(1);
+    setPayrollSiteFilter("ALL");
+    setPayrollNameFilter("");
+    setPayrollDateFilter("");
+    setPayrollSort("date-asc");
+    setStep(3);
+  }
+
+  function handleExportPayroll() {
+    if (filteredPayrollRows.length === 0) return;
+    exportPayrollToExcel(filteredPayrollRows);
+  }
+
+  function openPayrollRateModal() {
+    setPayrollRateDraft({ ...payrollRoleRates });
+    setShowPayrollRateModal(true);
+  }
+
+  function applyPayrollRates() {
+    setPayrollRoleRates({ ...payrollRateDraft });
+    setShowPayrollRateModal(false);
+  }
+
+  function clearPayrollFilters() {
+    setPayrollSiteFilter("ALL");
+    setPayrollNameFilter("");
+    setPayrollDateFilter("");
+    setPayrollSort("date-asc");
+  }
+
+  function openPayrollEditModal(row: PayrollRow) {
+    setEditingPayrollRowId(row.id);
+    setPayrollEditDraft({
+      date: row.date,
+      hoursWorked: String(row.hoursWorked),
+      rate: row.customRate === null ? "" : String(row.customRate),
+      overtimeHours: String(row.overtimeHours),
+    });
+  }
+
+  function closePayrollEditModal() {
+    setEditingPayrollRowId(null);
+    setPayrollEditDraft(null);
+  }
+
+  function savePayrollEdit() {
+    if (!editingPayrollRow || !payrollEditDraft) return;
+
+    const nextHours = parseNonNegativeOrFallback(
+      payrollEditDraft.hoursWorked,
+      editingPayrollRow.hoursWorked,
+    );
+    const nextOvertime = parseNonNegativeOrFallback(
+      payrollEditDraft.overtimeHours,
+      editingPayrollRow.overtimeHours,
+    );
+    const nextCustomRate =
+      payrollEditDraft.rate.trim() === ""
+        ? null
+        : parseNonNegativeOrFallback(
+            payrollEditDraft.rate,
+            editingPayrollRow.customRate ?? editingPayrollRow.defaultRate,
+          );
+
+    setPayrollOverrides((prev) => ({
+      ...prev,
+      [editingPayrollRow.id]: {
+        date: payrollEditDraft.date.trim(),
+        hoursWorked: nextHours,
+        overtimeHours: nextOvertime,
+        customRate: nextCustomRate,
+      },
+    }));
+
+    closePayrollEditModal();
+  }
+
+  const step2Pages = useMemo(() => {
     const arr = [];
     const maxVisible = 5;
 
@@ -319,13 +662,45 @@ export default function HomePage() {
     return arr;
   }, [recordsPage, totalRecordPages]);
 
+  const payrollPages = useMemo(() => {
+    const arr = [];
+    const maxVisible = 5;
+
+    let start = Math.max(1, payrollPage - 2);
+    let end = Math.min(payrollTotalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      arr.push(i);
+    }
+
+    return arr;
+  }, [payrollPage, payrollTotalPages]);
+
   useEffect(() => {
     setRecordsPage((prev) => Math.min(prev, totalRecordPages));
   }, [totalRecordPages]);
 
   useEffect(() => {
+    setPayrollPage((prev) => Math.min(prev, payrollTotalPages));
+  }, [payrollTotalPages]);
+
+  useEffect(() => {
     setRecordsPage(1);
   }, [step2View, step2Sort, step2SiteFilter, step2NameFilter, step2DateFilter]);
+
+  useEffect(() => {
+    setPayrollPage(1);
+  }, [
+    payrollTab,
+    payrollSiteFilter,
+    payrollNameFilter,
+    payrollDateFilter,
+    payrollSort,
+  ]);
 
   useEffect(() => {
     if (
@@ -334,7 +709,14 @@ export default function HomePage() {
     ) {
       setStep2SiteFilter("ALL");
     }
-  }, [availableSites, step2SiteFilter]);
+
+    if (
+      payrollSiteFilter !== "ALL" &&
+      !availableSites.includes(payrollSiteFilter)
+    ) {
+      setPayrollSiteFilter("ALL");
+    }
+  }, [availableSites, step2SiteFilter, payrollSiteFilter]);
 
   useEffect(() => {
     if (step === 2) {
@@ -346,27 +728,49 @@ export default function HomePage() {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "/") {
         e.preventDefault();
-        document.getElementById("searchEmployee")?.focus();
+        if (step === 3 && payrollGenerated) {
+          document.getElementById("searchPayrollEmployee")?.focus();
+        } else {
+          document.getElementById("searchEmployee")?.focus();
+        }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [step, payrollGenerated]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") {
-        setRecordsPage((p) => Math.min(totalRecordPages, p + 1));
+        if (step === 3 && payrollGenerated) {
+          setPayrollPage((p) => Math.min(payrollTotalPages, p + 1));
+        } else {
+          setRecordsPage((p) => Math.min(totalRecordPages, p + 1));
+        }
       }
       if (e.key === "ArrowLeft") {
-        setRecordsPage((p) => Math.max(1, p - 1));
+        if (step === 3 && payrollGenerated) {
+          setPayrollPage((p) => Math.max(1, p - 1));
+        } else {
+          setRecordsPage((p) => Math.max(1, p - 1));
+        }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [totalRecordPages]);
+  }, [step, payrollGenerated, payrollTotalPages, totalRecordPages]);
+
+  useEffect(() => {
+    const validIds = new Set(payrollBaseRows.map((row) => row.id));
+    setPayrollOverrides((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([id]) => validIds.has(id)),
+      );
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+    });
+  }, [payrollBaseRows]);
 
   return (
     <div className="min-h-screen bg-apple-snow">
@@ -788,7 +1192,7 @@ export default function HomePage() {
                         </motion.button>
 
                         {/* Page numbers */}
-                        {pages.map((p) => (
+                        {step2Pages.map((p) => (
                           <motion.button
                             whileTap={{ scale: 0.95 }}
                             whileHover={{ scale: 1.05 }}
@@ -1104,7 +1508,587 @@ export default function HomePage() {
             </div>
           </section>
         )}
+        {dailyRows.length > 0 && (
+          <section
+            className="animate-fade-up"
+            style={{ animationFillMode: "both", animationDelay: "80ms" }}
+          >
+            <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-hidden">
+              <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-apple-mist flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
+                      Step 3
+                    </span>
+                    {payrollGenerated && (
+                      <span className="text-2xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                        Complete
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-apple-charcoal tracking-tight">
+                    Generate Payroll
+                  </h2>
+                  <p className="text-sm text-apple-smoke mt-1">
+                    Generate payroll after reviewing attendance logs.
+                  </p>
+                </div>
+
+                {!payrollGenerated && (
+                  <button
+                    type="button"
+                    onClick={handleGeneratePayroll}
+                    disabled={payrollRows.length === 0}
+                    className="px-4 py-2 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Generate Payroll
+                  </button>
+                )}
+              </div>
+
+              {payrollGenerated && (
+                <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setPayrollTab("payroll")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                        ${
+                          payrollTab === "payroll"
+                            ? "bg-apple-charcoal text-white border-apple-charcoal"
+                            : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                        }`}
+                    >
+                      Payroll Summary
+                    </button>
+                    <button
+                      onClick={() => setPayrollTab("logs")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                        ${
+                          payrollTab === "logs"
+                            ? "bg-apple-charcoal text-white border-apple-charcoal"
+                            : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                        }`}
+                    >
+                      Attendance Logs
+                    </button>
+
+                    <div className="ml-auto flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleExportPayroll}
+                        disabled={filteredPayrollRows.length === 0}
+                        className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Export Excel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openPayrollRateModal}
+                        className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                      >
+                        Edit Rates
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <select
+                      value={payrollSiteFilter}
+                      onChange={(e) => setPayrollSiteFilter(e.target.value)}
+                      className="w-full px-3 h-10 rounded-2xl border border-apple-silver  hover:border-apple-charcoal cursor-pointer bg-white text-sm text-apple-charcoal
+                        focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                    >
+                      <option value="ALL">All files/sites</option>
+                      {availableSites.map((siteOption) => (
+                        <option key={siteOption} value={siteOption}>
+                          {siteOption}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="relative w-full">
+                      <Search
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
+                        size={16}
+                      />
+
+                      <input
+                        type="text"
+                        value={payrollNameFilter}
+                        onChange={(e) => setPayrollNameFilter(e.target.value)}
+                        placeholder="Search employee… ( / )"
+                        id="searchPayrollEmployee"
+                        className="w-full h-10 pl-9 pr-3 rounded-2xl border border-apple-silver
+                          focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
+                          text-sm text-apple-charcoal placeholder:text-apple-silver transition-all"
+                      />
+                    </div>
+
+                    <input
+                      type="date"
+                      value={payrollDateFilter}
+                      onChange={(e) => setPayrollDateFilter(e.target.value)}
+                      className="w-full h-10 px-3 rounded-2xl border border-apple-silver
+                        focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
+                        text-sm text-apple-charcoal placeholder:text-apple-silver transition-all"
+                    />
+
+                    <select
+                      value={payrollSort}
+                      onChange={(e) =>
+                        setPayrollSort(e.target.value as Step2Sort)
+                      }
+                      className="w-full h-10 px-3 rounded-2xl border border-apple-silver
+                        focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
+                        text-sm text-apple-charcoal bg-white transition-all"
+                    >
+                      <option value="date-asc">Date first (oldest)</option>
+                      <option value="date-desc">Date first (latest)</option>
+                      <option value="name-asc">Name A-Z</option>
+                      <option value="name-desc">Name Z-A</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={clearPayrollFilters}
+                      className="w-full h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition-all"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+
+                  {payrollTab === "payroll" ? (
+                    <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+                      <table className="w-full text-sm table-auto min-w-[900px]">
+                        <thead>
+                          <tr className="border-b border-apple-mist">
+                            {[
+                              "Worker",
+                              "Role",
+                              "Site",
+                              "Date",
+                              "Hours",
+                              "Rate",
+                              "Total Pay",
+                              "Edit",
+                            ].map((h) => (
+                              <th
+                                key={h}
+                                className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                                  h === "Hours" || h === "Rate" || h === "Total Pay"
+                                    ? "text-right"
+                                    : h === "Edit"
+                                      ? "text-center"
+                                      : "text-left"
+                                }`}
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {payrollPreviewRows.length === 0 ? (
+                            <tr>
+                              <td
+                                colSpan={8}
+                                className="px-4 py-6 text-center text-sm text-apple-smoke"
+                              >
+                                No payroll rows match the selected filters.
+                              </td>
+                            </tr>
+                          ) : (
+                            payrollPreviewRows.map((row) => (
+                              <tr
+                                key={row.id}
+                                className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                              >
+                                <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                                  {row.worker}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
+                                  {row.role}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-apple-smoke">
+                                  {row.site}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-apple-smoke">
+                                  {row.date || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
+                                  {formatPayrollNumber(row.hoursWorked)}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
+                                  {formatPayrollNumber(row.rate)}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
+                                  {formatPayrollNumber(row.totalPay)}
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => openPayrollEditModal(row)}
+                                    className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                                  >
+                                    Edit
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t border-apple-silver bg-apple-snow/70">
+                            <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                              Summary
+                            </td>
+                            <td className="px-4 py-3" />
+                            <td className="px-4 py-3" />
+                            <td className="px-4 py-3" />
+                            <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-apple-charcoal">
+                              {formatPayrollNumber(payrollTotals.hours)}
+                            </td>
+                            <td className="px-4 py-3" />
+                            <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-apple-charcoal">
+                              {formatPayrollNumber(payrollTotals.pay)}
+                            </td>
+                            <td className="px-4 py-3" />
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+                      <table className="w-full text-sm table-auto min-w-[760px]">
+                        <thead>
+                          <tr className="border-b border-apple-mist">
+                            {["Worker", "Role", "Site", "Date", "Hours"].map((h) => (
+                              <th
+                                key={h}
+                                className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                                  h === "Hours" ? "text-right" : "text-left"
+                                }`}
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {payrollPreviewLogs.length === 0 ? (
+                            <tr>
+                              <td
+                                colSpan={5}
+                                className="px-4 py-6 text-center text-sm text-apple-smoke"
+                              >
+                                No attendance logs match the selected filters.
+                              </td>
+                            </tr>
+                          ) : (
+                            payrollPreviewLogs.map((record, index) => (
+                              <tr
+                                key={`${record.role}-${record.name}-${record.date}-${record.site}-${index}`}
+                                className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                              >
+                                <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                                  {record.name}
+                                </td>
+                                <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
+                                  {record.role}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-apple-smoke">
+                                  {record.site}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-apple-smoke">
+                                  {record.date}
+                                </td>
+                                <td className="px-4 py-3 text-right text-sm font-mono text-apple-ash">
+                                  {formatPayrollNumber(record.hours)}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="text-xs text-apple-steel">
+                      Showing{" "}
+                      {payrollActiveRowsCount === 0 ? 0 : payrollPreviewStart + 1}
+                      -
+                      {Math.min(payrollPreviewEnd, payrollActiveRowsCount)} of{" "}
+                      {payrollActiveRowsCount}{" "}
+                      {payrollTab === "payroll"
+                        ? "payroll rows"
+                        : "attendance log rows"}
+                      .
+                    </p>
+
+                    {payrollActiveRowsCount > PREVIEW_LIMIT && (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
+                          onClick={() => setPayrollPage(1)}
+                          disabled={payrollPage === 1}
+                          className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+      ${
+        payrollPage === 1
+          ? "border-apple-mist text-apple-silver cursor-not-allowed"
+          : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+      }`}
+                        >
+                          First
+                        </motion.button>
+
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
+                          onClick={() =>
+                            setPayrollPage((p) => Math.max(1, p - 1))
+                          }
+                          disabled={payrollPage === 1}
+                          className={`px-3 h-8 rounded-xl text-xs font-semibold border
+      ${
+        payrollPage === 1
+          ? "border-apple-mist text-apple-silver cursor-not-allowed"
+          : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+      }`}
+                        >
+                          <ArrowLeft size={16} />
+                        </motion.button>
+
+                        {payrollPages.map((p) => (
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05 }}
+                            key={p}
+                            onClick={() => setPayrollPage(p)}
+                            className={`w-8 h-8 rounded-lg text-xs font-semibold border transition
+        ${
+          payrollPage === p
+            ? "bg-apple-charcoal text-white border-apple-charcoal"
+            : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+        }`}
+                          >
+                            {p}
+                          </motion.button>
+                        ))}
+
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
+                          onClick={() =>
+                            setPayrollPage((p) =>
+                              Math.min(payrollTotalPages, p + 1),
+                            )
+                          }
+                          disabled={payrollPage === payrollTotalPages}
+                          className={`px-3 h-8 rounded-xl text-xs font-semibold border
+      ${
+        payrollPage === payrollTotalPages
+          ? "border-apple-mist text-apple-silver cursor-not-allowed"
+          : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+      }`}
+                        >
+                          <ArrowRight size={16} />
+                        </motion.button>
+
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.05 }}
+                          onClick={() => setPayrollPage(payrollTotalPages)}
+                          disabled={payrollPage === payrollTotalPages}
+                          className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+      ${
+        payrollPage === payrollTotalPages
+          ? "border-apple-mist text-apple-silver cursor-not-allowed"
+          : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+      }`}
+                        >
+                          Last
+                        </motion.button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </main>
+
+      {showPayrollRateModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="w-full max-w-2xl rounded-2xl border border-apple-mist bg-white shadow-apple-xs p-5 sm:p-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-apple-charcoal">
+                Edit Role Rates
+              </h3>
+              <p className="text-sm text-apple-smoke">
+                Hourly rate is calculated as daily rate / 8.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ROLE_CODES.map((roleCode) => (
+                <label key={roleCode} className="space-y-1.5">
+                  <span className="text-xs font-semibold text-apple-steel uppercase tracking-wider">
+                    {roleCode} - {ROLE_CODE_TO_NAME[roleCode]}
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={payrollRateDraft[roleCode]}
+                    onChange={(e) => {
+                      const parsed = Number.parseFloat(e.target.value);
+                      setPayrollRateDraft((prev) => ({
+                        ...prev,
+                        [roleCode]:
+                          Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
+                      }));
+                    }}
+                    className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPayrollRateModal(false)}
+                className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={applyPayrollRates}
+                className="px-4 h-10 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition"
+              >
+                Save Rates
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingPayrollRow && payrollEditDraft && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="w-full max-w-xl rounded-2xl border border-apple-mist bg-white shadow-apple-xs p-5 sm:p-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-apple-charcoal">
+                Edit Payroll Row
+              </h3>
+              <p className="text-sm text-apple-smoke">
+                {editingPayrollRow.worker} ({editingPayrollRow.role})
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-apple-steel uppercase tracking-wider">
+                  Date
+                </span>
+                <input
+                  type="text"
+                  value={payrollEditDraft.date}
+                  onChange={(e) =>
+                    setPayrollEditDraft((prev) =>
+                      prev ? { ...prev, date: e.target.value } : prev,
+                    )
+                  }
+                  className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                />
+              </label>
+
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-apple-steel uppercase tracking-wider">
+                  Hours Worked
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={payrollEditDraft.hoursWorked}
+                  onChange={(e) =>
+                    setPayrollEditDraft((prev) =>
+                      prev ? { ...prev, hoursWorked: e.target.value } : prev,
+                    )
+                  }
+                  className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                />
+              </label>
+
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-apple-steel uppercase tracking-wider">
+                  Rate (Hourly, blank = default)
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={payrollEditDraft.rate}
+                  onChange={(e) =>
+                    setPayrollEditDraft((prev) =>
+                      prev ? { ...prev, rate: e.target.value } : prev,
+                    )
+                  }
+                  className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                />
+              </label>
+
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-apple-steel uppercase tracking-wider">
+                  Overtime Hours
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={payrollEditDraft.overtimeHours}
+                  onChange={(e) =>
+                    setPayrollEditDraft((prev) =>
+                      prev ? { ...prev, overtimeHours: e.target.value } : prev,
+                    )
+                  }
+                  className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                />
+              </label>
+            </div>
+
+            {payrollEditPreview && (
+              <div className="rounded-xl border border-apple-mist bg-apple-snow px-3 py-2 text-sm text-apple-ash">
+                Preview Total Pay:{" "}
+                <span className="font-semibold text-apple-charcoal">
+                  {formatPayrollNumber(payrollEditPreview.totalPay)}
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closePayrollEditModal}
+                className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={savePayrollEdit}
+                className="px-4 h-10 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
