@@ -197,7 +197,7 @@ export default function HomePage() {
   const branchSummaries = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const record of records) {
-      const siteKey = record.site?.trim();
+      const siteKey = record.site?.trim().toUpperCase().split(" ")[0];
       if (!siteKey) continue;
       if (!map.has(siteKey)) {
         map.set(siteKey, new Set<string>());
@@ -956,7 +956,7 @@ export default function HomePage() {
                   <div className="lg:col-span-2 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-semibold uppercase tracking-wider">
-                        Daily Labor Utilization
+                        Daily Labor Attendance{" "}
                       </h3>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
