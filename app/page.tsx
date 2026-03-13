@@ -17,6 +17,11 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
   Area,
   AreaChart,
 } from "recharts";
@@ -47,8 +52,10 @@ import {
   type PayrollRow,
 } from "@/lib/payrollEngine";
 import { exportPayrollToExcel } from "@/lib/payrollExport";
+import PayrollInsights from "@/components/PayrollInsights";
 
 const PREVIEW_LIMIT = 8;
+const EMPLOYEE_ANALYTICS_PIE_COLORS = ["#2563EB", "#F59E0B", "#10B981", "#8B5CF6"];
 
 interface PayrollEditDraft {
   date: string;
@@ -110,6 +117,22 @@ function toClockHours(value: number): string {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function toShortDateLabel(isoDate: string): string {
+  const parsed = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return isoDate;
+  return `${parsed.getMonth() + 1}/${parsed.getDate()}`;
+}
+
+function parseTimeToDecimal(timeText: string): number | null {
+  const match = timeText.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return Math.round((hours + minutes / 60) * 100) / 100;
 }
 
 export default function HomePage() {
@@ -553,6 +576,37 @@ export default function HomePage() {
       otNormalHours,
     };
   }, [editingPayrollLogs, editingPayrollRow]);
+
+  const employeeDailyHoursTrend = useMemo(() => {
+    return editingPayrollLogs.map((log) => ({
+      date: toShortDateLabel(log.date),
+      fullDate: log.date,
+      hours: Math.round(log.hours * 100) / 100,
+    }));
+  }, [editingPayrollLogs]);
+
+  const employeeAttendanceBreakdown = useMemo(() => {
+    return [
+      { name: "Attendance", value: editingPayrollSummary.attendanceDays },
+      { name: "Absences", value: editingPayrollSummary.absenceDays },
+      { name: "Leave", value: 0 },
+      { name: "Business Trip", value: 0 },
+    ];
+  }, [editingPayrollSummary]);
+
+  const employeeClockInConsistency = useMemo(() => {
+    return editingPayrollLogs.map((log) => {
+      const timeInRaw = earliestNonEmptyTime(log.time1In, log.time2In);
+      const timeInDecimal = timeInRaw ? parseTimeToDecimal(timeInRaw) : null;
+
+      return {
+        date: toShortDateLabel(log.date),
+        fullDate: log.date,
+        timeIn: timeInDecimal ?? 0,
+        timeInLabel: timeInRaw || "Missed",
+      };
+    });
+  }, [editingPayrollLogs]);
 
   const payrollEditPreview = useMemo(() => {
     if (!editingPayrollRow || !payrollEditDraft) return null;
@@ -1981,6 +2035,13 @@ export default function HomePage() {
                       </div>
                     )}
                   </div>
+
+                  {payrollTab === "payroll" && (
+                    <PayrollInsights
+                      payrollRows={payrollRows}
+                      attendanceRows={payrollAttendanceInputs}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -2215,6 +2276,202 @@ export default function HomePage() {
                   </span>
                 </div>
               )}
+
+              <div className="rounded-2xl border border-apple-mist bg-white">
+                <div className="px-4 py-3 border-b border-apple-mist">
+                  <h4 className="text-sm font-semibold text-apple-charcoal">
+                    Employee Analytics
+                  </h4>
+                  <p className="text-xs text-apple-smoke mt-1">
+                    Visual insights into the employee&apos;s attendance and work
+                    patterns.
+                  </p>
+                </div>
+
+                <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <p className="text-xs font-semibold text-apple-charcoal mb-3">
+                      Daily Hours Worked Trend
+                    </p>
+                    <div className="h-[220px]">
+                      {employeeDailyHoursTrend.length === 0 ? (
+                        <p className="text-sm text-apple-smoke">
+                          No attendance logs yet.
+                        </p>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={employeeDailyHoursTrend}
+                            margin={{ top: 8, right: 8, left: -18, bottom: 8 }}
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#F1F5F9"
+                            />
+                            <XAxis
+                              dataKey="date"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#64748B", fontSize: 10 }}
+                              minTickGap={10}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#64748B", fontSize: 10 }}
+                            />
+                            <Tooltip
+                              formatter={(value: number) => [
+                                formatPayrollNumber(value),
+                                "Hours Worked",
+                              ]}
+                              labelFormatter={(label: string) => `Date: ${label}`}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="hours"
+                              stroke="#2563EB"
+                              strokeWidth={2.5}
+                              dot={{ r: 2 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <p className="text-xs font-semibold text-apple-charcoal mb-3">
+                      Attendance Breakdown
+                    </p>
+                    <div className="h-[220px]">
+                      {employeeAttendanceBreakdown.every(
+                        (slice) => slice.value === 0,
+                      ) ? (
+                        <p className="text-sm text-apple-smoke">
+                          No attendance distribution yet.
+                        </p>
+                      ) : (
+                        <div className="h-full flex flex-col">
+                          <div className="h-[145px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={employeeAttendanceBreakdown}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={35}
+                                  outerRadius={60}
+                                  paddingAngle={2}
+                                  isAnimationActive={false}
+                                >
+                                  {employeeAttendanceBreakdown.map(
+                                    (entry, index) => (
+                                      <Cell
+                                        key={`${entry.name}-${index}`}
+                                        fill={
+                                          EMPLOYEE_ANALYTICS_PIE_COLORS[
+                                            index %
+                                              EMPLOYEE_ANALYTICS_PIE_COLORS.length
+                                          ]
+                                        }
+                                      />
+                                    ),
+                                  )}
+                                </Pie>
+                                <Tooltip />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                            {employeeAttendanceBreakdown.map((slice, index) => (
+                              <div
+                                key={slice.name}
+                                className="flex items-center justify-between text-xs"
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                                    style={{
+                                      backgroundColor:
+                                        EMPLOYEE_ANALYTICS_PIE_COLORS[
+                                          index %
+                                            EMPLOYEE_ANALYTICS_PIE_COLORS.length
+                                        ],
+                                    }}
+                                  />
+                                  <span className="text-apple-ash truncate">
+                                    {slice.name}
+                                  </span>
+                                </div>
+                                <span className="font-semibold text-apple-charcoal">
+                                  {slice.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <p className="text-xs font-semibold text-apple-charcoal mb-3">
+                      Clock-in Time Consistency
+                    </p>
+                    <div className="h-[220px]">
+                      {employeeClockInConsistency.length === 0 ? (
+                        <p className="text-sm text-apple-smoke">
+                          No clock-in data yet.
+                        </p>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={employeeClockInConsistency}
+                            margin={{ top: 8, right: 8, left: -18, bottom: 8 }}
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#F1F5F9"
+                            />
+                            <XAxis
+                              dataKey="date"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#64748B", fontSize: 10 }}
+                              minTickGap={10}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#64748B", fontSize: 10 }}
+                              domain={[0, 24]}
+                            />
+                            <Tooltip
+                              formatter={(
+                                _value: number,
+                                _name: string,
+                                item: { payload?: { timeInLabel?: string } },
+                              ) => [item.payload?.timeInLabel ?? "-", "Time In"]}
+                              labelFormatter={(label: string) => `Date: ${label}`}
+                            />
+                            <Bar
+                              dataKey="timeIn"
+                              fill="#10B981"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div className="rounded-2xl border border-apple-mist bg-white overflow-x-auto">
                 <div className="px-4 py-3 border-b border-apple-mist">
