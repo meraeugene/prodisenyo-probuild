@@ -1826,7 +1826,7 @@ export default function HomePage() {
                                 className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
                               >
                                 <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
-                                  {row.worker}
+                                  {row.role} {row.worker}
                                 </td>
                                 <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
                                   {row.role}
@@ -1913,7 +1913,7 @@ export default function HomePage() {
                                 className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
                               >
                                 <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
-                                  {record.name}
+                                  {record.role} {record.name}
                                 </td>
                                 <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
                                   {record.role}
@@ -2115,7 +2115,7 @@ export default function HomePage() {
                   Calculation Details
                 </p>
                 <h3 className="text-2xl font-bold text-apple-charcoal tracking-tight">
-                  {editingPayrollRow.worker} ({editingPayrollRow.role})
+                  {editingPayrollRow.role} {editingPayrollRow.worker}
                 </h3>
               </div>
               <button
