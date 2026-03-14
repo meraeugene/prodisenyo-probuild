@@ -58,7 +58,7 @@ export default function AttendanceReviewSection({
             <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
               Step 2
             </span>
-            <span className="text-2xs font-semibold text-apple-smoke bg-apple-snow px-2 py-0.5 rounded-full border border-apple-mist">
+            <span className="text-2xs font-semibold text-white bg-apple-charcoal px-2 py-0.5 rounded-full border border-apple-mist">
               {site}
             </span>
             {step > 2 && (
@@ -71,42 +71,35 @@ export default function AttendanceReviewSection({
             Review Attendance Logs
           </h2>
           <p className="text-sm text-apple-smoke mt-1">
-            Your biometric files are cleaned and converted into readable daily
-            time logs.
+            Employees who did not use biometric attendance are not included.
           </p>
         </div>
 
         <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-5">
           {branchSummaries.length > 0 && (
-            <div className="rounded-2xl border border-apple-mist bg-white px-5 py-4">
-              <p className="text-2xs font-semibold text-apple-steel uppercase tracking-widest mb-4">
-                Branch Summary
-              </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {branchSummaries.map((branch, i) => (
+                <motion.div
+                  key={branch.siteName}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="rounded-xl  bg-apple-charcoal px-4 py-3 hover:shadow-sm transition"
+                >
+                  <p className="text-[11px] text-apple-steel uppercase tracking-wider">
+                    Branch
+                  </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {branchSummaries.map((branch, i) => (
-                  <motion.div
-                    key={branch.siteName}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="rounded-xl border border-apple-mist bg-apple-snow px-4 py-3 hover:shadow-sm transition"
-                  >
-                    <p className="text-[11px] text-apple-steel uppercase tracking-wider">
-                      Branch
-                    </p>
+                  <p className="text-sm font-semibold text-white mt-1">
+                    {branch.siteName.split(" ")[0]}
+                  </p>
 
-                    <p className="text-sm font-semibold text-apple-charcoal mt-1">
-                      {branch.siteName.split(" ")[0]}
-                    </p>
-
-                    <p className="text-sm mt-1">
-                      {branch.employeeCount}{" "}
-                      {branch.employeeCount === 1 ? "employee" : "employees"}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
+                  <p className="text-sm mt-1 text-white">
+                    {branch.employeeCount}{" "}
+                    {branch.employeeCount === 1 ? "employee" : "employees"}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           )}
 

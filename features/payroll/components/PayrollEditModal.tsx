@@ -126,7 +126,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <span className="text-apple-silver">•</span>
 
               {/* Role */}
-              <span className="px-2.5 py-1 rounded-full border border-apple-mist bg-apple-snow text-xs font-medium text-apple-charcoal">
+              <span className="px-2.5 py-1 rounded-full bg-apple-charcoal text-xs font-medium text-white">
                 {ROLE_CODE_TO_NAME[editingPayrollRow.role as RoleCode] ??
                   "Unknown Role"}
               </span>
@@ -134,15 +134,13 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <span className="text-apple-silver">•</span>
 
               {/* Site */}
-              <span className="text-sm text-apple-steel">
-                {editingPayrollRow.site}
-              </span>
+              <span className="text-sm ">{editingPayrollRow.site}</span>
             </div>
           </div>
           <button
             type="button"
             onClick={payroll.closePayrollEditModal}
-            className="w-9 h-9 rounded-full border border-apple-silver text-apple-smoke hover:text-apple-charcoal hover:border-apple-charcoal transition flex items-center justify-center"
+            className="w-9 h-9 rounded-full  text-white bg-apple-charcoal hover:bg-apple-charcoal/90  transition flex items-center justify-center"
           >
             <X size={16} />
           </button>
@@ -196,12 +194,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-xl border border-apple-mist bg-apple-snow px-3 py-2"
+                  className="rounded-xl  bg-apple-charcoal px-3 py-2"
                 >
                   <p className="text-2xs font-medium text-apple-steel uppercase tracking-wider">
                     {item.label}
                   </p>
-                  <p className="mt-1 text-lg font-semibold font-mono text-apple-charcoal">
+                  <p className="mt-1 text-lg font-semibold font-mono text-white">
                     {item.value}
                   </p>
                 </div>
@@ -221,7 +219,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   Date
                 </span>
 
-                <div className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-apple-snow text-sm font-semibold text-apple-charcoal flex items-center">
+                <div className="w-full px-3 h-10 rounded-2xl bg-apple-charcoal text-sm font-semibold text-white flex items-center">
                   {payrollEditDraft.date}
                 </div>
               </label>
@@ -274,15 +272,15 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
           </div>
 
           {payroll.payrollEditPreview && (
-            <div className="rounded-xl border border-apple-mist bg-apple-snow px-3 py-2 text-apple-ash">
+            <div className="rounded-xl uppercase font-mono bg-apple-charcoal px-3 py-2 text-white font-medium ">
               Preview Total Pay:{" "}
-              <span className="font-bold text-apple-charcoal">
+              <span className="font-bold text-white ">
                 {formatPayrollNumber(payroll.payrollEditPreview.totalPay)}
               </span>
             </div>
           )}
 
-          <div className="overflow-hidden rounded-2xl border border-[#E7ECF3] bg-gradient-to-b from-[#FCFDFF] to-white">
+          <div className="overflow-hidden rounded-2xl border border-[#E7ECF3] ">
             <div className="border-b border-[#EEF2F7] px-4 py-3.5">
               <h4 className="text-sm font-semibold tracking-tight text-apple-charcoal">
                 Employee Analytics

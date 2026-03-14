@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Calculator, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calculator, Search, X } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { Step2Sort } from "@/types";
@@ -159,10 +159,21 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                   onChange={(e) => payroll.setPayrollNameFilter(e.target.value)}
                   placeholder="Search employee... ( / )"
                   id="searchPayrollEmployee"
-                  className="w-full  hover:border-apple-charcoal h-10 pl-9 pr-3 rounded-2xl border border-apple-silver
+                  className="w-full  hover:border-apple-charcoal h-10 pl-9 pr-9 rounded-2xl border border-apple-silver 
                     focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
                     text-sm text-apple-charcoal placeholder:text-apple-silver transition-all"
                 />
+
+                {payroll.payrollNameFilter && (
+                  <button
+                    type="button"
+                    onClick={() => payroll.setPayrollNameFilter("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-apple-steel"
+                    aria-label="Clear payroll search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
 
               <input
@@ -231,11 +242,19 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                   <tbody>
                     {payroll.payrollPreviewRows.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={8}
-                          className="px-4 py-6 text-center text-sm text-apple-smoke"
-                        >
-                          No payroll rows match the selected filters.
+                        <td colSpan={8} className="py-10">
+                          <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
+                            <Search size={22} className="text-apple-silver" />
+
+                            <p className="text-sm font-semibold text-apple-charcoal">
+                              No employees found
+                            </p>
+
+                            <p className="text-xs text-apple-steel max-w-sm">
+                              Try clearing filters, searching another name, or
+                              changing the date.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -280,18 +299,18 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                     )}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t border-apple-silver bg-apple-snow/70">
-                      <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                    <tr className="border-t border-apple-silver  bg-apple-charcoal">
+                      <td className="px-4 py-3 text-sm font-semibold text-white">
                         Summary
                       </td>
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3" />
-                      <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-apple-charcoal">
+                      <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
                         {formatPayrollNumber(payroll.payrollTotals.hours)}
                       </td>
                       <td className="px-4 py-3" />
-                      <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-apple-charcoal">
+                      <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
                         {formatPayrollNumber(payroll.payrollTotals.pay)}
                       </td>
                       <td className="px-4 py-3" />

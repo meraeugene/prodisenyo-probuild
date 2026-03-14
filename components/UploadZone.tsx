@@ -114,12 +114,8 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
 
         {!hasFiles ? (
           <div className="py-16 px-8 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-apple-charcoal/5 flex items-center justify-center mb-5 transition-transform duration-200 group-hover:scale-110">
-              <Upload
-                size={28}
-                className="text-apple-charcoal"
-                strokeWidth={1.5}
-              />
+            <div className="w-16 h-16 rounded-2xl bg-apple-charcoal hover:bg-apple-charcoal/90 flex items-center justify-center mb-5 transition-transform duration-200 group-hover:scale-110">
+              <Upload size={28} className="text-white" strokeWidth={1.5} />
             </div>
             <p className="text-[17px] font-semibold text-apple-charcoal tracking-tight mb-1">
               Drop your attendance reports here
@@ -131,7 +127,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
               {["PDF", "XLS", "XLSX", "CSV"].map((f) => (
                 <span
                   key={f}
-                  className="text-2xs font-mono font-medium px-2.5 py-1 rounded-md bg-apple-mist text-apple-ash border border-apple-silver"
+                  className="text-2xs font-mono font-medium px-2.5 py-1 rounded-md bg-apple-charcoal text-white "
                 >
                   {f}
                 </span>
@@ -141,8 +137,8 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
         ) : (
           <div className="p-5 space-y-3">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-apple-charcoal/5 flex items-center justify-center flex-shrink-0">
-                <FileSpreadsheet size={22} className="text-apple-charcoal" />
+              <div className="w-12 h-12 rounded-2xl bg-apple-charcoal flex items-center justify-center flex-shrink-0">
+                <FileSpreadsheet size={22} className="text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-apple-charcoal truncate">
@@ -170,9 +166,9 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                   setFiles([]);
                   setError(null);
                 }}
-                className="w-8 h-8 rounded-full bg-apple-mist hover:bg-apple-silver transition-colors flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/90 transition-colors flex items-center justify-center"
               >
-                <X size={14} className="text-apple-ash" />
+                <X size={14} className="text-white" />
               </button>
             </div>
 
@@ -180,11 +176,11 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
               <p className="text-2xs font-semibold text-apple-steel uppercase tracking-widest">
                 Uploaded Reports
               </p>
-              <div className="space-y-1 rounded-2xl border border-apple-mist bg-apple-snow p-2">
+              <div className="space-y-3 ">
                 {files.map((current) => (
                   <div
                     key={getFileKey(current)}
-                    className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/70"
+                    className="flex items-center justify-between gap-2 border-apple-charcoal border px-2 rounded-lg py-1.5 hover:bg-apple-snow "
                   >
                     <div className="min-w-0">
                       <p className="truncate text-xs text-apple-ash">
@@ -199,11 +195,11 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                         e.stopPropagation();
                         handleRemoveSingle(current);
                       }}
-                      className="h-6 w-6 flex-shrink-0 rounded-full hover:bg-apple-mist transition-colors flex items-center justify-center"
+                      className="h-6 w-6 flex-shrink-0 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/90 transition-colors flex items-center  justify-center"
                       aria-label={`Remove ${current.name}`}
                       title={`Remove ${current.name}`}
                     >
-                      <X size={12} className="text-apple-ash" />
+                      <X size={12} className="text-white" />
                     </button>
                   </div>
                 ))}
@@ -233,7 +229,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
             ${
               hasFiles && !loading
                 ? "bg-apple-charcoal text-white hover:bg-apple-black active:scale-[0.98] shadow-apple"
-                : "bg-apple-mist text-apple-steel cursor-not-allowed"
+                : "bg-apple-charcoal/70 text-white cursor-not-allowed"
             }
           `}
         >

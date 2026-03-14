@@ -34,8 +34,8 @@ export default function StepIndicator({ current }: StepIndicatorProps) {
                     isDone
                       ? "bg-apple-charcoal text-white"
                       : isActive
-                        ? "bg-apple-charcoal text-white ring-4 ring-apple-charcoal/10"
-                        : "bg-apple-mist text-apple-steel border border-apple-silver"
+                        ? "bg-apple-charcoal text-white "
+                        : "bg-apple-mist text-apple-steel"
                   }
                 `}
               >
