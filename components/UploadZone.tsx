@@ -166,7 +166,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                   setFiles([]);
                   setError(null);
                 }}
-                className="w-8 h-8 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/90 transition-colors flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/80 transition-colors flex items-center justify-center"
               >
                 <X size={14} className="text-white" />
               </button>
@@ -180,7 +180,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                 {files.map((current) => (
                   <div
                     key={getFileKey(current)}
-                    className="flex items-center justify-between gap-2 border-apple-charcoal border px-2 rounded-lg py-1.5 hover:bg-apple-snow "
+                    className="flex items-center bg-apple-snow  justify-between gap-2 border-apple-mist shadow-apple-xs border px-2 rounded-lg py-1.5 hover:bg-apple-snow/40  "
                   >
                     <div className="min-w-0">
                       <p className="truncate text-xs text-apple-ash">
@@ -195,7 +195,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                         e.stopPropagation();
                         handleRemoveSingle(current);
                       }}
-                      className="h-6 w-6 flex-shrink-0 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/90 transition-colors flex items-center  justify-center"
+                      className="h-6 w-6 flex-shrink-0 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/80 transition-colors flex items-center  justify-center"
                       aria-label={`Remove ${current.name}`}
                       title={`Remove ${current.name}`}
                     >
@@ -228,8 +228,8 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
             transition-all duration-200
             ${
               hasFiles && !loading
-                ? "bg-apple-charcoal text-white hover:bg-apple-black active:scale-[0.98] shadow-apple"
-                : "bg-apple-charcoal/70 text-white cursor-not-allowed"
+                ? "bg-apple-charcoal text-white hover:bg-apple-charcoal/90 active:scale-[0.98] shadow-apple"
+                : "bg-apple-charcoal text-white cursor-not-allowed"
             }
           `}
         >

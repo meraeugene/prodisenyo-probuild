@@ -150,11 +150,11 @@ function ChartCard({
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl  bg-apple-charcoal p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-white">
+    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <p className="text-[11px] font-semibold uppercase tracking-wider ">
         {label}
       </p>
-      <p className="mt-2 text-lg font-bold tracking-tight text-white sm:text-xl">
+      <p className="mt-2 text-lg font-bold tracking-tight  sm:text-xl">
         {value}
       </p>
     </div>

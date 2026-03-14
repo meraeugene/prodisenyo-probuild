@@ -84,17 +84,17 @@ export default function AttendanceReviewSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-xl  bg-apple-charcoal px-4 py-3 hover:shadow-sm transition"
+                  className="rounded-xl border bg-apple-snow  border-apple-mist shadow-apple-xs  px-4 py-3 hover:shadow-sm transition"
                 >
                   <p className="text-[11px] text-apple-steel uppercase tracking-wider">
                     Branch
                   </p>
 
-                  <p className="text-sm font-semibold text-white mt-1">
+                  <p className="text-sm font-semibold  mt-1">
                     {branch.siteName.split(" ")[0]}
                   </p>
 
-                  <p className="text-sm mt-1 text-white">
+                  <p className="text-sm mt-1 ">
                     {branch.employeeCount}{" "}
                     {branch.employeeCount === 1 ? "employee" : "employees"}
                   </p>
