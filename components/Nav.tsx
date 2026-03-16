@@ -41,7 +41,7 @@ const Nav = ({ step, handleReset, theme, onThemeChange }: NavProps) => {
     <nav className="sticky top-0 z-50 bg-apple-white/80 backdrop-blur-xl border-b border-apple-mist">
       <div className="max-w-[1400px] mx-auto px-5 sm:px-8">
         <div className="h-16 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <div className="flex flex-col items-start gap-1 leading-none justify-self-start">
+          <div className="flex flex-col items-center gap-1 leading-none justify-self-start">
             <span className="text-base font-black tracking-wide text-apple-charcoal">
               PRODISENYO
             </span>
