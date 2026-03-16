@@ -204,7 +204,7 @@ export default function HomePage() {
           onGeneratePayroll={handleGeneratePayroll}
         />
 
-        {payroll.payrollTab === "payroll" && (
+        {payroll.payrollTab === "payroll" && payroll.payrollGenerated && (
           <PayrollInsightsDashboard
             payrollRows={payroll.payrollRows}
             attendanceRows={payroll.payrollAttendanceInputs}
