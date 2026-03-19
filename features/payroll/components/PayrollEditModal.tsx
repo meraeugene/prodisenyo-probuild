@@ -116,6 +116,17 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     return normalizeNumericInput(String(value));
   }
 
+  const loggedSites = Array.from(
+    new Set(
+      payroll.editingPayrollLogs
+        .map((log) => log.site.trim())
+        .filter((site) => site.length > 0),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const loggedSitesLabel =
+    loggedSites.length > 0 ? loggedSites.join(", ") : editingPayrollRow.site;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center">
       <div className="w-full max-w-6xl max-h-[88vh] overflow-y-auto rounded-lg border border-apple-mist bg-white shadow-apple-xs">
@@ -141,7 +152,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <span className="text-apple-silver">&middot;</span>
 
               {/* Site */}
-              <span className="text-sm ">{editingPayrollRow.site}</span>
+              <span className="text-sm ">{loggedSitesLabel}</span>
             </div>
           </div>
           <button
@@ -563,6 +574,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 <tr className="border-b border-apple-mist">
                   {[
                     "Date/Week",
+                    "Site",
                     "Time1 In",
                     "Time1 Out",
                     "Time2 In",
@@ -586,20 +598,23 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 {payroll.editingPayrollLogs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-3 py-5 text-center text-sm text-apple-smoke"
                     >
                       No attendance logs found for this worker.
                     </td>
                   </tr>
                 ) : (
-                  payroll.editingPayrollLogs.map((log) => (
+                  payroll.editingPayrollLogs.map((log, index) => (
                     <tr
-                      key={`${log.date}-${log.employee}`}
+                      key={`${log.date}-${log.employee}-${log.site}-${index}`}
                       className="border-b  border-apple-mist/60 last:border-0 odd:bg-apple-snow/40"
                     >
                       <td className="px-3 py-2.5 text-sm  text-apple-charcoal">
                         {toWeekLabel(log.date)}
+                      </td>
+                      <td className="px-3 py-2.5 text-xs text-apple-smoke">
+                        {log.site || "-"}
                       </td>
 
                       <td className="px-3 py-2.5 text-sm text-apple-charcoal">

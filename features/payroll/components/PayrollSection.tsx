@@ -1,11 +1,14 @@
-﻿"use client";
+"use client";
 
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Calculator, Search, X } from "lucide-react";
 import { highlight } from "@/components/Highlight";
+import type { PayrollRow } from "@/lib/payrollEngine";
 import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { Step2Sort } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
+import { buildVisiblePages } from "@/features/shared/pagination";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 
 interface PayrollSectionProps {
@@ -15,12 +18,161 @@ interface PayrollSectionProps {
   onGeneratePayroll: () => void;
 }
 
+const PAYROLL_PREVIEW_LIMIT = 10;
+const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
+  pbryanm: "bryanmamerto",
+};
+
+interface GroupedEmployeePayrollRow {
+  name: string;
+  sites: PayrollRow[];
+  totalHours: number;
+  totalPay: number;
+}
+
+function normalizeEmployeeName(name: string): string {
+  const normalized = name.trim().toLowerCase();
+  const compact = normalized.replace(/[^a-z0-9]/g, "");
+  return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
+}
+
+function groupByEmployee(rows: PayrollRow[]): GroupedEmployeePayrollRow[] {
+  const grouped = new Map<string, GroupedEmployeePayrollRow>();
+
+  for (const row of rows) {
+    const key = normalizeEmployeeName(row.worker);
+    const existing = grouped.get(key);
+
+    if (!existing) {
+      grouped.set(key, {
+        name: row.worker,
+        sites: [row],
+        totalHours: row.hoursWorked,
+        totalPay: row.totalPay,
+      });
+      continue;
+    }
+
+    existing.sites.push(row);
+    existing.totalHours += row.hoursWorked;
+    existing.totalPay += row.totalPay;
+
+    if (row.worker.length > existing.name.length) {
+      existing.name = row.worker;
+    }
+  }
+
+  return Array.from(grouped.values()).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+}
+
+function summarizeGroupedSites(rows: PayrollRow[]): Array<{
+  site: string;
+  hours: number;
+  pay: number;
+}> {
+  const summary = new Map<string, { site: string; hours: number; pay: number }>();
+
+  for (const row of rows) {
+    const site = row.site || "Unknown Site";
+    const existing = summary.get(site);
+
+    if (!existing) {
+      summary.set(site, {
+        site,
+        hours: row.hoursWorked,
+        pay: row.totalPay,
+      });
+      continue;
+    }
+
+    existing.hours += row.hoursWorked;
+    existing.pay += row.totalPay;
+  }
+
+  return Array.from(summary.values()).sort((a, b) => a.site.localeCompare(b.site));
+}
+
 export default function PayrollSection({
   dailyRowsCount,
   availableSites,
   payroll,
   onGeneratePayroll,
 }: PayrollSectionProps) {
+  const groupedPayrollRows = useMemo(
+    () => groupByEmployee(payroll.filteredPayrollRows),
+    [payroll.filteredPayrollRows],
+  );
+
+  const groupedPayrollTotalPages = useMemo(
+    () => Math.max(1, Math.ceil(groupedPayrollRows.length / PAYROLL_PREVIEW_LIMIT)),
+    [groupedPayrollRows.length],
+  );
+
+  const groupedPayrollPage = Math.min(payroll.payrollPage, groupedPayrollTotalPages);
+  const groupedPayrollPreviewStart = (groupedPayrollPage - 1) * PAYROLL_PREVIEW_LIMIT;
+  const groupedPayrollPreviewEnd = groupedPayrollPreviewStart + PAYROLL_PREVIEW_LIMIT;
+
+  const groupedPayrollPreviewRows = useMemo(
+    () =>
+      groupedPayrollRows.slice(
+        groupedPayrollPreviewStart,
+        groupedPayrollPreviewEnd,
+      ),
+    [groupedPayrollRows, groupedPayrollPreviewStart, groupedPayrollPreviewEnd],
+  );
+
+  const groupedPayrollPages = useMemo(
+    () => buildVisiblePages(groupedPayrollPage, groupedPayrollTotalPages),
+    [groupedPayrollPage, groupedPayrollTotalPages],
+  );
+
+  const groupedPayrollTotals = useMemo(
+    () =>
+      groupedPayrollRows.reduce(
+        (acc, row) => {
+          acc.hours += row.totalHours;
+          acc.pay += row.totalPay;
+          return acc;
+        },
+        { hours: 0, pay: 0 },
+      ),
+    [groupedPayrollRows],
+  );
+
+  useEffect(() => {
+    if (payroll.payrollTab !== "payroll") return;
+    if (payroll.payrollPage <= groupedPayrollTotalPages) return;
+    payroll.setPayrollPage(groupedPayrollTotalPages);
+  }, [
+    payroll.payrollTab,
+    payroll.payrollPage,
+    groupedPayrollTotalPages,
+    payroll.setPayrollPage,
+  ]);
+
+  const payrollActiveRowsCount =
+    payroll.payrollTab === "payroll"
+      ? groupedPayrollRows.length
+      : payroll.payrollActiveRowsCount;
+  const payrollPreviewStart =
+    payroll.payrollTab === "payroll"
+      ? groupedPayrollPreviewStart
+      : payroll.payrollPreviewStart;
+  const payrollPreviewEnd =
+    payroll.payrollTab === "payroll"
+      ? groupedPayrollPreviewEnd
+      : payroll.payrollPreviewEnd;
+  const payrollTotalPages =
+    payroll.payrollTab === "payroll"
+      ? groupedPayrollTotalPages
+      : payroll.payrollTotalPages;
+  const payrollPage =
+    payroll.payrollTab === "payroll" ? groupedPayrollPage : payroll.payrollPage;
+  const payrollPages =
+    payroll.payrollTab === "payroll" ? groupedPayrollPages : payroll.payrollPages;
+
   if (dailyRowsCount === 0) return null;
 
   return (
@@ -214,35 +366,28 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                 <table className="w-full text-sm table-auto min-w-[900px]">
                   <thead>
                     <tr className="border-b border-apple-mist">
-                      {[
-                        "Worker",
-                        "Role",
-                        "Site",
-                        "Date",
-                        "Hours",
-                        "Rate",
-                        "Total Pay",
-                        "Edit",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
-                            h === "Hours" || h === "Rate" || h === "Total Pay"
-                              ? "text-right"
-                              : h === "Edit"
-                                ? "text-center"
-                                : "text-left"
-                          }`}
-                        >
-                          {h}
-                        </th>
-                      ))}
+                      {["Employee", "Role", "Site Breakdown", "Rate", "Total Pay", "Edit"].map(
+                        (h) => (
+                          <th
+                            key={h}
+                            className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                              h === "Rate" || h === "Total Pay"
+                                ? "text-right"
+                                : h === "Edit"
+                                  ? "text-center"
+                                  : "text-left"
+                            }`}
+                          >
+                            {h}
+                          </th>
+                        ),
+                      )}
                     </tr>
                   </thead>
                   <tbody>
-                    {payroll.payrollPreviewRows.length === 0 ? (
+                    {groupedPayrollPreviewRows.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-10">
+                        <td colSpan={6} className="py-10">
                           <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
                             <Search size={22} className="text-apple-silver" />
 
@@ -258,44 +403,62 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                         </td>
                       </tr>
                     ) : (
-                      payroll.payrollPreviewRows.map((row) => (
-                        <tr
-                          key={row.id}
-                          className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
-                        >
-                          <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
-                            {highlight(row.worker, payroll.payrollNameFilter)}
-                          </td>
+                      groupedPayrollPreviewRows.map((employee) => {
+                        const representativeRow = employee.sites[0] ?? null;
+                        const siteBreakdown = summarizeGroupedSites(employee.sites);
 
-                          <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
-                            {row.role}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-apple-smoke">
-                            {row.site.split(" ")[0]}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-apple-smoke">
-                            {row.date || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
-                            {formatPayrollNumber(row.hoursWorked)}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
-                            {formatPayrollNumber(row.rate)}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
-                            {formatPayrollNumber(row.totalPay)}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => payroll.openPayrollEditModal(row)}
-                              className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
-                            >
-                              Edit
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                        return (
+                          <tr
+                            key={representativeRow?.id ?? employee.name}
+                            className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                          >
+                            <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
+                              {highlight(employee.name, payroll.payrollNameFilter)}
+                            </td>
+                            <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
+                              {representativeRow?.role ?? "-"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              <div className="space-y-1">
+                                {siteBreakdown.map((siteRow) => (
+                                  <div
+                                    key={`${employee.name}-${siteRow.site}`}
+                                    className="flex items-center justify-between gap-3 text-sm text-apple-smoke"
+                                  >
+                                    <span className="font-semibold text-apple-charcoal">
+                                      {siteRow.site}
+                                    </span>
+                                    <span className="font-mono text-sm font-semibold text-apple-charcoal">
+                                      {formatPayrollNumber(siteRow.hours)} HRS
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+
+                            <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
+                              {formatPayrollNumber(representativeRow?.rate ?? 0)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
+                              {formatPayrollNumber(employee.totalPay)}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!representativeRow) return;
+                                  payroll.openPayrollEditModal(representativeRow);
+                                }}
+                                disabled={!representativeRow}
+                                className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                              >
+                                Edit
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                   <tfoot>
@@ -307,11 +470,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
-                        {formatPayrollNumber(payroll.payrollTotals.hours)}
-                      </td>
-                      <td className="px-4 py-3" />
-                      <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
-                        {formatPayrollNumber(payroll.payrollTotals.pay)}
+                        {formatPayrollNumber(groupedPayrollTotals.pay)}
                       </td>
                       <td className="px-4 py-3" />
                     </tr>
@@ -377,31 +536,31 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <p className="text-sm  text-apple-steel">
                 Showing{" "}
-                {payroll.payrollActiveRowsCount === 0
+                {payrollActiveRowsCount === 0
                   ? 0
-                  : payroll.payrollPreviewStart + 1}
+                  : payrollPreviewStart + 1}
                 -
                 {Math.min(
-                  payroll.payrollPreviewEnd,
-                  payroll.payrollActiveRowsCount,
+                  payrollPreviewEnd,
+                  payrollActiveRowsCount,
                 )}{" "}
-                of {payroll.payrollActiveRowsCount}{" "}
+                of {payrollActiveRowsCount}{" "}
                 {payroll.payrollTab === "payroll"
-                  ? "employee payroll rows"
+                  ? "employee rows"
                   : "attendance log rows"}
                 .
               </p>
 
-              {payroll.payrollActiveRowsCount > 10 && (
+              {payrollActiveRowsCount > PAYROLL_PREVIEW_LIMIT && (
                 <div className="flex items-center gap-1 flex-wrap">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     whileHover={{ scale: 1.05 }}
                     onClick={() => payroll.setPayrollPage(1)}
-                    disabled={payroll.payrollPage === 1}
+                    disabled={payrollPage === 1}
                     className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
 ${
-  payroll.payrollPage === 1
+  payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
     : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
 }`}
@@ -415,10 +574,10 @@ ${
                     onClick={() =>
                       payroll.setPayrollPage((p) => Math.max(1, p - 1))
                     }
-                    disabled={payroll.payrollPage === 1}
+                    disabled={payrollPage === 1}
                     className={`px-3 h-8 rounded-xl text-xs font-semibold border
 ${
-  payroll.payrollPage === 1
+  payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
     : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
 }`}
@@ -426,7 +585,7 @@ ${
                     <ArrowLeft size={16} />
                   </motion.button>
 
-                  {payroll.payrollPages.map((p) => (
+                  {payrollPages.map((p) => (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       whileHover={{ scale: 1.05 }}
@@ -434,7 +593,7 @@ ${
                       onClick={() => payroll.setPayrollPage(p)}
                       className={`w-8 h-8 rounded-lg text-xs font-semibold border transition
 ${
-  payroll.payrollPage === p
+  payrollPage === p
     ? "bg-apple-charcoal text-white border-apple-charcoal"
     : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
 }`}
@@ -448,13 +607,13 @@ ${
                     whileHover={{ scale: 1.05 }}
                     onClick={() =>
                       payroll.setPayrollPage((p) =>
-                        Math.min(payroll.payrollTotalPages, p + 1),
+                        Math.min(payrollTotalPages, p + 1),
                       )
                     }
-                    disabled={payroll.payrollPage === payroll.payrollTotalPages}
+                    disabled={payrollPage === payrollTotalPages}
                     className={`px-3 h-8 rounded-xl text-xs font-semibold border
 ${
-  payroll.payrollPage === payroll.payrollTotalPages
+  payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
     : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
 }`}
@@ -466,12 +625,12 @@ ${
                     whileTap={{ scale: 0.95 }}
                     whileHover={{ scale: 1.05 }}
                     onClick={() =>
-                      payroll.setPayrollPage(payroll.payrollTotalPages)
+                      payroll.setPayrollPage(payrollTotalPages)
                     }
-                    disabled={payroll.payrollPage === payroll.payrollTotalPages}
+                    disabled={payrollPage === payrollTotalPages}
                     className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
 ${
-  payroll.payrollPage === payroll.payrollTotalPages
+  payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
     : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
 }`}
@@ -487,3 +646,4 @@ ${
     </section>
   );
 }
+

@@ -30,6 +30,16 @@ export interface PayrollFilters {
   sort: Step2Sort;
 }
 
+const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
+  pbryanm: "bryanmamerto",
+};
+
+function normalizeEmployeeNameForGrouping(name: string): string {
+  const normalized = name.trim().toLowerCase();
+  const compact = normalized.replace(/[^a-z0-9]/g, "");
+  return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
+}
+
 export function mapDailyRowsToAttendanceInputs(
   dailyRows: DailyLogRow[],
 ): AttendanceRecordInput[] {
@@ -188,15 +198,20 @@ export function buildEditingPayrollLogs(
 ): DailyLogRow[] {
   if (!editingPayrollRow) return [];
 
+  const editingWorkerKey = normalizeEmployeeNameForGrouping(editingPayrollRow.worker);
+
   const matched = dailyRows.filter((row) => {
     const identity = parsePayrollIdentity(row.employee);
-    return (
-      identity.role === editingPayrollRow.role &&
-      identity.name === editingPayrollRow.worker
-    );
+    return normalizeEmployeeNameForGrouping(identity.name) === editingWorkerKey;
   });
 
-  matched.sort((a, b) => a.date.localeCompare(b.date));
+  matched.sort((a, b) => {
+    const byDate = a.date.localeCompare(b.date);
+    if (byDate !== 0) return byDate;
+    const bySite = a.site.localeCompare(b.site);
+    if (bySite !== 0) return bySite;
+    return a.employee.localeCompare(b.employee);
+  });
 
   const dateRange = expandDateSummary(
     editingPayrollRow.date,
@@ -210,17 +225,25 @@ export function buildEditingPayrollLogs(
 
   if (allDates.length === 0) return matched;
 
-  const byDate = new Map<string, DailyLogRow>();
+  const byDate = new Map<string, DailyLogRow[]>();
   for (const row of matched) {
-    if (!byDate.has(row.date)) byDate.set(row.date, row);
+    const existing = byDate.get(row.date);
+    if (existing) {
+      existing.push(row);
+      continue;
+    }
+
+    byDate.set(row.date, [row]);
   }
 
   const employeeLabel = matched[0]?.employee ?? editingPayrollRow.worker;
-  const siteLabel = matched[0]?.site ?? "";
 
-  return allDates.map(
-    (date) =>
-      byDate.get(date) ?? {
+  return allDates.flatMap((date) => {
+    const logs = byDate.get(date);
+    if (logs && logs.length > 0) return logs;
+
+    return [
+      {
         date,
         employee: employeeLabel,
         time1In: "",
@@ -230,9 +253,10 @@ export function buildEditingPayrollLogs(
         otIn: "",
         otOut: "",
         hours: 0,
-        site: siteLabel,
+        site: "",
       },
-  );
+    ];
+  });
 }
 
 export function buildEditingPayrollSummary(
