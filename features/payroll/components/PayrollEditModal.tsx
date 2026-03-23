@@ -29,11 +29,25 @@ import {
 import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
 
 const EMPLOYEE_ANALYTICS_COLORS = [
-  "rgb(var(--theme-chart-2))",
-  "rgb(var(--theme-chart-3))",
-  "rgb(var(--theme-chart-4))",
-  "rgb(var(--theme-chart-5))",
+  "#2563eb",
+  "#ef4444",
+  "#14b8a6",
+  "#f59e0b",
+  "#a855f7",
 ];
+
+const DAILY_HOURS_LINE_COLOR = "#1d4ed8";
+const DAILY_HOURS_AREA_COLOR = "#3b82f6";
+const DAILY_HOURS_GRID_COLOR = "#bfdbfe";
+
+function getAttendanceBreakdownColor(name: string, index: number): string {
+  const key = name.trim().toLowerCase();
+  if (key.includes("attendance")) return "#2563eb";
+  if (key.includes("absence")) return "#ef4444";
+  if (key.includes("leave")) return "#14b8a6";
+  if (key.includes("business trip")) return "#f59e0b";
+  return EMPLOYEE_ANALYTICS_COLORS[index % EMPLOYEE_ANALYTICS_COLORS.length];
+}
 
 function chartTickFormatter(value: string): string {
   if (!value) return "";
@@ -335,20 +349,20 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           >
                             <stop
                               offset="5%"
-                              stopColor="rgb(var(--theme-chart-2))"
-                              stopOpacity={0.24}
+                              stopColor={DAILY_HOURS_AREA_COLOR}
+                              stopOpacity={0.5}
                             />
                             <stop
                               offset="95%"
-                              stopColor="rgb(var(--theme-chart-2))"
-                              stopOpacity={0.02}
+                              stopColor={DAILY_HOURS_AREA_COLOR}
+                              stopOpacity={0.1}
                             />
                           </linearGradient>
                         </defs>
                         <CartesianGrid
                           strokeDasharray="4 4"
                           vertical={false}
-                          stroke="rgb(var(--theme-chart-grid))"
+                          stroke={DAILY_HOURS_GRID_COLOR}
                         />
                         <XAxis
                           dataKey="date"
@@ -363,10 +377,19 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           axisLine={false}
                           tickLine={false}
                           tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                          domain={[
+                            0,
+                            (dataMax: number) => Math.max(8, Math.ceil(dataMax + 1)),
+                          ]}
+                          tickCount={5}
                           tickMargin={8}
                         />
                         <Tooltip
-                          cursor={{ stroke: "#A8CFD2", strokeWidth: 1.5 }}
+                          cursor={{
+                            stroke: DAILY_HOURS_LINE_COLOR,
+                            strokeWidth: 2,
+                            strokeDasharray: "5 5",
+                          }}
                           content={
                             <AnalyticsTooltip
                               valueFormatter={(value) =>
@@ -385,17 +408,19 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         <Line
                           type="monotone"
                           dataKey="hoursWorked"
-                          stroke="rgb(var(--theme-chart-2))"
-                          strokeWidth={2.4}
+                          stroke={DAILY_HOURS_LINE_COLOR}
+                          strokeWidth={3}
                           dot={{
-                            r: 2.5,
+                            r: 3,
                             fill: "#fff",
-                            stroke: "rgb(var(--theme-chart-2))",
+                            stroke: DAILY_HOURS_LINE_COLOR,
+                            strokeWidth: 2,
                           }}
                           activeDot={{
-                            r: 4,
-                            fill: "rgb(var(--theme-chart-2))",
+                            r: 5,
+                            fill: DAILY_HOURS_LINE_COLOR,
                             stroke: "#fff",
+                            strokeWidth: 2,
                           }}
                           animationDuration={1100}
                         />
@@ -437,9 +462,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                               <Cell
                                 key={`${entry.name}-${index}`}
                                 fill={
-                                  EMPLOYEE_ANALYTICS_COLORS[
-                                    index % EMPLOYEE_ANALYTICS_COLORS.length
-                                  ]
+                                  getAttendanceBreakdownColor(entry.name, index)
                                 }
                               />
                             ),
@@ -467,10 +490,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       <span
                         className="h-2.5 w-2.5 rounded-full"
                         style={{
-                          backgroundColor:
-                            EMPLOYEE_ANALYTICS_COLORS[
-                              index % EMPLOYEE_ANALYTICS_COLORS.length
-                            ],
+                          backgroundColor: getAttendanceBreakdownColor(
+                            item.name,
+                            index,
+                          ),
                         }}
                       />
                       <span className="truncate text-[11px] text-apple-smoke">
