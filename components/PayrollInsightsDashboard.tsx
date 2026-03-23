@@ -36,6 +36,19 @@ const THEME_BRANCH_COLORS = [
   "rgb(var(--theme-chart-1))",
 ];
 
+const PIE_CHART_COLORS = [
+  "#2563eb",
+  "#0891b2",
+  "#14b8a6",
+  "#16a34a",
+  "#84cc16",
+  "#f59e0b",
+  "#c2410c",
+  "#ef4444",
+  "#ec4899",
+  "#a855f7",
+];
+
 const STACK_COLORS = {
   regular: "rgb(var(--theme-chart-2))",
   overtime: "rgb(var(--theme-chart-3))",
@@ -64,6 +77,10 @@ function extractBranchName(value: string): string {
 
 function getBranchColor(index: number) {
   return THEME_BRANCH_COLORS[index % THEME_BRANCH_COLORS.length];
+}
+
+function getPieColor(index: number) {
+  return PIE_CHART_COLORS[index % PIE_CHART_COLORS.length];
 }
 
 type CustomChartTooltipProps = TooltipProps<number, string> & {
@@ -176,7 +193,7 @@ export default function PayrollInsightsDashboard({
     return insights.payrollDistributionByProject.map((item, index) => ({
       ...item,
       shortName: extractBranchName(item.name),
-      fill: getBranchColor(index),
+      fill: getPieColor(index),
     }));
   }, [insights.payrollDistributionByProject]);
 
