@@ -40,6 +40,18 @@ export interface PayrollClockInConsistencyItem {
   timeInLabel: string;
 }
 
+export interface PaidHolidayItem {
+  date: string;
+  name: string;
+  source: "ph" | "manual";
+}
+
+export interface PayrollDateRange {
+  start: string;
+  end: string;
+  year: number;
+}
+
 export type LogHourOverrideMap = Record<string, number>;
 
 export interface PayrollEditContext {

@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Calculator, Search, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Calculator,
+  Search,
+  X,
+} from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
 import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { Step2Sort } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
+import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
 import { buildVisiblePages } from "@/features/shared/pagination";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 
@@ -30,10 +38,82 @@ interface GroupedEmployeePayrollRow {
   totalPay: number;
 }
 
+const HOURS_PER_WORKDAY = 8;
+const FIXED_RATE_PER_DAY = 500;
+
 function normalizeEmployeeName(name: string): string {
   const normalized = name.trim().toLowerCase();
   const compact = normalized.replace(/[^a-z0-9]/g, "");
   return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
+}
+
+function computeDaysWorked(totalHours: number): number {
+  if (totalHours <= 0) return 0;
+  return Math.floor(totalHours / HOURS_PER_WORKDAY);
+}
+
+function formatDaysLabel(daysWorked: number): string {
+  return `${daysWorked.toLocaleString("en-PH")} day${
+    daysWorked === 1 ? "" : "s"
+  }`;
+}
+
+function extractSiteName(rawSite: string): string {
+  const cleaned = rawSite.trim();
+  if (!cleaned) return "Unknown Site";
+  return cleaned.replace(/\s+\d{4}\s*TO\s*\d{4}\b/i, "").trim() || "Unknown Site";
+}
+
+function extractPayrollPeriod(value: string): { start: string; end: string } | null {
+  const normalized = value.trim();
+  if (!normalized) return null;
+
+  const compactRange = normalized.match(/(\d{4})\s*TO\s*(\d{4})/i);
+  if (compactRange) {
+    return { start: compactRange[1], end: compactRange[2] };
+  }
+
+  const isoRange = normalized.match(
+    /(\d{4})-(\d{2})-(\d{2})\s*to\s*(\d{4})-(\d{2})-(\d{2})/i,
+  );
+  if (isoRange) {
+    return {
+      start: `${isoRange[2]}${isoRange[3]}`,
+      end: `${isoRange[5]}${isoRange[6]}`,
+    };
+  }
+
+  return null;
+}
+
+function formatPayrollPeriodLabel(start: string, end: string): string {
+  const startMonth = Number.parseInt(start.slice(0, 2), 10);
+  const startDay = Number.parseInt(start.slice(2, 4), 10);
+  const endMonth = Number.parseInt(end.slice(0, 2), 10);
+  const endDay = Number.parseInt(end.slice(2, 4), 10);
+
+  const isValidDate = (month: number, day: number) =>
+    Number.isFinite(month) &&
+    Number.isFinite(day) &&
+    month >= 1 &&
+    month <= 12 &&
+    day >= 1 &&
+    day <= 31;
+
+  if (!isValidDate(startMonth, startDay) || !isValidDate(endMonth, endDay)) {
+    return `${start} - ${end}`;
+  }
+
+  const year = 2026;
+  const startDate = new Date(year, startMonth - 1, startDay);
+  const endDate = new Date(year, endMonth - 1, endDay);
+
+  const fullFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "2-digit",
+  });
+
+  return `${fullFormatter.format(startDate)} - ${fullFormatter.format(endDate)}`;
 }
 
 function groupByEmployee(rows: PayrollRow[]): GroupedEmployeePayrollRow[] {
@@ -67,28 +147,20 @@ function groupByEmployee(rows: PayrollRow[]): GroupedEmployeePayrollRow[] {
   );
 }
 
-function summarizeGroupedSites(rows: PayrollRow[]): Array<{
-  site: string;
-  hours: number;
-  pay: number;
-}> {
-  const summary = new Map<string, { site: string; hours: number; pay: number }>();
+function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string }> {
+  const summary = new Map<string, { site: string }>();
 
   for (const row of rows) {
-    const site = row.site || "Unknown Site";
-    const existing = summary.get(site);
+    const normalizedSites = (row.site || "Unknown Site")
+      .split(",")
+      .map((site) => extractSiteName(site))
+      .filter((site) => site.length > 0);
 
-    if (!existing) {
-      summary.set(site, {
-        site,
-        hours: row.hoursWorked,
-        pay: row.totalPay,
-      });
-      continue;
+    for (const site of normalizedSites) {
+      if (!summary.has(site)) {
+        summary.set(site, { site });
+      }
     }
-
-    existing.hours += row.hoursWorked;
-    existing.pay += row.totalPay;
   }
 
   return Array.from(summary.values()).sort((a, b) => a.site.localeCompare(b.site));
@@ -100,6 +172,8 @@ export default function PayrollSection({
   payroll,
   onGeneratePayroll,
 }: PayrollSectionProps) {
+  const [showPaidHolidayModal, setShowPaidHolidayModal] = useState(false);
+
   const groupedPayrollRows = useMemo(
     () => groupByEmployee(payroll.filteredPayrollRows),
     [payroll.filteredPayrollRows],
@@ -128,15 +202,49 @@ export default function PayrollSection({
     [groupedPayrollPage, groupedPayrollTotalPages],
   );
 
+  const payrollPeriodLabel = useMemo(() => {
+    const periodCounts = new Map<string, number>();
+
+    for (const row of payroll.filteredPayrollRows) {
+      const rowSites = (row.site || "Unknown Site")
+        .split(",")
+        .map((site) => site.trim())
+        .filter((site) => site.length > 0);
+
+      for (const site of rowSites) {
+        const parsed = extractPayrollPeriod(site);
+        if (!parsed) continue;
+        const key = `${parsed.start}-${parsed.end}`;
+        periodCounts.set(key, (periodCounts.get(key) ?? 0) + 1);
+      }
+
+      if (periodCounts.size > 0) continue;
+
+      const fromDate = extractPayrollPeriod(row.date);
+      if (!fromDate) continue;
+      const key = `${fromDate.start}-${fromDate.end}`;
+      periodCounts.set(key, (periodCounts.get(key) ?? 0) + 1);
+    }
+
+    if (periodCounts.size === 0) return null;
+
+    const mostCommon = Array.from(periodCounts.entries()).sort(
+      (a, b) => b[1] - a[1],
+    )[0];
+
+    if (!mostCommon) return null;
+    const [start, end] = mostCommon[0].split("-");
+    return formatPayrollPeriodLabel(start, end);
+  }, [payroll.filteredPayrollRows]);
+
   const groupedPayrollTotals = useMemo(
     () =>
       groupedPayrollRows.reduce(
         (acc, row) => {
-          acc.hours += row.totalHours;
           acc.pay += row.totalPay;
           return acc;
         },
-        { hours: 0, pay: 0 },
+        { pay: 0 },
       ),
     [groupedPayrollRows],
   );
@@ -145,12 +253,7 @@ export default function PayrollSection({
     if (payroll.payrollTab !== "payroll") return;
     if (payroll.payrollPage <= groupedPayrollTotalPages) return;
     payroll.setPayrollPage(groupedPayrollTotalPages);
-  }, [
-    payroll.payrollTab,
-    payroll.payrollPage,
-    groupedPayrollTotalPages,
-    payroll.setPayrollPage,
-  ]);
+  }, [payroll, groupedPayrollTotalPages]);
 
   const payrollActiveRowsCount =
     payroll.payrollTab === "payroll"
@@ -253,6 +356,14 @@ export default function PayrollSection({
                   className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Export Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPaidHolidayModal(true)}
+                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition inline-flex items-center gap-1.5"
+                >
+                  <CalendarDays size={14} />
+                  Paid Holidays
                 </button>
                 <button
                   type="button"
@@ -362,16 +473,36 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
             </div>
 
             {payroll.payrollTab === "payroll" ? (
+              <>
+                {payrollPeriodLabel && (
+                  <div className="inline-flex items-center rounded-xl border border-apple-silver bg-apple-snow px-3 py-1.5 text-sm font-semibold text-apple-charcoal">
+                    Payroll Period: {payrollPeriodLabel}
+                  </div>
+                )}
+                <div className="inline-flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                  Paid Holidays: {payroll.payableHolidayDays} day
+                  {payroll.payableHolidayDays === 1 ? "" : "s"}
+                </div>
               <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
-                <table className="w-full text-sm table-auto min-w-[900px]">
+                <table className="w-full text-sm table-auto min-w-[1020px]">
                   <thead>
                     <tr className="border-b border-apple-mist">
-                      {["Employee", "Role", "Site Breakdown", "Rate", "Total Pay", "Edit"].map(
+                      {[
+                        "Employee",
+                        "Role",
+                        "Site",
+                        "Days Worked",
+                        "Rate/Day",
+                        "Total Pay",
+                        "Edit",
+                      ].map(
                         (h) => (
                           <th
                             key={h}
                             className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
-                              h === "Rate" || h === "Total Pay"
+                              h === "Days Worked" ||
+                              h === "Rate/Day" ||
+                              h === "Total Pay"
                                 ? "text-right"
                                 : h === "Edit"
                                   ? "text-center"
@@ -387,7 +518,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                   <tbody>
                     {groupedPayrollPreviewRows.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-10">
+                        <td colSpan={7} className="py-10">
                           <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
                             <Search size={22} className="text-apple-silver" />
 
@@ -406,6 +537,10 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                       groupedPayrollPreviewRows.map((employee) => {
                         const representativeRow = employee.sites[0] ?? null;
                         const siteBreakdown = summarizeGroupedSites(employee.sites);
+                        const employeeDaysWorked = computeDaysWorked(
+                          employee.totalHours,
+                        );
+                        const employeeTotalPay = employee.totalPay;
 
                         return (
                           <tr
@@ -420,28 +555,19 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                             </td>
 
                             <td className="px-4 py-3">
-                              <div className="space-y-1">
-                                {siteBreakdown.map((siteRow) => (
-                                  <div
-                                    key={`${employee.name}-${siteRow.site}`}
-                                    className="flex items-center justify-between gap-3 text-sm text-apple-smoke"
-                                  >
-                                    <span className="font-semibold text-apple-charcoal">
-                                      {siteRow.site}
-                                    </span>
-                                    <span className="font-mono text-sm font-semibold text-apple-charcoal">
-                                      {formatPayrollNumber(siteRow.hours)} HRS
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
+                              <p className="text-sm font-semibold text-apple-charcoal">
+                                {siteBreakdown.map((siteRow) => siteRow.site).join(", ")}
+                              </p>
                             </td>
 
+                            <td className="px-4 py-3 text-sm font-mono text-apple-charcoal text-right">
+                              {formatDaysLabel(employeeDaysWorked)}
+                            </td>
                             <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
-                              {formatPayrollNumber(representativeRow?.rate ?? 0)}
+                              {formatPayrollNumber(FIXED_RATE_PER_DAY)}
                             </td>
                             <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
-                              {formatPayrollNumber(employee.totalPay)}
+                              {formatPayrollNumber(employeeTotalPay)}
                             </td>
                             <td className="px-4 py-3 text-center">
                               <button
@@ -469,6 +595,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3" />
                       <td className="px-4 py-3" />
+                      <td className="px-4 py-3" />
                       <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
                         {formatPayrollNumber(groupedPayrollTotals.pay)}
                       </td>
@@ -477,6 +604,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                   </tfoot>
                 </table>
               </div>
+              </>
             ) : (
               <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
                 <table className="w-full text-sm table-auto min-w-[760px]">
@@ -643,6 +771,18 @@ ${
           </div>
         )}
       </div>
+
+      <PaidHolidayModal
+        show={showPaidHolidayModal}
+        holidays={payroll.paidHolidays}
+        periodStart={payroll.payrollDateRange?.start ?? null}
+        periodEnd={payroll.payrollDateRange?.end ?? null}
+        onClose={() => setShowPaidHolidayModal(false)}
+        onAddManualHoliday={payroll.addManualPaidHoliday}
+        onRemoveHoliday={payroll.removePaidHoliday}
+        onLoadPhilippineHolidays={payroll.loadPhilippinePaidHolidays}
+        onClearHolidays={payroll.clearPaidHolidays}
+      />
     </section>
   );
 }
