@@ -195,7 +195,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                         e.stopPropagation();
                         handleRemoveSingle(current);
                       }}
-                      className="h-6 w-6 flex-shrink-0 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/80 transition-colors flex items-center  justify-center"
+                      className="h-6 w-6 flex-shrink-0 rounded-full bg-gray-600 hover:bg-apple-charcoal/90 transition-colors flex items-center  justify-center"
                       aria-label={`Remove ${current.name}`}
                       title={`Remove ${current.name}`}
                     >

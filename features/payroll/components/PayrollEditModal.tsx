@@ -22,6 +22,8 @@ import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { DailyLogRow } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
 import {
+  extractSiteName,
+  formatPayrollPeriodFromText,
   formatPayrollNumber,
   normalizeNumericInput,
   toWeekLabel,
@@ -62,7 +64,6 @@ interface PaidLeaveEntry {
   pay: number;
   notes: string;
 }
-
 
 function parseNonNegativeValue(value: string): number {
   const parsed = Number.parseFloat(value);
@@ -181,20 +182,38 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     return normalizeNumericInput(String(value));
   }
 
+  function getHoursNumber(log: DailyLogRow): number {
+    const key = getLogOverrideKey(log);
+    const value = payroll.logHourOverrides[key] ?? log.hours;
+    if (!Number.isFinite(value)) return 0;
+    return value;
+  }
+
   const loggedSites = Array.from(
     new Set(
       payroll.editingPayrollLogs
-        .map((log) => log.site.trim())
+        .map((log) => extractSiteName(log.site))
         .filter((site) => site.length > 0),
     ),
   ).sort((a, b) => a.localeCompare(b));
 
   const loggedSitesLabel =
-    loggedSites.length > 0 ? loggedSites.join(", ") : editingPayrollRow.site;
+    loggedSites.length > 0
+      ? loggedSites.join(", ")
+      : extractSiteName(editingPayrollRow.site) || "-";
+  const primarySiteSource =
+    payroll.editingPayrollLogs.find(
+      (log) => extractSiteName(log.site).length > 0,
+    )?.site ?? editingPayrollRow.site;
+  const primarySitePeriodLabel =
+    formatPayrollPeriodFromText(primarySiteSource) ??
+    formatPayrollPeriodFromText(editingPayrollRow.date);
   const minimumPaidHours = 8;
   const fixedDailyPay = 500;
   const currentLogsForPay = payroll.editingPayrollLogsForAnalytics;
-  const editingDates = new Set(payroll.editingPayrollLogs.map((log) => log.date));
+  const editingDates = new Set(
+    payroll.editingPayrollLogs.map((log) => log.date),
+  );
   const holidayLogDateSet = new Set(
     payroll.paidHolidays
       .map((holiday) => holiday.date)
@@ -341,6 +360,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
 
               {/* Site */}
               <span className="text-sm ">{loggedSitesLabel}</span>
+              {primarySitePeriodLabel && (
+                <>
+                  <span className="text-apple-silver">&middot;</span>
+                  <span className="text-sm text-apple-steel">
+                    {primarySitePeriodLabel}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <button
@@ -359,80 +386,89 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 Adjustments
               </p>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveAdjustmentForm((prev) =>
-                      prev === "cashAdvance" ? null : "cashAdvance",
-                    )
-                  }
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
-                >
-                  + Add Cash Advance
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveAdjustmentForm((prev) =>
-                      prev === "overtime" ? null : "overtime",
-                    )
-                  }
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
-                >
-                  + Add Overtime
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveAdjustmentForm((prev) =>
-                      prev === "paidLeave" ? null : "paidLeave",
-                    )
-                  }
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
-                >
-                  + Add Paid Leave
-                </button>
+            <div className="p-5 space-y-4 max-w-[720px]">
+              {/* ─── BUTTONS (SAME WIDTH) ─── */}
+              <div className="flex gap-2 w-full">
+                {[
+                  { key: "cashAdvance", label: "Cash Advance" },
+                  { key: "overtime", label: "Overtime" },
+                  { key: "paidLeave", label: "Paid Leave" },
+                ].map((btn) => {
+                  const active = activeAdjustmentForm === btn.key;
+
+                  return (
+                    <button
+                      key={btn.key}
+                      type="button"
+                      onClick={() =>
+                        setActiveAdjustmentForm((prev) =>
+                          prev === btn.key ? null : (btn.key as any),
+                        )
+                      }
+                      className={`flex-1 h-10 rounded-xl border text-sm font-semibold transition ${
+                        active
+                          ? "bg-black text-white border-black"
+                          : "bg-gray-50 text-gray-600 border-gray-200 hover:border-black"
+                      }`}
+                    >
+                      + Add {btn.label}
+                    </button>
+                  );
+                })}
               </div>
 
+              {/* ─── CASH ADVANCE ─── */}
               {activeAdjustmentForm === "cashAdvance" && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     addCashAdvance();
                   }}
-                  className="rounded-xl border border-apple-mist bg-apple-snow p-3 space-y-2"
+                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
                 >
-                  <input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Input Cash Advance"
-                    value={cashAdvanceInput}
-                    onChange={(e) =>
-                      setCashAdvanceInput(normalizeNumericInput(e.target.value))
-                    }
-                    className="w-full font-semibold hover:border-apple-charcoal px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Notes (optional)"
-                    value={cashAdvanceNotes}
-                    onChange={(e) => setCashAdvanceNotes(e.target.value)}
-                    className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                  />
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-col w-full sm:w-[240px]">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Cash Advance Amount
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={cashAdvanceInput}
+                        onChange={(e) =>
+                          setCashAdvanceInput(
+                            normalizeNumericInput(e.target.value),
+                          )
+                        }
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm font-semibold focus:bg-white focus:border-black"
+                      />
+                    </div>
+
+                    <div className="flex flex-col flex-1">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Notes
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="(Optional)"
+                        value={cashAdvanceNotes}
+                        onChange={(e) => setCashAdvanceNotes(e.target.value)}
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setActiveAdjustmentForm(null)}
-                      className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-3 py-1.5 rounded-lg bg-apple-charcoal text-white text-2xs font-semibold hover:bg-apple-black transition"
+                      className="h-9 px-4 rounded-lg bg-black text-white text-sm  font-semibold hover:bg-black/80"
                     >
                       Add Cash Advance
                     </button>
@@ -440,185 +476,212 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 </form>
               )}
 
+              {/* ─── OVERTIME ─── */}
               {activeAdjustmentForm === "overtime" && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     addOvertime();
                   }}
-                  className="rounded-xl border border-apple-mist bg-apple-snow p-3 space-y-2"
+                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-col w-full sm:w-[200px]">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Overtime Hours
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={overtimeHoursInput}
+                        onChange={(e) =>
+                          setOvertimeHoursInput(
+                            normalizeNumericInput(e.target.value),
+                          )
+                        }
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+
+                    <div className="flex flex-col w-full sm:w-[200px]">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Overtime Pay (₱)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={overtimePayInput}
+                        onChange={(e) =>
+                          setOvertimePayInput(
+                            normalizeNumericInput(e.target.value),
+                          )
+                        }
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-xs text-gray-500 mb-1">Notes</label>
                     <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="Overtime Hours (hrs)"
-                      value={overtimeHoursInput}
-                      onChange={(e) =>
-                        setOvertimeHoursInput(
-                          normalizeNumericInput(e.target.value),
-                        )
-                      }
-                      className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                    />
-                    <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="Overtime Pay (PHP)"
-                      value={overtimePayInput}
-                      onChange={(e) =>
-                        setOvertimePayInput(normalizeNumericInput(e.target.value))
-                      }
-                      className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                      type="text"
+                      placeholder="(Optional)"
+                      value={overtimeNotes}
+                      onChange={(e) => setOvertimeNotes(e.target.value)}
+                      className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                     />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Notes (optional)"
-                    value={overtimeNotes}
-                    onChange={(e) => setOvertimeNotes(e.target.value)}
-                    className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                  />
+
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setActiveAdjustmentForm(null)}
-                      className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
                     >
                       Cancel
                     </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1.5 rounded-lg bg-apple-charcoal text-white text-2xs font-semibold hover:bg-apple-black transition"
-                    >
+                    <button className="h-9 px-4 rounded-lg bg-black text-white text-sm font-semibold hover:bg-black/80">
                       Add Overtime
                     </button>
                   </div>
                 </form>
               )}
 
+              {/* ─── PAID LEAVE ─── */}
               {activeAdjustmentForm === "paidLeave" && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     addPaidLeave();
                   }}
-                  className="rounded-xl border border-apple-mist bg-apple-snow p-3 space-y-2"
+                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
                 >
-                  <input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Days"
-                    value={paidLeaveDaysInput}
-                    onChange={(e) =>
-                      setPaidLeaveDaysInput(normalizeNumericInput(e.target.value))
-                    }
-                    className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Notes (optional)"
-                    value={paidLeaveNotes}
-                    onChange={(e) => setPaidLeaveNotes(e.target.value)}
-                    className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
-                  />
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-col w-full sm:w-[200px]">
+                      <label className="text-xs text-gray-500 mb-1">Days</label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={paidLeaveDaysInput}
+                        onChange={(e) =>
+                          setPaidLeaveDaysInput(
+                            normalizeNumericInput(e.target.value),
+                          )
+                        }
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+
+                    <div className="flex flex-col flex-1">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Notes
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="(Optional)"
+                        value={paidLeaveNotes}
+                        onChange={(e) => setPaidLeaveNotes(e.target.value)}
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setActiveAdjustmentForm(null)}
-                      className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
                     >
                       Cancel
                     </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1.5 rounded-lg bg-apple-charcoal text-white text-2xs font-semibold hover:bg-apple-black transition"
-                    >
+                    <button className="h-9 px-4 rounded-lg bg-black text-white text-sm font-semibold hover:bg-black/80">
                       Add Paid Leave
                     </button>
                   </div>
                 </form>
               )}
 
+              {/* ─── ENTRIES ─── */}
               {(cashAdvanceEntries.length > 0 ||
                 overtimeEntries.length > 0 ||
                 paidLeaveEntries.length > 0) && (
-                <div className="rounded-xl border border-apple-mist bg-white p-3 space-y-2">
+                <div className="rounded-xl border border-gray-200 bg-white p-3 space-y-2">
                   {cashAdvanceEntries.map((entry) => (
                     <div
-                      key={`cash-${entry.id}`}
+                      key={entry.id}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-red-500">
                         Cash Advance -{formatPeso(entry.amount)}
                       </span>
-                      {entry.notes ? (
-                        <span className="text-xs text-apple-steel truncate">
+
+                      {entry.notes && (
+                        <span className="text-xs text-gray-500 truncate">
                           {entry.notes}
                         </span>
-                      ) : null}
+                      )}
+
                       <button
-                        type="button"
                         onClick={() => removeCashAdvance(entry.id)}
-                        className="ml-auto px-2.5 py-1 rounded-lg border border-red-300 text-2xs font-semibold text-red-600 hover:bg-red-50 transition"
+                        className="ml-auto p-1 rounded-md  text-red-500 hover:bg-red-100 hover:text-red-600 bg-red-50 transition"
                       >
-                        Remove
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
 
                   {overtimeEntries.map((entry) => (
                     <div
-                      key={`ot-${entry.id}`}
+                      key={entry.id}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <span className="font-semibold text-emerald-700">
+                      <span className="font-semibold text-emerald-600">
                         Overtime +{formatPeso(entry.pay)}
                       </span>
-                      <span className="text-xs text-apple-steel">
-                        ({formatPayrollNumber(entry.hours)} hrs)
+
+                      <span className="text-xs text-gray-500">
+                        ({entry.hours} hrs)
                       </span>
-                      {entry.notes ? (
-                        <span className="text-xs text-apple-steel truncate">
+
+                      {entry.notes && (
+                        <span className="text-xs text-gray-500 truncate">
                           {entry.notes}
                         </span>
-                      ) : null}
+                      )}
+
                       <button
-                        type="button"
                         onClick={() => removeOvertime(entry.id)}
-                        className="ml-auto px-2.5 py-1 rounded-lg border border-red-300 text-2xs font-semibold text-red-600 hover:bg-red-50 transition"
+                        className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
                       >
-                        Remove
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
 
                   {paidLeaveEntries.map((entry) => (
                     <div
-                      key={`leave-${entry.id}`}
+                      key={entry.id}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <span className="font-semibold text-emerald-700">
+                      <span className="font-semibold text-emerald-600">
                         Paid Leave +{formatPeso(entry.pay)}
                       </span>
-                      <span className="text-xs text-apple-steel">
-                        ({formatPayrollNumber(entry.days)} day
-                        {entry.days === 1 ? "" : "s"})
+
+                      <span className="text-xs text-gray-500">
+                        ({entry.days} days)
                       </span>
-                      {entry.notes ? (
-                        <span className="text-xs text-apple-steel truncate">
+
+                      {entry.notes && (
+                        <span className="text-xs text-gray-500 truncate">
                           {entry.notes}
                         </span>
-                      ) : null}
+                      )}
+
                       <button
-                        type="button"
                         onClick={() => removePaidLeave(entry.id)}
-                        className="ml-auto px-2.5 py-1 rounded-lg border border-red-300 text-2xs font-semibold text-red-600 hover:bg-red-50 transition"
+                        className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
                       >
-                        Remove
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
@@ -633,9 +696,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 All Report Logs
               </p>
               {paidHolidayOnlyRows.length > 0 && (
-                <p className="mt-1 text-xs font-semibold text-red-700">
+                <p className="mt-1 text-xs font-semibold text-sky-700">
                   {paidHolidayOnlyRows.length} paid holiday day
-                  {paidHolidayOnlyRows.length === 1 ? "" : "s"} added for this employee.
+                  {paidHolidayOnlyRows.length === 1 ? "" : "s"} added for this
+                  employee.
                 </p>
               )}
             </div>
@@ -677,9 +741,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 ) : (
                   payroll.editingPayrollLogs.map((log, index) => {
                     const isPaidHoliday = holidayLogDateSet.has(log.date);
-                    const statusFallback = isPaidHoliday ? (
-                      <span className="text-red-700 font-semibold">Paid Holiday</span>
-                    ) : (
+                    const isUnderRequiredHours =
+                      getHoursNumber(log) > 0 &&
+                      getHoursNumber(log) < minimumPaidHours;
+                    const statusFallback = (
                       <span className="text-red-500">Missed</span>
                     );
 
@@ -687,32 +752,54 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       <tr
                         key={`${log.date}-${log.employee}-${log.site}-${index}`}
                         className={`border-b border-apple-mist/60 last:border-0 ${
-                          isPaidHoliday ? "bg-red-50/50" : "odd:bg-apple-snow/40"
+                          isPaidHoliday
+                            ? "bg-sky-50/50"
+                            : isUnderRequiredHours
+                              ? "bg-yellow-50"
+                              : "odd:bg-apple-snow/30"
                         }`}
                       >
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {toWeekLabel(log.date)}
+                          <div className="flex items-center gap-2">
+                            <span className="inline-block min-w-[3rem]">
+                              {toWeekLabel(log.date)}
+                            </span>
+                            {isPaidHoliday && (
+                              <span className="w-fit rounded-full border border-sky-200 bg-sky-100 px-2 py-0.5 text-2xs font-semibold text-sky-700">
+                                Paid Holiday
+                              </span>
+                            )}
+                            {isUnderRequiredHours && !isPaidHoliday && (
+                              <span className="w-fit rounded-full border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-2xs font-semibold text-yellow-800">
+                                Under Hours
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 py-2.5 text-xs text-apple-smoke">
-                          {log.site || "-"}
+                          {extractSiteName(log.site) || "-"}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time1In || statusFallback}
+                          {log.time1In ||
+                            (isPaidHoliday ? "-" : statusFallback)}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time1Out || statusFallback}
+                          {log.time1Out ||
+                            (isPaidHoliday ? "-" : statusFallback)}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time2In || statusFallback}
+                          {log.time2In ||
+                            (isPaidHoliday ? "-" : statusFallback)}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time2Out || statusFallback}
+                          {log.time2Out ||
+                            (isPaidHoliday ? "-" : statusFallback)}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.otIn || (isPaidHoliday ? statusFallback : "-")}
+                          {log.otIn || "-"}
                         </td>
                         <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.otOut || (isPaidHoliday ? statusFallback : "-")}
+                          {log.otOut || "-"}
                         </td>
                         <td className="px-3 py-2.5 text-right">
                           <input
@@ -734,7 +821,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               </tbody>
             </table>
           </div>
-
 
           <div className="rounded-2xl border border-apple-mist bg-white">
             <div className="px-4 py-3 border-b border-apple-mist">
@@ -783,14 +869,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               ))}
             </div>
           </div>
-
-          {underHoursLogs.length > 0 && (
-            <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-              {underHoursLogs.length} report log
-              {underHoursLogs.length === 1 ? "" : "s"} below 8.00 hours will not
-              be paid.
-            </div>
-          )}
 
           <div className="rounded-2xl border border-apple-mist bg-white">
             <div className="px-4 py-3 border-b border-apple-mist">
@@ -896,7 +974,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           dataKey="date"
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                          tick={{
+                            fill: "rgb(var(--theme-chart-axis))",
+                            fontSize: 11,
+                          }}
                           tickFormatter={chartTickFormatter}
                           minTickGap={16}
                           tickMargin={10}
@@ -904,10 +985,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         <YAxis
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                          tick={{
+                            fill: "rgb(var(--theme-chart-axis))",
+                            fontSize: 11,
+                          }}
                           domain={[
                             0,
-                            (dataMax: number) => Math.max(8, Math.ceil(dataMax + 1)),
+                            (dataMax: number) =>
+                              Math.max(8, Math.ceil(dataMax + 1)),
                           ]}
                           tickCount={5}
                           tickMargin={8}
@@ -989,9 +1074,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             (entry, index) => (
                               <Cell
                                 key={`${entry.name}-${index}`}
-                                fill={
-                                  getAttendanceBreakdownColor(entry.name, index)
-                                }
+                                fill={getAttendanceBreakdownColor(
+                                  entry.name,
+                                  index,
+                                )}
                               />
                             ),
                           )}
@@ -1076,7 +1162,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           dataKey="date"
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                          tick={{
+                            fill: "rgb(var(--theme-chart-axis))",
+                            fontSize: 11,
+                          }}
                           tickFormatter={chartTickFormatter}
                           minTickGap={16}
                           tickMargin={10}
@@ -1084,7 +1173,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         <YAxis
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                          tick={{
+                            fill: "rgb(var(--theme-chart-axis))",
+                            fontSize: 11,
+                          }}
                           domain={[0, 24]}
                           tickMargin={8}
                         />
@@ -1151,6 +1243,3 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     </div>
   );
 }
-
-
-
