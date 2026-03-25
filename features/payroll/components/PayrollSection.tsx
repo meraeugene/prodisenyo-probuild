@@ -20,6 +20,10 @@ import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollS
 import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
 import { buildVisiblePages } from "@/features/shared/pagination";
 import {
+  computeDaysWorked,
+  FIXED_PAY_RATE_PER_DAY,
+} from "@/features/payroll/utils/payrollSelectors";
+import {
   extractPayrollPeriod,
   extractSiteName,
   formatCompactPayrollPeriodLabel,
@@ -45,18 +49,10 @@ interface GroupedEmployeePayrollRow {
   totalPay: number;
 }
 
-const HOURS_PER_WORKDAY = 8;
-const FIXED_RATE_PER_DAY = 500;
-
 function normalizeEmployeeName(name: string): string {
   const normalized = name.trim().toLowerCase();
   const compact = normalized.replace(/[^a-z0-9]/g, "");
   return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
-}
-
-function computeDaysWorked(totalHours: number): number {
-  if (totalHours <= 0) return 0;
-  return Math.floor(totalHours / HOURS_PER_WORKDAY);
 }
 
 function formatDaysLabel(daysWorked: number): string {
@@ -495,6 +491,7 @@ export default function PayrollSection({
                             employee.totalHours,
                           );
                           const employeeTotalPay = employee.totalPay;
+                          const employeeDailyRate = FIXED_PAY_RATE_PER_DAY;
 
                           return (
                             <tr
@@ -523,7 +520,7 @@ export default function PayrollSection({
                                 {formatDaysLabel(employeeDaysWorked)}
                               </td>
                               <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
-                                {formatPayrollNumber(FIXED_RATE_PER_DAY)}
+                                {formatPayrollNumber(employeeDailyRate)}
                               </td>
                               <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
                                 {formatPayrollNumber(employeeTotalPay)}

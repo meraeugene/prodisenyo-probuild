@@ -7,12 +7,45 @@ export interface PayrollEditDraft {
   overtimeHours: string;
 }
 
+export interface PayrollCashAdvanceEntry {
+  id: string;
+  amount: number;
+  notes: string;
+}
+
+export interface PayrollOvertimeEntry {
+  id: string;
+  hours: number;
+  pay: number;
+  notes: string;
+}
+
+export interface PayrollPaidLeaveEntry {
+  id: string;
+  days: number;
+  pay: number;
+  notes: string;
+}
+
+export interface PayrollAdjustmentSet {
+  cashAdvanceEntries: PayrollCashAdvanceEntry[];
+  overtimeEntries: PayrollOvertimeEntry[];
+  paidLeaveEntries: PayrollPaidLeaveEntry[];
+}
+
 export interface PayrollRowOverride {
   date: string;
   hoursWorked: number;
   overtimeHours: number;
   customRate: number | null;
   logHours?: Record<string, number>;
+  cashAdvanceEntries?: PayrollCashAdvanceEntry[];
+  overtimeEntries?: PayrollOvertimeEntry[];
+  paidLeaveEntries?: PayrollPaidLeaveEntry[];
+  cashAdvanceTotal?: number;
+  overtimeEntriesPayTotal?: number;
+  overtimeEntriesHoursTotal?: number;
+  paidLeaveEntriesPayTotal?: number;
 }
 
 export interface PayrollEditSummary {

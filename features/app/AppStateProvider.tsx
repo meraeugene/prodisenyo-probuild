@@ -47,6 +47,7 @@ interface PersistedDashboardState {
     payrollSort: UsePayrollStateResult["payrollSort"];
     payrollRoleFilter: UsePayrollStateResult["payrollRoleFilter"];
     paidHolidays: UsePayrollStateResult["paidHolidays"];
+    payrollOverrides: UsePayrollStateResult["payrollOverrides"];
   };
 }
 
@@ -152,6 +153,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         payroll.setPayrollSort(parsed.payrollUi.payrollSort ?? "date-asc");
         payroll.setPayrollRoleFilter(parsed.payrollUi.payrollRoleFilter ?? "ALL");
         payroll.setPaidHolidays(parsed.payrollUi.paidHolidays ?? []);
+        payroll.setPayrollOverrides(parsed.payrollUi.payrollOverrides ?? {});
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
@@ -193,6 +195,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         payrollSort: payroll.payrollSort,
         payrollRoleFilter: payroll.payrollRoleFilter,
         paidHolidays: payroll.paidHolidays,
+        payrollOverrides: payroll.payrollOverrides,
       },
     };
 
@@ -220,6 +223,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     payroll.payrollSort,
     payroll.payrollRoleFilter,
     payroll.paidHolidays,
+    payroll.payrollOverrides,
   ]);
 
   const handleParsed = useCallback(

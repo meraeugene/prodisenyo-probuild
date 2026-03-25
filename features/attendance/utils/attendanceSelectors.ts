@@ -1,11 +1,8 @@
-﻿import type { AttendanceRecord, DailyLogRow, Step2Sort } from "@/types";
+import type { AttendanceRecord, DailyLogRow, Step2Sort } from "@/types";
 import {
   compareStep2Rows,
   earlierTime,
-  earliestNonEmptyTime,
   laterTime,
-  latestNonEmptyTime,
-  pairMinutes,
 } from "@/lib/utils";
 
 export interface AttendanceFilters {
@@ -20,18 +17,44 @@ export interface BranchSummary {
   employeeCount: number;
 }
 
+const MAX_SHIFT_MINUTES = 16 * 60;
+
+function toMinutes(time: string): number {
+  const [hourText, minuteText] = time.split(":");
+  const hours = Number(hourText);
+  const minutes = Number(minuteText);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return -1;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1;
+  return hours * 60 + minutes;
+}
+
+function forwardPairMinutes(inTime: string, outTime: string): number {
+  if (!inTime || !outTime) return 0;
+  const inMinutes = toMinutes(inTime);
+  const outMinutes = toMinutes(outTime);
+  if (inMinutes < 0 || outMinutes < 0) return 0;
+  if (outMinutes <= inMinutes) return 0;
+  return outMinutes - inMinutes;
+}
+
+function boundedPairMinutes(inTime: string, outTime: string): number {
+  if (!inTime || !outTime) return 0;
+  const minutes = forwardPairMinutes(inTime, outTime);
+  if (minutes <= 0 || minutes > MAX_SHIFT_MINUTES) return 0;
+  return minutes;
+}
+
 export function inferMinutesFromPunches(times: string[]): number {
   const punches = times.filter(Boolean);
   if (punches.length < 2) return 0;
 
   let best = 0;
-  const maxShiftMinutes = 16 * 60;
 
   for (let i = 0; i < punches.length; i += 1) {
     for (let j = 0; j < punches.length; j += 1) {
       if (i === j) continue;
-      const diff = pairMinutes(punches[i], punches[j]);
-      if (diff > best && diff <= maxShiftMinutes) {
+      const diff = forwardPairMinutes(punches[i], punches[j]);
+      if (diff > best && diff <= MAX_SHIFT_MINUTES) {
         best = diff;
       }
     }
@@ -78,23 +101,14 @@ export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
   }
 
   return Array.from(grouped.values()).map((row) => {
-    const regularIn = earliestNonEmptyTime(row.time1In, row.time2In);
-    const regularOut = latestNonEmptyTime(row.time1Out, row.time2Out);
+    // Biometric rule: Time1 IN/OUT is one session, Time2 IN/OUT is another.
+    // Never mix boundaries across sources because that can inflate
+    // impossible overnight totals (for example 14:06 -> 11:38 = 21.53h).
+    const morningMinutes = boundedPairMinutes(row.time1In, row.time1Out);
+    const afternoonMinutes = boundedPairMinutes(row.time2In, row.time2Out);
+    const regularMinutes = morningMinutes + afternoonMinutes;
 
-    // Some exports place late end-of-day punches in OT In/Out instead of regular Out.
-    const otAsRegularOut = !regularOut
-      ? latestNonEmptyTime(row.otOut, row.otIn)
-      : "";
-    const effectiveRegularOut = regularOut || otAsRegularOut;
-    const regularMinutes = pairMinutes(regularIn, effectiveRegularOut);
-
-    const usedOtAsRegularBoundary =
-      !regularOut && Boolean(otAsRegularOut) && Boolean(regularIn);
-    const otMinutes =
-      row.otIn && row.otOut && !usedOtAsRegularBoundary
-        ? pairMinutes(row.otIn, row.otOut)
-        : 0;
-
+    const otMinutes = boundedPairMinutes(row.otIn, row.otOut);
     const strictMinutes = regularMinutes + otMinutes;
     const inferredMinutes =
       strictMinutes === 0
@@ -135,11 +149,13 @@ export function filterDetailedRecords(
   const dateFilter = filters.dateFilter.trim();
 
   const filtered = records.filter((record) => {
-    if (filters.siteFilter !== "ALL" && record.site !== filters.siteFilter)
+    if (filters.siteFilter !== "ALL" && record.site !== filters.siteFilter) {
       return false;
+    }
     if (dateFilter && record.date !== dateFilter) return false;
-    if (nameFilter && !record.employee.toLowerCase().includes(nameFilter))
+    if (nameFilter && !record.employee.toLowerCase().includes(nameFilter)) {
       return false;
+    }
     return true;
   });
 
@@ -168,11 +184,13 @@ export function filterDailyRows(
   const dateFilter = filters.dateFilter.trim();
 
   const filtered = dailyRows.filter((row) => {
-    if (filters.siteFilter !== "ALL" && row.site !== filters.siteFilter)
+    if (filters.siteFilter !== "ALL" && row.site !== filters.siteFilter) {
       return false;
+    }
     if (dateFilter && row.date !== dateFilter) return false;
-    if (nameFilter && !row.employee.toLowerCase().includes(nameFilter))
+    if (nameFilter && !row.employee.toLowerCase().includes(nameFilter)) {
       return false;
+    }
     return true;
   });
 
@@ -204,4 +222,3 @@ export function selectBranchSummaries(
     }))
     .sort((a, b) => a.siteName.localeCompare(b.siteName));
 }
-

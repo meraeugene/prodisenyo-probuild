@@ -34,10 +34,111 @@ const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
   pbryanm: "bryanmamerto",
 };
 
+export const FULL_WORKDAY_HOURS = 8;
+export const FIXED_PAY_RATE_PER_DAY = 500;
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+export interface IsoDateSpan {
+  start: string;
+  end: string;
+}
+
 function normalizeEmployeeNameForGrouping(name: string): string {
   const normalized = name.trim().toLowerCase();
   const compact = normalized.replace(/[^a-z0-9]/g, "");
   return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
+}
+
+export function computeDaysWorked(totalHours: number): number {
+  if (!Number.isFinite(totalHours) || totalHours <= 0) return 0;
+  return Math.floor(totalHours / FULL_WORKDAY_HOURS);
+}
+
+export function computeBasePay(totalHours: number): number {
+  const daysWorked = computeDaysWorked(totalHours);
+  return round2(daysWorked * FIXED_PAY_RATE_PER_DAY);
+}
+
+export function buildDateHoursMap(
+  logs: Array<{ date: string; hours: number }>,
+): Map<string, number> {
+  const byDate = new Map<string, number>();
+
+  for (const log of logs) {
+    if (!log.date) continue;
+    const current = byDate.get(log.date) ?? 0;
+    const nextHours =
+      Number.isFinite(log.hours) && log.hours >= 0 ? Number(log.hours) : 0;
+    byDate.set(log.date, round2(current + nextHours));
+  }
+
+  return byDate;
+}
+
+export function buildDateSpanFromDates(
+  dates: Iterable<string>,
+): IsoDateSpan | null {
+  let start: string | null = null;
+  let end: string | null = null;
+
+  for (const date of dates) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    if (!start || date < start) start = date;
+    if (!end || date > end) end = date;
+  }
+
+  if (!start || !end) return null;
+  return { start, end };
+}
+
+export function buildWorkerDateSpanByKey(
+  logs: AttendanceRecordInput[],
+): Map<string, IsoDateSpan> {
+  const spanByKey = new Map<string, IsoDateSpan>();
+
+  for (const log of logs) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(log.date)) continue;
+    const key = `${log.role}|||${log.name}`;
+    const existing = spanByKey.get(key);
+
+    if (!existing) {
+      spanByKey.set(key, { start: log.date, end: log.date });
+      continue;
+    }
+
+    if (log.date < existing.start) existing.start = log.date;
+    if (log.date > existing.end) existing.end = log.date;
+  }
+
+  return spanByKey;
+}
+
+export function countHolidayBonusDays(
+  dateHours: Map<string, number>,
+  holidayDates: Iterable<string>,
+  eligibleSpan?: IsoDateSpan | null,
+): number {
+  const uniqueHolidayDates = new Set(holidayDates);
+  let count = 0;
+
+  for (const holidayDate of uniqueHolidayDates) {
+    if (
+      eligibleSpan &&
+      (holidayDate < eligibleSpan.start || holidayDate > eligibleSpan.end)
+    ) {
+      continue;
+    }
+
+    const loggedHours = dateHours.get(holidayDate) ?? 0;
+    if (loggedHours < FULL_WORKDAY_HOURS) {
+      count += 1;
+    }
+  }
+
+  return count;
 }
 
 export function mapDailyRowsToAttendanceInputs(
@@ -312,7 +413,7 @@ export function hasAnyLogHourOverrides(
 
 export function calculateTotalEditedLogHours(logs: DailyLogRow[]): number {
   const hours = logs.reduce((sum, log) => sum + log.hours, 0);
-  return Math.round(hours * 100) / 100;
+  return round2(hours);
 }
 
 export function buildEmployeeDailyHoursTrend(
@@ -385,15 +486,20 @@ export function buildPayrollEditPreview(
           editingPayrollRow.customRate ?? editingPayrollRow.defaultRate,
         );
 
-  return recalculatePayrollRow(
-    {
-      ...editingPayrollRow,
-      date: payrollEditDraft.date.trim(),
-      hoursWorked: nextHours,
-      overtimeHours: nextOvertime,
-      customRate: nextCustomRate,
-    },
-    DEFAULT_OVERTIME_MULTIPLIER,
-  );
+  const fixedHourlyRate = round2(FIXED_PAY_RATE_PER_DAY / FULL_WORKDAY_HOURS);
+  const regularPay = computeBasePay(nextHours);
+
+  return {
+    ...editingPayrollRow,
+    date: payrollEditDraft.date.trim(),
+    hoursWorked: round2(nextHours),
+    overtimeHours: round2(nextOvertime),
+    customRate: nextCustomRate,
+    defaultRate: fixedHourlyRate,
+    rate: fixedHourlyRate,
+    regularPay,
+    overtimePay: 0,
+    totalPay: regularPay,
+  };
 }
 

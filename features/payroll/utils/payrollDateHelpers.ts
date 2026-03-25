@@ -27,6 +27,11 @@
   return date;
 }
 
+export interface IsoPayrollRange {
+  start: string;
+  end: string;
+}
+
 function formatIsoDate(date: Date): string {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
@@ -65,6 +70,34 @@ export function normalizePeriodLabel(label: string): string | null {
   if (dates.length === 0) return null;
 
   return `${dates[0]} to ${dates[dates.length - 1]}`;
+}
+
+export function extractIsoPayrollRange(value: string): IsoPayrollRange | null {
+  const normalized = value.trim();
+  if (!normalized) return null;
+
+  const isoRange = normalized.match(
+    /(\d{4}-\d{2}-\d{2})\s*to\s*(\d{4}-\d{2}-\d{2})/i,
+  );
+  if (isoRange) {
+    return { start: isoRange[1], end: isoRange[2] };
+  }
+
+  const singleIso = normalized.match(/(\d{4}-\d{2}-\d{2})/);
+  if (singleIso) {
+    return { start: singleIso[1], end: singleIso[1] };
+  }
+
+  return null;
+}
+
+export function isIsoDateWithinRange(
+  value: string,
+  rangeStart: string | null,
+  rangeEnd: string | null,
+): boolean {
+  if (!rangeStart || !rangeEnd) return false;
+  return value >= rangeStart && value <= rangeEnd;
 }
 
 export function expandDateSummary(

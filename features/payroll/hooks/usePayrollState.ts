@@ -13,12 +13,20 @@ import {
   normalizeNumericInput,
   parseNonNegativeOrFallback,
 } from "@/features/payroll/utils/payrollFormatters";
-import { normalizePeriodLabel } from "@/features/payroll/utils/payrollDateHelpers";
-import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
+import {
+  extractIsoPayrollRange,
+  isIsoDateWithinRange,
+  normalizePeriodLabel,
+} from "@/features/payroll/utils/payrollDateHelpers";
+import {
+  getLogOverrideKey,
+  parsePayrollIdentity,
+} from "@/features/payroll/utils/payrollMappers";
 import {
   applyLogHourOverrides,
   buildEditingPayrollLogs,
   buildEditingPayrollSummary,
+  buildWorkerDateSpanByKey,
   buildEmployeeAttendanceBreakdown,
   buildEmployeeClockInConsistency,
   buildEmployeeDailyHoursTrend,
@@ -26,50 +34,33 @@ import {
   buildPayrollEditPreview,
   buildPayrollRows,
   calculateTotalEditedLogHours,
+  computeBasePay,
+  countHolidayBonusDays,
+  FIXED_PAY_RATE_PER_DAY,
   filterPayrollLogs,
   filterPayrollRows,
+  FULL_WORKDAY_HOURS,
   hasAnyLogHourOverrides,
-  mapDailyRowsToAttendanceInputs,
   summarizePayrollTotals,
 } from "@/features/payroll/utils/payrollSelectors";
 import type {
+  PayrollAdjustmentSet,
+  PayrollCashAdvanceEntry,
   PaidHolidayItem,
   PayrollDateRange,
   PayrollEditDraft,
+  PayrollOvertimeEntry,
+  PayrollPaidLeaveEntry,
   PayrollRowOverride,
 } from "@/features/payroll/types";
 
 const PREVIEW_LIMIT = 10;
-const HOURS_PER_WORKDAY = 8;
-const FIXED_RATE_PER_DAY = 500;
-
-function extractIsoPayrollRange(value: string): { start: string; end: string } | null {
-  const normalized = value.trim();
-  if (!normalized) return null;
-
-  const isoRange = normalized.match(
-    /(\d{4}-\d{2}-\d{2})\s*to\s*(\d{4}-\d{2}-\d{2})/i,
-  );
-  if (isoRange) {
-    return { start: isoRange[1], end: isoRange[2] };
-  }
-
-  const singleIso = normalized.match(/(\d{4}-\d{2}-\d{2})/);
-  if (singleIso) {
-    return { start: singleIso[1], end: singleIso[1] };
-  }
-
-  return null;
-}
-
-function isWithinRange(
-  value: string,
-  rangeStart: string | null,
-  rangeEnd: string | null,
-): boolean {
-  if (!rangeStart || !rangeEnd) return true;
-  return value >= rangeStart && value <= rangeEnd;
-}
+const MAX_LOG_HOURS_PER_DAY = 16;
+const EMPTY_ADJUSTMENTS: PayrollAdjustmentSet = {
+  cashAdvanceEntries: [],
+  overtimeEntries: [],
+  paidLeaveEntries: [],
+};
 
 function toIsoDate(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -177,21 +168,68 @@ function buildDailyHoursByWorker(
   return hoursByWorker;
 }
 
-function computeWorkedDays(totalHours: number): number {
-  if (!Number.isFinite(totalHours) || totalHours <= 0) return 0;
-  return Math.floor(totalHours / HOURS_PER_WORKDAY);
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
-function computeHolidayAdjustedTotalPay(
-  totalHours: number,
-  holidayBonusDays: number,
-): number {
-  const workedDays = computeWorkedDays(totalHours);
-  const extraHolidayDays = Math.max(0, holidayBonusDays);
-  const payableDays = workedDays + extraHolidayDays;
+function sanitizeCashAdvanceEntries(
+  entries: PayrollCashAdvanceEntry[] | undefined,
+): PayrollCashAdvanceEntry[] {
+  if (!entries || entries.length === 0) return [];
+  return entries
+    .map((entry) => ({
+      id: String(entry.id || `${Date.now()}-${Math.random()}`),
+      amount:
+        Number.isFinite(entry.amount) && entry.amount > 0
+          ? round2(entry.amount)
+          : 0,
+      notes: String(entry.notes ?? "").trim(),
+    }))
+    .filter((entry) => entry.amount > 0);
+}
 
-  if (payableDays <= 0) return 0;
-  return Number((payableDays * FIXED_RATE_PER_DAY).toFixed(2));
+function sanitizeOvertimeEntries(
+  entries: PayrollOvertimeEntry[] | undefined,
+): PayrollOvertimeEntry[] {
+  if (!entries || entries.length === 0) return [];
+  return entries
+    .map((entry) => ({
+      id: String(entry.id || `${Date.now()}-${Math.random()}`),
+      hours: Number.isFinite(entry.hours) && entry.hours > 0 ? round2(entry.hours) : 0,
+      pay: Number.isFinite(entry.pay) && entry.pay > 0 ? round2(entry.pay) : 0,
+      notes: String(entry.notes ?? "").trim(),
+    }))
+    .filter((entry) => entry.hours > 0 || entry.pay > 0);
+}
+
+function sanitizePaidLeaveEntries(
+  entries: PayrollPaidLeaveEntry[] | undefined,
+): PayrollPaidLeaveEntry[] {
+  if (!entries || entries.length === 0) return [];
+  return entries
+    .map((entry) => ({
+      id: String(entry.id || `${Date.now()}-${Math.random()}`),
+      days: Number.isFinite(entry.days) && entry.days > 0 ? round2(entry.days) : 0,
+      pay: Number.isFinite(entry.pay) && entry.pay > 0 ? round2(entry.pay) : 0,
+      notes: String(entry.notes ?? "").trim(),
+    }))
+    .filter((entry) => entry.days > 0 || entry.pay > 0);
+}
+
+function sumCashAdvance(entries: PayrollCashAdvanceEntry[] | undefined): number {
+  return round2((entries ?? []).reduce((sum, entry) => sum + entry.amount, 0));
+}
+
+function sumOvertimePay(entries: PayrollOvertimeEntry[] | undefined): number {
+  return round2((entries ?? []).reduce((sum, entry) => sum + entry.pay, 0));
+}
+
+function sumOvertimeHours(entries: PayrollOvertimeEntry[] | undefined): number {
+  return round2((entries ?? []).reduce((sum, entry) => sum + entry.hours, 0));
+}
+
+function sumPaidLeavePay(entries: PayrollPaidLeaveEntry[] | undefined): number {
+  return round2((entries ?? []).reduce((sum, entry) => sum + entry.pay, 0));
 }
 
 export interface UsePayrollStateArgs {
@@ -232,6 +270,14 @@ export interface UsePayrollStateResult {
       | ((prev: Record<RoleCode, number>) => Record<RoleCode, number>),
   ) => void;
   payrollAttendanceInputs: AttendanceRecordInput[];
+  payrollOverrides: Record<string, PayrollRowOverride>;
+  setPayrollOverrides: (
+    value:
+      | Record<string, PayrollRowOverride>
+      | ((
+          prev: Record<string, PayrollRowOverride>,
+        ) => Record<string, PayrollRowOverride>),
+  ) => void;
   payrollRows: PayrollRow[];
   payrollBaseComputedRows: PayrollRow[];
   filteredPayrollRows: PayrollRow[];
@@ -260,6 +306,7 @@ export interface UsePayrollStateResult {
     regularHours: number;
     otNormalHours: number;
   };
+  editingPayrollAdjustments: PayrollAdjustmentSet;
   editingPayrollLogsForAnalytics: DailyLogRow[];
   payrollEditDraft: PayrollEditDraft | null;
   setPayrollEditDraft: (
@@ -295,7 +342,7 @@ export interface UsePayrollStateResult {
   loadPhilippinePaidHolidays: () => void;
   openPayrollEditModal: (row: PayrollRow) => void;
   closePayrollEditModal: () => void;
-  savePayrollEdit: () => void;
+  savePayrollEdit: (adjustments?: PayrollAdjustmentSet) => void;
   updateLogHour: (log: DailyLogRow, valueText: string) => void;
   normalizeNumericInput: (value: string) => string;
   roleCodes: RoleCode[];
@@ -335,12 +382,58 @@ export function usePayrollState({
   const [payrollSaveNotice, setPayrollSaveNotice] = useState<string | null>(null);
   const [paidHolidays, setPaidHolidays] = useState<PaidHolidayItem[]>([]);
 
-  const payrollAttendanceInputs = useMemo(
-    () => mapDailyRowsToAttendanceInputs(dailyRows),
-    [dailyRows],
-  );
+  const persistedLogHourOverrides = useMemo(() => {
+    const merged: Record<string, number> = {};
+
+    for (const override of Object.values(payrollOverrides)) {
+      if (!override.logHours) continue;
+
+      for (const [key, value] of Object.entries(override.logHours)) {
+        if (
+          !Number.isFinite(value) ||
+          value < 0 ||
+          value > MAX_LOG_HOURS_PER_DAY
+        ) {
+          continue;
+        }
+        merged[key] = round2(value);
+      }
+    }
+
+    return merged;
+  }, [payrollOverrides]);
+
+  const payrollAttendanceInputs = useMemo(() => {
+    return dailyRows
+      .map((row) => {
+        const identity = parsePayrollIdentity(row.employee);
+        const key = getLogOverrideKey(row);
+        const overrideHours = persistedLogHourOverrides[key];
+
+        return {
+          name: identity.name,
+          role: identity.role,
+          site: row.site,
+          date: row.date,
+          hours:
+            Number.isFinite(overrideHours) && overrideHours >= 0
+              ? overrideHours
+              : row.hours,
+        };
+      })
+      .filter(
+        (record) =>
+          record.name.length > 0 &&
+          Number.isFinite(record.hours) &&
+          record.hours >= 0,
+      );
+  }, [dailyRows, persistedLogHourOverrides]);
   const dailyHoursByWorker = useMemo(
     () => buildDailyHoursByWorker(payrollAttendanceInputs),
+    [payrollAttendanceInputs],
+  );
+  const workerDateSpanByKey = useMemo(
+    () => buildWorkerDateSpanByKey(payrollAttendanceInputs),
     [payrollAttendanceInputs],
   );
 
@@ -360,6 +453,22 @@ export function usePayrollState({
   );
 
   const payrollDateRange = useMemo<PayrollDateRange | null>(() => {
+    const normalizedPeriod = normalizePeriodLabel(attendancePeriod);
+    const parsedAttendanceRange = normalizedPeriod
+      ? extractIsoPayrollRange(normalizedPeriod)
+      : null;
+
+    if (parsedAttendanceRange) {
+      const parsedYear = Number.parseInt(parsedAttendanceRange.start.slice(0, 4), 10);
+      return {
+        start: parsedAttendanceRange.start,
+        end: parsedAttendanceRange.end,
+        year: Number.isFinite(parsedYear)
+          ? parsedYear
+          : new Date().getFullYear(),
+      };
+    }
+
     let earliestStart: string | null = null;
     let latestEnd: string | null = null;
 
@@ -383,46 +492,102 @@ export function usePayrollState({
       end: latestEnd,
       year: Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear(),
     };
-  }, [payrollBaseComputedRows]);
+  }, [attendancePeriod, payrollBaseComputedRows]);
 
   const payableHolidayDays = useMemo(() => {
     if (!payrollDateRange || paidHolidays.length === 0) return 0;
 
     return paidHolidays.filter((holiday) =>
-      isWithinRange(holiday.date, payrollDateRange.start, payrollDateRange.end),
+      isIsoDateWithinRange(
+        holiday.date,
+        payrollDateRange.start,
+        payrollDateRange.end,
+      ),
     ).length;
   }, [paidHolidays, payrollDateRange]);
   const payableHolidayDates = useMemo(() => {
     if (!payrollDateRange || paidHolidays.length === 0) return [];
     return paidHolidays
       .filter((holiday) =>
-        isWithinRange(holiday.date, payrollDateRange.start, payrollDateRange.end),
+        isIsoDateWithinRange(
+          holiday.date,
+          payrollDateRange.start,
+          payrollDateRange.end,
+        ),
       )
       .map((holiday) => holiday.date);
   }, [paidHolidays, payrollDateRange]);
+  const payableHolidayDateSet = useMemo(
+    () => new Set(payableHolidayDates),
+    [payableHolidayDates],
+  );
+
+  const editingPayrollAdjustments = useMemo<PayrollAdjustmentSet>(() => {
+    if (!editingPayrollRowId) return EMPTY_ADJUSTMENTS;
+
+    const override = payrollOverrides[editingPayrollRowId];
+    return {
+      cashAdvanceEntries: override?.cashAdvanceEntries ?? [],
+      overtimeEntries: override?.overtimeEntries ?? [],
+      paidLeaveEntries: override?.paidLeaveEntries ?? [],
+    };
+  }, [editingPayrollRowId, payrollOverrides]);
 
   const payrollRows = useMemo(
     () =>
       payrollBaseComputedRows.map((row) => {
-        const rowDailyHours = dailyHoursByWorker.get(row.id);
-        const holidayBonusDays = payableHolidayDates.reduce((count, holidayDate) => {
-          const loggedHours = rowDailyHours?.get(holidayDate) ?? 0;
-          return loggedHours < HOURS_PER_WORKDAY ? count + 1 : count;
-        }, 0);
-        const totalPay = computeHolidayAdjustedTotalPay(
-          row.hoursWorked,
-          holidayBonusDays,
-        );
+        const override = payrollOverrides[row.id];
+        const rowDailyHours = dailyHoursByWorker.get(row.id) ?? new Map<string, number>();
+        const workerDateSpan = workerDateSpanByKey.get(row.id) ?? null;
+        const holidayBonusDays = workerDateSpan
+          ? countHolidayBonusDays(
+              rowDailyHours,
+              payableHolidayDateSet,
+              workerDateSpan,
+            )
+          : 0;
+        const basePay = computeBasePay(row.hoursWorked);
+        const holidayPay = round2(holidayBonusDays * FIXED_PAY_RATE_PER_DAY);
+        const leavePay =
+          Number.isFinite(override?.paidLeaveEntriesPayTotal)
+            ? round2(override?.paidLeaveEntriesPayTotal ?? 0)
+            : sumPaidLeavePay(override?.paidLeaveEntries);
+        const manualOvertimePay =
+          Number.isFinite(override?.overtimeEntriesPayTotal)
+            ? round2(override?.overtimeEntriesPayTotal ?? 0)
+            : sumOvertimePay(override?.overtimeEntries);
+        const manualOvertimeHours =
+          Number.isFinite(override?.overtimeEntriesHoursTotal)
+            ? round2(override?.overtimeEntriesHoursTotal ?? 0)
+            : sumOvertimeHours(override?.overtimeEntries);
+        const cashAdvance =
+          Number.isFinite(override?.cashAdvanceTotal)
+            ? round2(override?.cashAdvanceTotal ?? 0)
+            : sumCashAdvance(override?.cashAdvanceEntries);
+        const fixedHourlyRate = round2(FIXED_PAY_RATE_PER_DAY / FULL_WORKDAY_HOURS);
+        const regularPay = round2(basePay + holidayPay + leavePay);
+        const overtimePay = round2(manualOvertimePay);
+        const overtimeHours = round2(manualOvertimeHours);
+        const totalPay = round2(Math.max(0, regularPay + overtimePay - cashAdvance));
 
         return {
           ...row,
-          rate: FIXED_RATE_PER_DAY,
-          regularPay: totalPay,
-          overtimePay: 0,
+          defaultRate: fixedHourlyRate,
+          rate: fixedHourlyRate,
+          customRate: null,
+          overtimeHours,
+          regularPay,
+          overtimePay,
           totalPay,
         };
       }),
-    [payrollBaseComputedRows, dailyHoursByWorker, payableHolidayDates],
+    [
+      payrollBaseComputedRows,
+      payrollOverrides,
+      dailyHoursByWorker,
+      workerDateSpanByKey,
+      payableHolidayDateSet,
+    ],
   );
 
   const filteredPayrollRows = useMemo(
@@ -715,44 +880,57 @@ export function usePayrollState({
       (_value, index) => fromYear + index,
     );
 
-    const generated = years
-      .flatMap((year) => getPhilippineHolidaysByYear(year));
+    const generated = years.flatMap((year) => getPhilippineHolidaysByYear(year));
 
     const inRange = generated.filter((holiday) =>
-      isWithinRange(
+      isIsoDateWithinRange(
         holiday.date,
         payrollDateRange.start,
         payrollDateRange.end,
       ),
     );
 
-    const toAdd = inRange.length > 0 ? inRange : generated;
-    setPaidHolidays((prev) => mergeHolidayItems(prev, toAdd));
-
-    if (inRange.length > 0) {
-      toast.success("Philippine holidays loaded", {
-        description: `${inRange.length} holiday(s) added for this payroll period.`,
+    if (inRange.length === 0) {
+      toast.info("No PH holidays in this payroll range", {
+        description: `${fromYear} to ${toYear} generated 0 holiday(s) inside ${payrollDateRange.start} to ${payrollDateRange.end}.`,
       });
       return;
     }
 
-    toast.info("No PH holidays in this payroll range", {
-      description: `Loaded ${generated.length} holiday(s) for ${fromYear} to ${toYear} so you can select from the calendar.`,
+    setPaidHolidays((prev) => mergeHolidayItems(prev, inRange));
+
+    toast.success("Philippine holidays loaded", {
+      description: `${inRange.length} holiday(s) merged for ${payrollDateRange.start} to ${payrollDateRange.end}.`,
     });
   }
 
   function openPayrollEditModal(row: PayrollRow) {
     const existingOverride = payrollOverrides[row.id];
+    const baseRow =
+      payrollBaseComputedRows.find((candidate) => candidate.id === row.id) ?? row;
     const normalizedPeriod = normalizePeriodLabel(attendancePeriod);
 
     setPayrollSaveNotice(null);
     setEditingPayrollRowId(row.id);
-    setLogHourOverrides(existingOverride?.logHours ?? {});
+    const sanitizedLogHours = Object.fromEntries(
+      Object.entries(existingOverride?.logHours ?? {})
+        .filter(([, value]) => Number.isFinite(value))
+        .map(([key, value]) => [
+          key,
+          Math.round(
+            Math.max(0, Math.min(Number(value), MAX_LOG_HOURS_PER_DAY)) * 100,
+          ) / 100,
+        ]),
+    );
+    setLogHourOverrides(sanitizedLogHours);
     setPayrollEditDraft({
-      date: normalizedPeriod ?? row.date,
-      hoursWorked: String(row.hoursWorked),
-      rate: row.customRate === null ? "" : String(row.customRate),
-      overtimeHours: String(row.overtimeHours),
+      date: normalizedPeriod ?? baseRow.date,
+      hoursWorked: String(existingOverride?.hoursWorked ?? baseRow.hoursWorked),
+      rate:
+        (existingOverride?.customRate ?? baseRow.customRate) === null
+          ? ""
+          : String(existingOverride?.customRate ?? baseRow.customRate),
+      overtimeHours: String(existingOverride?.overtimeHours ?? baseRow.overtimeHours),
     });
 
     document.body.style.overflow = "hidden";
@@ -765,8 +943,9 @@ export function usePayrollState({
     document.body.style.overflow = "auto";
   }
 
-  function savePayrollEdit() {
+  function savePayrollEdit(adjustments?: PayrollAdjustmentSet) {
     if (!editingPayrollRow || !payrollEditDraft) return;
+    const existingOverride = payrollOverrides[editingPayrollRow.id];
 
     const nextHours = hasLogHourOverrides
       ? totalEditedLogHours
@@ -791,19 +970,38 @@ export function usePayrollState({
     const nextLogHours =
       hasLogHourOverrides && editingPayrollLogs.length > 0
         ? Object.fromEntries(
-            editingPayrollLogs.map((log) => {
+            editingPayrollLogs
+              .map((log) => {
               const key = getLogOverrideKey(log);
               const value = logHourOverrides[key] ?? log.hours;
               const normalized =
                 Number.isFinite(value) && value >= 0
-                  ? Math.round(value * 100) / 100
+                  ? Math.round(Math.min(value, MAX_LOG_HOURS_PER_DAY) * 100) / 100
                   : 0;
-              return [key, normalized];
-            }),
+              const baseValue = Math.round(Math.max(0, log.hours) * 100) / 100;
+              return [key, normalized, baseValue] as const;
+            })
+              .filter(([, normalized, baseValue]) =>
+                Math.abs(normalized - baseValue) > 0.001,
+              )
+              .map(([key, normalized]) => [key, normalized]),
           )
         : undefined;
 
     const normalizedPeriod = normalizePeriodLabel(attendancePeriod);
+    const nextCashAdvanceEntries = sanitizeCashAdvanceEntries(
+      adjustments?.cashAdvanceEntries ?? existingOverride?.cashAdvanceEntries,
+    );
+    const nextOvertimeEntries = sanitizeOvertimeEntries(
+      adjustments?.overtimeEntries ?? existingOverride?.overtimeEntries,
+    );
+    const nextPaidLeaveEntries = sanitizePaidLeaveEntries(
+      adjustments?.paidLeaveEntries ?? existingOverride?.paidLeaveEntries,
+    );
+    const nextCashAdvanceTotal = sumCashAdvance(nextCashAdvanceEntries);
+    const nextOvertimeEntriesPayTotal = sumOvertimePay(nextOvertimeEntries);
+    const nextOvertimeEntriesHoursTotal = sumOvertimeHours(nextOvertimeEntries);
+    const nextPaidLeaveEntriesPayTotal = sumPaidLeavePay(nextPaidLeaveEntries);
 
     setPayrollOverrides((prev) => ({
       ...prev,
@@ -813,6 +1011,13 @@ export function usePayrollState({
         overtimeHours: nextOvertime,
         customRate: nextCustomRate,
         logHours: nextLogHours,
+        cashAdvanceEntries: nextCashAdvanceEntries,
+        overtimeEntries: nextOvertimeEntries,
+        paidLeaveEntries: nextPaidLeaveEntries,
+        cashAdvanceTotal: nextCashAdvanceTotal,
+        overtimeEntriesPayTotal: nextOvertimeEntriesPayTotal,
+        overtimeEntriesHoursTotal: nextOvertimeEntriesHoursTotal,
+        paidLeaveEntriesPayTotal: nextPaidLeaveEntriesPayTotal,
       },
     }));
 
@@ -835,7 +1040,9 @@ export function usePayrollState({
     setLogHourOverrides((prev) => ({
       ...prev,
       [getLogOverrideKey(log)]:
-        Number.isFinite(value) && value >= 0 ? Math.round(value * 100) / 100 : 0,
+        Number.isFinite(value) && value >= 0
+          ? Math.round(Math.min(value, MAX_LOG_HOURS_PER_DAY) * 100) / 100
+          : 0,
     }));
   }
 
@@ -863,6 +1070,8 @@ export function usePayrollState({
     payrollRateDraft,
     setPayrollRateDraft,
     payrollAttendanceInputs,
+    payrollOverrides,
+    setPayrollOverrides,
     payrollRows,
     payrollBaseComputedRows,
     filteredPayrollRows,
@@ -882,6 +1091,7 @@ export function usePayrollState({
     editingPayrollRow,
     editingPayrollLogs,
     editingPayrollSummary,
+    editingPayrollAdjustments,
     editingPayrollLogsForAnalytics,
     payrollEditDraft,
     setPayrollEditDraft,

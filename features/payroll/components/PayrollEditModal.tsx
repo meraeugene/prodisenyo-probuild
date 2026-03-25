@@ -21,6 +21,11 @@ import {
 import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { DailyLogRow } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
+import type {
+  PayrollCashAdvanceEntry,
+  PayrollOvertimeEntry,
+  PayrollPaidLeaveEntry,
+} from "@/features/payroll/types";
 import {
   extractSiteName,
   formatPayrollPeriodFromText,
@@ -29,6 +34,15 @@ import {
   toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
 import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
+import {
+  buildDateHoursMap,
+  buildDateSpanFromDates,
+  computeBasePay,
+  computeDaysWorked,
+  countHolidayBonusDays,
+  FIXED_PAY_RATE_PER_DAY,
+  FULL_WORKDAY_HOURS,
+} from "@/features/payroll/utils/payrollSelectors";
 
 const EMPLOYEE_ANALYTICS_COLORS = [
   "#2563eb",
@@ -45,30 +59,30 @@ const PAID_LEAVE_RATE_PER_DAY = 500;
 
 type AdjustmentFormType = "cashAdvance" | "overtime" | "paidLeave" | null;
 
-interface CashAdvanceEntry {
-  id: number;
-  amount: number;
-  notes: string;
-}
-
-interface OvertimeEntry {
-  id: number;
-  hours: number;
-  pay: number;
-  notes: string;
-}
-
-interface PaidLeaveEntry {
-  id: number;
-  days: number;
-  pay: number;
-  notes: string;
-}
-
 function parseNonNegativeValue(value: string): number {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed) || parsed < 0) return 0;
   return parsed;
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function isExpandedPlaceholderLog(log: DailyLogRow): boolean {
+  return (
+    log.site.trim() === "" &&
+    !log.time1In &&
+    !log.time1Out &&
+    !log.time2In &&
+    !log.time2Out &&
+    !log.otIn &&
+    !log.otOut
+  );
+}
+
+function createEntryId(): string {
+  return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
 function formatPeso(value: number): string {
@@ -153,12 +167,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const [paidLeaveDaysInput, setPaidLeaveDaysInput] = useState("");
   const [paidLeaveNotes, setPaidLeaveNotes] = useState("");
   const [cashAdvanceEntries, setCashAdvanceEntries] = useState<
-    CashAdvanceEntry[]
+    PayrollCashAdvanceEntry[]
   >([]);
-  const [overtimeEntries, setOvertimeEntries] = useState<OvertimeEntry[]>([]);
-  const [paidLeaveEntries, setPaidLeaveEntries] = useState<PaidLeaveEntry[]>(
+  const [overtimeEntries, setOvertimeEntries] = useState<PayrollOvertimeEntry[]>(
     [],
   );
+  const [paidLeaveEntries, setPaidLeaveEntries] = useState<
+    PayrollPaidLeaveEntry[]
+  >([]);
 
   useEffect(() => {
     setActiveAdjustmentForm(null);
@@ -169,10 +185,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     setOvertimeNotes("");
     setPaidLeaveDaysInput("");
     setPaidLeaveNotes("");
-    setCashAdvanceEntries([]);
-    setOvertimeEntries([]);
-    setPaidLeaveEntries([]);
-  }, [editingPayrollRow?.id]);
+    setCashAdvanceEntries([
+      ...payroll.editingPayrollAdjustments.cashAdvanceEntries,
+    ]);
+    setOvertimeEntries([...payroll.editingPayrollAdjustments.overtimeEntries]);
+    setPaidLeaveEntries([
+      ...payroll.editingPayrollAdjustments.paidLeaveEntries,
+    ]);
+  }, [editingPayrollRow?.id, payroll.editingPayrollAdjustments]);
 
   if (!editingPayrollRow || !payrollEditDraft) return null;
 
@@ -208,8 +228,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const primarySitePeriodLabel =
     formatPayrollPeriodFromText(primarySiteSource) ??
     formatPayrollPeriodFromText(editingPayrollRow.date);
-  const minimumPaidHours = 8;
-  const fixedDailyPay = 500;
   const currentLogsForPay = payroll.editingPayrollLogsForAnalytics;
   const editingDates = new Set(
     payroll.editingPayrollLogs.map((log) => log.date),
@@ -219,38 +237,48 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
       .map((holiday) => holiday.date)
       .filter((date) => editingDates.has(date)),
   );
-  const qualifyingWorkedLogs = currentLogsForPay.filter(
-    (log) => log.hours >= minimumPaidHours,
+  const payrollSourceLogsForHoliday = currentLogsForPay.filter(
+    (log) => !isExpandedPlaceholderLog(log),
   );
-  const paidHolidayRows = currentLogsForPay.filter((log) =>
-    holidayLogDateSet.has(log.date),
+  const holidayDateHours = buildDateHoursMap(
+    payrollSourceLogsForHoliday.map((log) => ({
+      date: log.date,
+      hours: log.hours,
+    })),
   );
-  const paidHolidayOnlyRows = paidHolidayRows.filter(
-    (log) => log.hours < minimumPaidHours,
+  const sourceDateSpan = buildDateSpanFromDates(
+    payrollSourceLogsForHoliday.map((log) => log.date),
   );
+  const totalWorkedHours = round2(
+    currentLogsForPay.reduce((sum, log) => sum + log.hours, 0),
+  );
+  const daysWorked = computeDaysWorked(totalWorkedHours);
+  const remainingHours = round2(
+    Math.max(0, totalWorkedHours - daysWorked * FULL_WORKDAY_HOURS),
+  );
+  const paidHolidayBonusDays = sourceDateSpan
+    ? countHolidayBonusDays(
+        holidayDateHours,
+        holidayLogDateSet,
+        sourceDateSpan,
+      )
+    : 0;
   const underHoursLogs = currentLogsForPay.filter(
     (log) =>
       log.hours > 0 &&
-      log.hours < minimumPaidHours &&
+      log.hours < FULL_WORKDAY_HOURS &&
       !holidayLogDateSet.has(log.date),
   );
-  const baseWorkedPay = qualifyingWorkedLogs.length * fixedDailyPay;
-  const paidHolidayPay = paidHolidayOnlyRows.length * fixedDailyPay;
+  const baseWorkedPay = computeBasePay(totalWorkedHours);
+  const paidHolidayPay = paidHolidayBonusDays * FIXED_PAY_RATE_PER_DAY;
   const previewTotalPay = baseWorkedPay + paidHolidayPay;
+  const belowFullDayThreshold = totalWorkedHours > 0 && daysWorked === 0;
   const cashAdvanceAmount = cashAdvanceEntries.reduce(
     (sum, entry) => sum + entry.amount,
     0,
   );
-  const overtimeHours = overtimeEntries.reduce(
-    (sum, entry) => sum + entry.hours,
-    0,
-  );
   const approvedOvertimePay = overtimeEntries.reduce(
     (sum, entry) => sum + entry.pay,
-    0,
-  );
-  const paidLeaveDays = paidLeaveEntries.reduce(
-    (sum, entry) => sum + entry.days,
     0,
   );
   const paidLeavePay = paidLeaveEntries.reduce(
@@ -273,7 +301,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     setCashAdvanceEntries((prev) => [
       ...prev,
       {
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: createEntryId(),
         amount: Number(amount.toFixed(2)),
         notes: cashAdvanceNotes.trim(),
       },
@@ -291,7 +319,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     setOvertimeEntries((prev) => [
       ...prev,
       {
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: createEntryId(),
         hours: Number(hours.toFixed(2)),
         pay: Number(pay.toFixed(2)),
         notes: overtimeNotes.trim(),
@@ -311,7 +339,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     setPaidLeaveEntries((prev) => [
       ...prev,
       {
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: createEntryId(),
         days: Number(days.toFixed(2)),
         pay,
         notes: paidLeaveNotes.trim(),
@@ -322,15 +350,15 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     setActiveAdjustmentForm(null);
   }
 
-  function removeCashAdvance(id: number) {
+  function removeCashAdvance(id: string) {
     setCashAdvanceEntries((prev) => prev.filter((entry) => entry.id !== id));
   }
 
-  function removeOvertime(id: number) {
+  function removeOvertime(id: string) {
     setOvertimeEntries((prev) => prev.filter((entry) => entry.id !== id));
   }
 
-  function removePaidLeave(id: number) {
+  function removePaidLeave(id: string) {
     setPaidLeaveEntries((prev) => prev.filter((entry) => entry.id !== id));
   }
 
@@ -695,11 +723,17 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <p className="text-2xs font-semibold uppercase tracking-widest">
                 All Report Logs
               </p>
-              {paidHolidayOnlyRows.length > 0 && (
+              {paidHolidayBonusDays > 0 && (
                 <p className="mt-1 text-xs font-semibold text-sky-700">
-                  {paidHolidayOnlyRows.length} paid holiday day
-                  {paidHolidayOnlyRows.length === 1 ? "" : "s"} added for this
+                  {paidHolidayBonusDays} paid holiday day
+                  {paidHolidayBonusDays === 1 ? "" : "s"} added for this
                   employee.
+                </p>
+              )}
+              {underHoursLogs.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-amber-700">
+                  Under-8 logs are not full paid days by themselves, but their
+                  hours accumulate toward total paid days.
                 </p>
               )}
             </div>
@@ -743,7 +777,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     const isPaidHoliday = holidayLogDateSet.has(log.date);
                     const isUnderRequiredHours =
                       getHoursNumber(log) > 0 &&
-                      getHoursNumber(log) < minimumPaidHours;
+                      getHoursNumber(log) < FULL_WORKDAY_HOURS;
                     const statusFallback = (
                       <span className="text-red-500">Missed</span>
                     );
@@ -771,7 +805,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             )}
                             {isUnderRequiredHours && !isPaidHoliday && (
                               <span className="w-fit rounded-full border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-2xs font-semibold text-yellow-800">
-                                Under Hours
+                                Under 8h
                               </span>
                             )}
                           </div>
@@ -843,6 +877,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   value: String(payroll.editingPayrollSummary.attendanceDays),
                 },
                 {
+                  label: "Computed Paid Days",
+                  value: formatPayrollNumber(daysWorked),
+                },
+                {
+                  label: "Total Worked Hours",
+                  value: `${formatPayrollNumber(totalWorkedHours)} hrs`,
+                },
+                {
                   label: "Approved Overtime",
                   value: formatPeso(approvedOvertimePay),
                 },
@@ -852,7 +894,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 },
                 {
                   label: "Paid Holidays (Day)",
-                  value: String(paidHolidayOnlyRows.length),
+                  value: String(paidHolidayBonusDays),
                 },
               ].map((item) => (
                 <div
@@ -877,6 +919,28 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               </p>
             </div>
             <div className="p-4 space-y-2">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-apple-charcoal">Total Worked Hours</span>
+                <span className="font-mono font-semibold text-apple-charcoal text-right">
+                  {formatPayrollNumber(totalWorkedHours)} hrs
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-apple-charcoal">
+                  Days Worked (floor(hours/8))
+                </span>
+                <span className="font-mono font-semibold text-apple-charcoal text-right">
+                  {formatPayrollNumber(daysWorked)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-apple-charcoal">
+                  Ignored Remaining Hours (&lt;8)
+                </span>
+                <span className="font-mono font-semibold text-apple-charcoal text-right">
+                  {formatPayrollNumber(remainingHours)} hrs
+                </span>
+              </div>
               <div className="flex items-center justify-between gap-3 text-sm">
                 <span className="text-apple-charcoal">Base Pay</span>
                 <span className="font-mono font-semibold text-apple-charcoal text-right">
@@ -907,6 +971,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   {formatPeso(cashAdvanceAmount)}
                 </span>
               </div>
+              {belowFullDayThreshold && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                  Worked hours are below 8.00, so no full paid day is counted
+                  yet.
+                </div>
+              )}
               <div className="border-t border-apple-mist pt-2 mt-2 flex items-center justify-between gap-3">
                 <span className="text-base font-bold text-apple-charcoal">
                   Adjusted Total Pay
@@ -1231,7 +1301,13 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               </button>
               <button
                 type="button"
-                onClick={payroll.savePayrollEdit}
+                onClick={() =>
+                  payroll.savePayrollEdit({
+                    cashAdvanceEntries,
+                    overtimeEntries,
+                    paidLeaveEntries,
+                  })
+                }
                 className="px-4 h-10 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition"
               >
                 Save Changes

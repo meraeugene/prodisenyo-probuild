@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { PaidHolidayItem } from "@/features/payroll/types";
+import { isIsoDateWithinRange } from "@/features/payroll/utils/payrollDateHelpers";
 
 interface PaidHolidayModalProps {
   show: boolean;
@@ -54,15 +55,6 @@ function buildCalendarDays(viewMonth: Date): Array<Date | null> {
   }
 
   return calendarCells;
-}
-
-function isWithinPayrollRange(
-  isoDate: string,
-  periodStart: string | null,
-  periodEnd: string | null,
-): boolean {
-  if (!periodStart || !periodEnd) return false;
-  return isoDate >= periodStart && isoDate <= periodEnd;
 }
 
 export default function PaidHolidayModal({
@@ -221,7 +213,7 @@ export default function PaidHolidayModal({
                 const isoDate = toIsoDate(date);
                 const isSelected = isoDate === selectedDate;
                 const isHoliday = holidaysByDate.has(isoDate);
-                const isInPayrollRange = isWithinPayrollRange(
+                const isInPayrollRange = isIsoDateWithinRange(
                   isoDate,
                   periodStart,
                   periodEnd,
