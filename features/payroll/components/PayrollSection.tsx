@@ -278,7 +278,12 @@ export default function PayrollSection({
         </div>
 
         {payroll.payrollGenerated && (
-          <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.32, ease: "easeOut" }}
+            className="space-y-5 px-4 py-5 sm:px-6 sm:py-6"
+          >
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => payroll.setPayrollTab("payroll")}
@@ -718,7 +723,7 @@ ${
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 

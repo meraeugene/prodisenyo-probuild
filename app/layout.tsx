@@ -10,16 +10,11 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Prodisenyo Payroll System",
-    template: "%s | Prodisenyo Payroll",
+    default: "Prodisenyo PayTrack",
+    template: "%s | Prodisenyo PayTrack",
   },
   description:
-    "Prodisenyo Payroll System helps teams upload attendance logs, review worked hours, and generate accurate payroll reports faster.",
-  // icons: {
-  //   icon: "/icon.ico",
-  //   shortcut: "/icon.ico",
-  //   apple: "/icon.ico",
-  // },
+    "Prodisenyo PayTrack helps teams upload attendance logs, review worked hours, and generate accurate payroll reports faster.",
 };
 
 export default function RootLayout({

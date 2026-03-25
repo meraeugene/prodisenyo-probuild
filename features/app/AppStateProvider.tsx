@@ -10,7 +10,12 @@ import {
   type ReactNode,
 } from "react";
 import type { ParseResult } from "@/lib/parser";
-import type { AttendanceRecord, Employee, ThemeMode } from "@/types";
+import type {
+  AttendanceRecord,
+  Employee,
+  ThemeMode,
+  UploadedFileItem,
+} from "@/types";
 import {
   useAttendanceReview,
   type UseAttendanceReviewResult,
@@ -23,6 +28,11 @@ import {
 const STORAGE_KEY = "prodisenyo-dashboard-state-v1";
 
 interface PersistedDashboardState {
+  uploadedFiles: Array<{
+    name: string;
+    size: number;
+    lastModified: number;
+  }>;
   records: AttendanceRecord[];
   site: string;
   attendancePeriod: string;
@@ -53,7 +63,7 @@ interface PersistedDashboardState {
 
 interface AppStateContextValue {
   hydrated: boolean;
-  uploadedFiles: File[];
+  uploadedFiles: UploadedFileItem[];
   records: AttendanceRecord[];
   site: string;
   attendancePeriod: string;
@@ -71,7 +81,9 @@ interface AppStateContextValue {
   };
   setTheme: (nextTheme: ThemeMode) => void;
   setUploadedFiles: (
-    value: File[] | ((prev: File[]) => File[]),
+    value:
+      | UploadedFileItem[]
+      | ((prev: UploadedFileItem[]) => UploadedFileItem[]),
   ) => void;
   handleParsed: (result: ParseResult) => void;
   handleClearAttendanceData: () => void;
@@ -82,18 +94,17 @@ interface AppStateContextValue {
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
 function isThemeMode(value: string): value is ThemeMode {
-  return value === "default" || value === "prodisenyo" || value === "light";
+  return value === "prodisenyo";
 }
 
 function normalizeThemeMode(value: string | null): ThemeMode | null {
   if (!value || !isThemeMode(value)) return null;
-  if (value === "default") return "prodisenyo";
   return value;
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFileItem[]>([]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [site, setSite] = useState("Unknown Site");
   const [attendancePeriod, setAttendancePeriod] = useState("Current Period");
@@ -108,11 +119,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const savedTheme = normalizeThemeMode(window.localStorage.getItem("theme-mode"));
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) {
@@ -121,6 +127,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       }
 
       const parsed = JSON.parse(raw) as Partial<PersistedDashboardState>;
+      setUploadedFiles(
+        (parsed.uploadedFiles ?? []).map((file) => ({
+          name: file.name,
+          size: file.size,
+          lastModified: file.lastModified,
+          file: null,
+          persisted: true,
+        })),
+      );
       setRecords(parsed.records ?? []);
       setSite(parsed.site ?? "Unknown Site");
       setAttendancePeriod(parsed.attendancePeriod ?? "Current Period");
@@ -164,13 +179,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    window.localStorage.setItem("theme-mode", theme);
   }, [theme]);
 
   useEffect(() => {
     if (!hydrated) return;
 
     const payload: PersistedDashboardState = {
+      uploadedFiles: uploadedFiles.map((file) => ({
+        name: file.name,
+        size: file.size,
+        lastModified: file.lastModified,
+      })),
       records,
       site,
       attendancePeriod,
@@ -202,6 +221,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }, [
     hydrated,
+    uploadedFiles,
     records,
     site,
     attendancePeriod,
@@ -239,6 +259,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   const handleClearAttendanceData = useCallback(() => {
+    setUploadedFiles([]);
     setRecords([]);
     setEmployees([]);
     setSite("Unknown Site");

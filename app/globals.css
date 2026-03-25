@@ -1,4 +1,4 @@
-/* ── Apple System Font Stack ─────────────────────────── */
+/* Apple System Font Stack */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap");
 
 @tailwind base;
@@ -45,102 +45,49 @@ body {
   color: rgb(var(--apple-charcoal));
 }
 
-/* ── Custom scrollbar ─────────────────────────────────── */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgb(var(--apple-silver));
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--apple-steel));
 }
 
-html[data-theme="prodisenyo"] {
-  --apple-white: 255 255 255;
-  --apple-snow: 255 255 255;
-  --apple-mist: 222 243 229;
-  --apple-silver: 174 220 188;
-  --apple-steel: 120 124 132;
-  --apple-smoke: 82 86 94;
-  --apple-ash: 46 51 56;
-  --apple-charcoal: 22 24 29;
-  --apple-black: 10 12 16;
-  --theme-chart-1: 24 83 43;
-  --theme-chart-2: 37 113 58;
-  --theme-chart-3: 57 145 80;
-  --theme-chart-4: 92 179 116;
-  --theme-chart-5: 147 212 163;
-  --theme-chart-grid: 214 238 221;
-  --theme-chart-axis: 70 74 82;
-  --theme-chart-cursor: 247 250 248;
-}
-
-html[data-theme="default"] {
-  --apple-white: 255 255 255;
-  --apple-snow: 247 247 247;
-  --apple-mist: 230 230 230;
-  --apple-silver: 196 196 196;
-  --apple-steel: 145 145 145;
-  --apple-smoke: 105 105 105;
-  --apple-ash: 66 66 66;
-  --apple-charcoal: 22 22 22;
-  --apple-black: 0 0 0;
-  --theme-chart-1: 29 78 216;
-  --theme-chart-2: 37 99 235;
-  --theme-chart-3: 59 130 246;
-  --theme-chart-4: 96 165 250;
-  --theme-chart-5: 147 197 253;
-  --theme-chart-grid: 219 234 254;
-  --theme-chart-axis: 30 58 138;
-  --theme-chart-cursor: 239 246 255;
-}
-
-html[data-theme="light"] {
-  --apple-white: 255 255 255;
-  --apple-snow: 239 246 255;
-  --apple-mist: 219 234 254;
-  --apple-silver: 147 197 253;
-  --apple-steel: 96 165 250;
-  --apple-smoke: 59 130 246;
-  --apple-ash: 37 99 235;
-  --apple-charcoal: 29 78 216;
-  --apple-black: 30 58 138;
-  --theme-chart-1: 29 78 216;
-  --theme-chart-2: 37 99 235;
-  --theme-chart-3: 59 130 246;
-  --theme-chart-4: 96 165 250;
-  --theme-chart-5: 147 197 253;
-  --theme-chart-grid: 219 234 254;
-  --theme-chart-axis: 30 58 138;
-  --theme-chart-cursor: 239 246 255;
-}
-
-/* ── Number input — remove arrows ────────────────────── */
+/* Number input - remove arrows */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* ── Animation utilities ──────────────────────────────── */
+/* Animation utilities */
 .stagger-1 {
   animation-delay: 0ms;
 }
+
 .stagger-2 {
   animation-delay: 60ms;
 }
+
 .stagger-3 {
   animation-delay: 120ms;
 }
+
 .stagger-4 {
   animation-delay: 180ms;
 }
@@ -149,22 +96,26 @@ input[type="number"] {
   .text-balance {
     text-wrap: balance;
   }
+
   .tracking-apple {
     letter-spacing: -0.02em;
   }
+
   .tracking-apple-tight {
     letter-spacing: -0.03em;
   }
 }
 
-/* ── Print styles ─────────────────────────────────────── */
+/* Print styles */
 @media print {
   body {
     background: white !important;
   }
+
   .no-print {
     display: none !important;
   }
+
   .print-full {
     width: 100% !important;
     max-width: 100% !important;
@@ -173,13 +124,13 @@ input[type="number"] {
 
 @layer base {
   :root {
-    --radius: 0.65rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.22 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.22 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.22 0 0);
+    --radius: 0.625rem;
+    --background: oklch(1 0.003 145);
+    --foreground: oklch(0.22 0.01 150);
+    --card: oklch(1 0.003 145);
+    --card-foreground: oklch(0.22 0.01 150);
+    --popover: oklch(1 0.003 145);
+    --popover-foreground: oklch(0.22 0.01 150);
     --primary: oklch(0.5 0.1 150);
     --primary-foreground: oklch(0.99 0.003 145);
     --secondary: oklch(0.98 0.008 151);
@@ -197,9 +148,8 @@ input[type="number"] {
     --chart-3: oklch(0.61 0.09 151);
     --chart-4: oklch(0.71 0.08 152);
     --chart-5: oklch(0.81 0.06 153);
-    --radius: 0.625rem;
-    --sidebar: oklch(1 0 0);
-    --sidebar-foreground: oklch(0.22 0 0);
+    --sidebar: oklch(1 0.003 145);
+    --sidebar-foreground: oklch(0.22 0.01 150);
     --sidebar-primary: oklch(0.5 0.1 150);
     --sidebar-primary-foreground: oklch(0.99 0.003 145);
     --sidebar-accent: oklch(0.95 0.015 150);
@@ -208,55 +158,18 @@ input[type="number"] {
     --sidebar-ring: oklch(0.62 0.08 150);
   }
 
-  html[data-theme="light"] {
-    --background: oklch(0.96 0.025 252);
-    --foreground: oklch(0.35 0.11 258);
-    --card: oklch(0.995 0.005 252);
-    --card-foreground: oklch(0.32 0.1 258);
-    --popover: oklch(0.995 0.005 252);
-    --popover-foreground: oklch(0.32 0.1 258);
-    --primary: oklch(0.56 0.2 262);
-    --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.9 0.04 252);
-    --secondary-foreground: oklch(0.4 0.11 258);
-    --muted: oklch(0.92 0.03 252);
-    --muted-foreground: oklch(0.55 0.08 258);
-    --accent: oklch(0.88 0.05 252);
-    --accent-foreground: oklch(0.36 0.1 258);
-    --border: oklch(0.85 0.03 252);
-    --input: oklch(0.85 0.03 252);
-    --ring: oklch(0.64 0.17 262);
-  }
-
-  html[data-theme="default"] {
-    --background: oklch(0.98 0 0);
-    --foreground: oklch(0.18 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.18 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.18 0 0);
-    --primary: oklch(0.28 0 0);
-    --primary-foreground: oklch(0.98 0 0);
-    --secondary: oklch(0.93 0 0);
-    --secondary-foreground: oklch(0.25 0 0);
-    --muted: oklch(0.94 0 0);
-    --muted-foreground: oklch(0.5 0 0);
-    --accent: oklch(0.92 0 0);
-    --accent-foreground: oklch(0.24 0 0);
-    --border: oklch(0.87 0 0);
-    --input: oklch(0.87 0 0);
-    --ring: oklch(0.55 0 0);
-  }
-
   .theme {
     --font-sans: var(--font-sans);
   }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }

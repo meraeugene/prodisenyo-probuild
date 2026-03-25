@@ -362,9 +362,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center">
-      <div className="w-full max-w-6xl max-h-[88vh] overflow-y-auto rounded-lg border border-apple-mist bg-white shadow-apple-xs">
-        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-apple-mist px-5 sm:px-7 py-4 flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+      <div className="flex max-h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-apple-mist bg-white shadow-apple-xs">
+        <div className="sticky top-0 z-10 border-b border-apple-mist bg-white px-5 py-4 sm:px-7 flex items-start justify-between gap-3">
           <div>
             <p className="text-2xs font-semibold  uppercase tracking-widest">
               Calculation Details
@@ -406,7 +406,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
           </button>
         </div>
 
-        <div className="px-5 sm:px-7 py-5 sm:py-6 space-y-5">
+        <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6 [scrollbar-gutter:stable]">
+          <div className="space-y-5">
           <div className="rounded-2xl border border-apple-mist bg-white">
             <div className="px-4 py-3 border-b border-apple-mist">
               <p className="text-2xs font-semibold uppercase tracking-widest">
@@ -717,7 +718,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-apple-mist bg-white overflow-x-auto">
+          <div className="rounded-2xl border border-apple-mist bg-white">
             <div className="px-4 py-3 border-b border-apple-mist">
               <p className="text-2xs font-semibold uppercase tracking-widest">
                 All Report Logs
@@ -736,7 +737,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 </p>
               )}
             </div>
-            <table className="w-full text-sm min-w-[980px]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-sm">
               <thead>
                 <tr className="border-b border-apple-mist">
                   {[
@@ -852,7 +854,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   })
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
 
           <div className="rounded-2xl border border-apple-mist bg-white">
@@ -1085,7 +1088,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           dataKey="hoursWorked"
                           fill="url(#employeeHoursArea)"
                           stroke="none"
-                          animationDuration={900}
+                          isAnimationActive={false}
                         />
                         <Line
                           type="monotone"
@@ -1104,7 +1107,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             stroke: "#fff",
                             strokeWidth: 2,
                           }}
-                          animationDuration={1100}
+                          isAnimationActive={false}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -1136,8 +1139,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           outerRadius={72}
                           paddingAngle={3}
                           stroke="none"
-                          isAnimationActive
-                          animationDuration={850}
+                          isAnimationActive={false}
                         >
                           {payroll.employeeAttendanceBreakdown.map(
                             (entry, index) => (
@@ -1265,7 +1267,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           fill="url(#clockInBar)"
                           radius={[4, 4, 0, 0]}
                           maxBarSize={26}
-                          animationDuration={950}
+                          isAnimationActive={false}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -1312,6 +1314,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 Save Changes
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>

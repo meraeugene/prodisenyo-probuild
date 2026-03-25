@@ -45,7 +45,14 @@ export interface PayrollSummary {
 }
 
 export type Step = 1 | 2 | 3 | 4;
-export type ThemeMode = "default" | "prodisenyo" | "light";
+export type ThemeMode = "prodisenyo";
+export interface UploadedFileItem {
+  name: string;
+  size: number;
+  lastModified: number;
+  file?: File | null;
+  persisted?: boolean;
+}
 
 export type Step2View = "daily" | "detailed";
 export type Step2Sort = "date-asc" | "date-desc" | "name-asc" | "name-desc";

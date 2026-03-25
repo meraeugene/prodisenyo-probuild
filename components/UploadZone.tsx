@@ -3,21 +3,42 @@
 import { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
 import { Upload, FileSpreadsheet, X, AlertCircle, Loader2 } from "lucide-react";
 import { parseAttendanceFiles, type ParseResult } from "@/lib/parser";
+import type { UploadedFileItem } from "@/types";
 
 interface UploadZoneProps {
-  files: File[];
-  onFilesChange: (value: File[] | ((prev: File[]) => File[])) => void;
+  files: UploadedFileItem[];
+  onFilesChange: (
+    value:
+      | UploadedFileItem[]
+      | ((prev: UploadedFileItem[]) => UploadedFileItem[]),
+  ) => void;
   onParsed: (result: ParseResult) => void;
   resetSignal?: number;
 }
 
-function getFileKey(file: File): string {
+function getFileKey(
+  file: Pick<UploadedFileItem, "name" | "size" | "lastModified">,
+): string {
   return `${file.name}-${file.size}-${file.lastModified}`;
 }
 
-function mergeFiles(existing: File[], incoming: File[]): File[] {
-  const map = new Map<string, File>();
+function mergeFiles(
+  existing: UploadedFileItem[],
+  incoming: File[],
+): UploadedFileItem[] {
+  const map = new Map<string, UploadedFileItem>();
   [...existing, ...incoming].forEach((file) => {
+    if (file instanceof File) {
+      map.set(getFileKey(file), {
+        name: file.name,
+        size: file.size,
+        lastModified: file.lastModified,
+        file,
+        persisted: false,
+      });
+      return;
+    }
+
     map.set(getFileKey(file), file);
   });
   return Array.from(map.values());
@@ -60,7 +81,7 @@ export default function UploadZone({
     e.target.value = "";
   }
 
-  function handleRemoveSingle(file: File) {
+  function handleRemoveSingle(file: UploadedFileItem) {
     const keyToRemove = getFileKey(file);
     onFilesChange((prev) =>
       prev.filter((item) => getFileKey(item) !== keyToRemove),
@@ -70,10 +91,19 @@ export default function UploadZone({
 
   async function handleProcess() {
     if (files.length === 0) return;
+    const sourceFiles = files
+      .map((item) => item.file)
+      .filter((file): file is File => file instanceof File);
+    if (sourceFiles.length === 0) {
+      setError(
+        "These uploaded documents were restored after refresh. Re-select the files if you want to parse them again.",
+      );
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const result = await parseAttendanceFiles(files);
+      const result = await parseAttendanceFiles(sourceFiles);
       if (result.employees.length === 0 && result.records.length === 0) {
         throw new Error(
           "No employee records found. Check export format and try again.",
@@ -198,6 +228,7 @@ export default function UploadZone({
                       </p>
                       <p className="text-2xs text-apple-silver">
                         {(current.size / 1024).toFixed(1)} KB
+                        {current.persisted ? " · restored after refresh" : ""}
                       </p>
                     </div>
                     <button
