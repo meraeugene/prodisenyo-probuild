@@ -18,10 +18,10 @@ function PageButton({
         transition-all duration-150
         ${
           active
-            ? "bg-apple-charcoal text-white"
+            ? "bg-[#1f6a37] text-white border border-[#1f6a37]"
             : disabled
               ? "text-apple-silver cursor-not-allowed"
-              : "text-apple-ash hover:bg-apple-mist border border-apple-silver"
+              : "text-apple-ash hover:bg-apple-mist hover:border-[#7ebd8b] border border-apple-silver"
         }`}
     >
       {children}

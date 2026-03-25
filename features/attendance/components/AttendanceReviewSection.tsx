@@ -52,17 +52,17 @@ export default function AttendanceReviewSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-hidden">
-        <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-apple-mist">
+      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
               Step 2
             </span>
-            <span className="text-2xs font-semibold text-white bg-apple-charcoal px-2 py-0.5 rounded-full border border-apple-mist">
+            <span className="rounded-full border border-[#1f6a37] bg-[#1f6a37] px-2 py-0.5 text-2xs font-semibold text-white">
               {site}
             </span>
             {step > 2 && (
-              <span className="text-2xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-2xs font-semibold text-emerald-700">
                 Complete
               </span>
             )}
@@ -75,7 +75,7 @@ export default function AttendanceReviewSection({
           </p>
         </div>
 
-        <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-5">
+        <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6">
           {branchSummaries.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {branchSummaries.map((branch, i) => (
@@ -84,17 +84,17 @@ export default function AttendanceReviewSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-xl border bg-apple-snow  border-apple-mist shadow-apple-xs  px-4 py-3 hover:shadow-sm transition"
+                  className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 shadow-[0_4px_12px_rgba(24,83,43,0.04)] transition hover:bg-white hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)]"
                 >
-                  <p className="text-[11px] text-apple-steel uppercase tracking-wider">
+                  <p className="text-[11px] uppercase tracking-wider text-[#9babaf]">
                     Branch
                   </p>
 
-                  <p className="text-sm font-semibold  mt-1">
+                  <p className="mt-1 text-sm font-semibold text-[#22353b]">
                     {branch.siteName.split(" ")[0]}
                   </p>
 
-                  <p className="text-sm mt-1 ">
+                  <p className="mt-1 text-sm text-[#41565f]">
                     {branch.employeeCount}{" "}
                     {branch.employeeCount === 1 ? "employee" : "employees"}
                   </p>
@@ -109,11 +109,11 @@ export default function AttendanceReviewSection({
                 onClick={() => {
                   setStep2View("daily");
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     step2View === "daily"
-                      ? "bg-apple-charcoal text-white border-apple-charcoal"
-                      : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
                   }`}
               >
                 Daily View
@@ -122,11 +122,11 @@ export default function AttendanceReviewSection({
                 onClick={() => {
                   setStep2View("detailed");
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     step2View === "detailed"
-                      ? "bg-apple-charcoal text-white border-apple-charcoal"
-                      : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
                   }`}
               >
                 Detailed Logs
@@ -139,8 +139,7 @@ export default function AttendanceReviewSection({
               <select
                 value={step2SiteFilter}
                 onChange={(e) => setStep2SiteFilter(e.target.value)}
-                className="w-full px-3 h-10 rounded-2xl border border-apple-silver  hover:border-apple-charcoal cursor-pointer bg-white text-sm text-apple-charcoal
-                  focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All files/sites</option>
                 {availableSites.map((siteOption) => (
@@ -162,7 +161,7 @@ export default function AttendanceReviewSection({
                   onChange={(e) => setStep2NameFilter(e.target.value)}
                   placeholder="Search employee... ( / )"
                   id="searchEmployee"
-                  className="w-full hover:border-apple-charcoal pl-9 pr-9 py-2.5 rounded-2xl border border-apple-silver bg-white text-sm"
+                  className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white py-2.5 pl-9 pr-9 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
                 />
 
                 {step2NameFilter && (
@@ -179,8 +178,7 @@ export default function AttendanceReviewSection({
                 type="date"
                 value={step2DateFilter}
                 onChange={(e) => setStep2DateFilter(e.target.value)}
-                className="w-full hover:border-apple-charcoal px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal
-                  focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               />
 
               <select
@@ -188,8 +186,7 @@ export default function AttendanceReviewSection({
                 onChange={(e) =>
                   setStep2Sort(e.target.value as typeof step2Sort)
                 }
-                className="w-full px-3 h-10 rounded-2xl border border-apple-silver hover:border-apple-charcoal cursor-pointer bg-white text-sm text-apple-charcoal
-                  focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="date-asc">Date first (oldest)</option>
                 <option value="date-desc">Date first (newest)</option>
@@ -199,8 +196,7 @@ export default function AttendanceReviewSection({
 
               <button
                 onClick={clearFilters}
-                className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm font-semibold text-apple-charcoal
-                  hover:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm font-semibold text-[#334951] transition-all hover:border-[#0f6f74]/35"
               >
                 Clear Filters
               </button>
@@ -209,10 +205,10 @@ export default function AttendanceReviewSection({
 
           {records.length > 0 ? (
             step2View === "daily" ? (
-              <div className="rounded-3xl border border-apple-mist bg-white shadow-apple-xs w-full">
+              <div className="w-full overflow-hidden rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
                 <table className="w-full text-sm table-auto">
                   <thead>
-                    <tr className="border-b border-apple-mist">
+                    <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                       {[
                         "Date",
                         "Employee",
@@ -227,7 +223,7 @@ export default function AttendanceReviewSection({
                       ].map((h) => (
                         <th
                           key={h}
-                          className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-apple-steel"
+                            className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-[#9babaf]"
                         >
                           {h}
                         </th>
@@ -256,7 +252,7 @@ export default function AttendanceReviewSection({
                       previewDailyRows.map((row) => (
                         <tr
                           key={`${row.date}-${row.employee}`}
-                          className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                          className="border-b border-[#edf1f3] last:border-0 odd:bg-[#fbfcfd] transition hover:bg-[#f5f9fa]"
                         >
                           <td className="px-4 py-3 text-sm  text-apple-ash">
                             {row.date}
@@ -311,10 +307,10 @@ export default function AttendanceReviewSection({
                 </table>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+              <div className="overflow-x-auto rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)] [-webkit-overflow-scrolling:touch]">
                 <table className="w-full text-sm table-auto">
                   <thead>
-                    <tr className="border-b border-apple-mist">
+                    <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                       {[
                         "Date",
                         "Employee",
@@ -325,7 +321,7 @@ export default function AttendanceReviewSection({
                       ].map((h) => (
                         <th
                           key={h}
-                          className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-apple-steel"
+                          className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-[#9babaf]"
                         >
                           {h}
                         </th>
@@ -336,7 +332,7 @@ export default function AttendanceReviewSection({
                     {previewRecords.map((r, idx) => (
                       <tr
                         key={`${r.employee}-${r.date}-${r.logTime}-${r.type}-${idx}`}
-                        className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                        className="border-b border-[#edf1f3] last:border-0 odd:bg-[#fbfcfd] transition hover:bg-[#f5f9fa]"
                       >
                         <td className="px-4 py-3 text-sm font-mono text-apple-ash">
                           {r.date}
@@ -387,11 +383,11 @@ export default function AttendanceReviewSection({
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setRecordsPage(1)}
                     disabled={recordsPage === 1}
-                    className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold
 ${
   recordsPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     First
@@ -402,11 +398,11 @@ ${
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setRecordsPage((p) => Math.max(1, p - 1))}
                     disabled={recordsPage === 1}
-                    className={`px-3 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-3 text-xs font-semibold
 ${
   recordsPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     <ArrowLeft size={16} />
@@ -418,11 +414,11 @@ ${
                       whileHover={{ scale: 1.05 }}
                       key={p}
                       onClick={() => setRecordsPage(p)}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold border transition
+                      className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition
 ${
   recordsPage === p
-    ? "bg-apple-charcoal text-white border-apple-charcoal"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    ? "bg-[#1f6a37] text-white border-[#1f6a37]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                     >
                       {p}
@@ -436,11 +432,11 @@ ${
                       setRecordsPage((p) => Math.min(totalRecordPages, p + 1))
                     }
                     disabled={recordsPage === totalRecordPages}
-                    className={`px-3 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-3 text-xs font-semibold
 ${
   recordsPage === totalRecordPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     <ArrowRight size={16} />
@@ -451,11 +447,11 @@ ${
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setRecordsPage(totalRecordPages)}
                     disabled={recordsPage === totalRecordPages}
-                    className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold
 ${
   recordsPage === totalRecordPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     Last

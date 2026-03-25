@@ -202,7 +202,13 @@ export interface UsePayrollStateArgs {
 
 export interface UsePayrollStateResult {
   payrollRoleRates: Record<RoleCode, number>;
+  setPayrollRoleRates: (
+    value:
+      | Record<RoleCode, number>
+      | ((prev: Record<RoleCode, number>) => Record<RoleCode, number>),
+  ) => void;
   payrollGenerated: boolean;
+  setPayrollGenerated: (value: boolean) => void;
   payrollTab: "payroll" | "logs";
   setPayrollTab: (value: "payroll" | "logs") => void;
   payrollPage: number;
@@ -231,6 +237,11 @@ export interface UsePayrollStateResult {
   filteredPayrollRows: PayrollRow[];
   filteredPayrollLogs: AttendanceRecordInput[];
   paidHolidays: PaidHolidayItem[];
+  setPaidHolidays: (
+    value:
+      | PaidHolidayItem[]
+      | ((prev: PaidHolidayItem[]) => PaidHolidayItem[]),
+  ) => void;
   payrollDateRange: PayrollDateRange | null;
   payableHolidayDays: number;
   payrollActiveRowsCount: number;
@@ -830,7 +841,9 @@ export function usePayrollState({
 
   return {
     payrollRoleRates,
+    setPayrollRoleRates,
     payrollGenerated,
+    setPayrollGenerated,
     payrollTab,
     setPayrollTab,
     payrollPage,
@@ -855,6 +868,7 @@ export function usePayrollState({
     filteredPayrollRows,
     filteredPayrollLogs,
     paidHolidays,
+    setPaidHolidays,
     payrollDateRange,
     payableHolidayDays,
     payrollActiveRowsCount,

@@ -4,6 +4,7 @@ import "sonner/dist/styles.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
+import { AppStateProvider } from "@/features/app/AppStateProvider";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -28,17 +29,19 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn("font-sans", geist.variable)}
-      data-theme="default"
+      data-theme="prodisenyo"
     >
       <body className="min-h-screen bg-apple-snow antialiased">
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            className:
-              "border border-apple-mist bg-apple-white text-apple-charcoal",
-          }}
-        />
+        <AppStateProvider>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className:
+                "border border-apple-mist bg-apple-white text-apple-charcoal",
+            }}
+          />
+        </AppStateProvider>
       </body>
     </html>
   );

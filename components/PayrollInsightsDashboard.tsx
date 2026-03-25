@@ -37,16 +37,16 @@ const THEME_BRANCH_COLORS = [
 ];
 
 const PIE_CHART_COLORS = [
-  "#2563eb",
-  "#0891b2",
-  "#14b8a6",
-  "#16a34a",
-  "#84cc16",
-  "#f59e0b",
-  "#c2410c",
-  "#ef4444",
-  "#ec4899",
-  "#a855f7",
+  "rgb(var(--theme-chart-1))",
+  "rgb(var(--theme-chart-2))",
+  "rgb(var(--theme-chart-3))",
+  "rgb(var(--theme-chart-4))",
+  "rgb(var(--theme-chart-5))",
+  "rgba(24, 83, 43, 0.75)",
+  "rgba(37, 113, 58, 0.75)",
+  "rgba(57, 145, 80, 0.72)",
+  "rgba(92, 179, 116, 0.72)",
+  "rgba(147, 212, 163, 0.88)",
 ];
 
 const STACK_COLORS = {

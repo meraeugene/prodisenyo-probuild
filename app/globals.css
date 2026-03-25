@@ -11,22 +11,22 @@
     "Helvetica Neue", "DM Sans", sans-serif;
   --font-mono: "SF Mono", "Fira Code", ui-monospace, monospace;
   --apple-white: 255 255 255;
-  --apple-snow: 233 246 246;
-  --apple-mist: 211 234 235;
-  --apple-silver: 168 207 210;
-  --apple-steel: 110 158 164;
-  --apple-smoke: 77 127 133;
-  --apple-ash: 45 100 107;
-  --apple-charcoal: 15 95 103;
-  --apple-black: 10 73 80;
-  --theme-chart-1: 15 95 103;
-  --theme-chart-2: 22 113 122;
-  --theme-chart-3: 30 131 139;
-  --theme-chart-4: 42 152 160;
-  --theme-chart-5: 126 208 212;
-  --theme-chart-grid: 211 234 235;
-  --theme-chart-axis: 45 100 107;
-  --theme-chart-cursor: 233 246 246;
+  --apple-snow: 255 255 255;
+  --apple-mist: 222 243 229;
+  --apple-silver: 174 220 188;
+  --apple-steel: 120 124 132;
+  --apple-smoke: 82 86 94;
+  --apple-ash: 46 51 56;
+  --apple-charcoal: 22 24 29;
+  --apple-black: 10 12 16;
+  --theme-chart-1: 24 83 43;
+  --theme-chart-2: 37 113 58;
+  --theme-chart-3: 57 145 80;
+  --theme-chart-4: 92 179 116;
+  --theme-chart-5: 147 212 163;
+  --theme-chart-grid: 214 238 221;
+  --theme-chart-axis: 70 74 82;
+  --theme-chart-cursor: 247 250 248;
 }
 
 * {
@@ -40,7 +40,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: rgb(var(--apple-snow));
+  background-color: rgb(var(--apple-white));
   color: rgb(var(--apple-charcoal));
 }
 
@@ -62,22 +62,22 @@ body {
 
 html[data-theme="prodisenyo"] {
   --apple-white: 255 255 255;
-  --apple-snow: 233 246 246;
-  --apple-mist: 211 234 235;
-  --apple-silver: 168 207 210;
-  --apple-steel: 110 158 164;
-  --apple-smoke: 77 127 133;
-  --apple-ash: 45 100 107;
-  --apple-charcoal: 15 95 103;
-  --apple-black: 10 73 80;
-  --theme-chart-1: 15 95 103;
-  --theme-chart-2: 22 113 122;
-  --theme-chart-3: 30 131 139;
-  --theme-chart-4: 42 152 160;
-  --theme-chart-5: 126 208 212;
-  --theme-chart-grid: 211 234 235;
-  --theme-chart-axis: 45 100 107;
-  --theme-chart-cursor: 233 246 246;
+  --apple-snow: 255 255 255;
+  --apple-mist: 222 243 229;
+  --apple-silver: 174 220 188;
+  --apple-steel: 120 124 132;
+  --apple-smoke: 82 86 94;
+  --apple-ash: 46 51 56;
+  --apple-charcoal: 22 24 29;
+  --apple-black: 10 12 16;
+  --theme-chart-1: 24 83 43;
+  --theme-chart-2: 37 113 58;
+  --theme-chart-3: 57 145 80;
+  --theme-chart-4: 92 179 116;
+  --theme-chart-5: 147 212 163;
+  --theme-chart-grid: 214 238 221;
+  --theme-chart-axis: 70 74 82;
+  --theme-chart-cursor: 247 250 248;
 }
 
 html[data-theme="default"] {
@@ -119,7 +119,6 @@ html[data-theme="light"] {
   --theme-chart-axis: 30 58 138;
   --theme-chart-cursor: 239 246 255;
 }
-
 
 /* ── Number input — remove arrows ────────────────────── */
 input[type="number"]::-webkit-inner-spin-button,
@@ -174,38 +173,38 @@ input[type="number"] {
 @layer base {
   :root {
     --radius: 0.65rem;
-    --background: oklch(0.97 0.018 194);
-    --foreground: oklch(0.38 0.07 203);
-    --card: oklch(0.995 0.006 195);
-    --card-foreground: oklch(0.35 0.07 203);
-    --popover: oklch(0.995 0.006 195);
-    --popover-foreground: oklch(0.35 0.07 203);
-    --primary: oklch(0.5 0.11 201);
-    --primary-foreground: oklch(0.99 0.005 195);
-    --secondary: oklch(0.93 0.02 194);
-    --secondary-foreground: oklch(0.42 0.06 202);
-    --muted: oklch(0.93 0.02 194);
-    --muted-foreground: oklch(0.55 0.045 200);
-    --accent: oklch(0.91 0.03 193);
-    --accent-foreground: oklch(0.4 0.07 203);
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.22 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.22 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.22 0 0);
+    --primary: oklch(0.5 0.1 150);
+    --primary-foreground: oklch(0.99 0.003 145);
+    --secondary: oklch(0.98 0.008 151);
+    --secondary-foreground: oklch(0.28 0 0);
+    --muted: oklch(0.98 0.008 151);
+    --muted-foreground: oklch(0.45 0 0);
+    --accent: oklch(0.97 0.012 151);
+    --accent-foreground: oklch(0.24 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.88 0.02 194);
-    --input: oklch(0.88 0.02 194);
-    --ring: oklch(0.63 0.08 199);
-    --chart-1: oklch(0.52 0.11 202);
-    --chart-2: oklch(0.62 0.08 195);
-    --chart-3: oklch(0.43 0.08 205);
-    --chart-4: oklch(0.72 0.07 188);
-    --chart-5: oklch(0.8 0.05 184);
+    --border: oklch(0.9 0.015 150);
+    --input: oklch(0.9 0.015 150);
+    --ring: oklch(0.62 0.08 150);
+    --chart-1: oklch(0.44 0.08 150);
+    --chart-2: oklch(0.53 0.09 151);
+    --chart-3: oklch(0.61 0.09 151);
+    --chart-4: oklch(0.71 0.08 152);
+    --chart-5: oklch(0.81 0.06 153);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0.01 195);
-    --sidebar-foreground: oklch(0.35 0.07 203);
-    --sidebar-primary: oklch(0.5 0.11 201);
-    --sidebar-primary-foreground: oklch(0.99 0.005 195);
-    --sidebar-accent: oklch(0.93 0.02 194);
-    --sidebar-accent-foreground: oklch(0.4 0.07 203);
-    --sidebar-border: oklch(0.88 0.02 194);
-    --sidebar-ring: oklch(0.63 0.08 199);
+    --sidebar: oklch(1 0 0);
+    --sidebar-foreground: oklch(0.22 0 0);
+    --sidebar-primary: oklch(0.5 0.1 150);
+    --sidebar-primary-foreground: oklch(0.99 0.003 145);
+    --sidebar-accent: oklch(0.95 0.015 150);
+    --sidebar-accent-foreground: oklch(0.24 0 0);
+    --sidebar-border: oklch(0.9 0.015 150);
+    --sidebar-ring: oklch(0.62 0.08 150);
   }
 
   html[data-theme="light"] {

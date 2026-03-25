@@ -242,15 +242,15 @@ export default function PayrollSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "80ms" }}
     >
-      <div className="bg-white rounded-3xl border border-apple-mist shadow-apple-xs overflow-hidden">
-        <div className="px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-apple-mist flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="flex flex-col gap-4 border-b border-apple-mist px-4 pb-4 pt-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:pb-5 sm:pt-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
                 Step 3
               </span>
               {payroll.payrollGenerated && (
-                <span className="text-2xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-2xs font-semibold text-emerald-700">
                   Complete
                 </span>
               )}
@@ -273,7 +273,7 @@ export default function PayrollSection({
               type="button"
               onClick={onGeneratePayroll}
               disabled={payroll.payrollRows.length === 0}
-              className="px-5 py-3 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="flex items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Calculator size={18} />
               Generate Payroll
@@ -282,26 +282,26 @@ export default function PayrollSection({
         </div>
 
         {payroll.payrollGenerated && (
-          <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-5">
+          <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6">
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => payroll.setPayrollTab("payroll")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     payroll.payrollTab === "payroll"
-                      ? "bg-apple-charcoal text-white border-apple-charcoal"
-                      : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
                   }`}
               >
                 Payroll Summary
               </button>
               <button
                 onClick={() => payroll.setPayrollTab("logs")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150
+                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     payroll.payrollTab === "logs"
-                      ? "bg-apple-charcoal text-white border-apple-charcoal"
-                      : "bg-white text-apple-charcoal border-apple-silver hover:border-apple-charcoal"
+                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
                   }`}
               >
                 Attendance Logs
@@ -312,7 +312,7 @@ export default function PayrollSection({
                   type="button"
                   onClick={payroll.handleExportPayroll}
                   disabled={payroll.filteredPayrollRows.length === 0}
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <FileSpreadsheet size={14} />
                   Export Excel
@@ -320,7 +320,7 @@ export default function PayrollSection({
                 <button
                   type="button"
                   onClick={() => setShowPaidHolidayModal(true)}
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition inline-flex items-center gap-1.5"
+                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
                 >
                   <CalendarDays size={14} />
                   Paid Holidays
@@ -328,7 +328,7 @@ export default function PayrollSection({
                 <button
                   type="button"
                   onClick={payroll.openPayrollRateModal}
-                  className="px-3.5 py-2 rounded-xl border border-apple-silver text-xs font-semibold text-apple-ash hover:border-apple-charcoal transition inline-flex items-center gap-1.5"
+                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
                 >
                   <SlidersHorizontal size={14} />
                   Edit Rates
@@ -340,8 +340,7 @@ export default function PayrollSection({
               <select
                 value={payroll.payrollSiteFilter}
                 onChange={(e) => payroll.setPayrollSiteFilter(e.target.value)}
-                className="w-full px-3 h-10 rounded-2xl border border-apple-silver  hover:border-apple-charcoal cursor-pointer bg-white text-sm text-apple-charcoal
-                  focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All files/sites</option>
                 {availableSites.map((siteOption) => (
@@ -358,9 +357,7 @@ export default function PayrollSection({
                     e.target.value as RoleCode | "ALL",
                   )
                 }
-                className="w-full h-10 px-3 rounded-2xl border border-apple-silver
-focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15
-focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm text-apple-charcoal bg-white"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All Roles</option>
 
@@ -383,9 +380,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                   onChange={(e) => payroll.setPayrollNameFilter(e.target.value)}
                   placeholder="Search employee... ( / )"
                   id="searchPayrollEmployee"
-                  className="w-full  hover:border-apple-charcoal h-10 pl-9 pr-9 rounded-2xl border border-apple-silver 
-                    focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
-                    text-sm text-apple-charcoal placeholder:text-apple-silver transition-all"
+                  className="h-11 w-full rounded-[12px] border border-[#d9e2e6] pl-9 pr-9 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
                 />
 
                 {payroll.payrollNameFilter && (
@@ -404,9 +399,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                 type="date"
                 value={payroll.payrollDateFilter}
                 onChange={(e) => payroll.setPayrollDateFilter(e.target.value)}
-                className="w-full h-10 hover:border-apple-charcoal px-3 rounded-2xl border border-apple-silver
-                  focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
-                  text-sm text-apple-charcoal placeholder:text-apple-silver transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] px-3 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               />
 
               <select
@@ -414,9 +407,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                 onChange={(e) =>
                   payroll.setPayrollSort(e.target.value as Step2Sort)
                 }
-                className="w-full h-10 px-3 rounded-2xl border border-apple-silver
-                  focus:outline-none hover:border-apple-charcoal cursor-pointer  focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal
-                  text-sm text-apple-charcoal bg-white transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="date-asc">Date first (oldest)</option>
                 <option value="date-desc">Date first (latest)</option>
@@ -427,7 +418,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
               <button
                 type="button"
                 onClick={payroll.clearPayrollFilters}
-                className="w-full h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition-all"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] text-sm font-semibold text-[#41565f] transition-all hover:border-[#0f6f74]/35"
               >
                 Clear Filters
               </button>
@@ -437,19 +428,19 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
               <>
                 <div className="flex gap-2">
                   {payrollPeriodLabel && (
-                    <div className="inline-flex items-center rounded-xl border border-apple-silver/60 bg-apple-snow px-3 py-1.5 text-sm font-semibold text-apple-charcoal">
+                    <div className="inline-flex items-center rounded-[10px] border border-[#d9e2e6] bg-[#f9fbfc] px-3 py-1.5 text-sm font-semibold text-[#22353b]">
                       Payroll Period: {payrollPeriodLabel}
                     </div>
                   )}
-                  <div className="inline-flex items-center rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800">
+                  <div className="inline-flex items-center rounded-[10px] border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800">
                     Paid Holidays: {payroll.payableHolidayDays} day
                     {payroll.payableHolidayDays === 1 ? "" : "s"}
                   </div>
                 </div>
-                <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+                <div className="overflow-x-auto rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)] [-webkit-overflow-scrolling:touch]">
                   <table className="w-full text-sm table-auto min-w-[1020px]">
                     <thead>
-                      <tr className="border-b border-apple-mist">
+                      <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                         {[
                           "Employee",
                           "Role",
@@ -461,7 +452,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                         ].map((h) => (
                           <th
                             key={h}
-                            className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                            className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[#9babaf] ${
                               h === "Days Worked" ||
                               h === "Rate/Day" ||
                               h === "Total Pay"
@@ -508,7 +499,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                           return (
                             <tr
                               key={representativeRow?.id ?? employee.name}
-                              className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                              className="border-b border-[#edf1f3] last:border-0 odd:bg-[#fbfcfd] transition hover:bg-[#f5f9fa]"
                             >
                               <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
                                 {highlight(
@@ -547,7 +538,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                                     );
                                   }}
                                   disabled={!representativeRow}
-                                  className="px-3 py-1.5 rounded-lg border border-apple-silver text-2xs font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                                  className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35"
                                 >
                                   Edit
                                 </button>
@@ -558,7 +549,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                       )}
                     </tbody>
                     <tfoot>
-                      <tr className="border-t border-apple-silver  bg-apple-charcoal">
+                      <tr className="border-t border-apple-silver bg-[#1f6a37]">
                         <td className="px-4 py-3 text-sm font-semibold text-white">
                           Summary
                         </td>
@@ -576,14 +567,14 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                 </div>
               </>
             ) : (
-              <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+              <div className="overflow-x-auto rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)] [-webkit-overflow-scrolling:touch]">
                 <table className="w-full text-sm table-auto min-w-[760px]">
                   <thead>
-                    <tr className="border-b border-apple-mist">
+                    <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                       {["Worker", "Role", "Site", "Date", "Hours"].map((h) => (
                         <th
                           key={h}
-                          className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                          className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[#9babaf] ${
                             h === "Hours" ? "text-right" : "text-left"
                           }`}
                         >
@@ -606,7 +597,7 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                       payroll.payrollPreviewLogs.map((record, index) => (
                         <tr
                           key={`${record.role}-${record.name}-${record.date}-${record.site}-${index}`}
-                          className="border-b border-apple-mist/60 last:border-0 odd:bg-apple-snow/40 hover:bg-apple-snow/70 transition"
+                          className="border-b border-[#edf1f3] last:border-0 odd:bg-[#fbfcfd] transition hover:bg-[#f5f9fa]"
                         >
                           <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
                             {record.name}
@@ -650,11 +641,11 @@ focus:border-apple-charcoal hover:border-apple-charcoal cursor-pointer text-sm t
                     whileHover={{ scale: 1.05 }}
                     onClick={() => payroll.setPayrollPage(1)}
                     disabled={payrollPage === 1}
-                    className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold
 ${
   payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     First
@@ -667,11 +658,11 @@ ${
                       payroll.setPayrollPage((p) => Math.max(1, p - 1))
                     }
                     disabled={payrollPage === 1}
-                    className={`px-3 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-3 text-xs font-semibold
 ${
   payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     <ArrowLeft size={16} />
@@ -683,11 +674,11 @@ ${
                       whileHover={{ scale: 1.05 }}
                       key={p}
                       onClick={() => payroll.setPayrollPage(p)}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold border transition
+                      className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition
 ${
   payrollPage === p
-    ? "bg-apple-charcoal text-white border-apple-charcoal"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    ? "bg-[#1f6a37] text-white border-[#1f6a37]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                     >
                       {p}
@@ -703,11 +694,11 @@ ${
                       )
                     }
                     disabled={payrollPage === payrollTotalPages}
-                    className={`px-3 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-3 text-xs font-semibold
 ${
   payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     <ArrowRight size={16} />
@@ -718,11 +709,11 @@ ${
                     whileHover={{ scale: 1.05 }}
                     onClick={() => payroll.setPayrollPage(payrollTotalPages)}
                     disabled={payrollPage === payrollTotalPages}
-                    className={`px-2.5 h-8 rounded-xl text-xs font-semibold border
+                    className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold
 ${
   payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-apple-charcoal"
+    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
 }`}
                   >
                     Last

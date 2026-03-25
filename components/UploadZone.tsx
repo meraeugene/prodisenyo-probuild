@@ -5,6 +5,8 @@ import { Upload, FileSpreadsheet, X, AlertCircle, Loader2 } from "lucide-react";
 import { parseAttendanceFiles, type ParseResult } from "@/lib/parser";
 
 interface UploadZoneProps {
+  files: File[];
+  onFilesChange: (value: File[] | ((prev: File[]) => File[])) => void;
   onParsed: (result: ParseResult) => void;
   resetSignal?: number;
 }
@@ -21,15 +23,18 @@ function mergeFiles(existing: File[], incoming: File[]): File[] {
   return Array.from(map.values());
 }
 
-export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
+export default function UploadZone({
+  files,
+  onFilesChange,
+  onParsed,
+  resetSignal,
+}: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setFiles([]);
     setDragging(false);
     setLoading(false);
     setError(null);
@@ -41,7 +46,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
     setDragging(false);
     const dropped = Array.from(e.dataTransfer.files);
     if (dropped.length > 0) {
-      setFiles((prev) => mergeFiles(prev, dropped));
+      onFilesChange((prev) => mergeFiles(prev, dropped));
       setError(null);
     }
   }
@@ -49,7 +54,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []);
     if (selected.length > 0) {
-      setFiles((prev) => mergeFiles(prev, selected));
+      onFilesChange((prev) => mergeFiles(prev, selected));
       setError(null);
     }
     e.target.value = "";
@@ -57,7 +62,9 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
 
   function handleRemoveSingle(file: File) {
     const keyToRemove = getFileKey(file);
-    setFiles((prev) => prev.filter((item) => getFileKey(item) !== keyToRemove));
+    onFilesChange((prev) =>
+      prev.filter((item) => getFileKey(item) !== keyToRemove),
+    );
     setError(null);
   }
 
@@ -93,13 +100,13 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         className={`
-          relative rounded-3xl border-2 border-dashed transition-all duration-200 cursor-pointer
+          relative cursor-pointer rounded-[14px] border-2 border-dashed transition-all duration-200
           ${
             dragging
-              ? "border-apple-charcoal bg-apple-charcoal/5 scale-[1.01]"
+              ? "scale-[1.01] border-emerald-500 bg-emerald-50 shadow-[0_18px_36px_rgba(16,185,129,0.12)]"
               : hasFiles
-                ? "border-apple-silver bg-white"
-                : "border-apple-silver hover:border-apple-ash hover:bg-white/60 bg-white/40"
+                ? "border-emerald-100 bg-[rgb(var(--apple-snow))] shadow-[0_12px_30px_rgba(24,83,43,0.05)]"
+                : "border-slate-300 bg-white hover:border-emerald-300 hover:bg-emerald-50/40 hover:shadow-[0_14px_32px_rgba(24,83,43,0.06)]"
           }
         `}
       >
@@ -113,21 +120,21 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
         />
 
         {!hasFiles ? (
-          <div className="py-16 px-8 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-apple-charcoal hover:bg-apple-charcoal/90 flex items-center justify-center mb-5 transition-transform duration-200 group-hover:scale-110">
+          <div className="flex flex-col items-center px-8 py-16 text-center">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-[0_16px_32px_rgba(22,101,52,0.22)] transition-transform duration-200 group-hover:scale-110">
               <Upload size={28} className="text-white" strokeWidth={1.5} />
             </div>
-            <p className="text-[17px] font-semibold text-apple-charcoal tracking-tight mb-1">
+            <p className="mb-1 text-[17px] font-semibold tracking-tight text-apple-charcoal">
               Drop your attendance reports here
             </p>
-            <p className="text-sm text-apple-smoke mb-5">
+            <p className="mb-5 text-sm text-apple-steel">
               or click to browse from your computer
             </p>
             <div className="flex items-center gap-2">
               {["PDF", "XLS", "XLSX", "CSV"].map((f) => (
                 <span
                   key={f}
-                  className="text-2xs font-mono font-medium px-2.5 py-1 rounded-md bg-apple-charcoal text-white "
+                  className="rounded-[8px] border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-2xs font-mono font-semibold text-emerald-700 shadow-sm"
                 >
                   {f}
                 </span>
@@ -135,58 +142,60 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
             </div>
           </div>
         ) : (
-          <div className="p-5 space-y-3">
+          <div className="space-y-3 p-5">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-apple-charcoal flex items-center justify-center flex-shrink-0">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-[0_14px_28px_rgba(22,101,52,0.2)]">
                 <FileSpreadsheet size={22} className="text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-apple-charcoal truncate">
+                <p className="truncate text-sm font-semibold text-[#142d34]">
                   {files.length} file{files.length > 1 ? "s" : ""} selected
                 </p>
-                <p className="text-xs text-apple-smoke mt-0.5">
-                  {(
-                    files.reduce((sum, current) => sum + current.size, 0) / 1024
-                  ).toFixed(1)}{" "}
-                  KB total
-                </p>
+                <div className="mt-0.5 flex items-center gap-2 text-xs text-[#7e9299]">
+                  <span>
+                    {(
+                      files.reduce((sum, current) => sum + current.size, 0) / 1024
+                    ).toFixed(1)}{" "}
+                    KB total
+                  </span>
+                </div>
               </div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   inputRef.current?.click();
                 }}
-                className="h-8 rounded-xl border border-apple-silver px-3 text-xs font-semibold text-apple-ash hover:border-apple-ash transition-colors"
+                className="h-9 rounded-[10px] border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-100"
               >
                 Add files
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setFiles([]);
+                  onFilesChange([]);
                   setError(null);
                 }}
-                className="w-8 h-8 rounded-full bg-apple-charcoal hover:bg-apple-charcoal/80 transition-colors flex items-center justify-center"
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-sm transition-colors hover:bg-[#15803d]"
               >
                 <X size={14} className="text-white" />
               </button>
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-2xs font-semibold text-apple-steel uppercase tracking-widest">
+              <p className="text-2xs font-semibold uppercase tracking-widest text-apple-silver">
                 Uploaded Reports
               </p>
-              <div className="space-y-3 ">
+              <div className="space-y-3">
                 {files.map((current) => (
                   <div
                     key={getFileKey(current)}
-                    className="flex items-center bg-apple-snow  justify-between gap-2 border-apple-mist shadow-apple-xs border px-2 rounded-lg py-1.5 hover:bg-apple-snow/40  "
+                    className="flex items-center justify-between gap-2 rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2 shadow-[0_8px_20px_rgba(24,83,43,0.05)]"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-xs text-apple-ash">
                         {current.name}
                       </p>
-                      <p className="text-2xs text-apple-steel">
+                      <p className="text-2xs text-apple-silver">
                         {(current.size / 1024).toFixed(1)} KB
                       </p>
                     </div>
@@ -195,7 +204,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
                         e.stopPropagation();
                         handleRemoveSingle(current);
                       }}
-                      className="h-6 w-6 flex-shrink-0 rounded-full bg-gray-600 hover:bg-apple-charcoal/90 transition-colors flex items-center  justify-center"
+                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[8px] bg-[linear-gradient(135deg,#14532d,#166534)] transition-colors hover:bg-[#15803d]"
                       aria-label={`Remove ${current.name}`}
                       title={`Remove ${current.name}`}
                     >
@@ -210,7 +219,7 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
       </div>
 
       {error && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 border border-red-100">
+        <div className="flex items-start gap-3 rounded-[12px] border border-red-100 bg-red-50 p-4">
           <AlertCircle
             size={16}
             className="text-red-500 mt-0.5 flex-shrink-0"
@@ -224,12 +233,12 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
           onClick={handleProcess}
           disabled={!hasFiles || loading}
           className={`
-            flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold
+            flex items-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold
             transition-all duration-200
             ${
               hasFiles && !loading
-                ? "bg-apple-charcoal text-white hover:bg-apple-charcoal/90 active:scale-[0.98] shadow-apple"
-                : "bg-apple-charcoal/80 text-white cursor-not-allowed"
+                ? "border border-emerald-700 bg-[linear-gradient(135deg,#166534,#15803d)] text-white shadow-[0_16px_34px_rgba(22,101,52,0.24)] hover:border-emerald-600 hover:bg-[linear-gradient(135deg,#15803d,#16a34a)] active:scale-[0.98]"
+                : "cursor-not-allowed border border-emerald-800/40 bg-emerald-800/70 text-white"
             }
           `}
         >
@@ -245,9 +254,9 @@ export default function UploadZone({ onParsed, resetSignal }: UploadZoneProps) {
         </button>
       </div>
 
-      <p className="text-xs text-apple-steel leading-relaxed">
+      <p className="text-xs leading-relaxed text-apple-silver">
         Your files are processed entirely in the browser.{" "}
-        <span className="font-medium text-apple-smoke">
+        <span className="font-medium text-apple-steel">
           No data is uploaded to any server.
         </span>
       </p>

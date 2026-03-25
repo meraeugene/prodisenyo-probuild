@@ -101,8 +101,8 @@ export default function AttendanceAnalyticsSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-3xl border border-apple-mist bg-white shadow-sm">
-        <div className="border-b border-apple-mist px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
+      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-apple-steel">
               Data Analytics
@@ -118,14 +118,14 @@ export default function AttendanceAnalyticsSection({
           </p>
         </div>
 
-        <div className="space-y-10 px-5 py-6 sm:px-8 sm:py-8">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="space-y-8 px-4 py-5 sm:px-6 sm:py-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                 Overtime Hours by Branch
               </h3>
 
-              <div className="h-[280px] rounded-2xl border border-apple-mist bg-white p-4 sm:h-[320px]">
+              <div className="h-[280px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={overtimeByBranch}
@@ -173,7 +173,7 @@ export default function AttendanceAnalyticsSection({
                 Employees per Branch
               </h3>
 
-              <div className="h-[280px] rounded-2xl border border-apple-mist bg-white p-4 sm:h-[320px]">
+              <div className="h-[280px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={workforceByBranch}
@@ -238,7 +238,7 @@ export default function AttendanceAnalyticsSection({
                 </div>
               </div>
 
-              <div className="h-[320px] rounded-2xl border border-apple-mist bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] sm:h-[360px]">
+              <div className="h-[320px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(24,83,43,0.04)] sm:h-[360px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={dailyLaborHours}
@@ -246,7 +246,7 @@ export default function AttendanceAnalyticsSection({
                   >
                     <defs>
                       <linearGradient
-                        id="attendanceBlueHours"
+                        id="attendanceGreenHours"
                         x1="0"
                         y1="0"
                         x2="0"
@@ -305,7 +305,7 @@ export default function AttendanceAnalyticsSection({
                       stroke="rgb(var(--theme-chart-2))"
                       strokeWidth={2}
                       fillOpacity={1}
-                      fill="url(#attendanceBlueHours)"
+                      fill="url(#attendanceGreenHours)"
                       dot={{
                         r: 3,
                         fill: "rgb(var(--theme-chart-2))",
@@ -335,7 +335,7 @@ export default function AttendanceAnalyticsSection({
                 Top Overtime Performers
               </h3>
 
-              <div className="h-[320px] rounded-2xl border border-apple-mist bg-white p-6 sm:h-[360px]">
+              <div className="h-[320px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 sm:h-[360px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topOTEmployees}
