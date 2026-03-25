@@ -104,7 +104,7 @@ export default function PaidHolidayModal({
   if (!show || !isMounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div className="fixed inset-0 z-[120] flex min-h-dvh w-screen items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
       <div className="w-full max-w-4xl rounded-2xl border border-apple-mist bg-white shadow-apple-xs p-5 sm:p-6 space-y-4 max-h-[88vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-3">
           <div>

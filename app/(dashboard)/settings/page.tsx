@@ -20,26 +20,28 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <DashboardPageHero
-        eyebrow="Workspace"
-        title="Settings"
-        description="Manage dashboard preferences and reset locally stored payroll workspace data."
-      />
+    <>
+      <div className="space-y-4">
+        <DashboardPageHero
+          eyebrow="Workspace"
+          title="Settings"
+          description="Manage dashboard preferences and reset locally stored payroll workspace data."
+        />
 
-      <section className="rounded-[14px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-        <button
-          type="button"
-          onClick={() => setShowResetConfirm(true)}
-          className="inline-flex h-11 items-center rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d]"
-        >
-          <Trash2Icon className="mr-2 h-4 w-4" />
-          <span>Reset Workspace Data</span>
-        </button>
-      </section>
+        <section className="rounded-[14px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <button
+            type="button"
+            onClick={() => setShowResetConfirm(true)}
+            className="inline-flex h-11 items-center rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d]"
+          >
+            <Trash2Icon className="mr-2 h-4 w-4" />
+            <span>Reset Workspace Data</span>
+          </button>
+        </section>
+      </div>
 
       {showResetConfirm ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex min-h-screen  w-screen items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-apple-mist bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -104,6 +106,6 @@ export default function SettingsPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }
