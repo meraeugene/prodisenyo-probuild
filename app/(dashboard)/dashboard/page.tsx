@@ -3,12 +3,15 @@
 import { useMemo } from "react";
 import {
   ArrowUp,
+  BadgeCheck,
   Check,
   Download,
   Ellipsis,
   Heart,
+  Receipt,
   RefreshCcw,
   Upload,
+  Wallet,
 } from "lucide-react";
 import {
   Bar,
@@ -359,41 +362,58 @@ export default function OverviewPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="rounded-[22px] border border-emerald-100/70 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-apple-steel">Gross Payroll</p>
-            <span className="text-[11px] text-apple-silver">live</span>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                <Wallet size={18} />
+              </div>
+              <p className="text-sm font-medium text-apple-steel">Gross Payroll</p>
+            </div>
+            <span className="text-[11px] font-medium text-emerald-400">live</span>
           </div>
-          <p className="mt-4 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
             P {formatPayrollNumber(grossPayroll)}
           </p>
-          <p className="mt-2 text-xs font-medium text-apple-charcoal">
+          <p className="mt-3 text-sm font-medium text-apple-charcoal">
             Based on uploaded attendance
           </p>
         </div>
 
-        <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="rounded-[22px] border border-amber-100/80 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-apple-steel">Deductions</p>
-            <span className="text-[11px] text-apple-silver">live</span>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                <Receipt size={18} />
+              </div>
+              <p className="text-sm font-medium text-apple-steel">Deductions</p>
+            </div>
+            <span className="text-[11px] font-medium text-emerald-400">live</span>
           </div>
-          <p className="mt-4 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
             P {formatPayrollNumber(deductions)}
           </p>
-          <p className="mt-2 text-xs font-medium text-apple-ash">
+          <p className="mt-3 text-sm font-medium text-apple-ash">
             Derived from current payroll
           </p>
         </div>
 
-        <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <div className="rounded-[22px] border border-sky-100/80 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-apple-steel">Net Payroll Released</p>
-            <span className="text-[11px] text-apple-silver">live</span>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                <BadgeCheck size={18} />
+              </div>
+              <p className="text-sm font-medium text-apple-steel">
+                Net Payroll Released
+              </p>
+            </div>
+            <span className="text-[11px] font-medium text-emerald-400">live</span>
           </div>
-          <p className="mt-4 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
             P {formatPayrollNumber(netPayroll)}
           </p>
-          <p className="mt-2 text-xs font-medium text-apple-charcoal">
+          <p className="mt-3 text-sm font-medium text-apple-charcoal">
             Synced with payroll analytics
           </p>
         </div>

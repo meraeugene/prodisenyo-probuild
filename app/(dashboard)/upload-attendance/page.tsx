@@ -3,9 +3,16 @@
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import UploadZone from "@/components/UploadZone";
 import { useAppState } from "@/features/app/AppStateProvider";
+import { useRouter } from "next/navigation";
 
 export default function UploadAttendancePage() {
   const { uploadedFiles, setUploadedFiles, handleParsed } = useAppState();
+  const router = useRouter();
+
+  function handleUploadParsed(...args: Parameters<typeof handleParsed>) {
+    handleParsed(...args);
+    router.push("/dashboard");
+  }
 
   return (
     <div className="space-y-4">
@@ -18,7 +25,7 @@ export default function UploadAttendancePage() {
         <UploadZone
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          onParsed={handleParsed}
+          onParsed={handleUploadParsed}
         />
       </section>
     </div>
