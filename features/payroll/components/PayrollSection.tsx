@@ -21,7 +21,7 @@ import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
 import { buildVisiblePages } from "@/features/shared/pagination";
 import {
   computeDaysWorked,
-  FULL_WORKDAY_HOURS,
+  FIXED_PAY_RATE_PER_DAY,
 } from "@/features/payroll/utils/payrollSelectors";
 import {
   extractPayrollPeriod,
@@ -491,9 +491,7 @@ export default function PayrollSection({
                             employee.totalHours,
                           );
                           const employeeTotalPay = employee.totalPay;
-                          const employeeDailyRate = representativeRow
-                            ? representativeRow.rate * FULL_WORKDAY_HOURS
-                            : 0;
+                          const employeeDailyRate = FIXED_PAY_RATE_PER_DAY;
 
                           return (
                             <tr

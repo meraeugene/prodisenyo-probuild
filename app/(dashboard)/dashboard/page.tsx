@@ -331,7 +331,7 @@ export default function OverviewPage() {
                 Gross Payroll
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
               Synced <ArrowUp size={12} />
             </span>
           </div>
@@ -351,7 +351,7 @@ export default function OverviewPage() {
               </div>
               <p className="text-sm font-medium text-apple-steel">Deductions</p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
               Synced <ArrowUp size={12} />
             </span>
           </div>
@@ -373,7 +373,7 @@ export default function OverviewPage() {
                 Net Payroll Released
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
               Synced <ArrowUp size={12} />
             </span>
           </div>
