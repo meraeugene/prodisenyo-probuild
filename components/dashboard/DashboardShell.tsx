@@ -3,10 +3,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Activity,
   BarChart3,
+  Building2,
   ChevronRight,
   LayoutDashboard,
   Settings,
@@ -55,6 +56,10 @@ export default function DashboardShell({
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
   return (
     <div className="min-h-screen bg-white">
       <div className="min-h-screen">
@@ -70,16 +75,12 @@ export default function DashboardShell({
             style={{ height: headerHeight }}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-apple-charcoal/10 text-apple-charcoal">
-                <div className="grid h-4 w-4 grid-cols-2 gap-0.5">
-                  <span className="rounded-full bg-current" />
-                  <span className="rounded-full bg-current/70" />
-                  <span className="rounded-full bg-current/70" />
-                  <span className="rounded-full bg-current" />
-                </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-apple-mist  text-apple-charcoal">
+                <Building2 className="h-4 w-4" strokeWidth={1.5} />
               </div>
-              <p className="text-lg font-semibold tracking-[-0.04em] text-apple-charcoal">
-                Prodisenyo PayRoll
+
+              <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
+                Prodisenyo PayTrack
               </p>
             </div>
           </div>

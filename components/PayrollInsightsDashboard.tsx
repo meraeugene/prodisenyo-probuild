@@ -169,11 +169,11 @@ function ChartCard({
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-      <p className="text-[11px] font-semibold uppercase tracking-wider ">
+    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5   shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] ">
+      <p className="text-[11px] text-white/65 font-semibold uppercase tracking-wider ">
         {label}
       </p>
-      <p className="mt-2 text-lg font-bold tracking-tight  sm:text-xl">
+      <p className="mt-2 text-lg text-white font-bold tracking-tight  sm:text-xl">
         {value}
       </p>
     </div>
@@ -430,12 +430,18 @@ export default function PayrollInsightsDashboard({
                       axisLine={false}
                       tickLine={false}
                       interval={0}
-                      tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 12 }}
+                      tick={{
+                        fill: "rgb(var(--theme-chart-axis))",
+                        fontSize: 12,
+                      }}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 12 }}
+                      tick={{
+                        fill: "rgb(var(--theme-chart-axis))",
+                        fontSize: 12,
+                      }}
                     />
                     <Tooltip
                       cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
@@ -477,6 +483,3 @@ export default function PayrollInsightsDashboard({
     </section>
   );
 }
-
-
-

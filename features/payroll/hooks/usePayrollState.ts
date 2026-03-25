@@ -34,9 +34,7 @@ import {
   buildPayrollEditPreview,
   buildPayrollRows,
   calculateTotalEditedLogHours,
-  computeBasePay,
   countHolidayBonusDays,
-  FIXED_PAY_RATE_PER_DAY,
   filterPayrollLogs,
   filterPayrollRows,
   FULL_WORKDAY_HOURS,
@@ -546,8 +544,10 @@ export function usePayrollState({
               workerDateSpan,
             )
           : 0;
-        const basePay = computeBasePay(row.hoursWorked);
-        const holidayPay = round2(holidayBonusDays * FIXED_PAY_RATE_PER_DAY);
+        const effectiveRate = row.customRate ?? row.defaultRate;
+        const dailyRate = round2(effectiveRate * FULL_WORKDAY_HOURS);
+        const basePay = round2(row.regularPay);
+        const holidayPay = round2(holidayBonusDays * dailyRate);
         const leavePay =
           Number.isFinite(override?.paidLeaveEntriesPayTotal)
             ? round2(override?.paidLeaveEntriesPayTotal ?? 0)
@@ -564,17 +564,16 @@ export function usePayrollState({
           Number.isFinite(override?.cashAdvanceTotal)
             ? round2(override?.cashAdvanceTotal ?? 0)
             : sumCashAdvance(override?.cashAdvanceEntries);
-        const fixedHourlyRate = round2(FIXED_PAY_RATE_PER_DAY / FULL_WORKDAY_HOURS);
         const regularPay = round2(basePay + holidayPay + leavePay);
-        const overtimePay = round2(manualOvertimePay);
+        const overtimePay = round2(row.overtimePay + manualOvertimePay);
         const overtimeHours = round2(manualOvertimeHours);
         const totalPay = round2(Math.max(0, regularPay + overtimePay - cashAdvance));
 
         return {
           ...row,
-          defaultRate: fixedHourlyRate,
-          rate: fixedHourlyRate,
-          customRate: null,
+          defaultRate: row.defaultRate,
+          rate: effectiveRate,
+          customRate: row.customRate,
           overtimeHours,
           regularPay,
           overtimePay,
@@ -828,9 +827,24 @@ export function usePayrollState({
   }
 
   function applyPayrollRates() {
+    const hasChanges = ROLE_CODES.some(
+      (roleCode) => payrollRoleRates[roleCode] !== payrollRateDraft[roleCode],
+    );
+
     setPayrollRoleRates({ ...payrollRateDraft });
     setShowPayrollRateModal(false);
     document.body.style.overflow = "auto";
+
+    if (hasChanges) {
+      toast.success("Role rates updated", {
+        description: "Payroll rates were saved and applied to the payroll view.",
+      });
+      return;
+    }
+
+    toast.info("No role rate changes", {
+      description: "The role rates are already up to date.",
+    });
   }
 
   function addManualPaidHoliday(date: string, name: string) {

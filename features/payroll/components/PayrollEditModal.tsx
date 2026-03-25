@@ -45,16 +45,19 @@ import {
 } from "@/features/payroll/utils/payrollSelectors";
 
 const EMPLOYEE_ANALYTICS_COLORS = [
+  "#15803d",
+  "#f97316",
+  "#dc2626",
   "#2563eb",
-  "#ef4444",
-  "#14b8a6",
-  "#f59e0b",
   "#a855f7",
 ];
 
-const DAILY_HOURS_LINE_COLOR = "#1d4ed8";
-const DAILY_HOURS_AREA_COLOR = "#3b82f6";
-const DAILY_HOURS_GRID_COLOR = "#bfdbfe";
+const DAILY_HOURS_LINE_COLOR = "#15803d";
+const DAILY_HOURS_AREA_COLOR = "#22c55e";
+const DAILY_HOURS_GRID_COLOR = "#bbf7d0";
+const CLOCK_IN_BAR_TOP_COLOR = "#15803d";
+const CLOCK_IN_BAR_BOTTOM_COLOR = "#4ade80";
+const CLOCK_IN_GRID_COLOR = "#d1fae5";
 const PAID_LEAVE_RATE_PER_DAY = 500;
 
 type AdjustmentFormType = "cashAdvance" | "overtime" | "paidLeave" | null;
@@ -91,10 +94,10 @@ function formatPeso(value: number): string {
 
 function getAttendanceBreakdownColor(name: string, index: number): string {
   const key = name.trim().toLowerCase();
-  if (key.includes("attendance")) return "#2563eb";
-  if (key.includes("absence")) return "#ef4444";
-  if (key.includes("leave")) return "#14b8a6";
-  if (key.includes("business trip")) return "#f59e0b";
+  if (key.includes("attendance")) return "#15803d";
+  if (key.includes("leave")) return "#f97316";
+  if (key.includes("absence")) return "#dc2626";
+  if (key.includes("business trip")) return "#2563eb";
   return EMPLOYEE_ANALYTICS_COLORS[index % EMPLOYEE_ANALYTICS_COLORS.length];
 }
 
@@ -169,9 +172,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const [cashAdvanceEntries, setCashAdvanceEntries] = useState<
     PayrollCashAdvanceEntry[]
   >([]);
-  const [overtimeEntries, setOvertimeEntries] = useState<PayrollOvertimeEntry[]>(
-    [],
-  );
+  const [overtimeEntries, setOvertimeEntries] = useState<
+    PayrollOvertimeEntry[]
+  >([]);
   const [paidLeaveEntries, setPaidLeaveEntries] = useState<
     PayrollPaidLeaveEntry[]
   >([]);
@@ -257,11 +260,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     Math.max(0, totalWorkedHours - daysWorked * FULL_WORKDAY_HOURS),
   );
   const paidHolidayBonusDays = sourceDateSpan
-    ? countHolidayBonusDays(
-        holidayDateHours,
-        holidayLogDateSet,
-        sourceDateSpan,
-      )
+    ? countHolidayBonusDays(holidayDateHours, holidayLogDateSet, sourceDateSpan)
     : 0;
   const underHoursLogs = currentLogsForPay.filter(
     (log) =>
@@ -379,7 +378,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <span className="text-apple-silver">&middot;</span>
 
               {/* Role */}
-              <span className="px-2.5 py-1 rounded-full bg-apple-charcoal text-xs font-medium text-white">
+              <span className="px-2.5 py-1 rounded-full bg-emerald-700 text-xs font-medium text-white">
                 {ROLE_CODE_TO_NAME[editingPayrollRow.role as RoleCode] ??
                   "Unknown Role"}
               </span>
@@ -391,7 +390,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               {primarySitePeriodLabel && (
                 <>
                   <span className="text-apple-silver">&middot;</span>
-                  <span className="text-sm text-apple-steel">
+                  <span className="text-sm text-emerald-700">
                     {primarySitePeriodLabel}
                   </span>
                 </>
@@ -401,7 +400,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
           <button
             type="button"
             onClick={payroll.closePayrollEditModal}
-            className="w-8 h-8 rounded-full  text-white bg-apple-charcoal hover:bg-apple-charcoal/90  transition flex items-center justify-center"
+            className="w-8 h-8 rounded-full  text-white bg-emerald-800 hover:bg-emerald-900  transition flex items-center justify-center"
           >
             <X size={16} />
           </button>
@@ -435,8 +434,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       }
                       className={`flex-1 h-10 rounded-xl border text-sm font-semibold transition ${
                         active
-                          ? "bg-black text-white border-black"
-                          : "bg-gray-50 text-gray-600 border-gray-200 hover:border-black"
+                          ? "bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800"
+                          : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                       }`}
                     >
                       + Add {btn.label}
@@ -496,7 +495,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     </button>
                     <button
                       type="submit"
-                      className="h-9 px-4 rounded-lg bg-black text-white text-sm  font-semibold hover:bg-black/80"
+                      className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm  font-semibold hover:bg-emerald-800"
                     >
                       Add Cash Advance
                     </button>
@@ -568,7 +567,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     >
                       Cancel
                     </button>
-                    <button className="h-9 px-4 rounded-lg bg-black text-white text-sm font-semibold hover:bg-black/80">
+                    <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
                       Add Overtime
                     </button>
                   </div>
@@ -622,7 +621,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     >
                       Cancel
                     </button>
-                    <button className="h-9 px-4 rounded-lg bg-black text-white text-sm font-semibold hover:bg-black/80">
+                    <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
                       Add Paid Leave
                     </button>
                   </div>
@@ -899,12 +898,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-xl bg-apple-snow border border-apple-mist px-3 py-2"
+                  className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] "
                 >
-                  <p className="text-2xs font-medium text-apple-steel uppercase tracking-wider">
+                  <p className="text-2xs font-medium text-white/65 uppercase tracking-wider">
                     {item.label}
                   </p>
-                  <p className="mt-1 text-lg font-semibold font-mono">
+                  <p className="mt-1 text-lg font-semibold font-mono text-white">
                     {item.value}
                   </p>
                 </div>
@@ -1213,12 +1212,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           >
                             <stop
                               offset="5%"
-                              stopColor="rgb(var(--theme-chart-4))"
+                              stopColor={CLOCK_IN_BAR_TOP_COLOR}
                               stopOpacity={0.95}
                             />
                             <stop
                               offset="95%"
-                              stopColor="rgb(var(--theme-chart-3))"
+                              stopColor={CLOCK_IN_BAR_BOTTOM_COLOR}
                               stopOpacity={0.85}
                             />
                           </linearGradient>
@@ -1226,7 +1225,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         <CartesianGrid
                           strokeDasharray="4 4"
                           vertical={false}
-                          stroke="rgb(var(--theme-chart-grid))"
+                          stroke={CLOCK_IN_GRID_COLOR}
                         />
                         <XAxis
                           dataKey="date"
@@ -1308,7 +1307,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     paidLeaveEntries,
                   })
                 }
-                className="px-4 h-10 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition"
+                className="px-4 h-10 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition"
               >
                 Save Changes
               </button>

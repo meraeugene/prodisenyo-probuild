@@ -21,7 +21,7 @@ import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
 import { buildVisiblePages } from "@/features/shared/pagination";
 import {
   computeDaysWorked,
-  FIXED_PAY_RATE_PER_DAY,
+  FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
 import {
   extractPayrollPeriod,
@@ -269,7 +269,7 @@ export default function PayrollSection({
               type="button"
               onClick={onGeneratePayroll}
               disabled={payroll.payrollRows.length === 0}
-              className="flex items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-[10px] bg-[#1f6a37] hover:bg-[#18552d] px-5 py-3 text-sm font-semibold text-white transition  disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Calculator size={18} />
               Generate Payroll
@@ -336,7 +336,7 @@ export default function PayrollSection({
               <select
                 value={payroll.payrollSiteFilter}
                 onChange={(e) => payroll.setPayrollSiteFilter(e.target.value)}
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All files/sites</option>
                 {availableSites.map((siteOption) => (
@@ -353,7 +353,7 @@ export default function PayrollSection({
                     e.target.value as RoleCode | "ALL",
                   )
                 }
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] cursor-pointer hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All Roles</option>
 
@@ -395,7 +395,7 @@ export default function PayrollSection({
                 type="date"
                 value={payroll.payrollDateFilter}
                 onChange={(e) => payroll.setPayrollDateFilter(e.target.value)}
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] px-3 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] px-3 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               />
 
               <select
@@ -403,7 +403,7 @@ export default function PayrollSection({
                 onChange={(e) =>
                   payroll.setPayrollSort(e.target.value as Step2Sort)
                 }
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] cursor-pointer bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="date-asc">Date first (oldest)</option>
                 <option value="date-desc">Date first (latest)</option>
@@ -491,7 +491,9 @@ export default function PayrollSection({
                             employee.totalHours,
                           );
                           const employeeTotalPay = employee.totalPay;
-                          const employeeDailyRate = FIXED_PAY_RATE_PER_DAY;
+                          const employeeDailyRate = representativeRow
+                            ? representativeRow.rate * FULL_WORKDAY_HOURS
+                            : 0;
 
                           return (
                             <tr

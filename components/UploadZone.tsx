@@ -154,7 +154,8 @@ export default function UploadZone({
                 <div className="mt-0.5 flex items-center gap-2 text-xs text-[#7e9299]">
                   <span>
                     {(
-                      files.reduce((sum, current) => sum + current.size, 0) / 1024
+                      files.reduce((sum, current) => sum + current.size, 0) /
+                      1024
                     ).toFixed(1)}{" "}
                     KB total
                   </span>
@@ -237,7 +238,7 @@ export default function UploadZone({
             transition-all duration-200
             ${
               hasFiles && !loading
-                ? "border border-emerald-700 bg-[linear-gradient(135deg,#166534,#15803d)] text-white shadow-[0_16px_34px_rgba(22,101,52,0.24)] hover:border-emerald-600 hover:bg-[linear-gradient(135deg,#15803d,#16a34a)] active:scale-[0.98]"
+                ? "border border-emerald-700  bg-[#1f6a37] hover:bg-[#18552d]   text-white shadow-[0_16px_34px_rgba(22,101,52,0.24)] hover:border-emerald-600  active:scale-[0.98]"
                 : "cursor-not-allowed border border-emerald-800/40 bg-emerald-800/70 text-white"
             }
           `}

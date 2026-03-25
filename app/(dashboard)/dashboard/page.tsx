@@ -5,9 +5,7 @@ import {
   ArrowUp,
   BadgeCheck,
   Check,
-  Download,
   Ellipsis,
-  Heart,
   Receipt,
   RefreshCcw,
   Upload,
@@ -28,8 +26,8 @@ import {
 import ChartTooltip from "@/components/charts/ChartTooltip";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
-import { buildPayrollInsightsData } from "@/lib/payrollInsights";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
+import { buildPayrollInsightsData } from "@/lib/payrollInsights";
 
 const OVERVIEW_CHART_COLORS = [
   "rgb(var(--theme-chart-1))",
@@ -38,6 +36,7 @@ const OVERVIEW_CHART_COLORS = [
   "rgb(var(--theme-chart-4))",
   "rgb(var(--theme-chart-5))",
 ];
+const PESO_SIGN = "\u20B1";
 
 function extractBranchName(value: string): string {
   if (!value) return "";
@@ -45,7 +44,7 @@ function extractBranchName(value: string): string {
 }
 
 export default function OverviewPage() {
-  const { overviewStats, payroll, attendancePeriod, records, employees, attendance } =
+  const { payroll, attendancePeriod, records, employees, attendance } =
     useAppState();
 
   const payrollInsights = useMemo(
@@ -59,37 +58,16 @@ export default function OverviewPage() {
 
   const totalPayroll = payrollInsights.kpis.totalPayroll;
   const grossPayroll = Math.round(totalPayroll * 1.12 * 100) / 100;
-  const deductions = Math.round(Math.max(0, grossPayroll - totalPayroll) * 100) / 100;
+  const deductions =
+    Math.round(Math.max(0, grossPayroll - totalPayroll) * 100) / 100;
   const netPayroll = Math.max(0, totalPayroll);
-
-  const presentDays = useMemo(() => {
-    const pairs = new Set(
-      records.map(
-        (record) => `${record.date}|||${record.employee.trim().toLowerCase()}`,
-      ),
-    );
-    return pairs.size;
-  }, [records]);
-
-  const absentCount = useMemo(() => {
-    const dates = new Set(records.map((record) => record.date));
-    const scheduledEmployeeDays = employees.length * dates.size;
-    return Math.max(0, scheduledEmployeeDays - presentDays);
-  }, [employees.length, presentDays, records]);
-
-  const lateCount = useMemo(() => {
-    return attendance.dailyRows.filter((row) => {
-      const firstIn = row.time1In || row.time2In;
-      return Boolean(firstIn) && firstIn > "08:00";
-    }).length;
-  }, [attendance.dailyRows]);
 
   const activityRows = payroll.payrollRows.slice(0, 5).map((row) => ({
     type: row.overtimeHours > 0 ? "Overtime" : "Payroll Run",
     employee: row.worker,
-    amount: `P ${formatPayrollNumber(row.totalPay)}`,
+    amount: `${PESO_SIGN} ${formatPayrollNumber(row.totalPay)}`,
     status: payroll.payrollGenerated ? "Success" : "Ready",
-    method: row.site || "Attendance Import",
+    method: row.site.split(" ")[0] || "Attendance Import",
   }));
 
   const workforceByBranch = useMemo(
@@ -134,14 +112,14 @@ export default function OverviewPage() {
   return (
     <div className="space-y-5">
       <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-[12px] font-medium text-white/65">
               Total Payroll This Period
             </p>
             <div className="mt-3 flex items-center gap-3">
               <h1 className="text-[40px] font-semibold tracking-[-0.03em]">
-                P {formatPayrollNumber(netPayroll)}
+                {PESO_SIGN} {formatPayrollNumber(netPayroll)}
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[rgb(var(--theme-chart-5))]">
                 Synced <ArrowUp size={12} />
@@ -169,7 +147,7 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <section>
         <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -210,12 +188,18 @@ export default function OverviewPage() {
                       axisLine={false}
                       tickLine={false}
                       interval={0}
-                      tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                      tick={{
+                        fill: "rgb(var(--theme-chart-axis))",
+                        fontSize: 11,
+                      }}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                      tick={{
+                        fill: "rgb(var(--theme-chart-axis))",
+                        fontSize: 11,
+                      }}
                     />
                     <Tooltip
                       cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
@@ -268,14 +252,42 @@ export default function OverviewPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      content={(props) => (
-                        <ChartTooltip {...props} unit="PHP" />
-                      )}
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+
+                        const item = payload[0]?.payload as
+                          | {
+                              shortName?: string;
+                              name?: string;
+                              value?: number;
+                            }
+                          | undefined;
+
+                        return (
+                          <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
+                            <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
+                              Branch
+                            </p>
+                            <p className="max-w-[160px] truncate text-xs font-semibold text-apple-smoke">
+                              {item?.shortName ?? item?.name ?? "Unknown"}
+                            </p>
+                            <div className="mt-1 flex items-baseline gap-1">
+                              <span className="text-lg font-bold">
+                                {PESO_SIGN}{" "}
+                                {formatPayrollNumber(item?.value ?? 0)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
 
                 <div className="space-y-3 overflow-y-auto pr-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-apple-silver">
+                    Branch
+                  </p>
                   {payrollDistributionData.length > 0 ? (
                     payrollDistributionData.map((item, index) => (
                       <div
@@ -291,7 +303,7 @@ export default function OverviewPage() {
                             {item.shortName}
                           </p>
                           <p className="truncate text-xs font-semibold text-apple-charcoal">
-                            P {formatPayrollNumber(item.value)}
+                            {PESO_SIGN} {formatPayrollNumber(item.value)}
                           </p>
                         </div>
                       </div>
@@ -306,99 +318,52 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
-
-        <div className="space-y-5">
-          <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <Heart size={16} />
-              </div>
-              <div>
-                <p className="text-sm text-apple-steel">Present Days</p>
-                <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-                  {presentDays.toLocaleString("en-PH")}
-                </p>
-                <span className="mt-1 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                  From uploaded attendance
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                <Download size={16} />
-              </div>
-              <div>
-                <p className="text-sm text-apple-steel">Absent</p>
-                <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-                  {absentCount.toLocaleString("en-PH")}
-                </p>
-                <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-                  Missing employee-days
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-700">
-                <Download size={16} />
-              </div>
-              <div>
-                <p className="text-sm text-apple-steel">Late</p>
-                <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-                  {lateCount.toLocaleString("en-PH")}
-                </p>
-                <span className="mt-1 inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-700">
-                  First in after 08:00
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="rounded-[22px] border border-emerald-100/70 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
+        <div className="rounded-[22px] bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
                 <Wallet size={18} />
               </div>
-              <p className="text-sm font-medium text-apple-steel">Gross Payroll</p>
+              <p className="text-sm font-medium text-apple-steel">
+                Gross Payroll
+              </p>
             </div>
-            <span className="text-[11px] font-medium text-emerald-400">live</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+              Synced <ArrowUp size={12} />
+            </span>
           </div>
           <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            P {formatPayrollNumber(grossPayroll)}
+            {PESO_SIGN} {formatPayrollNumber(grossPayroll)}
           </p>
           <p className="mt-3 text-sm font-medium text-apple-charcoal">
             Based on uploaded attendance
           </p>
         </div>
 
-        <div className="rounded-[22px] border border-amber-100/80 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
+        <div className="rounded-[22px]  bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-700">
                 <Receipt size={18} />
               </div>
               <p className="text-sm font-medium text-apple-steel">Deductions</p>
             </div>
-            <span className="text-[11px] font-medium text-emerald-400">live</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+              Synced <ArrowUp size={12} />
+            </span>
           </div>
           <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            P {formatPayrollNumber(deductions)}
+            {PESO_SIGN} {formatPayrollNumber(deductions)}
           </p>
           <p className="mt-3 text-sm font-medium text-apple-ash">
             Derived from current payroll
           </p>
         </div>
 
-        <div className="rounded-[22px] border border-sky-100/80 bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
+        <div className="rounded-[22px]  bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
@@ -408,10 +373,12 @@ export default function OverviewPage() {
                 Net Payroll Released
               </p>
             </div>
-            <span className="text-[11px] font-medium text-emerald-400">live</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-200 text-green-600 px-3 py-1 text-xs ">
+              Synced <ArrowUp size={12} />
+            </span>
           </div>
           <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            P {formatPayrollNumber(netPayroll)}
+            {PESO_SIGN} {formatPayrollNumber(netPayroll)}
           </p>
           <p className="mt-3 text-sm font-medium text-apple-charcoal">
             Synced with payroll analytics
@@ -431,14 +398,12 @@ export default function OverviewPage() {
             siteCards.map((card) => (
               <div
                 key={card.siteName}
-                className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]"
+                className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white  shadow-[0_18px_36px_rgba(22,101,52,0.16)]"
               >
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold">{card.shortSite}</p>
                   <span className="text-[11px] text-white/65">SITE</span>
                 </div>
-
-                <p className="mt-2 text-xs text-white/65">{card.siteName}</p>
 
                 <p className="mt-6 text-[12px] uppercase tracking-[0.28em] text-white/55">
                   Employees
@@ -451,7 +416,7 @@ export default function OverviewPage() {
                   Total Payroll
                 </p>
                 <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em]">
-                  P {formatPayrollNumber(card.payrollTotal)}
+                  {PESO_SIGN} {formatPayrollNumber(card.payrollTotal)}
                 </p>
               </div>
             ))
@@ -474,16 +439,16 @@ export default function OverviewPage() {
           <p className="text-[15px] font-semibold text-apple-charcoal">
             Recent Payroll Activity
           </p>
-          <p className="text-xs text-apple-silver">{attendancePeriod}</p>
+          <p className="text-xs text-emerald-500">{attendancePeriod}</p>
         </div>
 
         <div className="overflow-hidden rounded-[12px] border border-apple-mist">
-          <div className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] bg-[rgb(var(--apple-snow))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-apple-silver">
+          <div className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] bg-[rgb(var(--apple-snow))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-500">
             <span>Type</span>
             <span>Employee</span>
             <span>Amount</span>
             <span>Status</span>
-            <span>Method</span>
+            <span>Branch</span>
           </div>
 
           <div className="divide-y divide-apple-mist">

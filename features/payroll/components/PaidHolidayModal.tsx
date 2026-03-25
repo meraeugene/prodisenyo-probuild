@@ -304,7 +304,7 @@ export default function PaidHolidayModal({
                       <button
                         type="button"
                         onClick={() => onRemoveHoliday(holiday.date)}
-                        className="ml-auto px-2.5 py-1 rounded-lg border border-sky-200 text-2xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 transition"
+                        className="ml-auto px-2.5 py-1 rounded-lg border border-red-200 text-2xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 transition"
                       >
                         Remove
                       </button>

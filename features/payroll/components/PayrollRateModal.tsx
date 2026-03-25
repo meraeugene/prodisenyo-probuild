@@ -29,7 +29,9 @@ export default function PayrollRateModal({
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center">
       <div className="w-full max-w-2xl rounded-2xl border border-apple-mist bg-white shadow-apple-xs p-5 sm:p-6 space-y-4">
         <div>
-          <h3 className="text-lg font-bold text-apple-charcoal">Edit Role Rates</h3>
+          <h3 className="text-lg font-bold text-apple-charcoal">
+            Edit Role Rates
+          </h3>
           <p className="text-sm text-apple-smoke">
             Hourly rate is calculated as daily rate / 8.
           </p>
@@ -50,7 +52,8 @@ export default function PayrollRateModal({
                   const parsed = Number.parseFloat(e.target.value);
                   setPayrollRateDraft((prev) => ({
                     ...prev,
-                    [roleCode]: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
+                    [roleCode]:
+                      Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
                   }));
                 }}
                 className="w-full px-3 h-10 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15 focus:border-apple-charcoal transition-all"
@@ -70,7 +73,7 @@ export default function PayrollRateModal({
           <button
             type="button"
             onClick={onApply}
-            className="px-4 h-10 rounded-2xl bg-apple-charcoal text-white text-sm font-semibold hover:bg-apple-black transition"
+            className="px-4 h-10 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition"
           >
             Save Rates
           </button>
@@ -79,4 +82,3 @@ export default function PayrollRateModal({
     </div>
   );
 }
-

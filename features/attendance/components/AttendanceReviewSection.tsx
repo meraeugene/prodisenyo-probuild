@@ -84,17 +84,17 @@ export default function AttendanceReviewSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 shadow-[0_4px_12px_rgba(24,83,43,0.04)] transition hover:bg-white hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)]"
+                  className="rounded-[12px] border border-apple-mist  px-4 py-3 transition hover:bg-white shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)]  "
                 >
-                  <p className="text-[11px] uppercase tracking-wider text-[#9babaf]">
+                  <p className="text-[11px] uppercase tracking-wider text-white/65">
                     Branch
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-[#22353b]">
+                  <p className="mt-1 text-sm font-semibold text-white">
                     {branch.siteName.split(" ")[0]}
                   </p>
 
-                  <p className="mt-1 text-sm text-[#41565f]">
+                  <p className="mt-1 text-sm text-white/55">
                     {branch.employeeCount}{" "}
                     {branch.employeeCount === 1 ? "employee" : "employees"}
                   </p>
@@ -139,7 +139,7 @@ export default function AttendanceReviewSection({
               <select
                 value={step2SiteFilter}
                 onChange={(e) => setStep2SiteFilter(e.target.value)}
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="ALL">All files/sites</option>
                 {availableSites.map((siteOption) => (
@@ -178,7 +178,7 @@ export default function AttendanceReviewSection({
                 type="date"
                 value={step2DateFilter}
                 onChange={(e) => setStep2DateFilter(e.target.value)}
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               />
 
               <select
@@ -186,7 +186,7 @@ export default function AttendanceReviewSection({
                 onChange={(e) =>
                   setStep2Sort(e.target.value as typeof step2Sort)
                 }
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
                 <option value="date-asc">Date first (oldest)</option>
                 <option value="date-desc">Date first (newest)</option>
@@ -223,7 +223,7 @@ export default function AttendanceReviewSection({
                       ].map((h) => (
                         <th
                           key={h}
-                            className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-[#9babaf]"
+                          className="px-4 py-3.5 text-left text-2xs font-semibold uppercase tracking-widest text-[#9babaf]"
                         >
                           {h}
                         </th>
