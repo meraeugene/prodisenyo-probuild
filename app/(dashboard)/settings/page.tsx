@@ -32,7 +32,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setShowResetConfirm(true)}
-            className="inline-flex h-11 items-center rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d]"
+            className="inline-flex h-11 items-center rounded-[10px] bg-red-700 px-4 text-sm font-semibold text-white transition hover:bg-red-800"
           >
             <Trash2Icon className="mr-2 h-4 w-4" />
             <span>Reset Workspace Data</span>
