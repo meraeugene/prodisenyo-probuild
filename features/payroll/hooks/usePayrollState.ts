@@ -33,6 +33,7 @@ import {
   buildPayrollBaseRows,
   buildPayrollEditPreview,
   buildPayrollRows,
+  coalescePayrollAttendanceInputs,
   calculateTotalEditedLogHours,
   computeBasePay,
   countHolidayBonusDays,
@@ -404,7 +405,7 @@ export function usePayrollState({
   }, [payrollOverrides]);
 
   const payrollAttendanceInputs = useMemo(() => {
-    return dailyRows
+    const normalizedInputs = dailyRows
       .map((row) => {
         const identity = parsePayrollIdentity(row.employee);
         const key = getLogOverrideKey(row);
@@ -427,6 +428,8 @@ export function usePayrollState({
           Number.isFinite(record.hours) &&
           record.hours >= 0,
       );
+
+    return coalescePayrollAttendanceInputs(normalizedInputs);
   }, [dailyRows, persistedLogHourOverrides]);
   const dailyHoursByWorker = useMemo(
     () => buildDailyHoursByWorker(payrollAttendanceInputs),

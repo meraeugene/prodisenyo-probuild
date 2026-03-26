@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
-import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
+import { ROLE_CODE_TO_NAME, normalizeRoleCode, type RoleCode } from "@/lib/payrollConfig";
+import {
+  exportAllPayslipsToPdf,
+  exportEmployeePayslipToPdf,
+  type PayslipExportRecord,
+} from "@/lib/payslipExport";
 import type { Step2Sort } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
 import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
@@ -44,6 +49,7 @@ const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
 
 interface GroupedEmployeePayrollRow {
   name: string;
+  role: string;
   sites: PayrollRow[];
   totalHours: number;
   totalPay: number;
@@ -53,6 +59,28 @@ function normalizeEmployeeName(name: string): string {
   const normalized = name.trim().toLowerCase();
   const compact = normalized.replace(/[^a-z0-9]/g, "");
   return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
+}
+
+function pickPreferredRole(currentRole: string, candidateRole: string): string {
+  const normalizedCurrent = normalizeRoleCode(currentRole) ?? "UNKNOWN";
+  const normalizedCandidate = normalizeRoleCode(candidateRole) ?? "UNKNOWN";
+
+  if (normalizedCurrent === "UNKNOWN" && normalizedCandidate !== "UNKNOWN") {
+    return normalizedCandidate;
+  }
+
+  return normalizedCurrent;
+}
+
+function pickRepresentativeRow(rows: PayrollRow[]): PayrollRow | null {
+  if (rows.length === 0) return null;
+
+  const preferred = rows.find((row) => {
+    const role = normalizeRoleCode(row.role) ?? "UNKNOWN";
+    return role !== "UNKNOWN";
+  });
+
+  return preferred ?? rows[0] ?? null;
 }
 
 function formatDaysLabel(daysWorked: number): string {
@@ -86,6 +114,7 @@ function groupByEmployee(
     if (!existing) {
       grouped.set(key, {
         name: row.worker,
+        role: normalizeRoleCode(row.role) ?? "UNKNOWN",
         sites: [row],
         totalHours: row.hoursWorked,
         totalPay: row.totalPay,
@@ -96,6 +125,7 @@ function groupByEmployee(
     existing.sites.push(row);
     existing.totalHours += row.hoursWorked;
     existing.totalPay += row.totalPay;
+    existing.role = pickPreferredRole(existing.role, row.role);
 
     if (row.worker.length > existing.name.length) {
       existing.name = row.worker;
@@ -126,6 +156,29 @@ function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string }> {
   return Array.from(summary.values()).sort((a, b) =>
     a.site.localeCompare(b.site),
   );
+}
+
+function buildPayslipRecord(
+  employee: GroupedEmployeePayrollRow,
+  periodLabel: string | null,
+): PayslipExportRecord | null {
+  const representativeRow = pickRepresentativeRow(employee.sites);
+  if (!representativeRow) return null;
+
+  const site = summarizeGroupedSites(employee.sites)
+    .map((entry) => entry.site)
+    .join(", ");
+
+  return {
+    employee: employee.name,
+    role: employee.role,
+    site: site || "-",
+    period: periodLabel ?? representativeRow.date ?? "-",
+    daysWorked: computeDaysWorked(employee.totalHours),
+    totalHours: employee.totalHours,
+    ratePerDay: FIXED_PAY_RATE_PER_DAY,
+    totalPay: employee.totalPay,
+  };
 }
 
 export default function PayrollSection({
@@ -216,6 +269,19 @@ export default function PayrollSection({
       ),
     [groupedPayrollRows],
   );
+
+  const groupedPayslipRecords = useMemo(
+    () =>
+      groupedPayrollRows
+        .map((employee) => buildPayslipRecord(employee, payrollPeriodLabel))
+        .filter((record): record is PayslipExportRecord => Boolean(record)),
+    [groupedPayrollRows, payrollPeriodLabel],
+  );
+
+  function handleExportAllPayslips() {
+    if (groupedPayslipRecords.length === 0) return;
+    void exportAllPayslipsToPdf(groupedPayslipRecords);
+  }
 
   useEffect(() => {
     if (payroll.payrollTab !== "payroll") return;
@@ -332,6 +398,15 @@ export default function PayrollSection({
                 >
                   <FileSpreadsheet size={14} />
                   Export Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportAllPayslips}
+                  disabled={groupedPayslipRecords.length === 0}
+                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FileSpreadsheet size={14} />
+                  Export Payslips PDF
                 </button>
                 <button
                   type="button"
@@ -455,7 +530,7 @@ export default function PayrollSection({
                           "Days Worked",
                           "Rate/Day",
                           "Total Pay",
-                          "Edit",
+                          "Actions",
                         ].map((h) => (
                           <th
                             key={h}
@@ -464,7 +539,7 @@ export default function PayrollSection({
                               h === "Rate/Day" ||
                               h === "Total Pay"
                                 ? "text-right"
-                                : h === "Edit"
+                                : h === "Actions"
                                   ? "text-center"
                                   : "text-left"
                             }`}
@@ -494,7 +569,9 @@ export default function PayrollSection({
                         </tr>
                       ) : (
                         groupedPayrollPreviewRows.map((employee) => {
-                          const representativeRow = employee.sites[0] ?? null;
+                          const representativeRow = pickRepresentativeRow(
+                            employee.sites,
+                          );
                           const siteBreakdown = summarizeGroupedSites(
                             employee.sites,
                           );
@@ -503,6 +580,10 @@ export default function PayrollSection({
                           );
                           const employeeTotalPay = employee.totalPay;
                           const employeeDailyRate = FIXED_PAY_RATE_PER_DAY;
+                          const employeePayslipRecord = buildPayslipRecord(
+                            employee,
+                            payrollPeriodLabel,
+                          );
 
                           return (
                             <tr
@@ -516,7 +597,7 @@ export default function PayrollSection({
                                 )}
                               </td>
                               <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
-                                {representativeRow?.role ?? "-"}
+                                {employee.role}
                               </td>
 
                               <td className="px-4 py-3">
@@ -537,19 +618,34 @@ export default function PayrollSection({
                                 {formatPayrollNumber(employeeTotalPay)}
                               </td>
                               <td className="px-4 py-3 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (!representativeRow) return;
-                                    payroll.openPayrollEditModal(
-                                      representativeRow,
-                                    );
-                                  }}
-                                  disabled={!representativeRow}
-                                  className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35"
-                                >
-                                  Edit
-                                </button>
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!representativeRow) return;
+                                      payroll.openPayrollEditModal(
+                                        representativeRow,
+                                      );
+                                    }}
+                                    disabled={!representativeRow}
+                                    className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!employeePayslipRecord) return;
+                                      void exportEmployeePayslipToPdf(
+                                        employeePayslipRecord,
+                                      );
+                                    }}
+                                    disabled={!employeePayslipRecord}
+                                    className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    PDF
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );

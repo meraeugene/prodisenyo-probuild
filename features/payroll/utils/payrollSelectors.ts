@@ -3,6 +3,7 @@ import { generatePayroll, recalculatePayrollRow } from "@/lib/payrollEngine";
 import {
   DEFAULT_OVERTIME_MULTIPLIER,
   HOURS_PER_DAY,
+  normalizeRoleCode,
   type RoleCode,
 } from "@/lib/payrollConfig";
 import { compareStep2Rows, earliestNonEmptyTime, pairMinutes } from "@/lib/utils";
@@ -12,7 +13,14 @@ import {
   toShortDateLabel,
 } from "@/features/payroll/utils/payrollFormatters";
 import { expandDateSummary, normalizePeriodLabel } from "@/features/payroll/utils/payrollDateHelpers";
-import { parsePayrollIdentity, parseTimeToDecimal } from "@/features/payroll/utils/payrollMappers";
+import {
+  areLikelySameEmployeeName,
+  normalizeEmployeeNameKey,
+  parsePayrollIdentity,
+  parseTimeToDecimal,
+  pickPreferredEmployeeDisplayName,
+  pickPreferredRoleCode,
+} from "@/features/payroll/utils/payrollMappers";
 import type {
   PayrollAttendanceBreakdownItem,
   PayrollClockInConsistencyItem,
@@ -30,10 +38,6 @@ export interface PayrollFilters {
   sort: Step2Sort;
 }
 
-const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
-  pbryanm: "bryanmamerto",
-};
-
 export const FULL_WORKDAY_HOURS = 8;
 export const FIXED_PAY_RATE_PER_DAY = 500;
 
@@ -41,15 +45,23 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function getFirstInSortValue(log: DailyLogRow): number {
+  const timeCandidates = [log.time1In, log.time2In, log.otIn]
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+    .map((value) => parseTimeToDecimal(value))
+    .filter((value): value is number => value !== null);
+
+  if (timeCandidates.length === 0) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return Math.min(...timeCandidates);
+}
+
 export interface IsoDateSpan {
   start: string;
   end: string;
-}
-
-function normalizeEmployeeNameForGrouping(name: string): string {
-  const normalized = name.trim().toLowerCase();
-  const compact = normalized.replace(/[^a-z0-9]/g, "");
-  return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
 }
 
 export function computeDaysWorked(totalHours: number): number {
@@ -162,6 +174,84 @@ export function mapDailyRowsToAttendanceInputs(
         Number.isFinite(record.hours) &&
         record.hours >= 0,
     );
+}
+
+interface EmployeeIdentityGroup {
+  role: string;
+  displayName: string;
+  aliases: Set<string>;
+}
+
+function hasKnownRole(role: string): boolean {
+  const normalized = normalizeRoleCode(role);
+  return Boolean(normalized && normalized !== "UNKNOWN");
+}
+
+export function coalescePayrollAttendanceInputs(
+  inputs: AttendanceRecordInput[],
+): AttendanceRecordInput[] {
+  const aliasToGroup = new Map<string, EmployeeIdentityGroup>();
+  const groups: EmployeeIdentityGroup[] = [];
+
+  for (const record of inputs) {
+    const name = record.name.trim();
+    if (!name) continue;
+
+    const alias = normalizeEmployeeNameKey(name);
+    let group = aliasToGroup.get(alias);
+
+    if (!group) {
+      group = groups.find((candidate) => {
+        if (!areLikelySameEmployeeName(candidate.displayName, name)) {
+          return false;
+        }
+
+        return hasKnownRole(candidate.role) !== hasKnownRole(record.role);
+      });
+    }
+
+    if (!group) {
+      group = {
+        role: normalizeRoleCode(record.role) ?? "UNKNOWN",
+        displayName: name,
+        aliases: new Set([alias]),
+      };
+      groups.push(group);
+    } else {
+      group.role = pickPreferredRoleCode(group.role, record.role);
+      group.displayName = pickPreferredEmployeeDisplayName(
+        group.displayName,
+        name,
+      );
+      group.aliases.add(alias);
+    }
+
+    aliasToGroup.set(alias, group);
+  }
+
+  return inputs.map((record) => {
+    const alias = normalizeEmployeeNameKey(record.name);
+    const group =
+      aliasToGroup.get(alias) ??
+      groups.find((candidate) =>
+        areLikelySameEmployeeName(candidate.displayName, record.name),
+      );
+
+    if (!group) {
+      return {
+        ...record,
+        role: normalizeRoleCode(record.role) ?? "UNKNOWN",
+      };
+    }
+
+    group.aliases.forEach((entryAlias) => aliasToGroup.set(entryAlias, group));
+
+    return {
+      ...record,
+      name: group.displayName,
+      role: group.role,
+    };
+  });
 }
 
 export function buildPayrollBaseRows(
@@ -299,16 +389,16 @@ export function buildEditingPayrollLogs(
 ): DailyLogRow[] {
   if (!editingPayrollRow) return [];
 
-  const editingWorkerKey = normalizeEmployeeNameForGrouping(editingPayrollRow.worker);
-
   const matched = dailyRows.filter((row) => {
     const identity = parsePayrollIdentity(row.employee);
-    return normalizeEmployeeNameForGrouping(identity.name) === editingWorkerKey;
+    return areLikelySameEmployeeName(identity.name, editingPayrollRow.worker);
   });
 
   matched.sort((a, b) => {
     const byDate = a.date.localeCompare(b.date);
     if (byDate !== 0) return byDate;
+    const byFirstIn = getFirstInSortValue(a) - getFirstInSortValue(b);
+    if (Math.abs(byFirstIn) > 0.0001) return byFirstIn;
     const bySite = a.site.localeCompare(b.site);
     if (bySite !== 0) return bySite;
     return a.employee.localeCompare(b.employee);
