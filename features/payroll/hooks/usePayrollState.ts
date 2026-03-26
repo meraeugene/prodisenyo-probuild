@@ -362,7 +362,7 @@ export function usePayrollState({
   const [payrollSiteFilter, setPayrollSiteFilter] = useState("ALL");
   const [payrollNameFilter, setPayrollNameFilter] = useState("");
   const [payrollDateFilter, setPayrollDateFilter] = useState("");
-  const [payrollSort, setPayrollSort] = useState<Step2Sort>("date-asc");
+  const [payrollSort, setPayrollSort] = useState<Step2Sort>("name-asc");
   const [showPayrollRateModal, setShowPayrollRateModal] = useState(false);
   const [payrollRateDraft, setPayrollRateDraft] = useState<
     Record<RoleCode, number>
@@ -771,7 +771,7 @@ export function usePayrollState({
     setPayrollSiteFilter("ALL");
     setPayrollNameFilter("");
     setPayrollDateFilter("");
-    setPayrollSort("date-asc");
+    setPayrollSort("name-asc");
     setPayrollRoleFilter("ALL");
   }
 
@@ -783,7 +783,7 @@ export function usePayrollState({
     setPayrollSiteFilter("ALL");
     setPayrollNameFilter("");
     setPayrollDateFilter("");
-    setPayrollSort("date-asc");
+    setPayrollSort("name-asc");
     setShowPayrollRateModal(false);
     setPayrollRateDraft(DEFAULT_DAILY_RATE_BY_ROLE);
     setEditingPayrollRowId(null);
@@ -806,7 +806,7 @@ export function usePayrollState({
     setPayrollSiteFilter("ALL");
     setPayrollNameFilter("");
     setPayrollDateFilter("");
-    setPayrollSort("date-asc");
+    setPayrollSort("name-asc");
 
     return true;
   }

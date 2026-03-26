@@ -61,7 +61,22 @@ function formatDaysLabel(daysWorked: number): string {
   }`;
 }
 
-function groupByEmployee(rows: PayrollRow[]): GroupedEmployeePayrollRow[] {
+function compareGroupedEmployees(
+  a: GroupedEmployeePayrollRow,
+  b: GroupedEmployeePayrollRow,
+  sort: Step2Sort,
+): number {
+  if (sort === "name-desc") {
+    return b.name.localeCompare(a.name);
+  }
+
+  return a.name.localeCompare(b.name);
+}
+
+function groupByEmployee(
+  rows: PayrollRow[],
+  sort: Step2Sort,
+): GroupedEmployeePayrollRow[] {
   const grouped = new Map<string, GroupedEmployeePayrollRow>();
 
   for (const row of rows) {
@@ -88,7 +103,7 @@ function groupByEmployee(rows: PayrollRow[]): GroupedEmployeePayrollRow[] {
   }
 
   return Array.from(grouped.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
+    compareGroupedEmployees(a, b, sort),
   );
 }
 
@@ -122,8 +137,8 @@ export default function PayrollSection({
   const [showPaidHolidayModal, setShowPaidHolidayModal] = useState(false);
 
   const groupedPayrollRows = useMemo(
-    () => groupByEmployee(payroll.filteredPayrollRows),
-    [payroll.filteredPayrollRows],
+    () => groupByEmployee(payroll.filteredPayrollRows, payroll.payrollSort),
+    [payroll.filteredPayrollRows, payroll.payrollSort],
   );
 
   const groupedPayrollTotalPages = useMemo(
@@ -337,7 +352,7 @@ export default function PayrollSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <select
                 value={payroll.payrollSiteFilter}
                 onChange={(e) => payroll.setPayrollSiteFilter(e.target.value)}
@@ -396,13 +411,6 @@ export default function PayrollSection({
                 )}
               </div>
 
-              <input
-                type="date"
-                value={payroll.payrollDateFilter}
-                onChange={(e) => payroll.setPayrollDateFilter(e.target.value)}
-                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] px-3 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
-              />
-
               <select
                 value={payroll.payrollSort}
                 onChange={(e) =>
@@ -410,8 +418,6 @@ export default function PayrollSection({
                 }
                 className="h-11 w-full rounded-[12px] border border-[#d9e2e6] cursor-pointer bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
               >
-                <option value="date-asc">Date first (oldest)</option>
-                <option value="date-desc">Date first (latest)</option>
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
               </select>
