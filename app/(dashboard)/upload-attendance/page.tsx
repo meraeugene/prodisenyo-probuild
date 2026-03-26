@@ -17,6 +17,7 @@ export default function UploadAttendancePage() {
   return (
     <div className="space-y-4">
       <DashboardPageHero
+        isUploadAttendance
         eyebrow="Attendance"
         title="Upload Attendance"
         description="Import biometric attendance files and sync them into the payroll workspace."
