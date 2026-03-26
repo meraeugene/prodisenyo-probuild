@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -8,13 +8,18 @@ import {
   CalendarDays,
   Calculator,
   FileSpreadsheet,
+  MoreHorizontal,
   Search,
   SlidersHorizontal,
   X,
 } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
-import { ROLE_CODE_TO_NAME, normalizeRoleCode, type RoleCode } from "@/lib/payrollConfig";
+import {
+  ROLE_CODE_TO_NAME,
+  normalizeRoleCode,
+  type RoleCode,
+} from "@/lib/payrollConfig";
 import {
   exportAllPayslipsToPdf,
   exportEmployeePayslipToPdf,
@@ -188,6 +193,8 @@ export default function PayrollSection({
   onGeneratePayroll,
 }: PayrollSectionProps) {
   const [showPaidHolidayModal, setShowPaidHolidayModal] = useState(false);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
 
   const groupedPayrollRows = useMemo(
     () => groupByEmployee(payroll.filteredPayrollRows, payroll.payrollSort),
@@ -618,33 +625,81 @@ export default function PayrollSection({
                                 {formatPayrollNumber(employeeTotalPay)}
                               </td>
                               <td className="px-4 py-3 text-center">
-                                <div className="flex items-center justify-center gap-1.5">
+                                <div
+                                  className="relative flex items-center justify-center"
+                                  ref={
+                                    openActionMenuId ===
+                                    (representativeRow?.id ?? employee.name)
+                                      ? actionMenuRef
+                                      : null
+                                  }
+                                >
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      if (!representativeRow) return;
-                                      payroll.openPayrollEditModal(
-                                        representativeRow,
-                                      );
-                                    }}
-                                    disabled={!representativeRow}
-                                    className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35 disabled:cursor-not-allowed disabled:opacity-50"
+                                    onClick={() =>
+                                      setOpenActionMenuId((current) =>
+                                        current ===
+                                        (representativeRow?.id ?? employee.name)
+                                          ? null
+                                          : (representativeRow?.id ??
+                                            employee.name),
+                                      )
+                                    }
+                                    className={`inline-flex h-9 w-9 items-center justify-center rounded-[10px] border transition-all duration-200 border-[#d9e2e6] text-[#41565f] ${
+                                      openActionMenuId ===
+                                      (representativeRow?.id ?? employee.name)
+                                        ? "bg-[#f3f6f8]"
+                                        : "hover:border-[#0f6f74]/35 hover:bg-[#f7faf9]"
+                                    }`}
+                                    aria-label={`Open actions for ${employee.name}`}
+                                    aria-expanded={
+                                      openActionMenuId ===
+                                      (representativeRow?.id ?? employee.name)
+                                    }
+                                    aria-haspopup="menu"
                                   >
-                                    Edit
+                                    <MoreHorizontal size={16} />
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (!employeePayslipRecord) return;
-                                      void exportEmployeePayslipToPdf(
-                                        employeePayslipRecord,
-                                      );
-                                    }}
-                                    disabled={!employeePayslipRecord}
-                                    className="rounded-[10px] border border-[#d9e2e6] px-3 py-1.5 text-2xs font-semibold text-[#41565f] transition hover:border-[#0f6f74]/35 disabled:cursor-not-allowed disabled:opacity-50"
-                                  >
-                                    PDF
-                                  </button>
+
+                                  {openActionMenuId ===
+                                    (representativeRow?.id ??
+                                      employee.name) && (
+                                    <div
+                                      className="animate-fade-in absolute left-1/2 top-[calc(100%+0.5rem)] z-20 min-w-max -translate-x-1/2 overflow-hidden rounded-[14px] border border-[#d9e2e6] bg-white p-1.5 text-left shadow-[0_16px_36px_rgba(15,23,42,0.12)]"
+                                      role="menu"
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (!representativeRow) return;
+                                          payroll.openPayrollEditModal(
+                                            representativeRow,
+                                          );
+                                          setOpenActionMenuId(null);
+                                        }}
+                                        disabled={!representativeRow}
+                                        className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa] disabled:cursor-not-allowed disabled:opacity-50"
+                                        role="menuitem"
+                                      >
+                                        Edit Employee
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (!employeePayslipRecord) return;
+                                          void exportEmployeePayslipToPdf(
+                                            employeePayslipRecord,
+                                          );
+                                          setOpenActionMenuId(null);
+                                        }}
+                                        disabled={!employeePayslipRecord}
+                                        className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa] disabled:cursor-not-allowed disabled:opacity-50"
+                                        role="menuitem"
+                                      >
+                                        Export Payslip
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               </td>
                             </tr>
