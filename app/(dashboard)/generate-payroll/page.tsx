@@ -5,7 +5,8 @@ import PayrollSection from "@/features/payroll/components/PayrollSection";
 import { useAppState } from "@/features/app/AppStateProvider";
 
 export default function PayrollPage() {
-  const { attendance, payroll, handleGeneratePayroll } = useAppState();
+  const { attendance, payroll, handleGeneratePayroll, attendancePeriod } =
+    useAppState();
 
   return (
     <div className="space-y-4">
@@ -16,6 +17,7 @@ export default function PayrollPage() {
       />
 
       <PayrollSection
+        attendancePeriod={attendancePeriod}
         dailyRowsCount={attendance.dailyRows.length}
         availableSites={attendance.availableSites}
         payroll={payroll}

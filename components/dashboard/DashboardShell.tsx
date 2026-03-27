@@ -15,6 +15,8 @@ import {
   UserRoundSearch,
   Wallet,
 } from "lucide-react";
+import { logoutAction } from "@/actions/auth";
+import { useAuthSession } from "@/components/auth/AuthSessionProvider";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +46,20 @@ const ANALYTICS_NAV_ITEMS = [
   { href: "/payroll-analytics", label: "Payroll Analytics", icon: BarChart3 },
 ] as const;
 
+const ADMIN_NAV_ITEMS = [
+  { href: "/saved-payrolls", label: "Saved Payrolls", icon: BarChart3 },
+] as const;
+
+function getInitials(name: string) {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("") || "PA";
+}
+
 export default function DashboardShell({
   children,
 }: {
@@ -52,6 +68,7 @@ export default function DashboardShell({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { hasAttendanceData } = useAppState();
+  const { user } = useAuthSession();
   const sidebarWidth = "258px";
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
@@ -75,7 +92,7 @@ export default function DashboardShell({
             style={{ height: headerHeight }}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-apple-mist  text-apple-charcoal">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-apple-mist text-apple-charcoal">
                 <Building2 className="h-4 w-4" strokeWidth={1.5} />
               </div>
 
@@ -101,17 +118,17 @@ export default function DashboardShell({
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-all border border-apple-mist/60 ",
+                      "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                       active
-                        ? " bg-apple-mist/40 text-apple-charcoal shadow-sm "
-                        : "text-apple-smoke hover:bg-apple-mist/40  hover:shadow-sm hover:text-apple-charcoal",
+                        ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                        : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
                     )}
                   >
                     <div
                       className={cn(
                         "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
                         active
-                          ? "bg-[#1f6a37] text-white "
+                          ? "bg-[#1f6a37] text-white"
                           : "text-apple-smoke group-hover:text-apple-charcoal",
                       )}
                     >
@@ -150,17 +167,17 @@ export default function DashboardShell({
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                              "group flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-all border border-apple-mist/60 ",
+                              "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                               active
-                                ? " bg-apple-mist/40 text-apple-charcoal shadow-sm "
-                                : "text-apple-smoke hover:bg-apple-mist/40  hover:shadow-sm hover:text-apple-charcoal",
+                                ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                                : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
                             )}
                           >
                             <div
                               className={cn(
                                 "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
                                 active
-                                  ? "bg-[#1f6a37] text-white "
+                                  ? "bg-[#1f6a37] text-white"
                                   : "text-apple-smoke group-hover:text-apple-charcoal",
                               )}
                             >
@@ -205,15 +222,15 @@ export default function DashboardShell({
                             className={cn(
                               "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                               active
-                                ? " bg-apple-mist/40 text-apple-charcoal shadow-sm "
-                                : "text-apple-smoke hover:bg-apple-mist/40 hover:shadow-sm hover:text-apple-charcoal",
+                                ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                                : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
                             )}
                           >
                             <div
                               className={cn(
                                 "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
                                 active
-                                  ? "bg-[#1f6a37] text-white "
+                                  ? "bg-[#1f6a37] text-white"
                                   : "text-apple-smoke group-hover:text-apple-charcoal",
                               )}
                             >
@@ -268,15 +285,15 @@ export default function DashboardShell({
                             className={cn(
                               "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                               active
-                                ? " bg-apple-mist/40 text-apple-charcoal shadow-sm "
-                                : "text-apple-smoke hover:bg-apple-mist/40 hover:shadow-sm hover:text-apple-charcoal",
+                                ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                                : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
                             )}
                           >
                             <div
                               className={cn(
                                 "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
                                 active
-                                  ? "bg-[#1f6a37] text-white "
+                                  ? "bg-[#1f6a37] text-white"
                                   : "text-apple-smoke group-hover:text-apple-charcoal",
                               )}
                             >
@@ -290,9 +307,48 @@ export default function DashboardShell({
                   </motion.div>
                 ) : null}
               </AnimatePresence>
+
+              {user.role === "admin" ? (
+                <div className="space-y-3 pt-2">
+                  <div className="px-3 pb-1 pt-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                      Admin
+                    </p>
+                  </div>
+
+                  {ADMIN_NAV_ITEMS.map((item) => {
+                    const active = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          active
+                            ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                            : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                            active
+                              ? "bg-[#1f6a37] text-white"
+                              : "text-apple-smoke group-hover:text-apple-charcoal",
+                          )}
+                        >
+                          <item.icon size={15} />
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
             </nav>
 
-            <div className="mt-auto space-y-1 ">
+            <div className="mt-auto space-y-1">
               <Link
                 href="/settings"
                 className={cn(
@@ -315,26 +371,35 @@ export default function DashboardShell({
                 <span className="font-medium">Settings</span>
               </Link>
 
-              <div className=" pt-4">
+              <div className="pt-4">
                 <div className="rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-apple-mist text-xs font-{semibold} text-apple-charcoal">
-                      PA
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-apple-mist text-xs font-semibold text-apple-charcoal">
+                      {getInitials(user.fullName)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-apple-charcoal">
-                        Prodisenyo Admin
+                        {user.fullName}
                       </p>
                       <p className="truncate text-xs text-apple-steel">
-                        prodisenyo@company.com
+                        @{user.username} - {user.role}
                       </p>
                     </div>
                     <ChevronRight size={14} className="text-apple-silver" />
                   </div>
                 </div>
 
+                <form action={logoutAction} className="pt-3">
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl border border-apple-mist px-3 py-2 text-sm font-semibold text-apple-charcoal transition hover:border-apple-steel"
+                  >
+                    Sign Out
+                  </button>
+                </form>
+
                 <p className="pt-4 text-center text-[11px] text-[#b6c1c7]">
-                  © 2024 PayTrack Inc. All rights reserved.
+                  Copyright 2026 PayTrack. All rights reserved.
                 </p>
               </div>
             </div>
@@ -342,11 +407,6 @@ export default function DashboardShell({
         </aside>
 
         <div className="min-h-screen lg:pl-[258px]">
-          {/* <header
-            className="fixed left-0 right-0 top-0 z-30 border-b border-apple-mist bg-white/90 backdrop-blur-sm lg:left-[258px]"
-            style={{ height: headerHeight }}
-          ></header> */}
-
           <main className="min-h-screen bg-white p-6">{children}</main>
         </div>
       </div>

@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
+import SavePayrollRunButton from "@/components/payroll/SavePayrollRunButton";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
 import {
@@ -41,6 +42,7 @@ import {
 } from "@/features/payroll/utils/payrollFormatters";
 
 interface PayrollSectionProps {
+  attendancePeriod: string;
   dailyRowsCount: number;
   availableSites: string[];
   payroll: UsePayrollStateResult;
@@ -187,6 +189,7 @@ function buildPayslipRecord(
 }
 
 export default function PayrollSection({
+  attendancePeriod,
   dailyRowsCount,
   availableSites,
   payroll,
@@ -431,6 +434,11 @@ export default function PayrollSection({
                   <SlidersHorizontal size={14} />
                   Edit Rates
                 </button>
+                <SavePayrollRunButton
+                  attendancePeriod={attendancePeriod}
+                  availableSites={availableSites}
+                  payrollRows={payroll.payrollRows}
+                />
               </div>
             </div>
 
