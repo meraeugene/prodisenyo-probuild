@@ -24,7 +24,8 @@ import {
   YAxis,
 } from "recharts";
 import ChartTooltip from "@/components/charts/ChartTooltip";
-import { useAppState } from "@/features/app/AppStateProvider";
+import { DashboardOverviewSkeleton } from "@/components/dashboard/DashboardLoadingSkeleton";
+import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
@@ -44,16 +45,17 @@ function extractBranchName(value: string): string {
 }
 
 export default function OverviewPage() {
-  const { payroll, attendancePeriod, records, employees, attendance } =
-    useAppState();
+  const { data, loading, error } = useHistoricalDashboardData();
+  const payrollRows = data?.payrollRows ?? [];
+  const payrollAttendanceInputs = data?.payrollAttendanceInputs ?? [];
+  const attendancePeriod = data?.attendancePeriod ?? "No recorded payroll period yet";
+  const records = data?.records ?? [];
+  const availableSites = data?.availableSites ?? [];
+  const activityRows = data?.recentActivity ?? [];
 
   const payrollInsights = useMemo(
-    () =>
-      buildPayrollInsightsData(
-        payroll.payrollRows,
-        payroll.payrollAttendanceInputs,
-      ),
-    [payroll.payrollAttendanceInputs, payroll.payrollRows],
+    () => buildPayrollInsightsData(payrollRows, payrollAttendanceInputs),
+    [payrollAttendanceInputs, payrollRows],
   );
 
   const totalPayroll = payrollInsights.kpis.totalPayroll;
@@ -61,14 +63,6 @@ export default function OverviewPage() {
   const deductions =
     Math.round(Math.max(0, grossPayroll - totalPayroll) * 100) / 100;
   const netPayroll = Math.max(0, totalPayroll);
-
-  const activityRows = payroll.payrollRows.slice(0, 5).map((row) => ({
-    type: row.overtimeHours > 0 ? "Overtime" : "Payroll Run",
-    employee: row.worker,
-    amount: `${PESO_SIGN} ${formatPayrollNumber(row.totalPay)}`,
-    status: payroll.payrollGenerated ? "Success" : "Ready",
-    method: row.site.split(" ")[0] || "Attendance Import",
-  }));
 
   const workforceByBranch = useMemo(
     () =>
@@ -91,7 +85,7 @@ export default function OverviewPage() {
   );
 
   const siteCards = useMemo(() => {
-    return attendance.availableSites.map((siteName) => {
+    return availableSites.map((siteName) => {
       const shortSite = extractBranchName(siteName);
       const workforceMatch = workforceByBranch.find(
         (item) => item.shortBranch === shortSite,
@@ -107,7 +101,13 @@ export default function OverviewPage() {
         payrollTotal: payrollMatch?.value ?? 0,
       };
     });
-  }, [attendance.availableSites, payrollDistributionData, workforceByBranch]);
+  }, [availableSites, payrollDistributionData, workforceByBranch]);
+
+  const shouldShowSkeleton = loading && !data && !error;
+
+  if (shouldShowSkeleton) {
+    return <DashboardOverviewSkeleton />;
+  }
 
   return (
     <div className="space-y-5">
@@ -155,7 +155,7 @@ export default function OverviewPage() {
                 Analytics Overview
               </p>
               <p className="mt-1 text-sm text-apple-steel">
-                Live charts from attendance and payroll analytics.
+                Historical charts from Supabase attendance and approved payroll.
               </p>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function OverviewPage() {
                     ))
                   ) : (
                     <p className="text-xs text-apple-steel">
-                      Upload attendance files to populate payroll distribution.
+                      No saved payroll runs yet.
                     </p>
                   )}
                 </div>
@@ -435,11 +435,11 @@ export default function OverviewPage() {
       </section>
 
       <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-[15px] font-semibold text-apple-charcoal">
-            Recent Payroll Activity
-          </p>
-          <p className="text-xs text-emerald-500">{attendancePeriod}</p>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-[15px] font-semibold text-apple-charcoal">
+              Recent Payroll Activity
+            </p>
+            <p className="text-xs text-emerald-500">{attendancePeriod}</p>
         </div>
 
         <div className="overflow-hidden rounded-[12px] border border-apple-mist">
@@ -480,12 +480,18 @@ export default function OverviewPage() {
               ))
             ) : (
               <div className="px-4 py-6 text-sm text-apple-steel">
-                Upload attendance files to populate dashboard activity.
+                No saved payroll activity recorded yet.
               </div>
             )}
           </div>
         </div>
       </section>
+
+      {error ? (
+        <section className="rounded-[12px] border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          {error}
+        </section>
+      ) : null}
     </div>
   );
 }

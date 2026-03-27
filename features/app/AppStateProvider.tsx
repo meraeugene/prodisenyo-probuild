@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { ParseResult } from "@/lib/parser";
+import type { PayrollRunStatus } from "@/types/database";
 import type {
   AttendanceRecord,
   Employee,
@@ -24,19 +25,14 @@ import {
   usePayrollState,
   type UsePayrollStateResult,
 } from "@/features/payroll/hooks/usePayrollState";
+import { buildDailyRows } from "@/features/attendance/utils/attendanceSelectors";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const STORAGE_KEY = "prodisenyo-dashboard-state-v1";
+const STORAGE_KEY = "prodisenyo-dashboard-ui-state-v2";
+const LEGACY_STORAGE_KEY = "prodisenyo-dashboard-state-v1";
+const RESET_FLAG_KEY = "prodisenyo-workspace-reset-v1";
 
-interface PersistedDashboardState {
-  uploadedFiles: Array<{
-    name: string;
-    size: number;
-    lastModified: number;
-  }>;
-  records: AttendanceRecord[];
-  site: string;
-  attendancePeriod: string;
-  employees: Employee[];
+interface PersistedDashboardUiState {
   theme: ThemeMode;
   attendanceUi: {
     step2View: UseAttendanceReviewResult["step2View"];
@@ -47,8 +43,6 @@ interface PersistedDashboardState {
     step2DateFilter: string;
   };
   payrollUi: {
-    payrollRoleRates: UsePayrollStateResult["payrollRoleRates"];
-    payrollGenerated: boolean;
     payrollTab: UsePayrollStateResult["payrollTab"];
     payrollPage: number;
     payrollSiteFilter: string;
@@ -56,14 +50,27 @@ interface PersistedDashboardState {
     payrollDateFilter: string;
     payrollSort: UsePayrollStateResult["payrollSort"];
     payrollRoleFilter: UsePayrollStateResult["payrollRoleFilter"];
-    paidHolidays: UsePayrollStateResult["paidHolidays"];
-    payrollOverrides: UsePayrollStateResult["payrollOverrides"];
   };
 }
+
+type RestoredAttendanceImport = {
+  id: string;
+  site_name: string;
+  period_label: string;
+  original_filename: string;
+};
+
+type RestoredPayrollRunMeta = {
+  id: string;
+  status: PayrollRunStatus;
+};
 
 interface AppStateContextValue {
   hydrated: boolean;
   uploadedFiles: UploadedFileItem[];
+  currentAttendanceImportId: string | null;
+  currentPayrollRunId: string | null;
+  currentPayrollRunStatus: PayrollRunStatus | null;
   records: AttendanceRecord[];
   site: string;
   attendancePeriod: string;
@@ -72,6 +79,7 @@ interface AppStateContextValue {
   attendance: UseAttendanceReviewResult;
   payroll: UsePayrollStateResult;
   hasAttendanceData: boolean;
+  workspaceReset: boolean;
   overviewStats: {
     employees: number;
     records: number;
@@ -84,6 +92,10 @@ interface AppStateContextValue {
     value:
       | UploadedFileItem[]
       | ((prev: UploadedFileItem[]) => UploadedFileItem[]),
+  ) => void;
+  setCurrentAttendanceImportId: (value: string | null) => void;
+  setCurrentPayrollRunMeta: (
+    value: { id: string | null; status: PayrollRunStatus | null },
   ) => void;
   handleParsed: (result: ParseResult) => void;
   handleClearAttendanceData: () => void;
@@ -102,14 +114,87 @@ function normalizeThemeMode(value: string | null): ThemeMode | null {
   return value;
 }
 
+function mapAttendanceRecords(
+  rows: Array<{
+    employee_name: string;
+    log_date: string;
+    log_time: string;
+    log_type: "IN" | "OUT";
+    log_source: "Time1" | "Time2" | "OT";
+    site_name: string;
+  }>,
+): AttendanceRecord[] {
+  return rows.map((row) => ({
+    date: row.log_date,
+    employee: row.employee_name,
+    logTime: row.log_time,
+    type: row.log_type,
+    source: row.log_source,
+    site: row.site_name,
+  }));
+}
+
+function buildEmployeesFromRecords(records: AttendanceRecord[]): Employee[] {
+  const dailyRows = buildDailyRows(records);
+  const grouped = new Map<
+    string,
+    {
+      name: string;
+      days: Set<string>;
+      regularHours: number;
+      otHours: number;
+    }
+  >();
+
+  for (const row of dailyRows) {
+    const key = row.employee.trim().toLowerCase();
+    const current = grouped.get(key) ?? {
+      name: row.employee,
+      days: new Set<string>(),
+      regularHours: 0,
+      otHours: 0,
+    };
+
+    current.days.add(row.date);
+
+    const otHours =
+      (row.otIn && row.otOut ? Math.max(0, row.hours - 8) : 0) || 0;
+    const regularHours = Math.max(0, row.hours - otHours);
+
+    current.regularHours += regularHours;
+    current.otHours += otHours;
+    grouped.set(key, current);
+  }
+
+  return Array.from(grouped.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((employee, index) => ({
+      id: index + 1,
+      name: employee.name,
+      days: employee.days.size,
+      regularHours: Math.round(employee.regularHours * 100) / 100,
+      otHours: Math.round(employee.otHours * 100) / 100,
+      customRateDay: null,
+      customRateHour: null,
+    }));
+}
+
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFileItem[]>([]);
+  const [currentAttendanceImportId, setCurrentAttendanceImportId] =
+    useState<string | null>(null);
+  const [currentPayrollRunId, setCurrentPayrollRunId] = useState<string | null>(
+    null,
+  );
+  const [currentPayrollRunStatus, setCurrentPayrollRunStatus] =
+    useState<PayrollRunStatus | null>(null);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [site, setSite] = useState("Unknown Site");
   const [attendancePeriod, setAttendancePeriod] = useState("Current Period");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [theme, setTheme] = useState<ThemeMode>("prodisenyo");
+  const [workspaceReset, setWorkspaceReset] = useState(false);
 
   const attendance = useAttendanceReview(records);
   const payroll = usePayrollState({
@@ -119,62 +204,136 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        setHydrated(true);
-        return;
-      }
+    let cancelled = false;
 
-      const parsed = JSON.parse(raw) as Partial<PersistedDashboardState>;
-      setUploadedFiles(
-        (parsed.uploadedFiles ?? []).map((file) => ({
-          name: file.name,
-          size: file.size,
-          lastModified: file.lastModified,
-          file: null,
-          persisted: true,
-        })),
-      );
-      setRecords(parsed.records ?? []);
-      setSite(parsed.site ?? "Unknown Site");
-      setAttendancePeriod(parsed.attendancePeriod ?? "Current Period");
-      setEmployees(parsed.employees ?? []);
+    async function restoreState() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const resetFlag = window.localStorage.getItem(RESET_FLAG_KEY) === "true";
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+        setWorkspaceReset(resetFlag);
 
-      const persistedTheme = normalizeThemeMode(parsed.theme ?? null);
-      if (persistedTheme) {
-        setTheme(persistedTheme);
-      }
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<PersistedDashboardUiState>;
 
-      if (parsed.attendanceUi) {
-        attendance.setStep2View(parsed.attendanceUi.step2View ?? "daily");
-        attendance.setStep2Sort(parsed.attendanceUi.step2Sort ?? "date-asc");
-        attendance.setRecordsPage(parsed.attendanceUi.recordsPage ?? 1);
-        attendance.setStep2SiteFilter(parsed.attendanceUi.step2SiteFilter ?? "ALL");
-        attendance.setStep2NameFilter(parsed.attendanceUi.step2NameFilter ?? "");
-        attendance.setStep2DateFilter(parsed.attendanceUi.step2DateFilter ?? "");
-      }
+          const persistedTheme = normalizeThemeMode(parsed.theme ?? null);
+          if (persistedTheme) {
+            setTheme(persistedTheme);
+          }
 
-      if (parsed.payrollUi) {
-        payroll.setPayrollRoleRates(
-          parsed.payrollUi.payrollRoleRates ?? payroll.payrollRoleRates,
+          if (parsed.attendanceUi) {
+            attendance.setStep2View(parsed.attendanceUi.step2View ?? "daily");
+            attendance.setStep2Sort(parsed.attendanceUi.step2Sort ?? "date-asc");
+            attendance.setRecordsPage(parsed.attendanceUi.recordsPage ?? 1);
+            attendance.setStep2SiteFilter(parsed.attendanceUi.step2SiteFilter ?? "ALL");
+            attendance.setStep2NameFilter(parsed.attendanceUi.step2NameFilter ?? "");
+            attendance.setStep2DateFilter(parsed.attendanceUi.step2DateFilter ?? "");
+          }
+
+          if (parsed.payrollUi) {
+            payroll.setPayrollTab(parsed.payrollUi.payrollTab ?? "payroll");
+            payroll.setPayrollPage(parsed.payrollUi.payrollPage ?? 1);
+            payroll.setPayrollSiteFilter(parsed.payrollUi.payrollSiteFilter ?? "ALL");
+            payroll.setPayrollNameFilter(parsed.payrollUi.payrollNameFilter ?? "");
+            payroll.setPayrollDateFilter(parsed.payrollUi.payrollDateFilter ?? "");
+            payroll.setPayrollSort(parsed.payrollUi.payrollSort ?? "date-asc");
+            payroll.setPayrollRoleFilter(parsed.payrollUi.payrollRoleFilter ?? "ALL");
+          }
+        }
+
+        if (resetFlag) return;
+
+        const supabase = createSupabaseBrowserClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user || cancelled) return;
+
+        const { data: importData, error: importError } = await supabase
+          .from("attendance_imports")
+          .select("id, site_name, period_label, original_filename")
+          .eq("uploaded_by", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const latestImport = (importData ?? null) as RestoredAttendanceImport | null;
+
+        if (importError || !latestImport || cancelled) return;
+
+        const { data: attendanceRows, error: attendanceError } = await supabase
+          .from("attendance_records")
+          .select(
+            "employee_name, log_date, log_time, log_type, log_source, site_name",
+          )
+          .eq("import_id", latestImport.id)
+          .order("log_date", { ascending: true })
+          .order("log_time", { ascending: true });
+
+        if (attendanceError || cancelled) return;
+
+        const nextRecords = mapAttendanceRecords(
+          (attendanceRows ?? []) as Array<{
+            employee_name: string;
+            log_date: string;
+            log_time: string;
+            log_type: "IN" | "OUT";
+            log_source: "Time1" | "Time2" | "OT";
+            site_name: string;
+          }>,
         );
-        payroll.setPayrollGenerated(parsed.payrollUi.payrollGenerated ?? false);
-        payroll.setPayrollTab(parsed.payrollUi.payrollTab ?? "payroll");
-        payroll.setPayrollPage(parsed.payrollUi.payrollPage ?? 1);
-        payroll.setPayrollSiteFilter(parsed.payrollUi.payrollSiteFilter ?? "ALL");
-        payroll.setPayrollNameFilter(parsed.payrollUi.payrollNameFilter ?? "");
-        payroll.setPayrollDateFilter(parsed.payrollUi.payrollDateFilter ?? "");
-        payroll.setPayrollSort(parsed.payrollUi.payrollSort ?? "date-asc");
-        payroll.setPayrollRoleFilter(parsed.payrollUi.payrollRoleFilter ?? "ALL");
-        payroll.setPaidHolidays(parsed.payrollUi.paidHolidays ?? []);
-        payroll.setPayrollOverrides(parsed.payrollUi.payrollOverrides ?? {});
+
+        setCurrentAttendanceImportId(latestImport.id);
+        setSite(latestImport.site_name ?? "Unknown Site");
+        setAttendancePeriod(latestImport.period_label ?? "Current Period");
+        setRecords(nextRecords);
+        setEmployees(buildEmployeesFromRecords(nextRecords));
+
+        const fileNames = (latestImport.original_filename ?? "")
+          .split("|")
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+        setUploadedFiles(
+          fileNames.map((name) => ({
+            name,
+            size: 0,
+            lastModified: 0,
+            file: null,
+            persisted: true,
+          })),
+        );
+
+        const { data: runData } = await supabase
+          .from("payroll_runs")
+          .select("id, status")
+          .eq("attendance_import_id", latestImport.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const latestRun = (runData ?? null) as RestoredPayrollRunMeta | null;
+
+        if (cancelled) return;
+
+        setCurrentPayrollRunId(latestRun?.id ?? null);
+        setCurrentPayrollRunStatus(latestRun?.status ?? null);
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      } finally {
+        if (!cancelled) {
+          setHydrated(true);
+        }
       }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setHydrated(true);
     }
+
+    void restoreState();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -184,16 +343,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
 
-    const payload: PersistedDashboardState = {
-      uploadedFiles: uploadedFiles.map((file) => ({
-        name: file.name,
-        size: file.size,
-        lastModified: file.lastModified,
-      })),
-      records,
-      site,
-      attendancePeriod,
-      employees,
+    const payload: PersistedDashboardUiState = {
       theme,
       attendanceUi: {
         step2View: attendance.step2View,
@@ -204,8 +354,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         step2DateFilter: attendance.step2DateFilter,
       },
       payrollUi: {
-        payrollRoleRates: payroll.payrollRoleRates,
-        payrollGenerated: payroll.payrollGenerated,
         payrollTab: payroll.payrollTab,
         payrollPage: payroll.payrollPage,
         payrollSiteFilter: payroll.payrollSiteFilter,
@@ -213,19 +361,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         payrollDateFilter: payroll.payrollDateFilter,
         payrollSort: payroll.payrollSort,
         payrollRoleFilter: payroll.payrollRoleFilter,
-        paidHolidays: payroll.paidHolidays,
-        payrollOverrides: payroll.payrollOverrides,
       },
     };
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }, [
     hydrated,
-    uploadedFiles,
-    records,
-    site,
-    attendancePeriod,
-    employees,
     theme,
     attendance.step2View,
     attendance.step2Sort,
@@ -233,8 +374,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     attendance.step2SiteFilter,
     attendance.step2NameFilter,
     attendance.step2DateFilter,
-    payroll.payrollRoleRates,
-    payroll.payrollGenerated,
     payroll.payrollTab,
     payroll.payrollPage,
     payroll.payrollSiteFilter,
@@ -242,8 +381,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     payroll.payrollDateFilter,
     payroll.payrollSort,
     payroll.payrollRoleFilter,
-    payroll.paidHolidays,
-    payroll.payrollOverrides,
   ]);
 
   const handleParsed = useCallback(
@@ -252,6 +389,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setRecords(result.records);
       setAttendancePeriod(result.period);
       setSite(result.site);
+      setCurrentPayrollRunId(null);
+      setCurrentPayrollRunStatus(null);
+      setWorkspaceReset(false);
+      window.localStorage.removeItem(RESET_FLAG_KEY);
       attendance.resetAttendanceReview();
       payroll.resetPayrollState();
     },
@@ -264,14 +405,28 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setEmployees([]);
     setSite("Unknown Site");
     setAttendancePeriod("Current Period");
+    setCurrentAttendanceImportId(null);
+    setCurrentPayrollRunId(null);
+    setCurrentPayrollRunStatus(null);
     attendance.resetAttendanceReview();
     payroll.resetPayrollState();
   }, [attendance, payroll]);
 
   const handleReset = useCallback(() => {
     handleClearAttendanceData();
+    setWorkspaceReset(true);
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    window.localStorage.setItem(RESET_FLAG_KEY, "true");
   }, [handleClearAttendanceData]);
+
+  const setCurrentPayrollRunMeta = useCallback(
+    (value: { id: string | null; status: PayrollRunStatus | null }) => {
+      setCurrentPayrollRunId(value.id);
+      setCurrentPayrollRunStatus(value.status);
+    },
+    [],
+  );
 
   const handleGeneratePayroll = useCallback(() => {
     return payroll.handleGeneratePayroll();
@@ -281,6 +436,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     () => ({
       hydrated,
       uploadedFiles,
+      currentAttendanceImportId,
+      currentPayrollRunId,
+      currentPayrollRunStatus,
       records,
       site,
       attendancePeriod,
@@ -289,6 +447,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       attendance,
       payroll,
       hasAttendanceData: records.length > 0,
+      workspaceReset,
       overviewStats: {
         employees: employees.length,
         records: records.length,
@@ -298,6 +457,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       },
       setTheme,
       setUploadedFiles,
+      setCurrentAttendanceImportId,
+      setCurrentPayrollRunMeta,
       handleParsed,
       handleClearAttendanceData,
       handleReset,
@@ -306,6 +467,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [
       hydrated,
       uploadedFiles,
+      currentAttendanceImportId,
+      currentPayrollRunId,
+      currentPayrollRunStatus,
       records,
       site,
       attendancePeriod,
@@ -313,6 +477,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       theme,
       attendance,
       payroll,
+      workspaceReset,
+      setCurrentPayrollRunMeta,
       handleParsed,
       handleClearAttendanceData,
       handleReset,

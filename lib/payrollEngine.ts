@@ -40,8 +40,8 @@ export interface GeneratePayrollOptions {
 interface WorkerGroup {
   worker: string;
   role: string;
+  site: string;
   totalHours: number;
-  sites: Set<string>;
   dates: Set<string>;
 }
 
@@ -81,13 +81,6 @@ function normalizeRole(recordRole: string, roleFromName: string | null): string 
 
   const fallback = normalizeWhitespace(recordRole).toUpperCase();
   return fallback || "UNKNOWN";
-}
-
-function summarizeSites(sites: Set<string>): string {
-  const values = Array.from(sites);
-  if (values.length === 0) return "Unknown Site";
-  if (values.length === 1) return values[0];
-  return values.sort((a, b) => a.localeCompare(b)).join(", ");
 }
 
 function summarizeDates(dates: Set<string>): string {
@@ -142,27 +135,26 @@ export function generatePayroll(
     if (!workerName) continue;
 
     const role = normalizeRole(record.role, parsedName.roleFromName);
-    const key = `${role}|||${workerName}`;
     const numericHours = Number(record.hours);
     if (!Number.isFinite(numericHours) || numericHours < 0) continue;
 
     const site = normalizeWhitespace(record.site) || "Unknown Site";
     const date = normalizeWhitespace(record.date);
+    const key = `${role}|||${workerName}|||${site}`;
 
     const existing = grouped.get(key);
     if (!existing) {
       grouped.set(key, {
         worker: workerName,
         role,
+        site,
         totalHours: numericHours,
-        sites: new Set([site]),
         dates: new Set(date ? [date] : []),
       });
       continue;
     }
 
     existing.totalHours += numericHours;
-    existing.sites.add(site);
     if (date) existing.dates.add(date);
   }
 
@@ -171,10 +163,10 @@ export function generatePayroll(
     const defaultRate = roundTo(dailyRate / hoursPerDay);
 
     const baseRow: PayrollRow = {
-      id: `${group.role}|||${group.worker}`,
+      id: `${group.role}|||${group.worker}|||${group.site}`,
       worker: group.worker,
       role: group.role,
-      site: summarizeSites(group.sites),
+      site: group.site,
       date: summarizeDates(group.dates),
       hoursWorked: roundTo(group.totalHours),
       overtimeHours: 0,

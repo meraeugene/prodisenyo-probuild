@@ -9,14 +9,7 @@ export default function DashboardOverlays() {
 
   return (
     <>
-      <PayrollRateModal
-        show={payroll.showPayrollRateModal}
-        roleCodes={payroll.roleCodes}
-        payrollRateDraft={payroll.payrollRateDraft}
-        setPayrollRateDraft={payroll.setPayrollRateDraft}
-        onClose={payroll.closePayrollRateModal}
-        onApply={payroll.applyPayrollRates}
-      />
+      <PayrollRateModal payroll={payroll} />
       <PayrollEditModal payroll={payroll} />
     </>
   );

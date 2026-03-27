@@ -1,10 +1,8 @@
-import Link from "next/link";
+import LoginForm from "@/components/auth/LoginForm";
 import {
-  ArrowRight,
   BriefcaseBusiness,
   Building2,
   Fingerprint,
-  Layers3,
   ShieldCheck,
 } from "lucide-react";
 
@@ -12,7 +10,14 @@ export const metadata = {
   title: "Login",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ next?: string }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const nextPath = params?.next ?? null;
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(174,220,188,0.34),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(56,140,82,0.18),transparent_28%),linear-gradient(180deg,#f4fbf6_0%,#ffffff_46%,#f2faf5_100%)]">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.32),transparent_32%,rgba(174,220,188,0.08)_100%)]" />
@@ -144,67 +149,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <form className="flex flex-1 flex-col space-y-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="username"
-                    className="text-sm font-medium text-apple-charcoal"
-                  >
-                    Username
-                  </label>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    className="h-14 w-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 text-sm text-apple-charcoal outline-none transition placeholder:text-apple-steel focus:border-[#1f6a37] focus:bg-white focus:ring-4 focus:ring-emerald-100"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <label
-                      htmlFor="password"
-                      className="text-sm font-medium text-apple-charcoal"
-                    >
-                      Password
-                    </label>
-                    <Link
-                      href="#"
-                      className="text-xs font-semibold text-[#1f6a37] transition hover:text-[#163f25]"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    className="h-14 w-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 text-sm text-apple-charcoal outline-none transition placeholder:text-apple-steel focus:border-[#1f6a37] focus:bg-white focus:ring-4 focus:ring-emerald-100"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3">
-                  <label className="flex items-center gap-3 text-sm text-apple-smoke">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-apple-silver text-[#1f6a37] focus:ring-emerald-200"
-                    />
-                    Keep me signed in
-                  </label>
-                  <span className="text-xs font-medium text-apple-steel">
-                    Secure session
-                  </span>
-                </div>
-
-                <button
-                  type="submit"
-                  className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#163f25,#1f6a37,#2f7a46)] px-5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] transition hover:brightness-105"
-                >
-                  Sign in to PayTrack
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+              <div className="flex flex-1 flex-col">
+                <LoginForm nextPath={nextPath} />
                 <div className="mt-auto pt-6">
                   <div className="rounded-[24px] border border-apple-mist bg-[linear-gradient(180deg,rgba(222,243,229,0.5),rgba(255,255,255,0.95))] p-4">
                     <div className="flex items-start gap-3">
@@ -228,7 +174,7 @@ export default function LoginPage() {
                     access.
                   </p>
                 </div>
-              </form>
+              </div>
             </div>
           </section>
         </div>

@@ -17,12 +17,12 @@ export const ROLE_CODES = Object.keys(ROLE_CODE_TO_NAME) as RoleCode[];
 
 export const DEFAULT_DAILY_RATE_BY_ROLE: Record<RoleCode, number> = {
   D: 500,
-  L: 450,
+  L: 500,
   E: 500,
-  PL: 450,
-  PA: 430,
-  FORE: 625,
-  S: 650,
+  PL: 500,
+  PA: 500,
+  FORE: 500,
+  S: 500,
   UNKNOWN: 500,
 };
 

@@ -12,7 +12,7 @@ interface UploadZoneProps {
       | UploadedFileItem[]
       | ((prev: UploadedFileItem[]) => UploadedFileItem[]),
   ) => void;
-  onParsed: (result: ParseResult) => void;
+  onParsed: (result: ParseResult) => void | Promise<void>;
   resetSignal?: number;
 }
 
@@ -109,7 +109,7 @@ export default function UploadZone({
           "No employee records found. Check export format and try again.",
         );
       }
-      onParsed(result);
+      await onParsed(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to parse file.");
     } finally {

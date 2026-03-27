@@ -36,6 +36,20 @@ export function normalizeEmployeeNameKey(name: string): string {
   return EMPLOYEE_NAME_OVERRIDES[compact] ?? compact;
 }
 
+export function normalizeSiteKey(site: string): string {
+  return site.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function buildEmployeeBranchRateKey(
+  employeeName: string,
+  role: string,
+  site: string,
+): string {
+  const normalizedRole =
+    normalizeRoleCode(role) ?? (role.trim().toUpperCase() || "UNKNOWN");
+  return `${normalizeEmployeeNameKey(employeeName)}|||${normalizedRole}|||${normalizeSiteKey(site)}`;
+}
+
 function getEmployeeNameTokens(name: string): string[] {
   return name
     .trim()
@@ -86,7 +100,8 @@ export function pickPreferredRoleCode(currentRole: string, nextRole: string): st
 }
 
 export function parseTimeToDecimal(timeText: string): number | null {
-  const match = timeText.match(/^(\d{1,2}):(\d{2})$/);
+  const normalized = timeText.trim();
+  const match = normalized.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if (!match) return null;
 
   const hours = Number(match[1]);

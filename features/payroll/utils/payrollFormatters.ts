@@ -5,6 +5,18 @@
   });
 }
 
+export function formatLogTime(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "-";
+
+  const withSeconds = trimmed.match(/^(\d{1,2}:\d{2}):\d{2}$/);
+  if (withSeconds) {
+    return withSeconds[1] ?? trimmed;
+  }
+
+  return trimmed;
+}
+
 export function parseNonNegativeOrFallback(value: string, fallback: number): number {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed) || parsed < 0) return fallback;

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { AttendanceRecord } from "@/types";
 import type { UseAttendanceReviewResult } from "@/features/attendance/hooks/useAttendanceReview";
+import { formatLogTime } from "@/features/payroll/utils/payrollFormatters";
 
 interface AttendanceReviewSectionProps {
   step: number;
@@ -265,37 +266,37 @@ export default function AttendanceReviewSection({
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
                             {row.time1In ? (
-                              row.time1In
+                              formatLogTime(row.time1In)
                             ) : (
                               <span className="text-red-500 ">Missed</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
                             {row.time1Out ? (
-                              row.time1Out
+                              formatLogTime(row.time1Out)
                             ) : (
                               <span className="text-red-500 ">Missed</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
                             {row.time2In ? (
-                              row.time2In
+                              formatLogTime(row.time2In)
                             ) : (
                               <span className="text-red-500 ">Missed</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
                             {row.time2Out ? (
-                              row.time2Out
+                              formatLogTime(row.time2Out)
                             ) : (
                               <span className="text-red-500 ">Missed</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
-                            {row.otIn || "--:--"}
+                            {row.otIn ? formatLogTime(row.otIn) : "--:--"}
                           </td>
                           <td className="px-4 py-3 text-sm  text-apple-ash">
-                            {row.otOut || "--:--"}
+                            {row.otOut ? formatLogTime(row.otOut) : "--:--"}
                           </td>
                           <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
                             {row.hours.toFixed(2)}
@@ -341,7 +342,7 @@ export default function AttendanceReviewSection({
                           {r.employee}
                         </td>
                         <td className="px-4 py-3 text-sm font-mono text-apple-ash">
-                          {r.logTime}
+                          {formatLogTime(r.logTime)}
                         </td>
                         <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
                           {r.type}

@@ -28,19 +28,22 @@ import type {
 } from "@/features/payroll/types";
 import {
   extractSiteName,
+  formatLogTime,
   formatPayrollPeriodFromText,
   formatPayrollNumber,
   normalizeNumericInput,
   toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
-import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
+import {
+  buildEmployeeBranchRateKey,
+  getLogOverrideKey,
+} from "@/features/payroll/utils/payrollMappers";
 import {
   buildDateHoursMap,
   buildDateSpanFromDates,
   computeBasePay,
   computeDaysWorked,
   countHolidayBonusDays,
-  FIXED_PAY_RATE_PER_DAY,
   FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
 
@@ -58,8 +61,6 @@ const DAILY_HOURS_GRID_COLOR = "#bbf7d0";
 const CLOCK_IN_BAR_TOP_COLOR = "#15803d";
 const CLOCK_IN_BAR_BOTTOM_COLOR = "#4ade80";
 const CLOCK_IN_GRID_COLOR = "#d1fae5";
-const PAID_LEAVE_RATE_PER_DAY = 500;
-
 type AdjustmentFormType = "cashAdvance" | "overtime" | "paidLeave" | null;
 
 function parseNonNegativeValue(value: string): number {
@@ -255,21 +256,81 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const totalWorkedHours = round2(
     currentLogsForPay.reduce((sum, log) => sum + log.hours, 0),
   );
+  const sitePayBreakdown = loggedSites.map((site) => {
+    const siteLogs = currentLogsForPay.filter(
+      (log) => extractSiteName(log.site) === site,
+    );
+    const siteHours = round2(siteLogs.reduce((sum, log) => sum + log.hours, 0));
+    const siteRateKey = buildEmployeeBranchRateKey(
+      editingPayrollRow.worker,
+      editingPayrollRow.role,
+      site,
+    );
+    const siteRatePerDay = round2(
+      payroll.employeeBranchRates[siteRateKey] ??
+        (editingPayrollRow.customRate ?? editingPayrollRow.defaultRate) *
+          FULL_WORKDAY_HOURS,
+    );
+    const siteDateHours = buildDateHoursMap(
+      siteLogs
+        .filter((log) => !isExpandedPlaceholderLog(log))
+        .map((log) => ({
+          date: log.date,
+          hours: log.hours,
+        })),
+    );
+    const siteDateSpan = buildDateSpanFromDates(
+      siteLogs.map((log) => log.date),
+    );
+    const holidayBonusDays = siteDateSpan
+      ? countHolidayBonusDays(siteDateHours, holidayLogDateSet, siteDateSpan)
+      : 0;
+
+    return {
+      site,
+      hours: siteHours,
+      daysWorked: computeDaysWorked(siteHours),
+      ratePerDay: siteRatePerDay,
+      basePay: computeBasePay(siteHours, siteRatePerDay),
+      holidayBonusDays,
+      holidayPay: round2(holidayBonusDays * siteRatePerDay),
+    };
+  });
+  const currentRatePerDay = round2(
+    sitePayBreakdown[0]?.ratePerDay ??
+      (editingPayrollRow.customRate ?? editingPayrollRow.defaultRate) *
+        FULL_WORKDAY_HOURS,
+  );
   const daysWorked = computeDaysWorked(totalWorkedHours);
   const remainingHours = round2(
     Math.max(0, totalWorkedHours - daysWorked * FULL_WORKDAY_HOURS),
   );
-  const paidHolidayBonusDays = sourceDateSpan
-    ? countHolidayBonusDays(holidayDateHours, holidayLogDateSet, sourceDateSpan)
-    : 0;
+  const paidHolidayBonusDays =
+    sitePayBreakdown.length > 0
+      ? sitePayBreakdown.reduce((sum, entry) => sum + entry.holidayBonusDays, 0)
+      : sourceDateSpan
+        ? countHolidayBonusDays(
+            holidayDateHours,
+            holidayLogDateSet,
+            sourceDateSpan,
+          )
+        : 0;
   const underHoursLogs = currentLogsForPay.filter(
     (log) =>
       log.hours > 0 &&
       log.hours < FULL_WORKDAY_HOURS &&
       !holidayLogDateSet.has(log.date),
   );
-  const baseWorkedPay = computeBasePay(totalWorkedHours);
-  const paidHolidayPay = paidHolidayBonusDays * FIXED_PAY_RATE_PER_DAY;
+  const baseWorkedPay =
+    sitePayBreakdown.length > 0
+      ? round2(sitePayBreakdown.reduce((sum, entry) => sum + entry.basePay, 0))
+      : computeBasePay(totalWorkedHours, currentRatePerDay);
+  const paidHolidayPay =
+    sitePayBreakdown.length > 0
+      ? round2(
+          sitePayBreakdown.reduce((sum, entry) => sum + entry.holidayPay, 0),
+        )
+      : paidHolidayBonusDays * currentRatePerDay;
   const previewTotalPay = baseWorkedPay + paidHolidayPay;
   const belowFullDayThreshold = totalWorkedHours > 0 && daysWorked === 0;
   const cashAdvanceAmount = cashAdvanceEntries.reduce(
@@ -333,7 +394,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   function addPaidLeave() {
     const days = parseNonNegativeValue(paidLeaveDaysInput);
     if (days <= 0) return;
-    const pay = Number((days * PAID_LEAVE_RATE_PER_DAY).toFixed(2));
+    const pay = Number((days * currentRatePerDay).toFixed(2));
 
     setPaidLeaveEntries((prev) => [
       ...prev,
@@ -408,877 +469,924 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
 
         <div className="min-h-0 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6 [scrollbar-gutter:stable]">
           <div className="space-y-5">
-          <div className="rounded-2xl border border-apple-mist bg-white">
-            <div className="px-4 py-3 border-b border-apple-mist">
-              <p className="text-2xs font-semibold uppercase tracking-widest">
-                Adjustments
-              </p>
-            </div>
-            <div className="p-5 space-y-4 max-w-[720px]">
-              {/* ─── BUTTONS (SAME WIDTH) ─── */}
-              <div className="flex gap-2 w-full">
-                {[
-                  { key: "cashAdvance", label: "Cash Advance" },
-                  { key: "overtime", label: "Overtime" },
-                  { key: "paidLeave", label: "Paid Leave" },
-                ].map((btn) => {
-                  const active = activeAdjustmentForm === btn.key;
-
-                  return (
-                    <button
-                      key={btn.key}
-                      type="button"
-                      onClick={() =>
-                        setActiveAdjustmentForm((prev) =>
-                          prev === btn.key ? null : (btn.key as any),
-                        )
-                      }
-                      className={`flex-1 h-10 rounded-xl border text-sm font-semibold transition ${
-                        active
-                          ? "bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800"
-                          : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
-                      }`}
-                    >
-                      + Add {btn.label}
-                    </button>
-                  );
-                })}
+            <div className="rounded-2xl border border-apple-mist bg-white">
+              <div className="px-4 py-3 border-b border-apple-mist">
+                <p className="text-2xs font-semibold uppercase tracking-widest">
+                  Adjustments
+                </p>
               </div>
-
-              {/* ─── CASH ADVANCE ─── */}
-              {activeAdjustmentForm === "cashAdvance" && (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    addCashAdvance();
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex flex-col w-full sm:w-[240px]">
-                      <label className="text-xs text-gray-500 mb-1">
-                        Cash Advance Amount
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={cashAdvanceInput}
-                        onChange={(e) =>
-                          setCashAdvanceInput(
-                            normalizeNumericInput(e.target.value),
-                          )
-                        }
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm font-semibold focus:bg-white focus:border-black"
-                      />
-                    </div>
-
-                    <div className="flex flex-col flex-1">
-                      <label className="text-xs text-gray-500 mb-1">
-                        Notes
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="(Optional)"
-                        value={cashAdvanceNotes}
-                        onChange={(e) => setCashAdvanceNotes(e.target.value)}
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveAdjustmentForm(null)}
-                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm  font-semibold hover:bg-emerald-800"
-                    >
-                      Add Cash Advance
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* ─── OVERTIME ─── */}
-              {activeAdjustmentForm === "overtime" && (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    addOvertime();
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex flex-col w-full sm:w-[200px]">
-                      <label className="text-xs text-gray-500 mb-1">
-                        Overtime Hours
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={overtimeHoursInput}
-                        onChange={(e) =>
-                          setOvertimeHoursInput(
-                            normalizeNumericInput(e.target.value),
-                          )
-                        }
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                      />
-                    </div>
-
-                    <div className="flex flex-col w-full sm:w-[200px]">
-                      <label className="text-xs text-gray-500 mb-1">
-                        Overtime Pay (₱)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={overtimePayInput}
-                        onChange={(e) =>
-                          setOvertimePayInput(
-                            normalizeNumericInput(e.target.value),
-                          )
-                        }
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-xs text-gray-500 mb-1">Notes</label>
-                    <input
-                      type="text"
-                      placeholder="(Optional)"
-                      value={overtimeNotes}
-                      onChange={(e) => setOvertimeNotes(e.target.value)}
-                      className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveAdjustmentForm(null)}
-                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
-                      Add Overtime
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* ─── PAID LEAVE ─── */}
-              {activeAdjustmentForm === "paidLeave" && (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    addPaidLeave();
-                  }}
-                  className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex flex-col w-full sm:w-[200px]">
-                      <label className="text-xs text-gray-500 mb-1">Days</label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={paidLeaveDaysInput}
-                        onChange={(e) =>
-                          setPaidLeaveDaysInput(
-                            normalizeNumericInput(e.target.value),
-                          )
-                        }
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                      />
-                    </div>
-
-                    <div className="flex flex-col flex-1">
-                      <label className="text-xs text-gray-500 mb-1">
-                        Notes
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="(Optional)"
-                        value={paidLeaveNotes}
-                        onChange={(e) => setPaidLeaveNotes(e.target.value)}
-                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveAdjustmentForm(null)}
-                      className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
-                      Add Paid Leave
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* ─── ENTRIES ─── */}
-              {(cashAdvanceEntries.length > 0 ||
-                overtimeEntries.length > 0 ||
-                paidLeaveEntries.length > 0) && (
-                <div className="rounded-xl border border-gray-200 bg-white p-3 space-y-2">
-                  {cashAdvanceEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center gap-3 text-sm"
-                    >
-                      <span className="font-semibold text-red-500">
-                        Cash Advance -{formatPeso(entry.amount)}
-                      </span>
-
-                      {entry.notes && (
-                        <span className="text-xs text-gray-500 truncate">
-                          {entry.notes}
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => removeCashAdvance(entry.id)}
-                        className="ml-auto p-1 rounded-md  text-red-500 hover:bg-red-100 hover:text-red-600 bg-red-50 transition"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-
-                  {overtimeEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center gap-3 text-sm"
-                    >
-                      <span className="font-semibold text-emerald-600">
-                        Overtime +{formatPeso(entry.pay)}
-                      </span>
-
-                      <span className="text-xs text-gray-500">
-                        ({entry.hours} hrs)
-                      </span>
-
-                      {entry.notes && (
-                        <span className="text-xs text-gray-500 truncate">
-                          {entry.notes}
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => removeOvertime(entry.id)}
-                        className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-
-                  {paidLeaveEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center gap-3 text-sm"
-                    >
-                      <span className="font-semibold text-emerald-600">
-                        Paid Leave +{formatPeso(entry.pay)}
-                      </span>
-
-                      <span className="text-xs text-gray-500">
-                        ({entry.days} days)
-                      </span>
-
-                      {entry.notes && (
-                        <span className="text-xs text-gray-500 truncate">
-                          {entry.notes}
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => removePaidLeave(entry.id)}
-                        className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-apple-mist bg-white">
-            <div className="px-4 py-3 border-b border-apple-mist">
-              <p className="text-2xs font-semibold uppercase tracking-widest">
-                All Report Logs
-              </p>
-              {paidHolidayBonusDays > 0 && (
-                <p className="mt-1 text-xs font-semibold text-sky-700">
-                  {paidHolidayBonusDays} paid holiday day
-                  {paidHolidayBonusDays === 1 ? "" : "s"} added for this
-                  employee.
-                </p>
-              )}
-              {underHoursLogs.length > 0 && (
-                <p className="mt-1 text-xs font-semibold text-amber-700">
-                  Under-8 logs are not full paid days by themselves, but their
-                  hours accumulate toward total paid days.
-                </p>
-              )}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-sm">
-              <thead>
-                <tr className="border-b border-apple-mist">
+              <div className="p-5 space-y-4 max-w-[720px]">
+                {/* ─── BUTTONS (SAME WIDTH) ─── */}
+                <div className="flex gap-2 w-full">
                   {[
-                    "Date/Week",
-                    "Site",
-                    "Time1 In",
-                    "Time1 Out",
-                    "Time2 In",
-                    "Time2 Out",
-                    "OT In",
-                    "OT Out",
-                    "Hours",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className={`px-3 py-2.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
-                        h === "Hours" ? "text-right" : "text-left"
-                      }`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {payroll.editingPayrollLogs.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="px-3 py-5 text-center text-sm text-apple-smoke"
-                    >
-                      No attendance logs found for this worker.
-                    </td>
-                  </tr>
-                ) : (
-                  payroll.editingPayrollLogs.map((log, index) => {
-                    const isPaidHoliday = holidayLogDateSet.has(log.date);
-                    const isUnderRequiredHours =
-                      getHoursNumber(log) > 0 &&
-                      getHoursNumber(log) < FULL_WORKDAY_HOURS;
-                    const statusFallback = (
-                      <span className="text-red-500">Missed</span>
-                    );
+                    { key: "cashAdvance", label: "Cash Advance" },
+                    { key: "overtime", label: "Overtime" },
+                    { key: "paidLeave", label: "Paid Leave" },
+                  ].map((btn) => {
+                    const active = activeAdjustmentForm === btn.key;
 
                     return (
-                      <tr
-                        key={`${log.date}-${log.employee}-${log.site}-${index}`}
-                        className={`border-b border-apple-mist/60 last:border-0 ${
-                          isPaidHoliday
-                            ? "bg-sky-50/50"
-                            : isUnderRequiredHours
-                              ? "bg-yellow-50"
-                              : "odd:bg-apple-snow/30"
+                      <button
+                        key={btn.key}
+                        type="button"
+                        onClick={() =>
+                          setActiveAdjustmentForm((prev) =>
+                            prev === btn.key ? null : (btn.key as any),
+                          )
+                        }
+                        className={`flex-1 h-10 rounded-xl border text-sm font-semibold transition ${
+                          active
+                            ? "bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800"
+                            : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                         }`}
                       >
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-block min-w-[3rem]">
-                              {toWeekLabel(log.date)}
-                            </span>
-                            {isPaidHoliday && (
-                              <span className="w-fit rounded-full border border-sky-200 bg-sky-100 px-2 py-0.5 text-2xs font-semibold text-sky-700">
-                                Paid Holiday
-                              </span>
-                            )}
-                            {isUnderRequiredHours && !isPaidHoliday && (
-                              <span className="w-fit rounded-full border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-2xs font-semibold text-yellow-800">
-                                Under 8h
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2.5 text-xs text-apple-smoke">
-                          {extractSiteName(log.site) || "-"}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time1In ||
-                            (isPaidHoliday ? "-" : statusFallback)}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time1Out ||
-                            (isPaidHoliday ? "-" : statusFallback)}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time2In ||
-                            (isPaidHoliday ? "-" : statusFallback)}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.time2Out ||
-                            (isPaidHoliday ? "-" : statusFallback)}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.otIn || "-"}
-                        </td>
-                        <td className="px-3 py-2.5 text-sm text-apple-charcoal">
-                          {log.otOut || "-"}
-                        </td>
-                        <td className="px-3 py-2.5 text-right">
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            onFocus={(e) => e.currentTarget.select()}
-                            value={getHoursValue(log)}
-                            onChange={(e) =>
-                              payroll.updateLogHour(log, e.target.value)
-                            }
-                            className="w-20 hover:border-apple-charcoal text-right px-2 py-1 rounded-lg border border-apple-charcoal/40 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-apple-charcoal/20"
-                          />
+                        + Add {btn.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* ─── CASH ADVANCE ─── */}
+                {activeAdjustmentForm === "cashAdvance" && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      addCashAdvance();
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
+                  >
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-col w-full sm:w-[240px]">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Cash Advance Amount
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={cashAdvanceInput}
+                          onChange={(e) =>
+                            setCashAdvanceInput(
+                              normalizeNumericInput(e.target.value),
+                            )
+                          }
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm font-semibold focus:bg-white focus:border-black"
+                        />
+                      </div>
+
+                      <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Notes
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="(Optional)"
+                          value={cashAdvanceNotes}
+                          onChange={(e) => setCashAdvanceNotes(e.target.value)}
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveAdjustmentForm(null)}
+                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm  font-semibold hover:bg-emerald-800"
+                      >
+                        Add Cash Advance
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* ─── OVERTIME ─── */}
+                {activeAdjustmentForm === "overtime" && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      addOvertime();
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
+                  >
+                    <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
+                      Save the payroll after adding overtime so this request can
+                      be submitted for CEO approval.
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-col w-full sm:w-[200px]">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Overtime Hours
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={overtimeHoursInput}
+                          onChange={(e) =>
+                            setOvertimeHoursInput(
+                              normalizeNumericInput(e.target.value),
+                            )
+                          }
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                        />
+                      </div>
+
+                      <div className="flex flex-col w-full sm:w-[200px]">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Overtime Pay (₱)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={overtimePayInput}
+                          onChange={(e) =>
+                            setOvertimePayInput(
+                              normalizeNumericInput(e.target.value),
+                            )
+                          }
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col">
+                      <label className="text-xs text-gray-500 mb-1">
+                        Notes
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="(Optional)"
+                        value={overtimeNotes}
+                        onChange={(e) => setOvertimeNotes(e.target.value)}
+                        className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveAdjustmentForm(null)}
+                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
+                        Add Overtime
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* ─── PAID LEAVE ─── */}
+                {activeAdjustmentForm === "paidLeave" && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      addPaidLeave();
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
+                  >
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-col w-full sm:w-[200px]">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Days
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={paidLeaveDaysInput}
+                          onChange={(e) =>
+                            setPaidLeaveDaysInput(
+                              normalizeNumericInput(e.target.value),
+                            )
+                          }
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                        />
+                      </div>
+
+                      <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 mb-1">
+                          Notes
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="(Optional)"
+                          value={paidLeaveNotes}
+                          onChange={(e) => setPaidLeaveNotes(e.target.value)}
+                          className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveAdjustmentForm(null)}
+                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
+                        Add Paid Leave
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* ─── ENTRIES ─── */}
+                {(cashAdvanceEntries.length > 0 ||
+                  overtimeEntries.length > 0 ||
+                  paidLeaveEntries.length > 0) && (
+                  <div className="rounded-xl border border-gray-200 bg-white p-3 space-y-2">
+                    {cashAdvanceEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center gap-3 text-sm"
+                      >
+                        <span className="font-semibold text-red-500">
+                          Cash Advance -{formatPeso(entry.amount)}
+                        </span>
+
+                        {entry.notes && (
+                          <span className="text-xs text-gray-500 truncate">
+                            {entry.notes}
+                          </span>
+                        )}
+
+                        <button
+                          onClick={() => removeCashAdvance(entry.id)}
+                          className="ml-auto p-1 rounded-md  text-red-500 hover:bg-red-100 hover:text-red-600 bg-red-50 transition"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+
+                    {overtimeEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center gap-3 text-sm"
+                      >
+                        <span className="font-semibold text-emerald-600">
+                          Overtime +{formatPeso(entry.pay)}
+                        </span>
+
+                        <span className="text-xs text-gray-500">
+                          ({entry.hours} hrs)
+                        </span>
+
+                        {entry.notes && (
+                          <span className="text-xs text-gray-500 truncate">
+                            {entry.notes}
+                          </span>
+                        )}
+
+                        <button
+                          onClick={() => removeOvertime(entry.id)}
+                          className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+
+                    {paidLeaveEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center gap-3 text-sm"
+                      >
+                        <span className="font-semibold text-emerald-600">
+                          Paid Leave +{formatPeso(entry.pay)}
+                        </span>
+
+                        <span className="text-xs text-gray-500">
+                          ({entry.days} days)
+                        </span>
+
+                        {entry.notes && (
+                          <span className="text-xs text-gray-500 truncate">
+                            {entry.notes}
+                          </span>
+                        )}
+
+                        <button
+                          onClick={() => removePaidLeave(entry.id)}
+                          className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-apple-mist bg-white">
+              <div className="px-4 py-3 border-b border-apple-mist">
+                <p className="text-2xs font-semibold uppercase tracking-widest">
+                  All Report Logs
+                </p>
+                {paidHolidayBonusDays > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-sky-700">
+                    {paidHolidayBonusDays} paid holiday day
+                    {paidHolidayBonusDays === 1 ? "" : "s"} added for this
+                    employee.
+                  </p>
+                )}
+                {underHoursLogs.length > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-amber-700">
+                    Under-8 logs are not full paid days by themselves, but their
+                    hours accumulate toward total paid days.
+                  </p>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[980px] text-sm">
+                  <thead>
+                    <tr className="border-b border-apple-mist">
+                      {[
+                        "Date/Week",
+                        "Site",
+                        "Time1 In",
+                        "Time1 Out",
+                        "Time2 In",
+                        "Time2 Out",
+                        "OT In",
+                        "OT Out",
+                        "Hours",
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className={`px-3 py-2.5 text-2xs font-semibold uppercase tracking-widest text-apple-steel ${
+                            h === "Hours" ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payroll.editingPayrollLogs.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className="px-3 py-5 text-center text-sm text-apple-smoke"
+                        >
+                          No attendance logs found for this worker.
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-              </table>
-            </div>
-          </div>
+                    ) : (
+                      payroll.editingPayrollLogs.map((log, index) => {
+                        const isPaidHoliday = holidayLogDateSet.has(log.date);
+                        const isUnderRequiredHours =
+                          getHoursNumber(log) > 0 &&
+                          getHoursNumber(log) < FULL_WORKDAY_HOURS;
+                        const statusFallback = (
+                          <span className="text-red-500">Missed</span>
+                        );
 
-          <div className="rounded-2xl border border-apple-mist bg-white">
-            <div className="px-4 py-3 border-b border-apple-mist">
-              <p className="text-2xs font-semibold uppercase tracking-widest">
-                Source Summary
-              </p>
-              <p className="text-sm text-apple-smoke mt-1">
-                {payroll.editingPayrollLogs.length} attendance log row
-                {payroll.editingPayrollLogs.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                {
-                  label: "Absences (Day)",
-                  value: String(payroll.editingPayrollSummary.absenceDays),
-                },
-                {
-                  label: "Attendance (Day)",
-                  value: String(payroll.editingPayrollSummary.attendanceDays),
-                },
-                {
-                  label: "Computed Paid Days",
-                  value: formatPayrollNumber(daysWorked),
-                },
-                {
-                  label: "Total Worked Hours",
-                  value: `${formatPayrollNumber(totalWorkedHours)} hrs`,
-                },
-                {
-                  label: "Approved Overtime",
-                  value: formatPeso(approvedOvertimePay),
-                },
-                {
-                  label: "Paid Leave",
-                  value: formatPeso(paidLeavePay),
-                },
-                {
-                  label: "Paid Holidays (Day)",
-                  value: String(paidHolidayBonusDays),
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] "
-                >
-                  <p className="text-2xs font-medium text-white/65 uppercase tracking-wider">
-                    {item.label}
-                  </p>
-                  <p className="mt-1 text-lg font-semibold font-mono text-white">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-apple-mist bg-white">
-            <div className="px-4 py-3 border-b border-apple-mist">
-              <p className="text-2xs font-semibold uppercase tracking-widest">
-                Computation Summary
-              </p>
-            </div>
-            <div className="p-4 space-y-2">
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">Total Worked Hours</span>
-                <span className="font-mono font-semibold text-apple-charcoal text-right">
-                  {formatPayrollNumber(totalWorkedHours)} hrs
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">
-                  Days Worked (floor(hours/8))
-                </span>
-                <span className="font-mono font-semibold text-apple-charcoal text-right">
-                  {formatPayrollNumber(daysWorked)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">
-                  Ignored Remaining Hours (&lt;8)
-                </span>
-                <span className="font-mono font-semibold text-apple-charcoal text-right">
-                  {formatPayrollNumber(remainingHours)} hrs
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">Base Pay</span>
-                <span className="font-mono font-semibold text-apple-charcoal text-right">
-                  {formatPeso(baseWorkedPay)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">+ Paid Holiday</span>
-                <span className="font-mono font-semibold text-emerald-700 text-right">
-                  {formatPeso(paidHolidayPay)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">+ Approved Overtime</span>
-                <span className="font-mono font-semibold text-emerald-700 text-right">
-                  {formatPeso(approvedOvertimePay)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">+ Paid Leave</span>
-                <span className="font-mono font-semibold text-emerald-700 text-right">
-                  {formatPeso(paidLeavePay)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-apple-charcoal">- Cash Advance</span>
-                <span className="font-mono font-semibold text-red-600 text-right">
-                  {formatPeso(cashAdvanceAmount)}
-                </span>
-              </div>
-              {belowFullDayThreshold && (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                  Worked hours are below 8.00, so no full paid day is counted
-                  yet.
-                </div>
-              )}
-              <div className="border-t border-apple-mist pt-2 mt-2 flex items-center justify-between gap-3">
-                <span className="text-base font-bold text-apple-charcoal">
-                  Adjusted Total Pay
-                </span>
-                <span className="text-xl font-mono font-bold text-apple-charcoal text-right">
-                  {formatPeso(adjustedTotalPay)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-[#E7ECF3] ">
-            <div className="border-b border-[#EEF2F7] px-4 py-3.5">
-              <h4 className="text-sm font-semibold tracking-tight text-apple-charcoal">
-                Employee Analytics
-              </h4>
-              <p className="mt-1 text-xs text-apple-smoke">
-                Visual insights into the employee&apos;s attendance and work
-                patterns.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
-                  Daily Hours Worked Trend
-                </p>
-                <div className="h-[230px]">
-                  {payroll.employeeDailyHoursTrend.length === 0 ? (
-                    <p className="text-sm text-apple-smoke">
-                      No attendance logs yet.
-                    </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={payroll.employeeDailyHoursTrend}
-                        margin={{ top: 12, right: 10, left: -14, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id="employeeHoursArea"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
+                        return (
+                          <tr
+                            key={`${log.date}-${log.employee}-${log.site}-${index}`}
+                            className={`border-b border-apple-mist/60 last:border-0 ${
+                              isPaidHoliday
+                                ? "bg-sky-50/50"
+                                : isUnderRequiredHours
+                                  ? "bg-yellow-50"
+                                  : "odd:bg-apple-snow/30"
+                            }`}
                           >
-                            <stop
-                              offset="5%"
-                              stopColor={DAILY_HOURS_AREA_COLOR}
-                              stopOpacity={0.5}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor={DAILY_HOURS_AREA_COLOR}
-                              stopOpacity={0.1}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid
-                          strokeDasharray="4 4"
-                          vertical={false}
-                          stroke={DAILY_HOURS_GRID_COLOR}
-                        />
-                        <XAxis
-                          dataKey="date"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "rgb(var(--theme-chart-axis))",
-                            fontSize: 11,
-                          }}
-                          tickFormatter={chartTickFormatter}
-                          minTickGap={16}
-                          tickMargin={10}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "rgb(var(--theme-chart-axis))",
-                            fontSize: 11,
-                          }}
-                          domain={[
-                            0,
-                            (dataMax: number) =>
-                              Math.max(8, Math.ceil(dataMax + 1)),
-                          ]}
-                          tickCount={5}
-                          tickMargin={8}
-                        />
-                        <Tooltip
-                          cursor={{
-                            stroke: DAILY_HOURS_LINE_COLOR,
-                            strokeWidth: 2,
-                            strokeDasharray: "5 5",
-                          }}
-                          content={
-                            <AnalyticsTooltip
-                              valueFormatter={(value) =>
-                                `${formatPayrollNumber(value)} hrs`
-                              }
-                            />
-                          }
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="hoursWorked"
-                          fill="url(#employeeHoursArea)"
-                          stroke="none"
-                          isAnimationActive={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="hoursWorked"
-                          stroke={DAILY_HOURS_LINE_COLOR}
-                          strokeWidth={3}
-                          dot={{
-                            r: 3,
-                            fill: "#fff",
-                            stroke: DAILY_HOURS_LINE_COLOR,
-                            strokeWidth: 2,
-                          }}
-                          activeDot={{
-                            r: 5,
-                            fill: DAILY_HOURS_LINE_COLOR,
-                            stroke: "#fff",
-                            strokeWidth: 2,
-                          }}
-                          isAnimationActive={false}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
-                  Attendance Breakdown
-                </p>
-                <div className="h-[230px]">
-                  {payroll.employeeAttendanceBreakdown.every(
-                    (item) => item.value === 0,
-                  ) ? (
-                    <p className="text-sm text-apple-smoke">
-                      No attendance distribution yet.
-                    </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={payroll.employeeAttendanceBreakdown}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={42}
-                          outerRadius={72}
-                          paddingAngle={3}
-                          stroke="none"
-                          isAnimationActive={false}
-                        >
-                          {payroll.employeeAttendanceBreakdown.map(
-                            (entry, index) => (
-                              <Cell
-                                key={`${entry.name}-${index}`}
-                                fill={getAttendanceBreakdownColor(
-                                  entry.name,
-                                  index,
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-block min-w-[3rem]">
+                                  {toWeekLabel(log.date)}
+                                </span>
+                                {isPaidHoliday && (
+                                  <span className="w-fit rounded-full border border-sky-200 bg-sky-100 px-2 py-0.5 text-2xs font-semibold text-sky-700">
+                                    Paid Holiday
+                                  </span>
                                 )}
+                                {isUnderRequiredHours && !isPaidHoliday && (
+                                  <span className="w-fit rounded-full border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-2xs font-semibold text-yellow-800">
+                                    Under 8h
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2.5 text-xs text-apple-smoke">
+                              {extractSiteName(log.site) || "-"}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {log.time1In
+                                ? formatLogTime(log.time1In)
+                                : isPaidHoliday
+                                  ? "-"
+                                  : statusFallback}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {log.time1Out
+                                ? formatLogTime(log.time1Out)
+                                : isPaidHoliday
+                                  ? "-"
+                                  : statusFallback}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {log.time2In
+                                ? formatLogTime(log.time2In)
+                                : isPaidHoliday
+                                  ? "-"
+                                  : statusFallback}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {log.time2Out
+                                ? formatLogTime(log.time2Out)
+                                : isPaidHoliday
+                                  ? "-"
+                                  : statusFallback}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {formatLogTime(log.otIn)}
+                            </td>
+                            <td className="px-3 py-2.5 text-sm text-apple-charcoal">
+                              {formatLogTime(log.otOut)}
+                            </td>
+                            <td className="px-3 py-2.5 text-right">
+                              <input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                onFocus={(e) => e.currentTarget.select()}
+                                value={getHoursValue(log)}
+                                onChange={(e) =>
+                                  payroll.updateLogHour(log, e.target.value)
+                                }
+                                className="w-20 hover:border-apple-charcoal text-right px-2 py-1 rounded-lg border border-apple-charcoal/40 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-apple-charcoal/20"
                               />
-                            ),
-                          )}
-                        </Pie>
-                        <Tooltip
-                          content={
-                            <AnalyticsTooltip
-                              valueFormatter={(value) =>
-                                `${formatPayrollNumber(value)} day(s)`
-                              }
-                            />
-                          }
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-1.5">
-                  {payroll.employeeAttendanceBreakdown.map((item, index) => (
-                    <div
-                      key={`attendance-legend-${item.name}`}
-                      className="flex items-center gap-2"
-                    >
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor: getAttendanceBreakdownColor(
-                            item.name,
-                            index,
-                          ),
-                        }}
-                      />
-                      <span className="truncate text-[11px] text-apple-smoke">
-                        {item.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
-                  Clock-in Time Consistency
+            <div className="rounded-2xl border border-apple-mist bg-white">
+              <div className="px-4 py-3 border-b border-apple-mist">
+                <p className="text-2xs font-semibold uppercase tracking-widest">
+                  Source Summary
                 </p>
-                <div className="h-[230px]">
-                  {payroll.employeeClockInConsistency.length === 0 ? (
-                    <p className="text-sm text-apple-smoke">
-                      No clock-in data yet.
+                <p className="text-sm text-apple-smoke mt-1">
+                  {payroll.editingPayrollLogs.length} attendance log row
+                  {payroll.editingPayrollLogs.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  {
+                    label: "Absences (Day)",
+                    value: String(payroll.editingPayrollSummary.absenceDays),
+                  },
+                  {
+                    label: "Attendance (Day)",
+                    value: String(payroll.editingPayrollSummary.attendanceDays),
+                  },
+                  {
+                    label: "Computed Paid Days",
+                    value: formatPayrollNumber(daysWorked),
+                  },
+                  {
+                    label: "Total Worked Hours",
+                    value: `${formatPayrollNumber(totalWorkedHours)} hrs`,
+                  },
+                  {
+                    label: "Approved Overtime",
+                    value: formatPeso(approvedOvertimePay),
+                  },
+                  {
+                    label: "Paid Leave",
+                    value: formatPeso(paidLeavePay),
+                  },
+                  {
+                    label: "Paid Holidays (Day)",
+                    value: String(paidHolidayBonusDays),
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] "
+                  >
+                    <p className="text-2xs font-medium text-white/65 uppercase tracking-wider">
+                      {item.label}
                     </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={payroll.employeeClockInConsistency}
-                        margin={{ top: 12, right: 10, left: -14, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id="clockInBar"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="5%"
-                              stopColor={CLOCK_IN_BAR_TOP_COLOR}
-                              stopOpacity={0.95}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor={CLOCK_IN_BAR_BOTTOM_COLOR}
-                              stopOpacity={0.85}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid
-                          strokeDasharray="4 4"
-                          vertical={false}
-                          stroke={CLOCK_IN_GRID_COLOR}
-                        />
-                        <XAxis
-                          dataKey="date"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "rgb(var(--theme-chart-axis))",
-                            fontSize: 11,
-                          }}
-                          tickFormatter={chartTickFormatter}
-                          minTickGap={16}
-                          tickMargin={10}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "rgb(var(--theme-chart-axis))",
-                            fontSize: 11,
-                          }}
-                          domain={[0, 24]}
-                          tickMargin={8}
-                        />
-                        <Tooltip
-                          cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
-                          content={
-                            <AnalyticsTooltip
-                              valueFormatter={(_value, _name, item) =>
-                                item?.timeInLabel ?? "-"
-                              }
-                            />
-                          }
-                        />
-                        <Bar
-                          dataKey="timeIn"
-                          name="Time In"
-                          fill="url(#clockInBar)"
-                          radius={[4, 4, 0, 0]}
-                          maxBarSize={26}
-                          isAnimationActive={false}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
+                    <p className="mt-1 text-lg font-semibold font-mono text-white">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-apple-mist bg-white">
+              <div className="px-4 py-3 border-b border-apple-mist">
+                <p className="text-2xs font-semibold uppercase tracking-widest">
+                  Computation Summary
+                </p>
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    Total Worked Hours
+                  </span>
+                  <span className="font-mono font-semibold text-apple-charcoal text-right">
+                    {formatPayrollNumber(totalWorkedHours)} hrs
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    Days Worked (floor(hours/8))
+                  </span>
+                  <span className="font-mono font-semibold text-apple-charcoal text-right">
+                    {formatPayrollNumber(daysWorked)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    Ignored Remaining Hours (&lt;8)
+                  </span>
+                  <span className="font-mono font-semibold text-apple-charcoal text-right">
+                    {formatPayrollNumber(remainingHours)} hrs
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">Base Pay</span>
+                  <span className="font-mono font-semibold text-apple-charcoal text-right">
+                    {formatPeso(baseWorkedPay)}
+                  </span>
+                </div>
+                {sitePayBreakdown.length > 1 && (
+                  <div className="rounded-xl border border-apple-mist bg-apple-snow/70 px-3 py-2">
+                    <p className="text-2xs font-semibold uppercase tracking-widest text-apple-smoke">
+                      Branch Rate Breakdown
+                    </p>
+                    <div className="mt-2 space-y-1.5">
+                      {sitePayBreakdown.map((entry) => (
+                        <div
+                          key={entry.site}
+                          className="flex items-center justify-between gap-3 text-xs"
+                        >
+                          <span className="text-apple-charcoal">
+                            {entry.site} · {formatPayrollNumber(entry.hours)}{" "}
+                            hrs · {formatPayrollNumber(entry.daysWorked)} day(s)
+                          </span>
+                          <span className="font-mono font-semibold text-apple-charcoal text-right">
+                            {formatPeso(entry.ratePerDay)}/day
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">+ Paid Holiday</span>
+                  <span className="font-mono font-semibold text-emerald-700 text-right">
+                    {formatPeso(paidHolidayPay)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    + Approved Overtime
+                  </span>
+                  <span className="font-mono font-semibold text-emerald-700 text-right">
+                    {formatPeso(approvedOvertimePay)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">+ Paid Leave</span>
+                  <span className="font-mono font-semibold text-emerald-700 text-right">
+                    {formatPeso(paidLeavePay)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">- Cash Advance</span>
+                  <span className="font-mono font-semibold text-red-600 text-right">
+                    {formatPeso(cashAdvanceAmount)}
+                  </span>
+                </div>
+                {belowFullDayThreshold && (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                    Worked hours are below 8.00, so no full paid day is counted
+                    yet.
+                  </div>
+                )}
+                <div className="border-t border-apple-mist pt-2 mt-2 flex items-center justify-between gap-3">
+                  <span className="text-base font-bold text-apple-charcoal">
+                    Adjusted Total Pay
+                  </span>
+                  <span className="text-xl font-mono font-bold text-apple-charcoal text-right">
+                    {formatPeso(adjustedTotalPay)}
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between gap-2">
-            {/* <p className="text-xs text-apple-steel">
+            <div className="overflow-hidden rounded-2xl border border-[#E7ECF3] ">
+              <div className="border-b border-[#EEF2F7] px-4 py-3.5">
+                <h4 className="text-sm font-semibold tracking-tight text-apple-charcoal">
+                  Employee Analytics
+                </h4>
+                <p className="mt-1 text-xs text-apple-smoke">
+                  Visual insights into the employee&apos;s attendance and work
+                  patterns.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
+                <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
+                    Daily Hours Worked Trend
+                  </p>
+                  <div className="h-[230px]">
+                    {payroll.employeeDailyHoursTrend.length === 0 ? (
+                      <p className="text-sm text-apple-smoke">
+                        No attendance logs yet.
+                      </p>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={payroll.employeeDailyHoursTrend}
+                          margin={{ top: 12, right: 10, left: -14, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="employeeHoursArea"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor={DAILY_HOURS_AREA_COLOR}
+                                stopOpacity={0.5}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor={DAILY_HOURS_AREA_COLOR}
+                                stopOpacity={0.1}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            strokeDasharray="4 4"
+                            vertical={false}
+                            stroke={DAILY_HOURS_GRID_COLOR}
+                          />
+                          <XAxis
+                            dataKey="date"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "rgb(var(--theme-chart-axis))",
+                              fontSize: 11,
+                            }}
+                            tickFormatter={chartTickFormatter}
+                            minTickGap={16}
+                            tickMargin={10}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "rgb(var(--theme-chart-axis))",
+                              fontSize: 11,
+                            }}
+                            domain={[
+                              0,
+                              (dataMax: number) =>
+                                Math.max(8, Math.ceil(dataMax + 1)),
+                            ]}
+                            tickCount={5}
+                            tickMargin={8}
+                          />
+                          <Tooltip
+                            cursor={{
+                              stroke: DAILY_HOURS_LINE_COLOR,
+                              strokeWidth: 2,
+                              strokeDasharray: "5 5",
+                            }}
+                            content={
+                              <AnalyticsTooltip
+                                valueFormatter={(value) =>
+                                  `${formatPayrollNumber(value)} hrs`
+                                }
+                              />
+                            }
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="hoursWorked"
+                            fill="url(#employeeHoursArea)"
+                            stroke="none"
+                            isAnimationActive={false}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="hoursWorked"
+                            stroke={DAILY_HOURS_LINE_COLOR}
+                            strokeWidth={3}
+                            dot={{
+                              r: 3,
+                              fill: "#fff",
+                              stroke: DAILY_HOURS_LINE_COLOR,
+                              strokeWidth: 2,
+                            }}
+                            activeDot={{
+                              r: 5,
+                              fill: DAILY_HOURS_LINE_COLOR,
+                              stroke: "#fff",
+                              strokeWidth: 2,
+                            }}
+                            isAnimationActive={false}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
+                    Attendance Breakdown
+                  </p>
+                  <div className="h-[230px]">
+                    {payroll.employeeAttendanceBreakdown.every(
+                      (item) => item.value === 0,
+                    ) ? (
+                      <p className="text-sm text-apple-smoke">
+                        No attendance distribution yet.
+                      </p>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={payroll.employeeAttendanceBreakdown}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={42}
+                            outerRadius={72}
+                            paddingAngle={3}
+                            stroke="none"
+                            isAnimationActive={false}
+                          >
+                            {payroll.employeeAttendanceBreakdown.map(
+                              (entry, index) => (
+                                <Cell
+                                  key={`${entry.name}-${index}`}
+                                  fill={getAttendanceBreakdownColor(
+                                    entry.name,
+                                    index,
+                                  )}
+                                />
+                              ),
+                            )}
+                          </Pie>
+                          <Tooltip
+                            content={
+                              <AnalyticsTooltip
+                                valueFormatter={(value) =>
+                                  `${formatPayrollNumber(value)} day(s)`
+                                }
+                              />
+                            }
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    {payroll.employeeAttendanceBreakdown.map((item, index) => (
+                      <div
+                        key={`attendance-legend-${item.name}`}
+                        className="flex items-center gap-2"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{
+                            backgroundColor: getAttendanceBreakdownColor(
+                              item.name,
+                              index,
+                            ),
+                          }}
+                        />
+                        <span className="truncate text-[11px] text-apple-smoke">
+                          {item.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#E8EDF5] bg-gradient-to-b from-white to-[#FAFCFF] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-apple-charcoal">
+                    Clock-in Time Consistency
+                  </p>
+                  <div className="h-[230px]">
+                    {payroll.employeeClockInConsistency.length === 0 ? (
+                      <p className="text-sm text-apple-smoke">
+                        No clock-in data yet.
+                      </p>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={payroll.employeeClockInConsistency}
+                          margin={{ top: 12, right: 10, left: -14, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="clockInBar"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor={CLOCK_IN_BAR_TOP_COLOR}
+                                stopOpacity={0.95}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor={CLOCK_IN_BAR_BOTTOM_COLOR}
+                                stopOpacity={0.85}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid
+                            strokeDasharray="4 4"
+                            vertical={false}
+                            stroke={CLOCK_IN_GRID_COLOR}
+                          />
+                          <XAxis
+                            dataKey="date"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "rgb(var(--theme-chart-axis))",
+                              fontSize: 11,
+                            }}
+                            tickFormatter={chartTickFormatter}
+                            minTickGap={16}
+                            tickMargin={10}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{
+                              fill: "rgb(var(--theme-chart-axis))",
+                              fontSize: 11,
+                            }}
+                            domain={[0, 24]}
+                            tickMargin={8}
+                          />
+                          <Tooltip
+                            cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
+                            content={
+                              <AnalyticsTooltip
+                                valueFormatter={(_value, _name, item) =>
+                                  item?.timeInLabel ?? "-"
+                                }
+                              />
+                            }
+                          />
+                          <Bar
+                            dataKey="timeIn"
+                            name="Time In"
+                            fill="url(#clockInBar)"
+                            radius={[4, 4, 0, 0]}
+                            maxBarSize={26}
+                            isAnimationActive={false}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              {/* <p className="text-xs text-apple-steel">
               Saving total hours:{" "}
               <span className="font-semibold text-apple-charcoal">
                 {formatPayrollNumber(
@@ -1291,30 +1399,30 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 )}
               </span>
             </p> */}
-            <div className="invisible"></div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={payroll.closePayrollEditModal}
-                className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  payroll.savePayrollEdit({
-                    cashAdvanceEntries,
-                    overtimeEntries,
-                    paidLeaveEntries,
-                  })
-                }
-                className="px-4 h-10 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition"
-              >
-                Save Changes
-              </button>
+              <div className="invisible"></div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={payroll.closePayrollEditModal}
+                  className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    payroll.savePayrollEdit({
+                      cashAdvanceEntries,
+                      overtimeEntries,
+                      paidLeaveEntries,
+                    })
+                  }
+                  className="px-4 h-10 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>

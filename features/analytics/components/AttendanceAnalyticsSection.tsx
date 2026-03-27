@@ -61,12 +61,12 @@ export default function AttendanceAnalyticsSection({
 }: AttendanceAnalyticsSectionProps) {
   const overtimeByBranch = useMemo(
     () =>
-      selectOvertimeByBranch(employees, records).map((item, index) => ({
+      selectOvertimeByBranch(records).map((item, index) => ({
         ...item,
         shortBranch: extractBranchName(item.branch),
         fill: getBranchColor(index),
       })),
-    [employees, records],
+    [records],
   );
 
   const workforceByBranch = useMemo(
@@ -86,12 +86,12 @@ export default function AttendanceAnalyticsSection({
 
   const topOTEmployees = useMemo(
     () =>
-      selectTopOTEmployees(employees).map((item, index) => ({
+      selectTopOTEmployees(records).map((item, index) => ({
         ...item,
         name: shorten(item.name, 22),
         fill: getBranchColor(index),
       })),
-    [employees],
+    [records],
   );
 
   if (employees.length === 0 || records.length === 0) return null;

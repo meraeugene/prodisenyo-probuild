@@ -1,0 +1,20 @@
+[
+  {
+    "username": "ceo",
+    "password": "ChangeMe123!",
+    "full_name": "Company CEO",
+    "role": "ceo"
+  },
+  {
+    "username": "ceo2",
+    "password": "ChangeMe123!",
+    "full_name": "Company CEO 2",
+    "role": "ceo"
+  },
+  {
+    "username": "payroll",
+    "password": "ChangeMe123!",
+    "full_name": "HR Payroll Manager",
+    "role": "payroll_manager"
+  }
+]

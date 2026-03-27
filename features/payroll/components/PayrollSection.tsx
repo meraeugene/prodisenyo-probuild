@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -8,6 +9,7 @@ import {
   CalendarDays,
   Calculator,
   FileSpreadsheet,
+  Loader2,
   MoreHorizontal,
   Search,
   SlidersHorizontal,
@@ -44,7 +46,12 @@ interface PayrollSectionProps {
   dailyRowsCount: number;
   availableSites: string[];
   payroll: UsePayrollStateResult;
-  onGeneratePayroll: () => void;
+  onGeneratePreview: () => void;
+  onSavePayroll: () => void;
+  currentPayrollRunId: string | null;
+  currentPayrollRunStatus: "draft" | "submitted" | "approved" | "rejected" | null;
+  currentUserRole: "ceo" | "payroll_manager" | null;
+  savePending: boolean;
 }
 
 const PAYROLL_PREVIEW_LIMIT = 10;
@@ -58,6 +65,13 @@ interface GroupedEmployeePayrollRow {
   sites: PayrollRow[];
   totalHours: number;
   totalPay: number;
+}
+
+interface GroupedPayrollFilters {
+  siteFilter: string;
+  roleFilter: RoleCode | "ALL";
+  nameFilter: string;
+  dateFilter: string;
 }
 
 function normalizeEmployeeName(name: string): string {
@@ -142,6 +156,49 @@ function groupByEmployee(
   );
 }
 
+function matchesGroupedEmployeeFilters(
+  employee: GroupedEmployeePayrollRow,
+  filters: GroupedPayrollFilters,
+): boolean {
+  const normalizedNameFilter = filters.nameFilter.trim().toLowerCase();
+  const normalizedDateFilter = filters.dateFilter.trim();
+
+  if (
+    filters.roleFilter !== "ALL" &&
+    employee.role !== filters.roleFilter
+  ) {
+    return false;
+  }
+
+  if (
+    normalizedNameFilter &&
+    !employee.name.toLowerCase().includes(normalizedNameFilter)
+  ) {
+    return false;
+  }
+
+  if (
+    filters.siteFilter !== "ALL" &&
+    !employee.sites.some((row) =>
+      (row.site || "")
+        .split(",")
+        .map((siteName) => siteName.trim())
+        .includes(filters.siteFilter),
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    normalizedDateFilter &&
+    !employee.sites.some((row) => row.date.includes(normalizedDateFilter))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string }> {
   const summary = new Map<string, { site: string }>();
 
@@ -190,15 +247,44 @@ export default function PayrollSection({
   dailyRowsCount,
   availableSites,
   payroll,
-  onGeneratePayroll,
+  onGeneratePreview,
+  onSavePayroll,
+  currentPayrollRunId,
+  currentPayrollRunStatus,
+  currentUserRole,
+  savePending,
 }: PayrollSectionProps) {
   const [showPaidHolidayModal, setShowPaidHolidayModal] = useState(false);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
+  const [actionMenuPosition, setActionMenuPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const canSavePayroll =
+    (currentUserRole === "payroll_manager" || currentUserRole === "ceo") &&
+    payroll.payrollGenerated &&
+    payroll.payrollRows.length > 0;
 
   const groupedPayrollRows = useMemo(
-    () => groupByEmployee(payroll.filteredPayrollRows, payroll.payrollSort),
-    [payroll.filteredPayrollRows, payroll.payrollSort],
+    () =>
+      groupByEmployee(payroll.payrollRows, payroll.payrollSort).filter((employee) =>
+        matchesGroupedEmployeeFilters(employee, {
+          siteFilter: payroll.payrollSiteFilter,
+          roleFilter: payroll.payrollRoleFilter,
+          nameFilter: payroll.payrollNameFilter,
+          dateFilter: payroll.payrollDateFilter,
+        }),
+      ),
+    [
+      payroll.payrollRows,
+      payroll.payrollSort,
+      payroll.payrollSiteFilter,
+      payroll.payrollRoleFilter,
+      payroll.payrollNameFilter,
+      payroll.payrollDateFilter,
+    ],
   );
 
   const groupedPayrollTotalPages = useMemo(
@@ -233,7 +319,7 @@ export default function PayrollSection({
   const payrollPeriodLabel = useMemo(() => {
     const periodCounts = new Map<string, number>();
 
-    for (const row of payroll.filteredPayrollRows) {
+    for (const row of payroll.payrollRows) {
       const rowSites = (row.site || "Unknown Site")
         .split(",")
         .map((site) => site.trim())
@@ -263,7 +349,7 @@ export default function PayrollSection({
     if (!mostCommon) return null;
     const [start, end] = mostCommon[0].split("-");
     return formatCompactPayrollPeriodLabel(start, end);
-  }, [payroll.filteredPayrollRows]);
+  }, [payroll.payrollRows]);
 
   const groupedPayrollTotals = useMemo(
     () =>
@@ -291,10 +377,40 @@ export default function PayrollSection({
   }
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (payroll.payrollTab !== "payroll") return;
     if (payroll.payrollPage <= groupedPayrollTotalPages) return;
     payroll.setPayrollPage(groupedPayrollTotalPages);
   }, [payroll, groupedPayrollTotalPages]);
+
+  useEffect(() => {
+    if (!openActionMenuId) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!actionMenuRef.current) return;
+      if (actionMenuRef.current.contains(event.target as Node)) return;
+      setOpenActionMenuId(null);
+      setActionMenuPosition(null);
+    }
+
+    function handleViewportChange() {
+      setOpenActionMenuId(null);
+      setActionMenuPosition(null);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("scroll", handleViewportChange, true);
+    window.addEventListener("resize", handleViewportChange);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("scroll", handleViewportChange, true);
+      window.removeEventListener("resize", handleViewportChange);
+    };
+  }, [openActionMenuId]);
 
   const payrollActiveRowsCount =
     payroll.payrollTab === "payroll"
@@ -326,7 +442,7 @@ export default function PayrollSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "80ms" }}
     >
-      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <div className="rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="flex flex-col gap-4 border-b border-apple-mist px-4 pb-4 pt-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:pb-5 sm:pt-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -338,12 +454,19 @@ export default function PayrollSection({
                   Complete
                 </span>
               )}
+              {currentPayrollRunStatus && (
+                <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-2xs font-semibold text-sky-700">
+                  {currentPayrollRunStatus === "submitted"
+                    ? "SAVED"
+                    : currentPayrollRunStatus.toUpperCase()}
+                </span>
+              )}
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-apple-charcoal tracking-tight">
               Generate Payroll
             </h2>
             <p className="text-sm text-apple-smoke mt-1">
-              Generate payroll after reviewing attendance logs.
+              Generate a preview after reviewing attendance logs, then save the official payroll record for this period.
             </p>
             {/* {payroll.payrollSaveNotice && (
               <p className="mt-2 text-xs font-semibold text-green-700">
@@ -355,12 +478,12 @@ export default function PayrollSection({
           {!payroll.payrollGenerated && (
             <button
               type="button"
-              onClick={onGeneratePayroll}
-              disabled={payroll.payrollRows.length === 0}
+              onClick={onGeneratePreview}
+              disabled={savePending}
               className="flex items-center gap-2 rounded-[10px] bg-[#1f6a37] hover:bg-[#18552d] px-5 py-3 text-sm font-semibold text-white transition  disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Calculator size={18} />
-              Generate Payroll
+              Generate Payroll Preview
             </button>
           )}
         </div>
@@ -397,14 +520,40 @@ export default function PayrollSection({
               </button>
 
               <div className="ml-auto flex gap-2">
+                {canSavePayroll && (
+                  <button
+                    type="button"
+                    onClick={onSavePayroll}
+                    disabled={savePending}
+                    className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#1f6a37] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {savePending ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Calculator size={14} />
+                    )}
+                    {savePending
+                      ? "Saving..."
+                      : currentPayrollRunId
+                        ? "Save Payroll Changes"
+                        : "Save Payroll"}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={payroll.handleExportPayroll}
-                  disabled={payroll.filteredPayrollRows.length === 0}
+                  onClick={payroll.openPayrollRateModal}
+                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
+                >
+                  <SlidersHorizontal size={14} />
+                  Edit Branch Rates
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPaidHolidayModal(true)}
                   className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <FileSpreadsheet size={14} />
-                  Export Excel
+                  <CalendarDays size={14} />
+                  Paid Holidays
                 </button>
                 <button
                   type="button"
@@ -414,22 +563,6 @@ export default function PayrollSection({
                 >
                   <FileSpreadsheet size={14} />
                   Export Payslips PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowPaidHolidayModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
-                >
-                  <CalendarDays size={14} />
-                  Paid Holidays
-                </button>
-                <button
-                  type="button"
-                  onClick={payroll.openPayrollRateModal}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
-                >
-                  <SlidersHorizontal size={14} />
-                  Edit Rates
                 </button>
               </div>
             </div>
@@ -636,15 +769,25 @@ export default function PayrollSection({
                                 >
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      setOpenActionMenuId((current) =>
-                                        current ===
-                                        (representativeRow?.id ?? employee.name)
-                                          ? null
-                                          : (representativeRow?.id ??
-                                            employee.name),
-                                      )
-                                    }
+                                    onClick={(event) => {
+                                      const nextId =
+                                        representativeRow?.id ?? employee.name;
+                                      const rect =
+                                        event.currentTarget.getBoundingClientRect();
+
+                                      setOpenActionMenuId((current) => {
+                                        if (current === nextId) {
+                                          setActionMenuPosition(null);
+                                          return null;
+                                        }
+
+                                        setActionMenuPosition({
+                                          top: rect.bottom + 8,
+                                          left: rect.left + rect.width / 2,
+                                        });
+                                        return nextId;
+                                      });
+                                    }}
                                     className={`inline-flex h-9 w-9 items-center justify-center rounded-[10px] border transition-all duration-200 border-[#d9e2e6] text-[#41565f] ${
                                       openActionMenuId ===
                                       (representativeRow?.id ?? employee.name)
@@ -660,46 +803,6 @@ export default function PayrollSection({
                                   >
                                     <MoreHorizontal size={16} />
                                   </button>
-
-                                  {openActionMenuId ===
-                                    (representativeRow?.id ??
-                                      employee.name) && (
-                                    <div
-                                      className="animate-fade-in absolute left-1/2 top-[calc(100%+0.5rem)] z-20 min-w-max -translate-x-1/2 overflow-hidden rounded-[14px] border border-[#d9e2e6] bg-white p-1.5 text-left shadow-[0_16px_36px_rgba(15,23,42,0.12)]"
-                                      role="menu"
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          if (!representativeRow) return;
-                                          payroll.openPayrollEditModal(
-                                            representativeRow,
-                                          );
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        disabled={!representativeRow}
-                                        className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa] disabled:cursor-not-allowed disabled:opacity-50"
-                                        role="menuitem"
-                                      >
-                                        Edit Employee
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          if (!employeePayslipRecord) return;
-                                          void exportEmployeePayslipToPdf(
-                                            employeePayslipRecord,
-                                          );
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        disabled={!employeePayslipRecord}
-                                        className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa] disabled:cursor-not-allowed disabled:opacity-50"
-                                        role="menuitem"
-                                      >
-                                        Export Payslip
-                                      </button>
-                                    </div>
-                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -895,6 +998,58 @@ ${
         onLoadPhilippineHolidays={payroll.loadPhilippinePaidHolidays}
         onClearHolidays={payroll.clearPaidHolidays}
       />
+      {isMounted && openActionMenuId && actionMenuPosition
+        ? createPortal(
+            <div
+              ref={actionMenuRef}
+              className="animate-fade-in fixed z-[140] min-w-max -translate-x-1/2 overflow-hidden rounded-[14px] border border-[#d9e2e6] bg-white p-1.5 text-left shadow-[0_16px_36px_rgba(15,23,42,0.12)]"
+              style={{
+                top: actionMenuPosition.top,
+                left: actionMenuPosition.left,
+              }}
+              role="menu"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedRow = groupedPayrollRows
+                    .flatMap((employee) => employee.sites)
+                    .find((row) => row.id === openActionMenuId);
+                  if (!selectedRow) return;
+                  payroll.openPayrollEditModal(selectedRow);
+                  setOpenActionMenuId(null);
+                  setActionMenuPosition(null);
+                }}
+                className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa]"
+                role="menuitem"
+              >
+                Edit Employee
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedEmployee = groupedPayrollRows.find(
+                    (employee) =>
+                      (pickRepresentativeRow(employee.sites)?.id ?? employee.name) ===
+                      openActionMenuId,
+                  );
+                  const payslipRecord = selectedEmployee
+                    ? buildPayslipRecord(selectedEmployee, payrollPeriodLabel)
+                    : null;
+                  if (!payslipRecord) return;
+                  void exportEmployeePayslipToPdf(payslipRecord);
+                  setOpenActionMenuId(null);
+                  setActionMenuPosition(null);
+                }}
+                className="flex w-full items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[11px] font-semibold text-[#41565f] transition hover:bg-[#f5f9fa]"
+                role="menuitem"
+              >
+                Export Payslip
+              </button>
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

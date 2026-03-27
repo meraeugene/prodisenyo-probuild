@@ -69,9 +69,12 @@ export function computeDaysWorked(totalHours: number): number {
   return Math.floor(totalHours / FULL_WORKDAY_HOURS);
 }
 
-export function computeBasePay(totalHours: number): number {
+export function computeBasePay(
+  totalHours: number,
+  dailyRatePerDay = FIXED_PAY_RATE_PER_DAY,
+): number {
   const daysWorked = computeDaysWorked(totalHours);
-  return round2(daysWorked * FIXED_PAY_RATE_PER_DAY);
+  return round2(daysWorked * dailyRatePerDay);
 }
 
 export function buildDateHoursMap(
@@ -576,8 +579,13 @@ export function buildPayrollEditPreview(
           editingPayrollRow.customRate ?? editingPayrollRow.defaultRate,
         );
 
-  const fixedHourlyRate = round2(FIXED_PAY_RATE_PER_DAY / FULL_WORKDAY_HOURS);
-  const regularPay = computeBasePay(nextHours);
+  const effectiveHourlyRate = round2(
+    nextCustomRate ?? editingPayrollRow.defaultRate,
+  );
+  const regularPay = computeBasePay(
+    nextHours,
+    effectiveHourlyRate * FULL_WORKDAY_HOURS,
+  );
 
   return {
     ...editingPayrollRow,
@@ -585,8 +593,8 @@ export function buildPayrollEditPreview(
     hoursWorked: round2(nextHours),
     overtimeHours: round2(nextOvertime),
     customRate: nextCustomRate,
-    defaultRate: fixedHourlyRate,
-    rate: fixedHourlyRate,
+    defaultRate: editingPayrollRow.defaultRate,
+    rate: effectiveHourlyRate,
     regularPay,
     overtimePay: 0,
     totalPay: regularPay,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   DEFAULT_DAILY_RATE_BY_ROLE,
   ROLE_CODES,
@@ -19,6 +20,7 @@ import {
   normalizePeriodLabel,
 } from "@/features/payroll/utils/payrollDateHelpers";
 import {
+  buildEmployeeBranchRateKey,
   getLogOverrideKey,
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
@@ -37,7 +39,6 @@ import {
   calculateTotalEditedLogHours,
   computeBasePay,
   countHolidayBonusDays,
-  FIXED_PAY_RATE_PER_DAY,
   filterPayrollLogs,
   filterPayrollRows,
   FULL_WORKDAY_HOURS,
@@ -264,11 +265,17 @@ export interface UsePayrollStateResult {
   setPayrollRoleFilter: (value: RoleCode | "ALL") => void;
   payrollSaveNotice: string | null;
   showPayrollRateModal: boolean;
-  payrollRateDraft: Record<RoleCode, number>;
+  payrollRateDraft: Record<string, number>;
   setPayrollRateDraft: (
     value:
-      | Record<RoleCode, number>
-      | ((prev: Record<RoleCode, number>) => Record<RoleCode, number>),
+      | Record<string, number>
+      | ((prev: Record<string, number>) => Record<string, number>),
+  ) => void;
+  employeeBranchRates: Record<string, number>;
+  setEmployeeBranchRates: (
+    value:
+      | Record<string, number>
+      | ((prev: Record<string, number>) => Record<string, number>),
   ) => void;
   payrollAttendanceInputs: AttendanceRecordInput[];
   payrollOverrides: Record<string, PayrollRowOverride>;
@@ -365,9 +372,8 @@ export function usePayrollState({
   const [payrollDateFilter, setPayrollDateFilter] = useState("");
   const [payrollSort, setPayrollSort] = useState<Step2Sort>("name-asc");
   const [showPayrollRateModal, setShowPayrollRateModal] = useState(false);
-  const [payrollRateDraft, setPayrollRateDraft] = useState<
-    Record<RoleCode, number>
-  >(DEFAULT_DAILY_RATE_BY_ROLE);
+  const [payrollRateDraft, setPayrollRateDraft] = useState<Record<string, number>>({});
+  const [employeeBranchRates, setEmployeeBranchRates] = useState<Record<string, number>>({});
   const [editingPayrollRowId, setEditingPayrollRowId] = useState<string | null>(
     null,
   );
@@ -382,6 +388,46 @@ export function usePayrollState({
   const [logHourOverrides, setLogHourOverrides] = useState<Record<string, number>>({});
   const [payrollSaveNotice, setPayrollSaveNotice] = useState<string | null>(null);
   const [paidHolidays, setPaidHolidays] = useState<PaidHolidayItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEmployeeBranchRates() {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data, error } = await supabase
+          .from("employee_branch_rates")
+          .select("employee_name, role_code, site_name, daily_rate");
+
+        if (error || cancelled) return;
+
+        const nextRates = ((data ?? []) as Array<{
+          employee_name: string;
+          role_code: string;
+          site_name: string;
+          daily_rate: number;
+        }>).reduce<Record<string, number>>((acc, row) => {
+          const key = buildEmployeeBranchRateKey(
+            row.employee_name,
+            row.role_code,
+            row.site_name,
+          );
+          acc[key] = Number(row.daily_rate ?? 0);
+          return acc;
+        }, {});
+
+        setEmployeeBranchRates(nextRates);
+      } catch {
+        return;
+      }
+    }
+
+    void loadEmployeeBranchRates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const persistedLogHourOverrides = useMemo(() => {
     const merged: Record<string, number> = {};
@@ -446,8 +492,28 @@ export function usePayrollState({
         payrollAttendanceInputs,
         payrollRoleRates,
         attendancePeriod,
-      ),
-    [payrollAttendanceInputs, payrollRoleRates, attendancePeriod],
+      ).map((row) => {
+        const branchRate = employeeBranchRates[
+          buildEmployeeBranchRateKey(row.worker, row.role, row.site)
+        ];
+
+        if (!Number.isFinite(branchRate) || branchRate <= 0) {
+          return row;
+        }
+
+        const hourlyRate = round2(branchRate / FULL_WORKDAY_HOURS);
+        const basePay = computeBasePay(row.hoursWorked, branchRate);
+        return {
+          ...row,
+          defaultRate: hourlyRate,
+          customRate: null,
+          rate: hourlyRate,
+          regularPay: basePay,
+          overtimePay: 0,
+          totalPay: basePay,
+        };
+      }),
+    [payrollAttendanceInputs, payrollRoleRates, attendancePeriod, employeeBranchRates],
   );
 
   const payrollBaseComputedRows = useMemo(
@@ -549,8 +615,11 @@ export function usePayrollState({
               workerDateSpan,
             )
           : 0;
-        const basePay = computeBasePay(row.hoursWorked);
-        const holidayPay = round2(holidayBonusDays * FIXED_PAY_RATE_PER_DAY);
+        const ratePerDay = round2(
+          (row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS,
+        );
+        const basePay = computeBasePay(row.hoursWorked, ratePerDay);
+        const holidayPay = round2(holidayBonusDays * ratePerDay);
         const leavePay =
           Number.isFinite(override?.paidLeaveEntriesPayTotal)
             ? round2(override?.paidLeaveEntriesPayTotal ?? 0)
@@ -567,7 +636,7 @@ export function usePayrollState({
           Number.isFinite(override?.cashAdvanceTotal)
             ? round2(override?.cashAdvanceTotal ?? 0)
             : sumCashAdvance(override?.cashAdvanceEntries);
-        const fixedHourlyRate = round2(FIXED_PAY_RATE_PER_DAY / FULL_WORKDAY_HOURS);
+        const effectiveHourlyRate = round2(ratePerDay / FULL_WORKDAY_HOURS);
         const regularPay = round2(basePay + holidayPay + leavePay);
         const overtimePay = round2(manualOvertimePay);
         const overtimeHours = round2(manualOvertimeHours);
@@ -575,9 +644,9 @@ export function usePayrollState({
 
         return {
           ...row,
-          defaultRate: fixedHourlyRate,
-          rate: fixedHourlyRate,
-          customRate: null,
+          defaultRate: effectiveHourlyRate,
+          rate: effectiveHourlyRate,
+          customRate: row.customRate,
           overtimeHours,
           regularPay,
           overtimePay,
@@ -788,7 +857,7 @@ export function usePayrollState({
     setPayrollDateFilter("");
     setPayrollSort("name-asc");
     setShowPayrollRateModal(false);
-    setPayrollRateDraft(DEFAULT_DAILY_RATE_BY_ROLE);
+    setPayrollRateDraft({});
     setEditingPayrollRowId(null);
     setPayrollEditDraft(null);
     setPayrollOverrides({});
@@ -820,7 +889,18 @@ export function usePayrollState({
   }
 
   function openPayrollRateModal() {
-    setPayrollRateDraft({ ...payrollRoleRates });
+    const nextDraft = payrollBaseComputedRows.reduce<Record<string, number>>(
+      (acc, row) => {
+        const key = buildEmployeeBranchRateKey(row.worker, row.role, row.site);
+        const fallbackRate = round2(
+          (row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS,
+        );
+        acc[key] = employeeBranchRates[key] ?? fallbackRate;
+        return acc;
+      },
+      {},
+    );
+    setPayrollRateDraft(nextDraft);
     setShowPayrollRateModal(true);
     document.body.style.overflow = "hidden";
   }
@@ -831,7 +911,7 @@ export function usePayrollState({
   }
 
   function applyPayrollRates() {
-    setPayrollRoleRates({ ...payrollRateDraft });
+    setEmployeeBranchRates({ ...payrollRateDraft });
     setShowPayrollRateModal(false);
     document.body.style.overflow = "auto";
   }
@@ -1072,6 +1152,8 @@ export function usePayrollState({
     showPayrollRateModal,
     payrollRateDraft,
     setPayrollRateDraft,
+    employeeBranchRates,
+    setEmployeeBranchRates,
     payrollAttendanceInputs,
     payrollOverrides,
     setPayrollOverrides,
