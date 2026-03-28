@@ -107,7 +107,6 @@ export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
     const morningMinutes = boundedPairMinutes(row.time1In, row.time1Out);
     const afternoonMinutes = boundedPairMinutes(row.time2In, row.time2Out);
     const regularMinutes = morningMinutes + afternoonMinutes;
-
     const otMinutes = boundedPairMinutes(row.otIn, row.otOut);
     const strictMinutes = regularMinutes + otMinutes;
     const inferredMinutes =

@@ -17,7 +17,9 @@ import {
   Wallet,
 } from "lucide-react";
 import SignOutButton from "@/components/auth/SignOutButton";
+import ProfileAvatar from "@/components/dashboard/ProfileAvatar";
 import { useAppState } from "@/features/app/AppStateProvider";
+import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
@@ -58,23 +60,8 @@ const ANALYTICS_NAV_ITEMS = [
 
 type ProfileCardData = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "full_name" | "username" | "role"
+  "full_name" | "username" | "avatar_path" | "role"
 >;
-
-function getProfileInitials(profile: ProfileCardData | null): string {
-  const source =
-    profile?.full_name?.trim() || profile?.username?.trim() || "User";
-  const parts = source.split(/\s+/).filter(Boolean);
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 function formatRoleLabel(role: ProfileCardData["role"] | null): string {
   if (role === "ceo") return "Chief Executive Officer";
@@ -108,12 +95,23 @@ export default function DashboardShell({
   const canSeeDashboardNav =
     isCeo ||
     (!workspaceReset &&
-      (navState.hasSavedPayroll || Boolean(currentPayrollRunId) || isDashboardRoute));
+      (navState.hasSavedPayroll ||
+        Boolean(currentPayrollRunId) ||
+        isDashboardRoute));
   const canSeeWorkflowNav =
     isCeo ||
     (!workspaceReset &&
       (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
-  const canSeeAnalyticsNav = isCeo;
+  const isAnalyticsRoute =
+    pathname === "/attendance-analytics" || pathname === "/payroll-analytics";
+  const canSeeAnalyticsNav =
+    isCeo ||
+    (!workspaceReset &&
+      (navState.hasSavedAttendance ||
+        navState.hasSavedPayroll ||
+        hasAttendanceData ||
+        Boolean(currentPayrollRunId) ||
+        isAnalyticsRoute));
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -402,9 +400,14 @@ export default function DashboardShell({
               <div className="pt-4">
                 <div className="rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-apple-mist text-xs font-semibold text-apple-charcoal">
-                      {getProfileInitials(profile)}
-                    </div>
+                    <ProfileAvatar
+                      avatarUrl={getProfileAvatarPublicUrl(
+                        profile?.avatar_path,
+                      )}
+                      name={profile?.full_name?.trim() || profile?.username}
+                      sizeClassName="h-10 w-10"
+                      textClassName="text-xs"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-apple-charcoal">
                         {profile?.full_name?.trim() ||
@@ -413,11 +416,10 @@ export default function DashboardShell({
                       </p>
                       <p className="truncate text-xs text-apple-steel">
                         {profile?.username
-                          ? `@${profile.username} | ${formatRoleLabel(profile.role)}`
+                          ? ` ${formatRoleLabel(profile.role)}`
                           : "Loading account details..."}
                       </p>
                     </div>
-                    <ChevronRight size={14} className="text-apple-silver" />
                   </div>
                 </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -18,6 +18,9 @@ import {
   YAxis,
   type TooltipProps,
 } from "recharts";
+import { toast } from "sonner";
+import { requestOvertimeApprovalAction } from "@/actions/payroll";
+import { useAppState } from "@/features/app/AppStateProvider";
 import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import type { DailyLogRow } from "@/types";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
@@ -38,12 +41,11 @@ import {
   buildEmployeeBranchRateKey,
   getLogOverrideKey,
 } from "@/features/payroll/utils/payrollMappers";
+import { computeSameDayOvertimeMinutes } from "@/lib/utils";
 import {
-  buildDateHoursMap,
-  buildDateSpanFromDates,
-  computeBasePay,
+  allocateCombinedBranchPay,
   computeDaysWorked,
-  countHolidayBonusDays,
+  FIXED_PAY_RATE_PER_DAY,
   FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
 
@@ -159,6 +161,7 @@ interface PayrollEditModalProps {
 }
 
 export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
+  const { currentAttendanceImportId, attendancePeriod } = useAppState();
   const { editingPayrollRow, payrollEditDraft } = payroll;
 
   const [activeAdjustmentForm, setActiveAdjustmentForm] =
@@ -179,6 +182,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const [paidLeaveEntries, setPaidLeaveEntries] = useState<
     PayrollPaidLeaveEntry[]
   >([]);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
 
   useEffect(() => {
     setActiveAdjustmentForm(null);
@@ -241,18 +245,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
       .map((holiday) => holiday.date)
       .filter((date) => editingDates.has(date)),
   );
-  const payrollSourceLogsForHoliday = currentLogsForPay.filter(
-    (log) => !isExpandedPlaceholderLog(log),
-  );
-  const holidayDateHours = buildDateHoursMap(
-    payrollSourceLogsForHoliday.map((log) => ({
-      date: log.date,
-      hours: log.hours,
-    })),
-  );
-  const sourceDateSpan = buildDateSpanFromDates(
-    payrollSourceLogsForHoliday.map((log) => log.date),
-  );
   const totalWorkedHours = round2(
     currentLogsForPay.reduce((sum, log) => sum + log.hours, 0),
   );
@@ -271,74 +263,95 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
         (editingPayrollRow.customRate ?? editingPayrollRow.defaultRate) *
           FULL_WORKDAY_HOURS,
     );
-    const siteDateHours = buildDateHoursMap(
-      siteLogs
-        .filter((log) => !isExpandedPlaceholderLog(log))
-        .map((log) => ({
-          date: log.date,
-          hours: log.hours,
-        })),
-    );
-    const siteDateSpan = buildDateSpanFromDates(
-      siteLogs.map((log) => log.date),
-    );
-    const holidayBonusDays = siteDateSpan
-      ? countHolidayBonusDays(siteDateHours, holidayLogDateSet, siteDateSpan)
-      : 0;
-
     return {
       site,
       hours: siteHours,
-      daysWorked: computeDaysWorked(siteHours),
       ratePerDay: siteRatePerDay,
-      basePay: computeBasePay(siteHours, siteRatePerDay),
-      holidayBonusDays,
-      holidayPay: round2(holidayBonusDays * siteRatePerDay),
+    };
+  });
+  const branchPayAllocation = allocateCombinedBranchPay(
+    sitePayBreakdown.map((entry) => ({
+      site: entry.site,
+      hoursWorked: entry.hours,
+      dailyRatePerDay: entry.ratePerDay,
+    })),
+  );
+  const sitePayBreakdownWithAllocation = sitePayBreakdown.map((entry) => {
+    const allocation =
+      branchPayAllocation.breakdown.find((item) => item.site === entry.site) ??
+      null;
+
+    return {
+      ...entry,
+      payableHours: allocation?.payableHours ?? 0,
+      payableDays: allocation?.payableDays ?? 0,
+      basePay: allocation?.basePay ?? 0,
     };
   });
   const currentRatePerDay = round2(
-    sitePayBreakdown[0]?.ratePerDay ??
+    sitePayBreakdownWithAllocation[0]?.ratePerDay ??
       (editingPayrollRow.customRate ?? editingPayrollRow.defaultRate) *
         FULL_WORKDAY_HOURS,
   );
   const daysWorked = computeDaysWorked(totalWorkedHours);
-  const remainingHours = round2(
-    Math.max(0, totalWorkedHours - daysWorked * FULL_WORKDAY_HOURS),
-  );
-  const paidHolidayBonusDays =
-    sitePayBreakdown.length > 0
-      ? sitePayBreakdown.reduce((sum, entry) => sum + entry.holidayBonusDays, 0)
-      : sourceDateSpan
-        ? countHolidayBonusDays(
-            holidayDateHours,
-            holidayLogDateSet,
-            sourceDateSpan,
-          )
-        : 0;
+  const remainingHours = branchPayAllocation.ignoredHours;
+  const paidHolidayBonusDays = holidayLogDateSet.size;
   const underHoursLogs = currentLogsForPay.filter(
     (log) =>
       log.hours > 0 &&
       log.hours < FULL_WORKDAY_HOURS &&
       !holidayLogDateSet.has(log.date),
   );
+  const overtimeLogs = currentLogsForPay.filter(
+    (log) =>
+      computeSameDayOvertimeMinutes(log.otIn, log.otOut) > 0 &&
+      !holidayLogDateSet.has(log.date),
+  );
   const baseWorkedPay =
-    sitePayBreakdown.length > 0
-      ? round2(sitePayBreakdown.reduce((sum, entry) => sum + entry.basePay, 0))
-      : computeBasePay(totalWorkedHours, currentRatePerDay);
-  const paidHolidayPay =
-    sitePayBreakdown.length > 0
-      ? round2(
-          sitePayBreakdown.reduce((sum, entry) => sum + entry.holidayPay, 0),
-        )
-      : paidHolidayBonusDays * currentRatePerDay;
+    sitePayBreakdownWithAllocation.length > 0
+      ? branchPayAllocation.totalBasePay
+      : 0;
+  const paidHolidayPay = round2(
+    paidHolidayBonusDays * FIXED_PAY_RATE_PER_DAY,
+  );
   const previewTotalPay = baseWorkedPay + paidHolidayPay;
-  const belowFullDayThreshold = totalWorkedHours > 0 && daysWorked === 0;
+  const belowFullDayThreshold =
+    totalWorkedHours > 0 && branchPayAllocation.totalPayableHours === 0;
   const cashAdvanceAmount = cashAdvanceEntries.reduce(
     (sum, entry) => sum + entry.amount,
     0,
   );
-  const approvedOvertimePay = overtimeEntries.reduce(
+  const approvedOvertimeEntries = overtimeEntries.filter(
+    (entry) => entry.status === "approved",
+  );
+  const pendingOvertimeEntries = overtimeEntries.filter(
+    (entry) => (entry.status ?? "pending") === "pending",
+  );
+  const rejectedOvertimeEntries = overtimeEntries.filter(
+    (entry) => entry.status === "rejected",
+  );
+  const approvedOvertimePay = approvedOvertimeEntries.reduce(
     (sum, entry) => sum + entry.pay,
+    0,
+  );
+  const approvedOvertimeHours = approvedOvertimeEntries.reduce(
+    (sum, entry) => sum + entry.hours,
+    0,
+  );
+  const pendingOvertimePay = pendingOvertimeEntries.reduce(
+    (sum, entry) => sum + entry.pay,
+    0,
+  );
+  const pendingOvertimeHours = pendingOvertimeEntries.reduce(
+    (sum, entry) => sum + entry.hours,
+    0,
+  );
+  const rejectedOvertimePay = rejectedOvertimeEntries.reduce(
+    (sum, entry) => sum + entry.pay,
+    0,
+  );
+  const rejectedOvertimeHours = rejectedOvertimeEntries.reduce(
+    (sum, entry) => sum + entry.hours,
     0,
   );
   const paidLeavePay = paidLeaveEntries.reduce(
@@ -380,9 +393,11 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
       ...prev,
       {
         id: createEntryId(),
+        requestId: null,
         hours: Number(hours.toFixed(2)),
         pay: Number(pay.toFixed(2)),
         notes: overtimeNotes.trim(),
+        status: "pending",
       },
     ]);
     setOvertimeHoursInput("");
@@ -416,6 +431,53 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
 
   function removeOvertime(id: string) {
     setOvertimeEntries((prev) => prev.filter((entry) => entry.id !== id));
+  }
+
+  async function handleSaveChanges() {
+    if (!editingPayrollRow || isSavingChanges) return;
+
+    setIsSavingChanges(true);
+    try {
+      const nextPendingEntries = pendingOvertimeEntries.map((entry) => ({
+        ...entry,
+        status: "pending" as const,
+      }));
+
+      const approvedEntries = approvedOvertimeEntries.map((entry) => ({
+        ...entry,
+        status: "approved" as const,
+      }));
+
+      const result = await requestOvertimeApprovalAction({
+        attendanceImportId: currentAttendanceImportId,
+        employeeName: editingPayrollRow.worker,
+        roleCode: editingPayrollRow.role,
+        siteName: editingPayrollRow.site,
+        attendancePeriod,
+        overtimeEntries: nextPendingEntries,
+      });
+
+      payroll.savePayrollEdit({
+        cashAdvanceEntries,
+        overtimeEntries: [...approvedEntries, ...result.entries],
+        paidLeaveEntries,
+      });
+
+      if (result.entries.length > 0) {
+        toast.success("Overtime request sent", {
+          description:
+            "The request is now in the CEO approval queue and will recalculate once approved.",
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to submit overtime request.",
+      );
+    } finally {
+      setIsSavingChanges(false);
+    }
   }
 
   function removePaidLeave(id: string) {
@@ -740,18 +802,36 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           ({entry.hours} hrs)
                         </span>
 
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              entry.status === "approved"
+                                ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                                : entry.status === "rejected"
+                                  ? "border border-red-200 bg-red-50 text-red-700"
+                                  : "border border-amber-200 bg-amber-50 text-amber-700"
+                            }`}
+                          >
+                            {entry.status === "approved"
+                              ? "Approved"
+                              : entry.status === "rejected"
+                                ? "Rejected"
+                                : "Pending"}
+                          </span>
+
                         {entry.notes && (
                           <span className="text-xs text-gray-500 truncate">
                             {entry.notes}
                           </span>
                         )}
 
-                        <button
-                          onClick={() => removeOvertime(entry.id)}
-                          className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
-                        >
-                          <X size={14} />
-                        </button>
+                        {entry.status !== "approved" ? (
+                          <button
+                            onClick={() => removeOvertime(entry.id)}
+                            className="ml-auto p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                          >
+                            <X size={14} />
+                          </button>
+                        ) : null}
                       </div>
                     ))}
 
@@ -805,6 +885,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     hours accumulate toward total paid days.
                   </p>
                 )}
+                {overtimeLogs.length > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-emerald-700">
+                    Hours above 8 are tagged as overtime. Overtime pay stays
+                    pending until CEO approval.
+                  </p>
+                )}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[980px] text-sm">
@@ -848,6 +934,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         const isUnderRequiredHours =
                           getHoursNumber(log) > 0 &&
                           getHoursNumber(log) < FULL_WORKDAY_HOURS;
+                        const isOvertimeDay =
+                          computeSameDayOvertimeMinutes(log.otIn, log.otOut) > 0 &&
+                          !isPaidHoliday;
                         const statusFallback = (
                           <span className="text-red-500">Missed</span>
                         );
@@ -876,6 +965,11 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                                 {isUnderRequiredHours && !isPaidHoliday && (
                                   <span className="w-fit rounded-full border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-2xs font-semibold text-yellow-800">
                                     Under 8h
+                                  </span>
+                                )}
+                                {isOvertimeDay && (
+                                  <span className="w-fit rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-2xs font-semibold text-emerald-800">
+                                    Overtime
                                   </span>
                                 )}
                               </div>
@@ -968,12 +1062,20 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     value: `${formatPayrollNumber(totalWorkedHours)} hrs`,
                   },
                   {
-                    label: "Approved Overtime",
-                    value: formatPeso(approvedOvertimePay),
+                    label: "Pending Overtime",
+                    value: `${formatPayrollNumber(pendingOvertimeHours)} hrs`,
                   },
-                  {
-                    label: "Paid Leave",
-                    value: formatPeso(paidLeavePay),
+                    {
+                      label: "Approved Overtime",
+                      value: `${formatPayrollNumber(approvedOvertimeHours)} hrs`,
+                    },
+                    {
+                      label: "Rejected Overtime",
+                      value: `${formatPayrollNumber(rejectedOvertimeHours)} hrs`,
+                    },
+                    {
+                      label: "Paid Leave",
+                      value: formatPeso(paidLeavePay),
                   },
                   {
                     label: "Paid Holidays (Day)",
@@ -1032,20 +1134,21 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     {formatPeso(baseWorkedPay)}
                   </span>
                 </div>
-                {sitePayBreakdown.length > 1 && (
+                {sitePayBreakdownWithAllocation.length > 1 && (
                   <div className="rounded-xl border border-apple-mist bg-apple-snow/70 px-3 py-2">
                     <p className="text-2xs font-semibold uppercase tracking-widest text-apple-smoke">
                       Branch Rate Breakdown
                     </p>
                     <div className="mt-2 space-y-1.5">
-                      {sitePayBreakdown.map((entry) => (
+                      {sitePayBreakdownWithAllocation.map((entry) => (
                         <div
                           key={entry.site}
                           className="flex items-center justify-between gap-3 text-xs"
                         >
                           <span className="text-apple-charcoal">
-                            {entry.site} · {formatPayrollNumber(entry.hours)}{" "}
-                            hrs · {formatPayrollNumber(entry.daysWorked)} day(s)
+                            {entry.site} · {formatPayrollNumber(entry.hours)} hrs
+                            {" · "}
+                            {formatPayrollNumber(entry.payableDays)} payable day(s)
                           </span>
                           <span className="font-mono font-semibold text-apple-charcoal text-right">
                             {formatPeso(entry.ratePerDay)}/day
@@ -1069,6 +1172,30 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     {formatPeso(approvedOvertimePay)}
                   </span>
                 </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    + Pending Overtime
+                  </span>
+                  <span className="font-mono font-semibold text-amber-700 text-right">
+                    {formatPeso(pendingOvertimePay)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-apple-charcoal">
+                    + Rejected Overtime
+                  </span>
+                  <span className="font-mono font-semibold text-red-700 text-right">
+                    {formatPeso(rejectedOvertimePay)}
+                  </span>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                  Pending overtime is excluded from total pay until the CEO approves it.
+                </div>
+                {rejectedOvertimeEntries.length > 0 && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                    Rejected overtime stays excluded from total pay until HR submits a new request.
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-apple-charcoal">+ Paid Leave</span>
                   <span className="font-mono font-semibold text-emerald-700 text-right">
@@ -1404,22 +1531,27 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 <button
                   type="button"
                   onClick={payroll.closePayrollEditModal}
+                  disabled={isSavingChanges}
                   className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
-                    payroll.savePayrollEdit({
-                      cashAdvanceEntries,
-                      overtimeEntries,
-                      paidLeaveEntries,
-                    })
-                  }
-                  className="px-4 h-10 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition"
+                  onClick={() => {
+                    void handleSaveChanges();
+                  }}
+                  disabled={isSavingChanges}
+                  className="inline-flex px-4 h-10 items-center gap-2 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Save Changes
+                  {isSavingChanges ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </div>

@@ -1,13 +1,13 @@
 "use client";
 
-import { useAppState } from "@/features/app/AppStateProvider";
-import { RefreshCcw } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface DashboardPageHeroProps {
   eyebrow: string;
   title: string;
   description: string;
   isUploadAttendance?: boolean;
+  actions?: ReactNode;
 }
 
 export default function DashboardPageHero({
@@ -15,9 +15,8 @@ export default function DashboardPageHero({
   title,
   description,
   isUploadAttendance = false,
+  actions,
 }: DashboardPageHeroProps) {
-  const { handleReset } = useAppState();
-
   return (
     <section className="rounded-[14px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:p-6 flex items-center justify-between flex-wrap ">
       <div>
@@ -31,16 +30,8 @@ export default function DashboardPageHero({
           {description}
         </p>
       </div>
-      {isUploadAttendance && (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))]"
-            onClick={handleReset}
-          >
-            <RefreshCcw size={14} />
-            Reset
-          </button>
-        </div>
+      {(isUploadAttendance || actions) && (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
       )}
     </section>
   );

@@ -99,6 +99,17 @@ export default function PaidHolidayModal({
     () => new Map(holidays.map((holiday) => [holiday.date, holiday])),
     [holidays],
   );
+  const visibleHolidays = useMemo(() => {
+    if (!periodStart && !periodEnd) return holidays;
+
+    const periodYearText = (periodStart ?? periodEnd ?? "").slice(0, 4);
+    const periodYear = Number.parseInt(periodYearText, 10);
+    if (!Number.isFinite(periodYear)) return holidays;
+
+    return holidays.filter(
+      (holiday) => Number.parseInt(holiday.date.slice(0, 4), 10) === periodYear,
+    );
+  }, [holidays, periodEnd, periodStart]);
   const calendarDays = useMemo(() => buildCalendarDays(viewMonth), [viewMonth]);
 
   if (!show || !isMounted) return null;
@@ -279,15 +290,15 @@ export default function PaidHolidayModal({
 
             <div className="pt-2 border-t border-apple-mist">
               <p className="text-2xs font-semibold uppercase tracking-widest text-apple-steel mb-2">
-                Selected Holidays ({holidays.length})
+                Selected Holidays ({visibleHolidays.length})
               </p>
               <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
-                {holidays.length === 0 ? (
+                {visibleHolidays.length === 0 ? (
                   <p className="text-xs text-apple-steel">
                     No holidays selected yet.
                   </p>
                 ) : (
-                  holidays.map((holiday) => (
+                  visibleHolidays.map((holiday) => (
                     <div
                       key={holiday.date}
                       className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 flex items-center gap-2"

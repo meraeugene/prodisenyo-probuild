@@ -10,7 +10,7 @@ import { DEFAULT_AUTH_REDIRECT } from "@/lib/auth";
 
 type ProfileLookupRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "username" | "email" | "is_active" | "role"
+  "id" | "username" | "email" | "is_active" | "role"
 >;
 
 export interface AuthActionState {
@@ -32,7 +32,7 @@ export async function signInAction(
   const admin = createSupabaseAdminClient();
   const { data: profile, error: lookupError } = await admin
     .from("profiles")
-    .select("username, email, is_active")
+    .select("id, username, email, is_active, role")
     .eq("username", username)
     .returns<ProfileLookupRow[]>()
     .maybeSingle();
@@ -45,9 +45,22 @@ export async function signInAction(
     return { error: "Invalid username or password." };
   }
 
+  const { data: authUserResult, error: authUserLookupError } =
+    await admin.auth.admin.getUserById(profile.id);
+
+  if (authUserLookupError) {
+    return { error: "Unable to verify account access right now." };
+  }
+
+  const authEmail = authUserResult.user?.email?.trim().toLowerCase();
+
+  if (!authEmail) {
+    return { error: "This account is missing a sign-in email." };
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: profile.email,
+    email: authEmail,
     password,
   });
 
@@ -55,9 +68,10 @@ export async function signInAction(
     return { error: "Invalid username or password." };
   }
 
-  const redirectPath =
-    nextPath ||
-    (profile.role === "ceo" ? "/dashboard" : "/upload-attendance");
+  const isCeo = profile.role === "ceo";
+  const redirectPath = isCeo
+    ? "/dashboard"
+    : nextPath || "/upload-attendance";
 
   redirect(redirectPath || DEFAULT_AUTH_REDIRECT);
 }

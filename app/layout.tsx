@@ -30,7 +30,7 @@ export default function RootLayout({
         <AppStateProvider>
           {children}
           <Toaster
-            position="bottom-right"
+            position="top-right"
             toastOptions={{
               className:
                 "border border-apple-mist bg-apple-white text-apple-charcoal",

@@ -13,6 +13,7 @@ export default function UploadAttendancePage() {
     setCurrentAttendanceImportId,
     setCurrentPayrollRunMeta,
     handleParsed,
+    handleReset,
   } = useAppState();
   const router = useRouter();
 
@@ -43,6 +44,7 @@ export default function UploadAttendancePage() {
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
           onParsed={handleUploadParsed}
+          onClearWorkspace={handleReset}
         />
       </section>
     </div>

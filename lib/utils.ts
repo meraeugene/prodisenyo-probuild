@@ -11,6 +11,9 @@ function timeToMinutes(time: string): number {
   return h * 60 + m;
 }
 
+const EVENING_OVERTIME_START_MINUTES = 18 * 60;
+const END_OF_DAY_MINUTES = 24 * 60;
+
 function earlierTime(current: string, incoming: string): string {
   if (!current) return incoming;
   return timeToMinutes(incoming) < timeToMinutes(current) ? incoming : current;
@@ -27,6 +30,42 @@ function pairMinutes(inTime: string, outTime: string): number {
   const outMinutes = timeToMinutes(outTime);
   if (outMinutes >= inMinutes) return outMinutes - inMinutes;
   return outMinutes + 24 * 60 - inMinutes;
+}
+
+function computeSameDayOvertimeMinutes(inTime: string, outTime: string): number {
+  if (!inTime) return 0;
+
+  const inMinutes = timeToMinutes(inTime);
+  const outMinutes = outTime ? timeToMinutes(outTime) : -1;
+  if (!Number.isFinite(inMinutes) || inMinutes < 0) return 0;
+
+  const effectiveStart = Math.max(inMinutes, EVENING_OVERTIME_START_MINUTES);
+  if (effectiveStart >= END_OF_DAY_MINUTES) return 0;
+
+  if (!outTime || !Number.isFinite(outMinutes) || outMinutes < 0 || outMinutes <= inMinutes) {
+    return END_OF_DAY_MINUTES - effectiveStart;
+  }
+
+  const effectiveEnd = Math.min(outMinutes, END_OF_DAY_MINUTES);
+  return Math.max(0, effectiveEnd - effectiveStart);
+}
+
+function computeNextDayCarryMinutes(inTime: string, outTime: string): number {
+  if (!inTime || !outTime) return 0;
+
+  const inMinutes = timeToMinutes(inTime);
+  const outMinutes = timeToMinutes(outTime);
+  if (
+    !Number.isFinite(inMinutes) ||
+    !Number.isFinite(outMinutes) ||
+    inMinutes < 0 ||
+    outMinutes < 0
+  ) {
+    return 0;
+  }
+
+  if (outMinutes > inMinutes) return 0;
+  return outMinutes;
 }
 
 function earliestNonEmptyTime(...times: string[]): string {
@@ -72,6 +111,8 @@ export {
   earlierTime,
   laterTime,
   pairMinutes,
+  computeSameDayOvertimeMinutes,
+  computeNextDayCarryMinutes,
   earliestNonEmptyTime,
   latestNonEmptyTime,
   compareStep2Rows,

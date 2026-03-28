@@ -170,6 +170,7 @@ async function upsertProfile(admin, authUser, userSeed) {
       username: userSeed.username,
       email: userSeed.email,
       full_name: userSeed.fullName,
+      avatar_path: null,
       role: userSeed.role,
       is_active: true,
     },

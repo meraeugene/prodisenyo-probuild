@@ -13,6 +13,7 @@ interface UploadZoneProps {
       | ((prev: UploadedFileItem[]) => UploadedFileItem[]),
   ) => void;
   onParsed: (result: ParseResult) => void | Promise<void>;
+  onClearWorkspace?: () => void;
   resetSignal?: number;
 }
 
@@ -48,6 +49,7 @@ export default function UploadZone({
   files,
   onFilesChange,
   onParsed,
+  onClearWorkspace,
   resetSignal,
 }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -203,7 +205,11 @@ export default function UploadZone({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onFilesChange([]);
+                  if (onClearWorkspace) {
+                    onClearWorkspace();
+                  } else {
+                    onFilesChange([]);
+                  }
                   setError(null);
                 }}
                 className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-sm transition-colors hover:bg-[#15803d]"

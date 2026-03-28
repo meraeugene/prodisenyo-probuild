@@ -130,7 +130,7 @@ export default async function LoginPage({
 
           <section className="flex lg:items-stretch lg:pl-4">
             <div className="flex w-full flex-col rounded-[30px] border border-apple-mist bg-white/92 p-6 shadow-[0_24px_60px_rgba(24,83,43,0.10)] backdrop-blur-xl sm:p-8 lg:h-full lg:max-w-[560px]">
-              <div className="mb-8 flex items-start justify-between gap-4">
+              <div className="mb-8 ">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
                     Account Login
@@ -142,10 +142,6 @@ export default async function LoginPage({
                     Sign in to continue managing attendance uploads, payroll
                     generation, and analytics.
                   </p>
-                </div>
-
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-apple-mist text-[#1f6a37]">
-                  <Fingerprint className="h-5 w-5" strokeWidth={1.8} />
                 </div>
               </div>
 

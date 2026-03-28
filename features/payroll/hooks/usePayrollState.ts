@@ -22,13 +22,13 @@ import {
 import {
   buildEmployeeBranchRateKey,
   getLogOverrideKey,
+  normalizeEmployeeNameKey,
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
 import {
   applyLogHourOverrides,
   buildEditingPayrollLogs,
   buildEditingPayrollSummary,
-  buildWorkerDateSpanByKey,
   buildEmployeeAttendanceBreakdown,
   buildEmployeeClockInConsistency,
   buildEmployeeDailyHoursTrend,
@@ -38,9 +38,9 @@ import {
   coalescePayrollAttendanceInputs,
   calculateTotalEditedLogHours,
   computeBasePay,
-  countHolidayBonusDays,
   filterPayrollLogs,
   filterPayrollRows,
+  FIXED_PAY_RATE_PER_DAY,
   FULL_WORKDAY_HOURS,
   hasAnyLogHourOverrides,
   summarizePayrollTotals,
@@ -161,7 +161,7 @@ function buildDailyHoursByWorker(
   const hoursByWorker = new Map<string, Map<string, number>>();
 
   for (const log of logs) {
-    const key = `${log.role}|||${log.name}`;
+    const key = `${log.role}|||${log.name}|||${log.site}`;
     const byDate = hoursByWorker.get(key) ?? new Map<string, number>();
     byDate.set(log.date, (byDate.get(log.date) ?? 0) + log.hours);
     hoursByWorker.set(key, byDate);
@@ -195,14 +195,16 @@ function sanitizeOvertimeEntries(
 ): PayrollOvertimeEntry[] {
   if (!entries || entries.length === 0) return [];
   return entries
-    .map((entry) => ({
-      id: String(entry.id || `${Date.now()}-${Math.random()}`),
-      hours: Number.isFinite(entry.hours) && entry.hours > 0 ? round2(entry.hours) : 0,
-      pay: Number.isFinite(entry.pay) && entry.pay > 0 ? round2(entry.pay) : 0,
-      notes: String(entry.notes ?? "").trim(),
-    }))
-    .filter((entry) => entry.hours > 0 || entry.pay > 0);
-}
+      .map((entry) => ({
+        id: String(entry.id || `${Date.now()}-${Math.random()}`),
+        requestId: entry.requestId ?? null,
+        hours: Number.isFinite(entry.hours) && entry.hours > 0 ? round2(entry.hours) : 0,
+        pay: Number.isFinite(entry.pay) && entry.pay > 0 ? round2(entry.pay) : 0,
+        notes: String(entry.notes ?? "").trim(),
+        status: entry.status ?? "pending",
+      }))
+      .filter((entry) => entry.hours > 0 || entry.pay > 0);
+  }
 
 function sanitizePaidLeaveEntries(
   entries: PayrollPaidLeaveEntry[] | undefined,
@@ -222,12 +224,28 @@ function sumCashAdvance(entries: PayrollCashAdvanceEntry[] | undefined): number 
   return round2((entries ?? []).reduce((sum, entry) => sum + entry.amount, 0));
 }
 
-function sumOvertimePay(entries: PayrollOvertimeEntry[] | undefined): number {
-  return round2((entries ?? []).reduce((sum, entry) => sum + entry.pay, 0));
+function sumOvertimePay(
+  entries: PayrollOvertimeEntry[] | undefined,
+  status?: "pending" | "approved" | "rejected",
+): number {
+  return round2(
+    (entries ?? []).reduce((sum, entry) => {
+      if (status && (entry.status ?? "pending") !== status) return sum;
+      return sum + entry.pay;
+    }, 0),
+  );
 }
 
-function sumOvertimeHours(entries: PayrollOvertimeEntry[] | undefined): number {
-  return round2((entries ?? []).reduce((sum, entry) => sum + entry.hours, 0));
+function sumOvertimeHours(
+  entries: PayrollOvertimeEntry[] | undefined,
+  status?: "pending" | "approved" | "rejected",
+): number {
+  return round2(
+    (entries ?? []).reduce((sum, entry) => {
+      if (status && (entry.status ?? "pending") !== status) return sum;
+      return sum + entry.hours;
+    }, 0),
+  );
 }
 
 function sumPaidLeavePay(entries: PayrollPaidLeaveEntry[] | undefined): number {
@@ -238,9 +256,11 @@ export interface UsePayrollStateArgs {
   dailyRows: DailyLogRow[];
   attendancePeriod: string;
   availableSites: string[];
+  currentAttendanceImportId: string | null;
 }
 
 export interface UsePayrollStateResult {
+  dailyRows: DailyLogRow[];
   payrollRoleRates: Record<RoleCode, number>;
   setPayrollRoleRates: (
     value:
@@ -348,7 +368,7 @@ export interface UsePayrollStateResult {
   removePaidHoliday: (date: string) => void;
   clearPaidHolidays: () => void;
   loadPhilippinePaidHolidays: () => void;
-  openPayrollEditModal: (row: PayrollRow) => void;
+  openPayrollEditModal: (row: PayrollRow, displayRow?: PayrollRow) => void;
   closePayrollEditModal: () => void;
   savePayrollEdit: (adjustments?: PayrollAdjustmentSet) => void;
   updateLogHour: (log: DailyLogRow, valueText: string) => void;
@@ -360,6 +380,7 @@ export function usePayrollState({
   dailyRows,
   attendancePeriod,
   availableSites,
+  currentAttendanceImportId,
 }: UsePayrollStateArgs): UsePayrollStateResult {
   const [payrollRoleRates, setPayrollRoleRates] = useState<
     Record<RoleCode, number>
@@ -377,6 +398,8 @@ export function usePayrollState({
   const [editingPayrollRowId, setEditingPayrollRowId] = useState<string | null>(
     null,
   );
+  const [editingPayrollDisplayRow, setEditingPayrollDisplayRow] =
+    useState<PayrollRow | null>(null);
   const [payrollEditDraft, setPayrollEditDraft] =
     useState<PayrollEditDraft | null>(null);
   const [payrollOverrides, setPayrollOverrides] = useState<
@@ -477,15 +500,6 @@ export function usePayrollState({
 
     return coalescePayrollAttendanceInputs(normalizedInputs);
   }, [dailyRows, persistedLogHourOverrides]);
-  const dailyHoursByWorker = useMemo(
-    () => buildDailyHoursByWorker(payrollAttendanceInputs),
-    [payrollAttendanceInputs],
-  );
-  const workerDateSpanByKey = useMemo(
-    () => buildWorkerDateSpanByKey(payrollAttendanceInputs),
-    [payrollAttendanceInputs],
-  );
-
   const payrollBaseRows = useMemo(
     () =>
       buildPayrollBaseRows(
@@ -520,6 +534,139 @@ export function usePayrollState({
     () => buildPayrollRows(payrollBaseRows, payrollOverrides, attendancePeriod),
     [payrollBaseRows, payrollOverrides, attendancePeriod],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStandaloneOvertimeRequests() {
+      if (!attendancePeriod.trim()) return;
+
+      try {
+        const supabase = createSupabaseBrowserClient();
+        let query = supabase
+          .from("payroll_adjustments")
+            .select(
+              "id, attendance_import_id, employee_name, role_code, site_name, period_label, status, quantity, amount, notes",
+            )
+            .eq("adjustment_type", "overtime")
+            .in("status", ["pending", "approved", "rejected"])
+            .eq("period_label", attendancePeriod);
+
+        query = currentAttendanceImportId
+          ? query.eq("attendance_import_id", currentAttendanceImportId)
+          : query.is("attendance_import_id", null);
+
+        const { data, error } = await query.order("created_at", {
+          ascending: true,
+        });
+
+        if (error || cancelled) return;
+
+        const requestRows = (data ?? []) as Array<{
+          id: string;
+          attendance_import_id: string | null;
+          employee_name: string | null;
+          role_code: string | null;
+          site_name: string | null;
+          period_label: string | null;
+          status: "pending" | "approved" | "rejected";
+          quantity: number;
+          amount: number;
+          notes: string | null;
+        }>;
+
+        setPayrollOverrides((prev) => {
+          const next = { ...prev };
+          let changed = false;
+
+          for (const row of payrollBaseComputedRows) {
+            const persistedEntries = requestRows
+              .filter(
+                (request) =>
+                  normalizeEmployeeNameKey(request.employee_name ?? "") ===
+                    normalizeEmployeeNameKey(row.worker) &&
+                  (request.role_code ?? "").trim().toUpperCase() ===
+                    row.role.trim().toUpperCase() &&
+                  normalizeEmployeeNameKey(request.site_name ?? "") ===
+                    normalizeEmployeeNameKey(row.site),
+              )
+              .map<PayrollOvertimeEntry>((request) => ({
+                id: request.id,
+                requestId: request.id,
+                hours: round2(request.quantity ?? 0),
+                pay: round2(request.amount ?? 0),
+                notes: request.notes ?? "",
+                status: request.status,
+              }));
+
+            const existingOverride = next[row.id];
+            const localOnlyEntries = (existingOverride?.overtimeEntries ?? []).filter(
+              (entry) => !entry.requestId,
+            );
+            const mergedEntries = [...persistedEntries, ...localOnlyEntries];
+            const previousSerialized = JSON.stringify(
+              existingOverride?.overtimeEntries ?? [],
+            );
+            const nextSerialized = JSON.stringify(mergedEntries);
+
+            if (mergedEntries.length === 0 && !existingOverride) continue;
+
+            if (
+              existingOverride &&
+              previousSerialized === nextSerialized &&
+              (existingOverride.overtimeEntriesPayTotal ?? 0) ===
+                sumOvertimePay(mergedEntries, "approved") &&
+              (existingOverride.overtimeEntriesHoursTotal ?? 0) ===
+                sumOvertimeHours(mergedEntries, "approved")
+            ) {
+              continue;
+            }
+
+            next[row.id] = {
+              date: existingOverride?.date ?? row.date,
+              hoursWorked: existingOverride?.hoursWorked ?? row.hoursWorked,
+              overtimeHours: existingOverride?.overtimeHours ?? row.overtimeHours,
+              customRate:
+                existingOverride?.customRate ?? row.customRate ?? null,
+              logHours: existingOverride?.logHours,
+              cashAdvanceEntries: existingOverride?.cashAdvanceEntries ?? [],
+              paidLeaveEntries: existingOverride?.paidLeaveEntries ?? [],
+              cashAdvanceTotal: existingOverride?.cashAdvanceTotal ?? 0,
+              paidLeaveEntriesPayTotal:
+                existingOverride?.paidLeaveEntriesPayTotal ?? 0,
+              overtimeEntries: mergedEntries,
+              overtimeEntriesPayTotal: sumOvertimePay(
+                mergedEntries,
+                "approved",
+              ),
+              overtimeEntriesHoursTotal: sumOvertimeHours(
+                mergedEntries,
+                "approved",
+              ),
+            };
+            changed = true;
+          }
+
+          return changed ? next : prev;
+        });
+      } catch {
+        return;
+      }
+    }
+
+    void loadStandaloneOvertimeRequests();
+
+    function handleWindowFocus() {
+      void loadStandaloneOvertimeRequests();
+    }
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [attendancePeriod, currentAttendanceImportId, payrollBaseComputedRows]);
 
   const payrollDateRange = useMemo<PayrollDateRange | null>(() => {
     const normalizedPeriod = normalizePeriodLabel(attendancePeriod);
@@ -603,61 +750,94 @@ export function usePayrollState({
   }, [editingPayrollRowId, payrollOverrides]);
 
   const payrollRows = useMemo(
-    () =>
-      payrollBaseComputedRows.map((row) => {
+    () => {
+      const preparedRows = payrollBaseComputedRows.map((row) => {
         const override = payrollOverrides[row.id];
-        const rowDailyHours = dailyHoursByWorker.get(row.id) ?? new Map<string, number>();
-        const workerDateSpan = workerDateSpanByKey.get(row.id) ?? null;
-        const holidayBonusDays = workerDateSpan
-          ? countHolidayBonusDays(
-              rowDailyHours,
-              payableHolidayDateSet,
-              workerDateSpan,
-            )
-          : 0;
         const ratePerDay = round2(
           (row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS,
         );
         const basePay = computeBasePay(row.hoursWorked, ratePerDay);
-        const holidayPay = round2(holidayBonusDays * ratePerDay);
         const leavePay =
           Number.isFinite(override?.paidLeaveEntriesPayTotal)
             ? round2(override?.paidLeaveEntriesPayTotal ?? 0)
             : sumPaidLeavePay(override?.paidLeaveEntries);
-        const manualOvertimePay =
-          Number.isFinite(override?.overtimeEntriesPayTotal)
-            ? round2(override?.overtimeEntriesPayTotal ?? 0)
-            : sumOvertimePay(override?.overtimeEntries);
-        const manualOvertimeHours =
-          Number.isFinite(override?.overtimeEntriesHoursTotal)
-            ? round2(override?.overtimeEntriesHoursTotal ?? 0)
-            : sumOvertimeHours(override?.overtimeEntries);
+        const approvedOvertimePay = sumOvertimePay(
+          override?.overtimeEntries,
+          "approved",
+        );
+        const approvedOvertimeHours = sumOvertimeHours(
+          override?.overtimeEntries,
+          "approved",
+        );
         const cashAdvance =
           Number.isFinite(override?.cashAdvanceTotal)
             ? round2(override?.cashAdvanceTotal ?? 0)
             : sumCashAdvance(override?.cashAdvanceEntries);
         const effectiveHourlyRate = round2(ratePerDay / FULL_WORKDAY_HOURS);
-        const regularPay = round2(basePay + holidayPay + leavePay);
-        const overtimePay = round2(manualOvertimePay);
-        const overtimeHours = round2(manualOvertimeHours);
-        const totalPay = round2(Math.max(0, regularPay + overtimePay - cashAdvance));
 
         return {
-          ...row,
-          defaultRate: effectiveHourlyRate,
-          rate: effectiveHourlyRate,
-          customRate: row.customRate,
+          row,
+          basePay,
+          leavePay,
+          approvedOvertimePay,
+          approvedOvertimeHours,
+          cashAdvance,
+          ratePerDay,
+          effectiveHourlyRate,
+        };
+      });
+
+      const holidayPayByRowId = new Map<string, number>();
+      const rowsByEmployee = new Map<string, typeof preparedRows>();
+
+      for (const entry of preparedRows) {
+        const employeeKey = normalizeEmployeeNameKey(entry.row.worker);
+        const existing = rowsByEmployee.get(employeeKey);
+        if (existing) {
+          existing.push(entry);
+        } else {
+          rowsByEmployee.set(employeeKey, [entry]);
+        }
+      }
+
+      for (const [employeeKey, employeeRows] of rowsByEmployee.entries()) {
+        const holidayBonusDays = payableHolidayDateSet.size;
+
+        if (holidayBonusDays <= 0) continue;
+
+        const firstRowId = employeeRows[0]?.row.id;
+        if (!firstRowId) continue;
+
+        holidayPayByRowId.set(
+          firstRowId,
+          round2(holidayBonusDays * FIXED_PAY_RATE_PER_DAY),
+        );
+      }
+
+      return preparedRows.map((entry) => {
+        const basePay = entry.basePay;
+        const holidayPay = holidayPayByRowId.get(entry.row.id) ?? 0;
+        const regularPay = round2(basePay + holidayPay + entry.leavePay);
+        const overtimeHours = round2(entry.approvedOvertimeHours);
+        const totalPay = round2(
+          Math.max(0, regularPay + entry.approvedOvertimePay - entry.cashAdvance),
+        );
+
+        return {
+          ...entry.row,
+          defaultRate: entry.effectiveHourlyRate,
+          rate: entry.effectiveHourlyRate,
+          customRate: entry.row.customRate,
           overtimeHours,
           regularPay,
-          overtimePay,
+          overtimePay: round2(entry.approvedOvertimePay),
           totalPay,
         };
-      }),
+      });
+    },
     [
       payrollBaseComputedRows,
       payrollOverrides,
-      dailyHoursByWorker,
-      workerDateSpanByKey,
       payableHolidayDateSet,
     ],
   );
@@ -728,10 +908,10 @@ export function usePayrollState({
     [filteredPayrollRows],
   );
 
-  const editingPayrollRow = useMemo(
-    () => payrollBaseComputedRows.find((row) => row.id === editingPayrollRowId) ?? null,
-    [payrollBaseComputedRows, editingPayrollRowId],
-  );
+  const editingPayrollRow = useMemo(() => {
+    if (editingPayrollDisplayRow) return editingPayrollDisplayRow;
+    return payrollBaseComputedRows.find((row) => row.id === editingPayrollRowId) ?? null;
+  }, [editingPayrollDisplayRow, payrollBaseComputedRows, editingPayrollRowId]);
 
   const editingPayrollLogs = useMemo(
     () => buildEditingPayrollLogs(dailyRows, editingPayrollRow, attendancePeriod),
@@ -965,29 +1145,35 @@ export function usePayrollState({
 
     const generated = years.flatMap((year) => getPhilippineHolidaysByYear(year));
 
-    const inRange = generated.filter((holiday) =>
-      isIsoDateWithinRange(
-        holiday.date,
-        payrollDateRange.start,
-        payrollDateRange.end,
-      ),
-    );
-
-    if (inRange.length === 0) {
+    if (generated.length === 0) {
       toast.info("No PH holidays in this payroll range", {
-        description: `${fromYear} to ${toYear} generated 0 holiday(s) inside ${payrollDateRange.start} to ${payrollDateRange.end}.`,
+        description: `No built-in Philippine holidays were generated for ${fromYear}${fromYear === toYear ? "" : ` to ${toYear}`}.`,
       });
       return;
     }
 
-    setPaidHolidays((prev) => mergeHolidayItems(prev, inRange));
+    setPaidHolidays((prev) => {
+      const retainedManualHolidays = prev.filter(
+        (holiday) => holiday.source === "manual",
+      );
+      const retainedOutsideYearPhHolidays = prev.filter(
+        (holiday) =>
+          holiday.source === "ph" &&
+          !years.includes(Number.parseInt(holiday.date.slice(0, 4), 10)),
+      );
+
+      return mergeHolidayItems(
+        [...retainedManualHolidays, ...retainedOutsideYearPhHolidays],
+        generated,
+      );
+    });
 
     toast.success("Philippine holidays loaded", {
-      description: `${inRange.length} holiday(s) merged for ${payrollDateRange.start} to ${payrollDateRange.end}.`,
+      description: `${generated.length} holiday(s) merged for ${fromYear}${fromYear === toYear ? "" : ` to ${toYear}`}.`,
     });
   }
 
-  function openPayrollEditModal(row: PayrollRow) {
+  function openPayrollEditModal(row: PayrollRow, displayRow?: PayrollRow) {
     const existingOverride = payrollOverrides[row.id];
     const baseRow =
       payrollBaseComputedRows.find((candidate) => candidate.id === row.id) ?? row;
@@ -995,6 +1181,7 @@ export function usePayrollState({
 
     setPayrollSaveNotice(null);
     setEditingPayrollRowId(row.id);
+    setEditingPayrollDisplayRow(displayRow ?? baseRow);
     const sanitizedLogHours = Object.fromEntries(
       Object.entries(existingOverride?.logHours ?? {})
         .filter(([, value]) => Number.isFinite(value))
@@ -1021,6 +1208,7 @@ export function usePayrollState({
 
   function closePayrollEditModal() {
     setEditingPayrollRowId(null);
+    setEditingPayrollDisplayRow(null);
     setPayrollEditDraft(null);
     setLogHourOverrides({});
     document.body.style.overflow = "auto";
@@ -1082,8 +1270,14 @@ export function usePayrollState({
       adjustments?.paidLeaveEntries ?? existingOverride?.paidLeaveEntries,
     );
     const nextCashAdvanceTotal = sumCashAdvance(nextCashAdvanceEntries);
-    const nextOvertimeEntriesPayTotal = sumOvertimePay(nextOvertimeEntries);
-    const nextOvertimeEntriesHoursTotal = sumOvertimeHours(nextOvertimeEntries);
+    const nextOvertimeEntriesPayTotal = sumOvertimePay(
+      nextOvertimeEntries,
+      "approved",
+    );
+    const nextOvertimeEntriesHoursTotal = sumOvertimeHours(
+      nextOvertimeEntries,
+      "approved",
+    );
     const nextPaidLeaveEntriesPayTotal = sumPaidLeavePay(nextPaidLeaveEntries);
 
     setPayrollOverrides((prev) => ({
@@ -1130,6 +1324,7 @@ export function usePayrollState({
   }
 
   return {
+    dailyRows,
     payrollRoleRates,
     setPayrollRoleRates,
     payrollGenerated,

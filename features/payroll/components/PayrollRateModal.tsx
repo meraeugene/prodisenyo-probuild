@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { saveEmployeeBranchRatesAction } from "@/actions/payrollRates";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
 import { buildVisiblePages } from "@/features/shared/pagination";
-import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
+import {
+  extractSiteName,
+  formatPayrollNumber,
+} from "@/features/payroll/utils/payrollFormatters";
 import { buildEmployeeBranchRateKey } from "@/features/payroll/utils/payrollMappers";
 
 interface PayrollRateModalProps {
@@ -28,13 +31,14 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           worker: row.worker,
           role: row.role,
           site: row.site,
+          siteLabel: extractSiteName(row.site) || row.site,
           key: buildEmployeeBranchRateKey(row.worker, row.role, row.site),
           fallbackRate: Number(
             ((row.customRate ?? row.defaultRate) * 8).toFixed(2),
           ),
         }))
         .sort((a, b) => {
-          const bySite = a.site.localeCompare(b.site);
+          const bySite = a.siteLabel.localeCompare(b.siteLabel);
           if (bySite !== 0) return bySite;
           const byWorker = a.worker.localeCompare(b.worker);
           if (byWorker !== 0) return byWorker;
@@ -68,7 +72,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
       return (
         row.worker.toLowerCase().includes(normalizedQuery) ||
         row.role.toLowerCase().includes(normalizedQuery) ||
-        row.site.toLowerCase().includes(normalizedQuery)
+        row.siteLabel.toLowerCase().includes(normalizedQuery)
       );
     });
   }, [editableRows, searchTerm, branchFilter, branchCountByEmployee]);
@@ -220,7 +224,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-apple-ash">{row.role}</td>
-                    <td className="px-4 py-3 text-apple-ash">{row.site}</td>
+                    <td className="px-4 py-3 text-apple-ash">{row.siteLabel}</td>
                     <td className="px-4 py-3">
                       <input
                         type="number"

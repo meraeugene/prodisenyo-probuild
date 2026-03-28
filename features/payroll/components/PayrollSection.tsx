@@ -32,6 +32,8 @@ import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollS
 import PaidHolidayModal from "@/features/payroll/components/PaidHolidayModal";
 import { buildVisiblePages } from "@/features/shared/pagination";
 import {
+  allocateCombinedBranchPay,
+  buildEditingPayrollLogs,
   computeDaysWorked,
   FIXED_PAY_RATE_PER_DAY,
 } from "@/features/payroll/utils/payrollSelectors";
@@ -39,8 +41,11 @@ import {
   extractPayrollPeriod,
   extractSiteName,
   formatCompactPayrollPeriodLabel,
+  formatLogTime,
   formatPayrollNumber,
+  toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
+import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
 
 interface PayrollSectionProps {
   dailyRowsCount: number;
@@ -49,7 +54,12 @@ interface PayrollSectionProps {
   onGeneratePreview: () => void;
   onSavePayroll: () => void;
   currentPayrollRunId: string | null;
-  currentPayrollRunStatus: "draft" | "submitted" | "approved" | "rejected" | null;
+  currentPayrollRunStatus:
+    | "draft"
+    | "submitted"
+    | "approved"
+    | "rejected"
+    | null;
   currentUserRole: "ceo" | "payroll_manager" | null;
   savePending: boolean;
 }
@@ -64,6 +74,17 @@ interface GroupedEmployeePayrollRow {
   role: string;
   sites: PayrollRow[];
   totalHours: number;
+  totalPay: number;
+}
+
+interface GroupedEmployeeMetrics {
+  totalHours: number;
+  payableDays: number;
+  basePay: number;
+  paidHolidayPay: number;
+  approvedOvertimePay: number;
+  paidLeavePay: number;
+  cashAdvancePay: number;
   totalPay: number;
 }
 
@@ -163,10 +184,7 @@ function matchesGroupedEmployeeFilters(
   const normalizedNameFilter = filters.nameFilter.trim().toLowerCase();
   const normalizedDateFilter = filters.dateFilter.trim();
 
-  if (
-    filters.roleFilter !== "ALL" &&
-    employee.role !== filters.roleFilter
-  ) {
+  if (filters.roleFilter !== "ALL" && employee.role !== filters.roleFilter) {
     return false;
   }
 
@@ -220,26 +238,146 @@ function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string }> {
   );
 }
 
+function buildGroupedEmployeeCompensation(employee: GroupedEmployeePayrollRow) {
+  const breakdown = employee.sites.map((row) => ({
+    site: extractSiteName(row.site) || row.site || "Unknown Site",
+    hoursWorked: row.hoursWorked,
+    // Use the effective row rate (already normalized in payroll state)
+    // to avoid floating noise like 500.01 when the intended rate is 500.00.
+    dailyRatePerDay: row.rate * 8,
+  }));
+
+  return allocateCombinedBranchPay(breakdown);
+}
+
+function buildGroupedEmployeeMetrics(
+  employee: GroupedEmployeePayrollRow,
+  payroll: UsePayrollStateResult,
+): GroupedEmployeeMetrics {
+  const compensation = buildGroupedEmployeeCompensation(employee);
+  let approvedOvertimePay = 0;
+  let paidLeavePay = 0;
+  let cashAdvancePay = 0;
+
+  for (const row of employee.sites) {
+    const override = payroll.payrollOverrides[row.id];
+    if (!override) continue;
+
+    for (const entry of override.overtimeEntries ?? []) {
+      if ((entry.status ?? "pending") === "approved") {
+        approvedOvertimePay += entry.pay;
+      }
+    }
+
+    for (const entry of override.paidLeaveEntries ?? []) {
+      paidLeavePay += entry.pay;
+    }
+
+    for (const entry of override.cashAdvanceEntries ?? []) {
+      cashAdvancePay += entry.amount;
+    }
+  }
+
+  const paidHolidayPay = payroll.payableHolidayDays * FIXED_PAY_RATE_PER_DAY;
+  const totalPay = Math.max(
+    0,
+    compensation.totalBasePay +
+      paidHolidayPay +
+      approvedOvertimePay +
+      paidLeavePay -
+      cashAdvancePay,
+  );
+
+  return {
+    totalHours: compensation.totalWorkedHours,
+    payableDays: compensation.totalPayableDays,
+    basePay: compensation.totalBasePay,
+    paidHolidayPay,
+    approvedOvertimePay,
+    paidLeavePay,
+    cashAdvancePay,
+    totalPay,
+  };
+}
+
+function getGroupedEmployeeKey(employee: GroupedEmployeePayrollRow): string {
+  return normalizeEmployeeName(employee.name);
+}
+
 function buildPayslipRecord(
   employee: GroupedEmployeePayrollRow,
   periodLabel: string | null,
+  payroll: UsePayrollStateResult,
 ): PayslipExportRecord | null {
   const representativeRow = pickRepresentativeRow(employee.sites);
   if (!representativeRow) return null;
+  const compensation = buildGroupedEmployeeCompensation(employee);
+  const metrics = buildGroupedEmployeeMetrics(employee, payroll);
 
   const site = summarizeGroupedSites(employee.sites)
     .map((entry) => entry.site)
     .join(", ");
+  const displayRow: PayrollRow = {
+    ...representativeRow,
+    worker: employee.name,
+    role: employee.role,
+    site,
+    hoursWorked: metrics.totalHours,
+    overtimeHours: employee.sites.reduce(
+      (sum, row) => sum + row.overtimeHours,
+      0,
+    ),
+    regularPay: compensation.totalBasePay,
+    totalPay: metrics.totalPay,
+  };
+  const mergedLogOverrides = Object.values(payroll.payrollOverrides).reduce<
+    Record<string, number>
+  >((acc, override) => {
+    if (!override.logHours) return acc;
+    Object.assign(acc, override.logHours);
+    return acc;
+  }, {});
+  const employeeLogs = buildEditingPayrollLogs(
+    payroll.dailyRows,
+    displayRow,
+    representativeRow.date,
+  );
+  const holidayDateSet = new Set(
+    payroll.paidHolidays.map((holiday) => holiday.date),
+  );
 
   return {
     employee: employee.name,
     role: employee.role,
     site: site || "-",
     period: periodLabel ?? representativeRow.date ?? "-",
-    daysWorked: computeDaysWorked(employee.totalHours),
-    totalHours: employee.totalHours,
-    ratePerDay: FIXED_PAY_RATE_PER_DAY,
-    totalPay: employee.totalPay,
+    daysWorked: metrics.payableDays,
+    totalHours: metrics.totalHours,
+    ratePerDay:
+      compensation.totalPayableDays > 0
+        ? compensation.totalBasePay / compensation.totalPayableDays
+        : 0,
+    totalPay: metrics.totalPay,
+    attendanceLogs: employeeLogs.map((log) => {
+      const overrideHours = mergedLogOverrides[getLogOverrideKey(log)];
+      const nextHours =
+        Number.isFinite(overrideHours) && overrideHours >= 0
+          ? overrideHours
+          : log.hours;
+
+      return {
+        dateLabel: toWeekLabel(log.date),
+        site: extractSiteName(log.site) || "-",
+        time1In: formatLogTime(log.time1In),
+        time1Out: formatLogTime(log.time1Out),
+        time2In: formatLogTime(log.time2In),
+        time2Out: formatLogTime(log.time2Out),
+        otIn: formatLogTime(log.otIn),
+        otOut: formatLogTime(log.otOut),
+        hours: nextHours,
+        isPaidHoliday: holidayDateSet.has(log.date),
+      };
+    }),
   };
 }
 
@@ -269,13 +407,14 @@ export default function PayrollSection({
 
   const groupedPayrollRows = useMemo(
     () =>
-      groupByEmployee(payroll.payrollRows, payroll.payrollSort).filter((employee) =>
-        matchesGroupedEmployeeFilters(employee, {
-          siteFilter: payroll.payrollSiteFilter,
-          roleFilter: payroll.payrollRoleFilter,
-          nameFilter: payroll.payrollNameFilter,
-          dateFilter: payroll.payrollDateFilter,
-        }),
+      groupByEmployee(payroll.payrollRows, payroll.payrollSort).filter(
+        (employee) =>
+          matchesGroupedEmployeeFilters(employee, {
+            siteFilter: payroll.payrollSiteFilter,
+            roleFilter: payroll.payrollRoleFilter,
+            nameFilter: payroll.payrollNameFilter,
+            dateFilter: payroll.payrollDateFilter,
+          }),
       ),
     [
       payroll.payrollRows,
@@ -351,24 +490,24 @@ export default function PayrollSection({
     return formatCompactPayrollPeriodLabel(start, end);
   }, [payroll.payrollRows]);
 
-  const groupedPayrollTotals = useMemo(
-    () =>
-      groupedPayrollRows.reduce(
-        (acc, row) => {
-          acc.pay += row.totalPay;
-          return acc;
-        },
-        { pay: 0 },
-      ),
-    [groupedPayrollRows],
-  );
+  const groupedPayrollTotals = useMemo(() => {
+    let totalPay = 0;
+
+    for (const employee of groupedPayrollRows) {
+      totalPay += buildGroupedEmployeeMetrics(employee, payroll).totalPay;
+    }
+
+    return { pay: totalPay };
+  }, [groupedPayrollRows, payroll]);
 
   const groupedPayslipRecords = useMemo(
     () =>
       groupedPayrollRows
-        .map((employee) => buildPayslipRecord(employee, payrollPeriodLabel))
+        .map((employee) =>
+          buildPayslipRecord(employee, payrollPeriodLabel, payroll),
+        )
         .filter((record): record is PayslipExportRecord => Boolean(record)),
-    [groupedPayrollRows, payrollPeriodLabel],
+    [groupedPayrollRows, payrollPeriodLabel, payroll],
   );
 
   function handleExportAllPayslips() {
@@ -439,7 +578,7 @@ export default function PayrollSection({
 
   return (
     <section
-      className="animate-fade-up"
+      className="animate-fade-up mt-4"
       style={{ animationFillMode: "both", animationDelay: "80ms" }}
     >
       <div className="rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
@@ -466,7 +605,8 @@ export default function PayrollSection({
               Generate Payroll
             </h2>
             <p className="text-sm text-apple-smoke mt-1">
-              Generate a preview after reviewing attendance logs, then save the official payroll record for this period.
+              Generate a preview after reviewing attendance logs, then save the
+              official payroll record for this period.
             </p>
             {/* {payroll.payrollSaveNotice && (
               <p className="mt-2 text-xs font-semibold text-green-700">
@@ -715,14 +855,25 @@ export default function PayrollSection({
                           const siteBreakdown = summarizeGroupedSites(
                             employee.sites,
                           );
-                          const employeeDaysWorked = computeDaysWorked(
-                            employee.totalHours,
+                          const employeeMetrics = buildGroupedEmployeeMetrics(
+                            employee,
+                            payroll,
                           );
-                          const employeeTotalPay = employee.totalPay;
-                          const employeeDailyRate = FIXED_PAY_RATE_PER_DAY;
+                          const employeeDaysWorked = employeeMetrics.payableDays;
+                          const employeeTotalPay = employeeMetrics.totalPay;
+                          const positiveRateRow =
+                            employee.sites.find(
+                              (row) =>
+                                Number.isFinite(row.rate) && row.rate > 0,
+                            ) ?? representativeRow;
+                          const employeeDailyRate =
+                            positiveRateRow && positiveRateRow.rate > 0
+                              ? Number((positiveRateRow.rate * 8).toFixed(2))
+                              : FIXED_PAY_RATE_PER_DAY;
                           const employeePayslipRecord = buildPayslipRecord(
                             employee,
                             payrollPeriodLabel,
+                            payroll,
                           );
 
                           return (
@@ -1012,11 +1163,41 @@ ${
               <button
                 type="button"
                 onClick={() => {
-                  const selectedRow = groupedPayrollRows
-                    .flatMap((employee) => employee.sites)
-                    .find((row) => row.id === openActionMenuId);
-                  if (!selectedRow) return;
-                  payroll.openPayrollEditModal(selectedRow);
+                  const selectedEmployee = groupedPayrollRows.find(
+                    (employee) =>
+                      (pickRepresentativeRow(employee.sites)?.id ??
+                        employee.name) === openActionMenuId,
+                  );
+                  if (!selectedEmployee) return;
+
+                  const representativeRow = pickRepresentativeRow(
+                    selectedEmployee.sites,
+                  );
+                  if (!representativeRow) return;
+
+                  const compensation =
+                    buildGroupedEmployeeCompensation(selectedEmployee);
+                  const metrics = buildGroupedEmployeeMetrics(
+                    selectedEmployee,
+                    payroll,
+                  );
+                  const displayRow: PayrollRow = {
+                    ...representativeRow,
+                    worker: selectedEmployee.name,
+                    role: selectedEmployee.role,
+                    site: summarizeGroupedSites(selectedEmployee.sites)
+                      .map((entry) => entry.site)
+                      .join(", "),
+                    hoursWorked: metrics.totalHours,
+                    overtimeHours: selectedEmployee.sites.reduce(
+                      (sum, row) => sum + row.overtimeHours,
+                      0,
+                    ),
+                    regularPay: compensation.totalBasePay,
+                    totalPay: metrics.totalPay,
+                  };
+
+                  payroll.openPayrollEditModal(representativeRow, displayRow);
                   setOpenActionMenuId(null);
                   setActionMenuPosition(null);
                 }}
@@ -1030,11 +1211,15 @@ ${
                 onClick={() => {
                   const selectedEmployee = groupedPayrollRows.find(
                     (employee) =>
-                      (pickRepresentativeRow(employee.sites)?.id ?? employee.name) ===
-                      openActionMenuId,
+                      (pickRepresentativeRow(employee.sites)?.id ??
+                        employee.name) === openActionMenuId,
                   );
                   const payslipRecord = selectedEmployee
-                    ? buildPayslipRecord(selectedEmployee, payrollPeriodLabel)
+                    ? buildPayslipRecord(
+                        selectedEmployee,
+                        payrollPeriodLabel,
+                        payroll,
+                      )
                     : null;
                   if (!payslipRecord) return;
                   void exportEmployeePayslipToPdf(payslipRecord);

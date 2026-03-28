@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Clock3, Loader2, MapPin, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  MapPin,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
@@ -11,7 +17,12 @@ import {
 
 interface PendingOvertimeRequest {
   id: string;
-  payroll_run_id: string;
+  payroll_run_id: string | null;
+  attendance_import_id: string | null;
+  employee_name: string | null;
+  role_code: string | null;
+  site_name: string | null;
+  period_label: string | null;
   quantity: number;
   amount: number;
   notes: string | null;
@@ -41,7 +52,8 @@ interface PendingOvertimeRequest {
 
 interface PayrollApprovalQueueProps {
   role: "ceo" | "payroll_manager" | null;
-  onRequestResolved?: (runId: string) => void;
+  onRequestResolved?: (runId: string | null) => void;
+  refreshToken?: number;
 }
 
 function formatMoney(value: number): string {
@@ -115,13 +127,18 @@ function ApprovalQueueSkeleton() {
 export default function PayrollApprovalQueue({
   role,
   onRequestResolved,
+  refreshToken = 0,
 }: PayrollApprovalQueueProps) {
   const [pendingRequests, setPendingRequests] = useState<
     PendingOvertimeRequest[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [pendingActionType, setPendingActionType] = useState<
+    "approve" | "reject" | null
+  >(null);
   const [isPending, startTransition] = useTransition();
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,7 +155,7 @@ export default function PayrollApprovalQueue({
       const { data, error } = await supabase
         .from("payroll_adjustments")
         .select(
-          "id, payroll_run_id, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
+          "id, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
         )
         .eq("adjustment_type", "overtime")
         .eq("status", "pending")
@@ -162,7 +179,7 @@ export default function PayrollApprovalQueue({
     return () => {
       cancelled = true;
     };
-  }, [role]);
+  }, [role, refreshToken, reloadNonce]);
 
   const hasRequests = useMemo(
     () => pendingRequests.length > 0,
@@ -171,6 +188,7 @@ export default function PayrollApprovalQueue({
 
   function handleAction(adjustmentId: string, action: "approve" | "reject") {
     setPendingActionId(adjustmentId);
+    setPendingActionType(action);
     startTransition(async () => {
       try {
         const result =
@@ -195,6 +213,7 @@ export default function PayrollApprovalQueue({
         );
       } finally {
         setPendingActionId(null);
+        setPendingActionType(null);
       }
     });
   }
@@ -233,9 +252,18 @@ export default function PayrollApprovalQueue({
           pendingRequests.map((request) => {
             const run = getRelationValue(request.payroll_runs);
             const item = getRelationValue(request.payroll_run_items);
-            const busy = isPending && pendingActionId === request.id;
+            const rowBusy = isPending && pendingActionId === request.id;
+            const rejectBusy = rowBusy && pendingActionType === "reject";
+            const approveBusy = rowBusy && pendingActionType === "approve";
             const siteLabel =
-              item?.site_name?.trim() || run?.site_name || "Unknown Site";
+              item?.site_name?.trim() ||
+              request.site_name?.trim() ||
+              run?.site_name ||
+              "Unknown Site";
+            const employeeLabel =
+              item?.employee_name ?? request.employee_name ?? "Unknown Employee";
+            const periodLabel =
+              run?.period_label ?? request.period_label ?? "Unknown Period";
 
             return (
               <div
@@ -247,7 +275,7 @@ export default function PayrollApprovalQueue({
                     {/* Header: Name & Status */}
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
-                        {item?.employee_name ?? "Unknown Employee"}
+                        {employeeLabel}
                       </h3>
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-inset ring-amber-200/40">
                         <Clock3 size={12} strokeWidth={2.5} />
@@ -263,7 +291,7 @@ export default function PayrollApprovalQueue({
                       </div>
                       <div className="hidden h-3 w-px bg-apple-mist lg:block" />
                       <div className="font-medium">
-                        {run?.period_label ?? "Unknown Period"}
+                        {periodLabel}
                       </div>
                     </div>
 
@@ -307,11 +335,11 @@ export default function PayrollApprovalQueue({
                     <button
                       type="button"
                       onClick={() => handleAction(request.id, "reject")}
-                      disabled={busy}
+                      disabled={rowBusy}
                       className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-bold text-red-600 transition-colors bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
                       aria-label={`Reject overtime request for ${item?.employee_name ?? "employee"}`}
                     >
-                      {busy ? (
+                      {rejectBusy ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <XCircle size={16} />
@@ -322,11 +350,11 @@ export default function PayrollApprovalQueue({
                     <button
                       type="button"
                       onClick={() => handleAction(request.id, "approve")}
-                      disabled={busy}
+                      disabled={rowBusy}
                       className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
                       aria-label={`Approve overtime request for ${item?.employee_name ?? "employee"}`}
                     >
-                      {busy ? (
+                      {approveBusy ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <CheckCircle2 size={16} />

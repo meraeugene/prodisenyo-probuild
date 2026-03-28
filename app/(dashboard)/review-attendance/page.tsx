@@ -1,11 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import AttendanceReviewSection from "@/features/attendance/components/AttendanceReviewSection";
 import { useAppState } from "@/features/app/AppStateProvider";
 
 export default function ReviewAttendancePage() {
-  const { records, site, attendance } = useAppState();
+  const router = useRouter();
+  const { records, site, attendance, workspaceReset } = useAppState();
+
+  useEffect(() => {
+    if (workspaceReset || records.length === 0) {
+      router.replace("/upload-attendance");
+    }
+  }, [records.length, router, workspaceReset]);
+
+  if (workspaceReset || records.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-4">

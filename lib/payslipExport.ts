@@ -16,6 +16,20 @@ export interface PayslipExportRecord {
   totalHours: number;
   ratePerDay: number;
   totalPay: number;
+  attendanceLogs: PayslipAttendanceLogRecord[];
+}
+
+export interface PayslipAttendanceLogRecord {
+  dateLabel: string;
+  site: string;
+  time1In: string;
+  time1Out: string;
+  time2In: string;
+  time2Out: string;
+  otIn: string;
+  otOut: string;
+  hours: number;
+  isPaidHoliday?: boolean;
 }
 
 function buildExportFilename(prefix: string): string {
@@ -167,9 +181,11 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const generatedAt = new Date().toLocaleString("en-PH");
+  let pageNumber = 0;
 
   records.forEach((record, index) => {
     const page = pdfDoc.addPage([595.28, 841.89]);
+    pageNumber += 1;
     const { width, height } = page.getSize();
     const margin = 36;
     const contentWidth = width - margin * 2;
@@ -192,7 +208,7 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
       color: palette.background,
     });
 
-    const headerHeight = 112;
+    const headerHeight = 88;
     const headerBottom = height - headerHeight;
 
     page.drawRectangle({
@@ -205,15 +221,15 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
 
     page.drawText("PRODISENYO", {
       x: margin,
-      y: height - 42,
-      size: 22,
+      y: height - 36,
+      size: 19,
       font: fontBold,
       color: palette.white,
     });
     page.drawText("Employee Payslip", {
       x: margin,
-      y: height - 66,
-      size: 12,
+      y: height - 54,
+      size: 10.5,
       font: fontRegular,
       color: palette.white,
     });
@@ -227,8 +243,8 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
       page,
       `Payslip No: ${payslipNo}`,
       width - margin,
-      height - 44,
-      10,
+      height - 36,
+      9,
       fontBold,
       palette.white,
     );
@@ -236,8 +252,8 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
       page,
       `Issued: ${new Date().toLocaleDateString("en-PH")}`,
       width - margin,
-      height - 62,
-      10,
+      height - 52,
+      9,
       fontRegular,
       palette.white,
     );
@@ -417,44 +433,192 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
       earningsY = rowBottom;
     });
 
-    currentTop = earningsCardBottom - 18;
+    currentTop = earningsCardBottom - 14;
 
-    const noteText =
-      "This payslip is system-generated and valid without a physical signature. Please verify details with Payroll Administration for any concerns.";
-    const noteLines = wrapTextToWidth(noteText, contentWidth - 24, fontRegular, 9.5);
-    const noteHeight = 28 + noteLines.length * 12;
-    const noteBottom = currentTop - noteHeight;
+    const attendanceLogs = record.attendanceLogs.slice(0, 10);
+    const attendanceCardHeight = 222;
+    const attendanceCardBottom = currentTop - attendanceCardHeight;
+    const legendItems = [
+      {
+        label: "Paid Holiday",
+        color: rgb(0.9, 0.96, 1),
+        border: rgb(0.55, 0.77, 0.95),
+      },
+      {
+        label: "Under 8h",
+        color: rgb(1, 0.97, 0.88),
+        border: rgb(0.96, 0.8, 0.36),
+      },
+      {
+        label: "Overtime",
+        color: rgb(0.9, 0.97, 0.92),
+        border: rgb(0.45, 0.78, 0.53),
+      },
+    ];
 
     page.drawRectangle({
       x: margin,
-      y: noteBottom,
+      y: attendanceCardBottom,
       width: contentWidth,
-      height: noteHeight,
-      color: rgb(0.985, 0.985, 0.985),
+      height: attendanceCardHeight,
+      color: palette.white,
       borderColor: palette.border,
       borderWidth: 1,
     });
-    page.drawText("Notes", {
-      x: margin + 12,
-      y: currentTop - 16,
-      size: 10,
-      font: fontBold,
-      color: palette.muted,
+    page.drawRectangle({
+      x: margin,
+      y: currentTop - 28,
+      width: contentWidth,
+      height: 28,
+      color: palette.brandLight,
     });
-    noteLines.forEach((line, lineIndex) => {
-      page.drawText(line, {
-        x: margin + 12,
-        y: currentTop - 32 - lineIndex * 12,
-        size: 9.5,
+    page.drawText("Attendance Logs", {
+      x: margin + 12,
+      y: currentTop - 18,
+      size: 10.5,
+      font: fontBold,
+      color: palette.brand,
+    });
+
+    let legendX = margin + 150;
+    legendItems.forEach((item) => {
+      page.drawRectangle({
+        x: legendX,
+        y: currentTop - 22,
+        width: 10,
+        height: 10,
+        color: item.color,
+        borderColor: item.border,
+        borderWidth: 0.8,
+      });
+      page.drawText(item.label, {
+        x: legendX + 14,
+        y: currentTop - 20,
+        size: 7.4,
         font: fontRegular,
         color: palette.muted,
       });
+      legendX += item.label === "Paid Holiday" ? 72 : 58;
     });
 
+    const tableColumns = [
+      { key: "dateLabel", label: "DATE", width: 50 },
+      { key: "site", label: "SITE", width: 56 },
+      { key: "time1In", label: "IN 1", width: 44 },
+      { key: "time1Out", label: "OUT 1", width: 46 },
+      { key: "time2In", label: "IN 2", width: 44 },
+      { key: "time2Out", label: "OUT 2", width: 46 },
+      { key: "otIn", label: "OT IN", width: 46 },
+      { key: "otOut", label: "OT OUT", width: 50 },
+      { key: "hours", label: "HRS", width: 42 },
+    ] as const;
+    const rowHeight = 17;
+    const headerY = currentTop - 42;
+    const tableX = margin + 10;
+
+    page.drawRectangle({
+      x: tableX,
+      y: headerY - rowHeight,
+      width: tableColumns.reduce((sum, column) => sum + column.width, 0),
+      height: rowHeight,
+      color: rgb(0.97, 0.98, 0.97),
+      borderColor: palette.border,
+      borderWidth: 0.8,
+    });
+
+    let columnX = tableX;
+    tableColumns.forEach((column) => {
+      page.drawText(column.label, {
+        x: columnX + 3,
+        y: headerY - 11,
+        size: 6.9,
+        font: fontBold,
+        color: palette.muted,
+      });
+      columnX += column.width;
+    });
+
+    let rowTopY = headerY - rowHeight;
+    attendanceLogs.forEach((log, rowIndex) => {
+      const isUnderHours = log.hours > 0 && log.hours < 8;
+      const isOvertime = log.otIn !== "-" || log.otOut !== "-";
+      const rowColor = log.isPaidHoliday
+        ? rgb(0.9, 0.96, 1)
+        : isUnderHours
+          ? rgb(1, 0.97, 0.88)
+          : isOvertime
+            ? rgb(0.9, 0.97, 0.92)
+            : rowIndex % 2 === 0
+              ? palette.white
+              : rgb(0.985, 0.99, 0.985);
+      const rowBottomY = rowTopY - rowHeight;
+
+      page.drawRectangle({
+        x: tableX,
+        y: rowBottomY,
+        width: tableColumns.reduce((sum, column) => sum + column.width, 0),
+        height: rowHeight,
+        color: rowColor,
+        borderColor: palette.border,
+        borderWidth: 0.5,
+      });
+
+      const values = [
+        log.dateLabel,
+        log.site,
+        log.time1In,
+        log.time1Out,
+        log.time2In,
+        log.time2Out,
+        log.otIn,
+        log.otOut,
+        log.hours.toFixed(2).replace(/\.00$/, ""),
+      ];
+
+      let valueX = tableX;
+      values.forEach((value, valueIndex) => {
+        if (valueIndex === values.length - 1) {
+          drawTextRightAligned(
+            page,
+            value || "-",
+            valueX + tableColumns[valueIndex].width - 4,
+            rowBottomY + 5,
+            7.2,
+            fontRegular,
+            palette.ink,
+          );
+        } else {
+          page.drawText(value || "-", {
+            x: valueX + 3,
+            y: rowBottomY + 5,
+            size: 7.2,
+            font: fontRegular,
+            color: palette.ink,
+          });
+        }
+        valueX += tableColumns[valueIndex].width;
+      });
+
+      rowTopY = rowBottomY;
+    });
+
+    if (record.attendanceLogs.length > attendanceLogs.length) {
+      page.drawText(
+        `Showing first ${attendanceLogs.length} attendance rows in the PDF export.`,
+        {
+          x: margin + 12,
+          y: attendanceCardBottom + 26,
+          size: 7.6,
+          font: fontRegular,
+          color: palette.muted,
+        },
+      );
+    }
+
     const signatureY = 92;
-    const signatureWidth = 170;
-    const leftSignatureX = margin + 24;
-    const rightSignatureX = width - margin - 24 - signatureWidth;
+    const signatureWidth = 150;
+    const leftSignatureX = margin + 18;
+    const rightSignatureX = width - margin - 18 - signatureWidth;
 
     page.drawLine({
       start: { x: leftSignatureX, y: signatureY },
@@ -469,16 +633,16 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
       color: palette.muted,
     });
     page.drawText("Employee Signature", {
-      x: leftSignatureX + 32,
+      x: leftSignatureX + 22,
       y: signatureY - 14,
-      size: 9,
+      size: 8.5,
       font: fontRegular,
       color: palette.muted,
     });
     page.drawText("Authorized Signature", {
-      x: rightSignatureX + 30,
+      x: rightSignatureX + 18,
       y: signatureY - 14,
-      size: 9,
+      size: 8.5,
       font: fontRegular,
       color: palette.muted,
     });
@@ -498,7 +662,7 @@ async function createPayslipPdf(records: PayslipExportRecord[]): Promise<Uint8Ar
     });
     drawTextRightAligned(
       page,
-      `Page ${index + 1} of ${records.length}`,
+      `Page ${pageNumber}`,
       width - margin,
       38,
       8.8,
@@ -521,6 +685,30 @@ function buildEmployeeSheet(record: PayslipExportRecord): XLSX.WorkSheet {
     ["Total Hours", Number(record.totalHours.toFixed(2))],
     ["Rate/Day", toPeso(record.ratePerDay)],
     ["Total Pay", toPeso(record.totalPay)],
+    [],
+    ["Attendance Logs"],
+    [
+      "Date/Week",
+      "Site",
+      "Time1 In",
+      "Time1 Out",
+      "Time2 In",
+      "Time2 Out",
+      "OT In",
+      "OT Out",
+      "Hours",
+    ],
+    ...record.attendanceLogs.map((log) => [
+      log.dateLabel,
+      log.site,
+      log.time1In,
+      log.time1Out,
+      log.time2In,
+      log.time2Out,
+      log.otIn,
+      log.otOut,
+      Number(log.hours.toFixed(2)),
+    ]),
   ];
 
   return XLSX.utils.aoa_to_sheet(rows);

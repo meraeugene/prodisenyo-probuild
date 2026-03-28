@@ -28,6 +28,7 @@ export interface Database {
           username: string;
           email: string;
           full_name: string | null;
+          avatar_path: string | null;
           role: AppRole;
           is_active: boolean;
           created_at: string;
@@ -38,6 +39,7 @@ export interface Database {
           username: string;
           email: string;
           full_name?: string | null;
+          avatar_path?: string | null;
           role?: AppRole;
           is_active?: boolean;
           created_at?: string;
@@ -47,6 +49,7 @@ export interface Database {
           username?: string;
           email?: string;
           full_name?: string | null;
+          avatar_path?: string | null;
           role?: AppRole;
           is_active?: boolean;
           updated_at?: string;
@@ -350,8 +353,17 @@ export interface Database {
       payroll_adjustments: {
         Row: {
           id: string;
-          payroll_run_id: string;
+          payroll_run_id: string | null;
           payroll_run_item_id: string | null;
+          attendance_import_id: string | null;
+          employee_name: string | null;
+          employee_name_key: string | null;
+          role_code: string | null;
+          site_name: string | null;
+          site_name_key: string | null;
+          period_label: string | null;
+          period_start: string | null;
+          period_end: string | null;
           adjustment_type: AdjustmentType;
           status: AdjustmentStatus;
           requested_by: string;
@@ -365,8 +377,17 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          payroll_run_id: string;
+          payroll_run_id?: string | null;
           payroll_run_item_id?: string | null;
+          attendance_import_id?: string | null;
+          employee_name?: string | null;
+          employee_name_key?: string | null;
+          role_code?: string | null;
+          site_name?: string | null;
+          site_name_key?: string | null;
+          period_label?: string | null;
+          period_start?: string | null;
+          period_end?: string | null;
           adjustment_type: AdjustmentType;
           status?: AdjustmentStatus;
           requested_by: string;
@@ -379,7 +400,17 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          payroll_run_id?: string | null;
           payroll_run_item_id?: string | null;
+          attendance_import_id?: string | null;
+          employee_name?: string | null;
+          employee_name_key?: string | null;
+          role_code?: string | null;
+          site_name?: string | null;
+          site_name_key?: string | null;
+          period_label?: string | null;
+          period_start?: string | null;
+          period_end?: string | null;
           adjustment_type?: AdjustmentType;
           status?: AdjustmentStatus;
           approved_by?: string | null;

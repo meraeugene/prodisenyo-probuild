@@ -1,14 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowUp,
   BadgeCheck,
   Check,
-  Ellipsis,
+  RefreshCw,
   Receipt,
-  RefreshCcw,
-  Upload,
   Wallet,
 } from "lucide-react";
 import {
@@ -25,10 +24,12 @@ import {
 } from "recharts";
 import ChartTooltip from "@/components/charts/ChartTooltip";
 import { DashboardOverviewSkeleton } from "@/components/dashboard/DashboardLoadingSkeleton";
+import { useAppState } from "@/features/app/AppStateProvider";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const OVERVIEW_CHART_COLORS = [
   "rgb(var(--theme-chart-1))",
@@ -45,13 +46,26 @@ function extractBranchName(value: string): string {
 }
 
 export default function OverviewPage() {
-  const { data, loading, error } = useHistoricalDashboardData();
+  const router = useRouter();
+  const { currentPayrollRunId, workspaceReset } = useAppState();
+  const {
+    data,
+    loading,
+    error,
+    selectedPeriodKey,
+    setSelectedPeriodKey,
+    refreshData,
+  } = useHistoricalDashboardData();
+  const [role, setRole] = useState<"ceo" | "payroll_manager" | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const payrollRows = data?.payrollRows ?? [];
   const payrollAttendanceInputs = data?.payrollAttendanceInputs ?? [];
-  const attendancePeriod = data?.attendancePeriod ?? "No recorded payroll period yet";
+  const attendancePeriod =
+    data?.attendancePeriod ?? "No recorded payroll period yet";
   const records = data?.records ?? [];
   const availableSites = data?.availableSites ?? [];
   const activityRows = data?.recentActivity ?? [];
+  const periodOptions = data?.periodOptions ?? [];
 
   const payrollInsights = useMemo(
     () => buildPayrollInsightsData(payrollRows, payrollAttendanceInputs),
@@ -105,8 +119,62 @@ export default function OverviewPage() {
 
   const shouldShowSkeleton = loading && !data && !error;
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRole() {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) {
+        setRole(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+      setRole(
+        (data as { role: "ceo" | "payroll_manager" } | null)?.role ?? null,
+      );
+    }
+
+    void loadRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (role !== "payroll_manager") return;
+    if (!workspaceReset && currentPayrollRunId) return;
+    router.replace("/upload-attendance");
+  }, [currentPayrollRunId, role, router, workspaceReset]);
+
   if (shouldShowSkeleton) {
     return <DashboardOverviewSkeleton />;
+  }
+
+  if (role === "payroll_manager" && (workspaceReset || !currentPayrollRunId)) {
+    return <DashboardOverviewSkeleton />;
+  }
+
+  async function handleSync() {
+    setIsRefreshing(true);
+    try {
+      refreshData();
+      router.refresh();
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
+    } finally {
+      setIsRefreshing(false);
+    }
   }
 
   return (
@@ -125,25 +193,42 @@ export default function OverviewPage() {
                 Synced <ArrowUp size={12} />
               </span>
             </div>
+            <p className="mt-3 text-sm text-white/70">{attendancePeriod}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))]">
-              <span className="text-base leading-none">+</span>
-              Process
-            </button>
-            <button className="inline-flex h-10 items-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-medium text-white transition hover:bg-white/15">
-              <Upload size={14} />
-              Export
-            </button>
-            <button className="inline-flex h-10 items-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-medium text-white transition hover:bg-white/15">
-              <RefreshCcw size={14} />
-              Sync
-            </button>
-            <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/15">
-              <Ellipsis size={16} />
-            </button>
-          </div>
+          {periodOptions.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={selectedPeriodKey ?? ""}
+                onChange={(event) =>
+                  setSelectedPeriodKey(event.target.value || null)
+                }
+                className="h-10 min-w-[280px] rounded-xl border border-white/15 bg-white/10 px-3 text-sm font-medium text-white outline-none transition hover:bg-white/15 focus:border-white/30"
+              >
+                {periodOptions.map((option) => (
+                  <option
+                    key={option.key}
+                    value={option.key}
+                    className="text-apple-charcoal"
+                  >
+                    {option.label} - {option.siteName}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={handleSync}
+                disabled={isRefreshing || loading}
+                className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold  transition  focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60  text-[rgb(var(--apple-black))] hover:bg-[rgb(var(--apple-silver))]"
+              >
+                <RefreshCw
+                  size={16}
+                  className={isRefreshing ? "animate-spin" : ""}
+                />
+                Sync
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -435,11 +520,11 @@ export default function OverviewPage() {
       </section>
 
       <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-[15px] font-semibold text-apple-charcoal">
-              Recent Payroll Activity
-            </p>
-            <p className="text-xs text-emerald-500">{attendancePeriod}</p>
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-[15px] font-semibold text-apple-charcoal">
+            Recent Payroll Activity
+          </p>
+          <p className="text-xs text-emerald-500">{attendancePeriod}</p>
         </div>
 
         <div className="overflow-hidden rounded-[12px] border border-apple-mist">

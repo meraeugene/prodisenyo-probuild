@@ -18,6 +18,8 @@ export interface PayrollOvertimeEntry {
   hours: number;
   pay: number;
   notes: string;
+  status?: "pending" | "approved" | "rejected";
+  requestId?: string | null;
 }
 
 export interface PayrollPaidLeaveEntry {

@@ -41,6 +41,16 @@ export interface HistoricalDashboardDebug {
   availableSiteCount: number;
 }
 
+export interface HistoricalDashboardPeriodOption {
+  key: string;
+  label: string;
+  siteName: string;
+  status: PayrollRunStatus;
+  runId: string;
+  attendanceImportId: string | null;
+  createdAt: string;
+}
+
 export interface HistoricalDashboardData {
   employees: Employee[];
   records: AttendanceRecord[];
@@ -49,6 +59,10 @@ export interface HistoricalDashboardData {
   availableSites: string[];
   attendancePeriod: string;
   recentActivity: RecentPayrollActivityRow[];
+  periodOptions: HistoricalDashboardPeriodOption[];
+  selectedPeriodKey: string | null;
+  selectedPeriodLabel: string;
+  viewerRole: "ceo" | "payroll_manager" | null;
   debug: HistoricalDashboardDebug;
 }
 
@@ -56,6 +70,9 @@ interface HistoricalDashboardState {
   data: HistoricalDashboardData | null;
   loading: boolean;
   error: string | null;
+  selectedPeriodKey: string | null;
+  setSelectedPeriodKey: (value: string | null) => void;
+  refreshData: () => void;
 }
 
 function formatMoney(value: number): string {
@@ -272,13 +289,32 @@ function buildAttendancePeriod(
   );
 }
 
+function buildPeriodOptions(
+  trackedRuns: PayrollRunRow[],
+): HistoricalDashboardPeriodOption[] {
+  return trackedRuns.map((run) => ({
+    key: run.id,
+    label: run.period_label,
+    siteName: run.site_name,
+    status: run.status,
+    runId: run.id,
+    attendanceImportId: run.attendance_import_id,
+    createdAt: run.created_at,
+  }));
+}
+
 export function useHistoricalDashboardData(): HistoricalDashboardState {
   const { currentAttendanceImportId, currentPayrollRunId, workspaceReset } =
     useAppState();
+  const [selectedPeriodKey, setSelectedPeriodKey] = useState<string | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
   const [state, setState] = useState<HistoricalDashboardState>({
     data: null,
     loading: true,
     error: null,
+    selectedPeriodKey: null,
+    setSelectedPeriodKey: () => undefined,
+    refreshData: () => undefined,
   });
 
   useEffect(() => {
@@ -297,6 +333,9 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             data: null,
             loading: false,
             error: null,
+            selectedPeriodKey,
+            setSelectedPeriodKey,
+            refreshData: () => setRefreshTick((value) => value + 1),
           });
           return;
         }
@@ -326,6 +365,10 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               availableSites: [],
               attendancePeriod: "No recorded payroll period yet",
               recentActivity: [],
+              periodOptions: [],
+              selectedPeriodKey: null,
+              selectedPeriodLabel: "No recorded payroll period yet",
+              viewerRole: role ?? null,
               debug: {
                 attendanceImportCount: 0,
                 attendanceRecordCount: 0,
@@ -338,31 +381,18 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             },
             loading: false,
             error: null,
+            selectedPeriodKey: null,
+            setSelectedPeriodKey,
+            refreshData: () => setRefreshTick((value) => value + 1),
           });
           return;
         }
 
         const [
-          attendanceResult,
           employeesResult,
           importsResult,
           runsResult,
         ] = await Promise.all([
-          (() => {
-            const query = supabase
-              .from("attendance_records")
-              .select(
-                "id, import_id, employee_id, employee_name, log_date, log_time, log_type, log_source, site_name, created_at",
-              )
-              .order("log_date", { ascending: false })
-              .order("log_time", { ascending: false });
-
-            if (!isCeo && currentAttendanceImportId) {
-              return query.eq("import_id", currentAttendanceImportId);
-            }
-
-            return query;
-          })(),
           supabase
             .from("employees")
             .select(
@@ -376,11 +406,11 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               )
               .order("created_at", { ascending: false });
 
-            if (!isCeo && currentAttendanceImportId) {
-              return query.eq("id", currentAttendanceImportId).limit(1);
+            if (!isCeo) {
+              return query.eq("uploaded_by", user.id).limit(50);
             }
 
-            return query.limit(12);
+            return query.limit(50);
           })(),
           (() => {
             const query = supabase
@@ -390,8 +420,8 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               )
               .order("created_at", { ascending: false });
 
-            if (!isCeo && currentPayrollRunId) {
-              return query.eq("id", currentPayrollRunId).limit(1);
+            if (!isCeo) {
+              return query.eq("created_by", user.id).limit(100);
             }
 
             return query.limit(100);
@@ -399,14 +429,12 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
         ]);
 
         if (
-          attendanceResult.error ||
           employeesResult.error ||
           importsResult.error ||
           runsResult.error
         ) {
           throw new Error(
             [
-              attendanceResult.error?.message,
               employeesResult.error?.message,
               importsResult.error?.message,
               runsResult.error?.message,
@@ -416,13 +444,42 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           );
         }
 
-        const attendanceRows = (attendanceResult.data ??
-          []) as AttendanceRecordRow[];
         const employeeRows = (employeesResult.data ?? []) as EmployeeRow[];
         const importRows = (importsResult.data ?? []) as AttendanceImportRow[];
         const payrollRuns = (runsResult.data ?? []) as PayrollRunRow[];
         const trackedRuns = payrollRuns.filter((run) => run.status !== "rejected");
-        const trackedRunIds = trackedRuns.map((run) => run.id);
+        const periodOptions = buildPeriodOptions(trackedRuns);
+        const selectedRun =
+          trackedRuns.find((run) => run.id === selectedPeriodKey) ??
+          trackedRuns.find((run) => run.id === currentPayrollRunId) ??
+          trackedRuns[0] ??
+          null;
+        const effectiveImportId = isCeo
+          ? selectedRun?.attendance_import_id ?? null
+          : selectedRun?.attendance_import_id ??
+            currentAttendanceImportId ??
+            importRows[0]?.id ??
+            null;
+
+        const attendanceResult =
+          effectiveImportId
+            ? await supabase
+                .from("attendance_records")
+                .select(
+                  "id, import_id, employee_id, employee_name, log_date, log_time, log_type, log_source, site_name, created_at",
+                )
+                .eq("import_id", effectiveImportId)
+                .order("log_date", { ascending: false })
+                .order("log_time", { ascending: false })
+            : { data: [], error: null };
+
+        if (attendanceResult.error) {
+          throw new Error(
+            `[HISTORICAL_LOAD_ATTENDANCE_FAILED] ${attendanceResult.error.message}`,
+          );
+        }
+
+        const trackedRunIds = selectedRun ? [selectedRun.id] : [];
 
         const payrollItemsResult =
           trackedRunIds.length > 0
@@ -441,6 +498,8 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           );
         }
 
+        const attendanceRows = (attendanceResult.data ??
+          []) as AttendanceRecordRow[];
         const records = mapAttendanceRecords(attendanceRows);
         const trackedRunsById = new Map(trackedRuns.map((run) => [run.id, run]));
         const payrollRows = mapPayrollRows(
@@ -451,11 +510,17 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
         const employees = buildEmployeesFromAttendance(records);
         const availableSites = selectAvailableSites(records);
         const attendancePeriod = buildAttendancePeriod(
-          importRows[0] ?? null,
-          trackedRuns[0] ?? null,
+          importRows.find((entry) => entry.id === effectiveImportId) ?? importRows[0] ?? null,
+          selectedRun,
         );
 
         if (cancelled) return;
+
+        const resolvedSelectedPeriodKey = selectedRun?.id ?? null;
+
+        if (resolvedSelectedPeriodKey !== selectedPeriodKey) {
+          setSelectedPeriodKey(resolvedSelectedPeriodKey);
+        }
 
         setState({
           data: {
@@ -466,6 +531,10 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             availableSites,
             attendancePeriod,
             recentActivity: buildRecentActivity(payrollRows, trackedRuns),
+            periodOptions,
+            selectedPeriodKey: resolvedSelectedPeriodKey,
+            selectedPeriodLabel: attendancePeriod,
+            viewerRole: role ?? null,
             debug: {
               attendanceImportCount: importRows.length,
               attendanceRecordCount: attendanceRows.length,
@@ -478,6 +547,9 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           },
           loading: false,
           error: null,
+          selectedPeriodKey: resolvedSelectedPeriodKey,
+          setSelectedPeriodKey,
+          refreshData: () => setRefreshTick((value) => value + 1),
         });
       } catch (error) {
         if (cancelled) return;
@@ -489,6 +561,9 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             error instanceof Error
               ? error.message
               : "Unable to load dashboard history.",
+          selectedPeriodKey,
+          setSelectedPeriodKey,
+          refreshData: () => setRefreshTick((value) => value + 1),
         });
       }
     }
@@ -498,7 +573,18 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
     return () => {
       cancelled = true;
     };
-  }, [currentAttendanceImportId, currentPayrollRunId, workspaceReset]);
+  }, [
+    currentAttendanceImportId,
+    currentPayrollRunId,
+    refreshTick,
+    workspaceReset,
+    selectedPeriodKey,
+  ]);
 
-  return state;
+  return {
+    ...state,
+    refreshData: () => setRefreshTick((value) => value + 1),
+    selectedPeriodKey,
+    setSelectedPeriodKey,
+  };
 }

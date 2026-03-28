@@ -1,4 +1,5 @@
 import { normalizeRoleCode } from "@/lib/payrollConfig";
+import { extractSiteName } from "@/features/payroll/utils/payrollFormatters";
 import type { DailyLogRow } from "@/types";
 
 const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
@@ -37,7 +38,9 @@ export function normalizeEmployeeNameKey(name: string): string {
 }
 
 export function normalizeSiteKey(site: string): string {
-  return site.trim().toLowerCase().replace(/\s+/g, " ");
+  const extractedSite = extractSiteName(site);
+  const normalizedSource = extractedSite || site.trim();
+  return normalizedSource.toLowerCase().replace(/\s+/g, " ");
 }
 
 export function buildEmployeeBranchRateKey(

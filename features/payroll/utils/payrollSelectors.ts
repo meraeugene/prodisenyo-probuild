@@ -64,6 +64,27 @@ export interface IsoDateSpan {
   end: string;
 }
 
+export interface CombinedBranchPayInput {
+  site: string;
+  hoursWorked: number;
+  dailyRatePerDay: number;
+}
+
+export interface CombinedBranchPayBreakdown extends CombinedBranchPayInput {
+  payableHours: number;
+  payableDays: number;
+  basePay: number;
+}
+
+export interface CombinedBranchPayResult {
+  totalWorkedHours: number;
+  totalPayableHours: number;
+  totalPayableDays: number;
+  ignoredHours: number;
+  totalBasePay: number;
+  breakdown: CombinedBranchPayBreakdown[];
+}
+
 export function computeDaysWorked(totalHours: number): number {
   if (!Number.isFinite(totalHours) || totalHours <= 0) return 0;
   return Math.floor(totalHours / FULL_WORKDAY_HOURS);
@@ -75,6 +96,60 @@ export function computeBasePay(
 ): number {
   const daysWorked = computeDaysWorked(totalHours);
   return round2(daysWorked * dailyRatePerDay);
+}
+
+export function allocateCombinedBranchPay(
+  entries: CombinedBranchPayInput[],
+): CombinedBranchPayResult {
+  const breakdown = entries
+    .map((entry) => ({
+      site: entry.site,
+      hoursWorked:
+        Number.isFinite(entry.hoursWorked) && entry.hoursWorked > 0
+          ? round2(entry.hoursWorked)
+          : 0,
+      dailyRatePerDay:
+        Number.isFinite(entry.dailyRatePerDay) && entry.dailyRatePerDay > 0
+          ? round2(entry.dailyRatePerDay)
+          : 0,
+      payableHours: 0,
+      payableDays: 0,
+      basePay: 0,
+    }))
+    .filter((entry) => entry.site.trim().length > 0 || entry.hoursWorked > 0);
+
+  const totalWorkedHours = round2(
+    breakdown.reduce((sum, entry) => sum + entry.hoursWorked, 0),
+  );
+
+  for (const entry of breakdown) {
+    const fullDayHours =
+      computeDaysWorked(entry.hoursWorked) * FULL_WORKDAY_HOURS;
+    entry.payableHours = round2(fullDayHours);
+  }
+
+  for (const entry of breakdown) {
+    entry.payableDays = round2(entry.payableHours / FULL_WORKDAY_HOURS);
+    entry.basePay = round2(
+      (entry.payableHours / FULL_WORKDAY_HOURS) * entry.dailyRatePerDay,
+    );
+  }
+
+  const totalBasePay = round2(
+    breakdown.reduce((sum, entry) => sum + entry.basePay, 0),
+  );
+  const totalPayableHours = round2(
+    breakdown.reduce((sum, entry) => sum + entry.payableHours, 0),
+  );
+
+  return {
+    totalWorkedHours,
+    totalPayableHours,
+    totalPayableDays: round2(totalPayableHours / FULL_WORKDAY_HOURS),
+    ignoredHours: round2(totalWorkedHours - totalPayableHours),
+    totalBasePay,
+    breakdown,
+  };
 }
 
 export function buildDateHoursMap(
@@ -116,7 +191,7 @@ export function buildWorkerDateSpanByKey(
 
   for (const log of logs) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(log.date)) continue;
-    const key = `${log.role}|||${log.name}`;
+    const key = `${log.role}|||${log.name}|||${log.site}`;
     const existing = spanByKey.get(key);
 
     if (!existing) {

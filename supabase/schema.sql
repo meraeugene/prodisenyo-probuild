@@ -84,11 +84,29 @@ create table if not exists public.profiles (
   username text not null unique,
   email text not null unique,
   full_name text,
+  avatar_path text,
   role public.app_role not null default 'payroll_manager',
   is_active boolean not null default true,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.profiles add column if not exists avatar_path text;
+alter table public.profiles drop column if exists avatar_url;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'profile-avatars',
+  'profile-avatars',
+  true,
+  2097152,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 create table if not exists public.sites (
   id uuid primary key default gen_random_uuid(),
@@ -200,8 +218,17 @@ create table if not exists public.payroll_run_items (
 
 create table if not exists public.payroll_adjustments (
   id uuid primary key default gen_random_uuid(),
-  payroll_run_id uuid not null references public.payroll_runs(id) on delete cascade,
+  payroll_run_id uuid references public.payroll_runs(id) on delete cascade,
   payroll_run_item_id uuid references public.payroll_run_items(id) on delete cascade,
+  attendance_import_id uuid references public.attendance_imports(id) on delete cascade,
+  employee_name text,
+  employee_name_key text,
+  role_code text,
+  site_name text,
+  site_name_key text,
+  period_label text,
+  period_start date,
+  period_end date,
   adjustment_type public.adjustment_type not null,
   status public.adjustment_status not null default 'pending',
   requested_by uuid not null references public.profiles(id) on delete restrict,
@@ -213,6 +240,17 @@ create table if not exists public.payroll_adjustments (
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.payroll_adjustments alter column payroll_run_id drop not null;
+alter table public.payroll_adjustments add column if not exists attendance_import_id uuid references public.attendance_imports(id) on delete cascade;
+alter table public.payroll_adjustments add column if not exists employee_name text;
+alter table public.payroll_adjustments add column if not exists employee_name_key text;
+alter table public.payroll_adjustments add column if not exists role_code text;
+alter table public.payroll_adjustments add column if not exists site_name text;
+alter table public.payroll_adjustments add column if not exists site_name_key text;
+alter table public.payroll_adjustments add column if not exists period_label text;
+alter table public.payroll_adjustments add column if not exists period_start date;
+alter table public.payroll_adjustments add column if not exists period_end date;
 
 create table if not exists public.audit_logs (
   id uuid primary key default gen_random_uuid(),
@@ -234,6 +272,8 @@ create unique index if not exists employee_branch_rates_lookup_idx on public.emp
 create index if not exists payroll_run_items_payroll_run_id_idx on public.payroll_run_items(payroll_run_id);
 create index if not exists payroll_adjustments_payroll_run_id_idx on public.payroll_adjustments(payroll_run_id);
 create index if not exists payroll_adjustments_status_idx on public.payroll_adjustments(status);
+create index if not exists payroll_adjustments_attendance_import_id_idx on public.payroll_adjustments(attendance_import_id);
+create index if not exists payroll_adjustments_lookup_idx on public.payroll_adjustments(adjustment_type, status, employee_name_key, role_code, site_name_key, period_label);
 
 drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at before update on public.profiles for each row execute function public.set_updated_at();
@@ -335,6 +375,10 @@ drop policy if exists "payroll adjustments inserted by payroll managers and ceo"
 drop policy if exists "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments;
 drop policy if exists "audit logs readable by ceo" on public.audit_logs;
 drop policy if exists "audit logs inserted by payroll managers and ceo" on public.audit_logs;
+drop policy if exists "profile avatars are publicly readable" on storage.objects;
+drop policy if exists "users can upload their own profile avatar" on storage.objects;
+drop policy if exists "users can update their own profile avatar" on storage.objects;
+drop policy if exists "users can delete their own profile avatar" on storage.objects;
 
 create policy "profiles select own or ceo" on public.profiles for select using (auth.uid() = id or public.is_ceo());
 create policy "profiles update own or ceo" on public.profiles for update using (auth.uid() = id or public.is_ceo()) with check (auth.uid() = id or public.is_ceo());
@@ -363,3 +407,7 @@ create policy "payroll adjustments inserted by payroll managers and ceo" on publ
 create policy "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments for update using (public.is_ceo() or public.is_payroll_manager()) with check (public.is_ceo() or public.is_payroll_manager());
 create policy "audit logs readable by ceo" on public.audit_logs for select using (public.is_ceo());
 create policy "audit logs inserted by payroll managers and ceo" on public.audit_logs for insert with check (public.is_ceo() or public.is_payroll_manager());
+create policy "profile avatars are publicly readable" on storage.objects for select using (bucket_id = 'profile-avatars');
+create policy "users can upload their own profile avatar" on storage.objects for insert to authenticated with check (bucket_id = 'profile-avatars' and auth.uid() is not null and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "users can update their own profile avatar" on storage.objects for update to authenticated using (bucket_id = 'profile-avatars' and auth.uid() is not null and (storage.foldername(name))[1] = auth.uid()::text) with check (bucket_id = 'profile-avatars' and auth.uid() is not null and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "users can delete their own profile avatar" on storage.objects for delete to authenticated using (bucket_id = 'profile-avatars' and auth.uid() is not null and (storage.foldername(name))[1] = auth.uid()::text);

@@ -31,6 +31,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 const STORAGE_KEY = "prodisenyo-dashboard-ui-state-v2";
 const LEGACY_STORAGE_KEY = "prodisenyo-dashboard-state-v1";
 const RESET_FLAG_KEY = "prodisenyo-workspace-reset-v1";
+const RESET_COOKIE_KEY = "prodisenyo-workspace-reset";
 
 interface PersistedDashboardUiState {
   theme: ThemeMode;
@@ -201,7 +202,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     dailyRows: attendance.dailyRows,
     attendancePeriod,
     availableSites: attendance.availableSites,
+    currentAttendanceImportId,
   });
+
+  const setWorkspaceResetCookie = useCallback((value: boolean) => {
+    document.cookie = `${RESET_COOKIE_KEY}=${value ? "true" : "false"}; path=/; max-age=${value ? 60 * 60 * 24 * 30 : 0}; SameSite=Lax`;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -212,6 +218,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const resetFlag = window.localStorage.getItem(RESET_FLAG_KEY) === "true";
         window.localStorage.removeItem(LEGACY_STORAGE_KEY);
         setWorkspaceReset(resetFlag);
+        setWorkspaceResetCookie(resetFlag);
 
         if (raw) {
           const parsed = JSON.parse(raw) as Partial<PersistedDashboardUiState>;
@@ -393,10 +400,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setCurrentPayrollRunStatus(null);
       setWorkspaceReset(false);
       window.localStorage.removeItem(RESET_FLAG_KEY);
+      setWorkspaceResetCookie(false);
       attendance.resetAttendanceReview();
       payroll.resetPayrollState();
     },
-    [attendance, payroll],
+    [attendance, payroll, setWorkspaceResetCookie],
   );
 
   const handleClearAttendanceData = useCallback(() => {
@@ -418,7 +426,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     window.localStorage.removeItem(STORAGE_KEY);
     window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     window.localStorage.setItem(RESET_FLAG_KEY, "true");
-  }, [handleClearAttendanceData]);
+    setWorkspaceResetCookie(true);
+  }, [handleClearAttendanceData, setWorkspaceResetCookie]);
 
   const setCurrentPayrollRunMeta = useCallback(
     (value: { id: string | null; status: PayrollRunStatus | null }) => {
