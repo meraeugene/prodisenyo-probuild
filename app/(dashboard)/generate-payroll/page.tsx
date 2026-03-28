@@ -93,6 +93,9 @@ export default function PayrollPage() {
           payrollRunId: currentPayrollRunId,
           siteName: site,
           attendancePeriod,
+          payableHolidayDays: payroll.payableHolidayDays,
+          employeeBranchRates: payroll.employeeBranchRates,
+          payrollAttendanceInputs: payroll.payrollAttendanceInputs,
           payrollRows: payroll.payrollRows,
           payrollOverrides: payroll.payrollOverrides,
         });

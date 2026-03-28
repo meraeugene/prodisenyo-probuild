@@ -49,6 +49,10 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function normalizeEmployeeKey(name: string): string {
+  return name.trim().toLowerCase();
+}
+
 function parseIsoDate(isoDate: string): Date | null {
   const parsed = new Date(`${isoDate}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return null;
@@ -57,6 +61,13 @@ function parseIsoDate(isoDate: string): Date | null {
 
 function workerKey(role: string, name: string): string {
   return `${role}|||${name}`;
+}
+
+function splitSiteNames(value: string): string[] {
+  return value
+    .split(",")
+    .map((site) => site.trim())
+    .filter((site) => site.length > 0);
 }
 
 function getDailyHoursByWorker(
@@ -92,7 +103,7 @@ function buildTrend(
   const perDate = new Map<string, { regular: number; overtime: number }>();
 
   for (const row of payrollRows) {
-    const dailyHours = workerDailyHours.get(row.id);
+    const dailyHours = workerDailyHours.get(workerKey(row.role, row.worker));
     if (!dailyHours || dailyHours.size === 0) continue;
 
     const totalHours = Array.from(dailyHours.values()).reduce(
@@ -151,17 +162,21 @@ function buildProjectComposition(
   >();
 
   for (const row of payrollRows) {
-    const sites = workerSiteHours.get(row.id);
+    const sites = workerSiteHours.get(workerKey(row.role, row.worker));
     if (!sites || sites.size === 0) {
-      const key = row.site || "Unknown Site";
-      const current = perProject.get(key) ?? {
-        regularPay: 0,
-        overtimePay: 0,
-        allowance: 0,
-      };
-      current.regularPay += row.regularPay;
-      current.overtimePay += row.overtimePay;
-      perProject.set(key, current);
+      const fallbackSites = splitSiteNames(row.site || "Unknown Site");
+      const ratio = fallbackSites.length > 0 ? 1 / fallbackSites.length : 1;
+
+      fallbackSites.forEach((site) => {
+        const current = perProject.get(site) ?? {
+          regularPay: 0,
+          overtimePay: 0,
+          allowance: 0,
+        };
+        current.regularPay += row.regularPay * ratio;
+        current.overtimePay += row.overtimePay * ratio;
+        perProject.set(site, current);
+      });
       continue;
     }
 
@@ -200,6 +215,37 @@ function buildProjectComposition(
     );
 }
 
+function buildEmployeeTotals(payrollRows: PayrollRow[]) {
+  const totals = new Map<
+    string,
+    { employeeName: string; salary: number; overtimePay: number }
+  >();
+
+  for (const row of payrollRows) {
+    const key = normalizeEmployeeKey(row.worker);
+    const current = totals.get(key) ?? {
+      employeeName: row.worker,
+      salary: 0,
+      overtimePay: 0,
+    };
+
+    current.salary += row.totalPay;
+    current.overtimePay += row.overtimePay;
+
+    if (row.worker.length > current.employeeName.length) {
+      current.employeeName = row.worker;
+    }
+
+    totals.set(key, current);
+  }
+
+  return Array.from(totals.values()).map((employee) => ({
+    employeeName: employee.employeeName,
+    salary: round2(employee.salary),
+    overtimePay: round2(employee.overtimePay),
+  }));
+}
+
 export function buildPayrollInsightsData(
   payrollRows: PayrollRow[],
   attendanceRows: AttendanceRecordInput[],
@@ -209,7 +255,8 @@ export function buildPayrollInsightsData(
     (sum, row) => sum + row.overtimePay,
     0,
   );
-  const employeesPaid = payrollRows.length;
+  const employeeTotals = buildEmployeeTotals(payrollRows);
+  const employeesPaid = employeeTotals.length;
   const averageSalary = employeesPaid === 0 ? 0 : totalPayroll / employeesPaid;
 
   const workerDailyHours = getDailyHoursByWorker(attendanceRows);
@@ -228,18 +275,18 @@ export function buildPayrollInsightsData(
       name: row.project,
       value: round2(row.regularPay + row.overtimePay + row.allowance),
     })),
-    overtimeCostByEmployee: payrollRows
-      .map((row) => ({
-        employeeName: row.worker,
-        overtimePay: round2(row.overtimePay),
+    overtimeCostByEmployee: employeeTotals
+      .filter((employee) => employee.overtimePay > 0)
+      .map((employee) => ({
+        employeeName: employee.employeeName,
+        overtimePay: employee.overtimePay,
       }))
-      .filter((row) => row.overtimePay > 0)
       .sort((a, b) => b.overtimePay - a.overtimePay)
       .slice(0, 10),
-    topPaidEmployees: payrollRows
-      .map((row) => ({
-        employeeName: row.worker,
-        salary: round2(row.totalPay),
+    topPaidEmployees: employeeTotals
+      .map((employee) => ({
+        employeeName: employee.employeeName,
+        salary: employee.salary,
       }))
       .sort((a, b) => b.salary - a.salary)
       .slice(0, 10),

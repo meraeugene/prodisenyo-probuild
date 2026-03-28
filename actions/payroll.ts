@@ -1,7 +1,7 @@
 "use server";
 
 import type { PayrollRunStatus } from "@/types/database";
-import type { PayrollRow } from "@/lib/payrollEngine";
+import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import type {
   PayrollOvertimeEntry,
   PayrollRowOverride,
@@ -10,15 +10,22 @@ import { requireRole } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import {
   allocateCombinedBranchPay,
+  FIXED_PAY_RATE_PER_DAY,
   FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
-import { normalizeEmployeeNameKey } from "@/features/payroll/utils/payrollMappers";
+import {
+  buildEmployeeBranchRateKey,
+  normalizeEmployeeNameKey,
+} from "@/features/payroll/utils/payrollMappers";
 
 interface SavePayrollRunInput {
   attendanceImportId: string | null;
   payrollRunId: string | null;
   siteName: string;
   attendancePeriod: string;
+  payableHolidayDays: number;
+  employeeBranchRates: Record<string, number>;
+  payrollAttendanceInputs: AttendanceRecordInput[];
   payrollRows: PayrollRow[];
   payrollOverrides: Record<string, PayrollRowOverride>;
 }
@@ -50,8 +57,19 @@ function normalizeLookupKey(value: string): string {
   return normalizeEmployeeNameKey(value.trim());
 }
 
+function sameNullableText(a: string | null, b: string | null): boolean {
+  return (a ?? null) === (b ?? null);
+}
+
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function splitSiteNames(value: string): string[] {
+  return value
+    .split(",")
+    .map((site) => site.trim())
+    .filter((site) => site.length > 0);
 }
 
 function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
@@ -223,8 +241,15 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
     const override = input.payrollOverrides[row.id];
     const { cashAdvance, overtimePay, overtimeHours, leavePay } =
       computeRowAdjustmentTotals(override);
-    const ratePerDay = round2((row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS);
-    const baseTotalPay = round2(Math.max(0, row.totalPay));
+    const branchRateKey = buildEmployeeBranchRateKey(
+      row.worker,
+      row.role,
+      row.site,
+    );
+    const ratePerDay = round2(
+      input.employeeBranchRates[branchRateKey] ??
+        (row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS,
+    );
 
     return {
       row,
@@ -234,7 +259,6 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       overtimeHours,
       leavePay,
       ratePerDay,
-      baseTotalPay,
     };
   });
 
@@ -308,10 +332,11 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   }
 
   const allocatedBasePayByRowId = new Map<string, number>();
+  const holidayPayByRowId = new Map<string, number>();
 
   const snapshotsByEmployee = new Map<string, typeof rowSnapshots>();
   for (const snapshot of rowSnapshots) {
-    const employeeKey = `${snapshot.row.role}|||${normalizeEmployeeNameKey(snapshot.row.worker)}`;
+    const employeeKey = normalizeEmployeeNameKey(snapshot.row.worker);
     const existing = snapshotsByEmployee.get(employeeKey);
 
     if (existing) {
@@ -323,31 +348,65 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   }
 
   for (const employeeSnapshots of snapshotsByEmployee.values()) {
-    const allocation = allocateCombinedBranchPay(
-      employeeSnapshots.map((snapshot) => ({
-        site: snapshot.row.site,
-        hoursWorked: snapshot.row.hoursWorked,
-        dailyRatePerDay: snapshot.ratePerDay,
-      })),
-    );
+    employeeSnapshots.forEach((snapshot) => {
+      const includedSites = new Set(splitSiteNames(snapshot.row.site));
+      const hoursBySite = new Map<string, number>();
 
-    employeeSnapshots.forEach((snapshot, index) => {
-      allocatedBasePayByRowId.set(
-        snapshot.row.id,
-        allocation.breakdown[index]?.basePay ?? 0,
-      );
+      input.payrollAttendanceInputs.forEach((record) => {
+        if (normalizeEmployeeNameKey(record.name) !== normalizeEmployeeNameKey(snapshot.row.worker)) {
+          return;
+        }
+        if ((record.role ?? "").trim().toUpperCase() !== snapshot.row.role.trim().toUpperCase()) {
+          return;
+        }
+
+        const siteName = normalizeSiteName(record.site);
+        if (includedSites.size > 0 && !includedSites.has(siteName)) {
+          return;
+        }
+
+        hoursBySite.set(siteName, round2((hoursBySite.get(siteName) ?? 0) + (record.hours ?? 0)));
+      });
+
+      const allocationEntries =
+        hoursBySite.size > 0
+          ? Array.from(hoursBySite.entries()).map(([site, hoursWorked]) => ({
+              site,
+              hoursWorked,
+              dailyRatePerDay:
+                input.employeeBranchRates[
+                  buildEmployeeBranchRateKey(snapshot.row.worker, snapshot.row.role, site)
+                ] ?? snapshot.ratePerDay,
+            }))
+          : [
+              {
+                site: snapshot.row.site,
+                hoursWorked: snapshot.row.hoursWorked,
+                dailyRatePerDay: snapshot.ratePerDay,
+              },
+            ];
+
+      const allocation = allocateCombinedBranchPay(allocationEntries);
+      allocatedBasePayByRowId.set(snapshot.row.id, allocation.totalBasePay);
     });
+
+    const holidayBonusDays = Math.max(0, input.payableHolidayDays);
+    const firstRowId = employeeSnapshots[0]?.row.id;
+    if (holidayBonusDays > 0 && firstRowId) {
+      holidayPayByRowId.set(
+        firstRowId,
+        round2(holidayBonusDays * FIXED_PAY_RATE_PER_DAY),
+      );
+    }
   }
 
-    const normalizedRowSnapshots = rowSnapshots.map((snapshot) => {
+  const normalizedRowSnapshots = rowSnapshots.map((snapshot) => {
     const allocatedBasePay = round2(
       allocatedBasePayByRowId.get(snapshot.row.id) ?? 0,
     );
-    const holidayPay = round2(
-      Math.max(0, snapshot.row.regularPay - allocatedBasePay - snapshot.leavePay),
-    );
+    const holidayPay = round2(holidayPayByRowId.get(snapshot.row.id) ?? 0);
     const regularPayExcludingHoliday = round2(
-      Math.max(0, snapshot.row.regularPay - holidayPay),
+      Math.max(0, allocatedBasePay + snapshot.leavePay),
     );
 
     const approvedOvertime =
@@ -355,31 +414,87 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         `${normalizeLookupKey(snapshot.row.worker)}|||${snapshot.row.role.trim().toUpperCase()}|||${normalizeLookupKey(snapshot.row.site)}`,
       ) ?? null;
 
+    const approvedOvertimeHours = round2(approvedOvertime?.totalHours ?? 0);
+    const approvedOvertimePay = round2(approvedOvertime?.totalPay ?? 0);
+    const totalPay = round2(
+      Math.max(
+        0,
+        regularPayExcludingHoliday +
+          holidayPay +
+          approvedOvertimePay -
+          snapshot.cashAdvance,
+      ),
+    );
+
     return {
       ...snapshot,
       allocatedBasePay,
       holidayPay,
       regularPayExcludingHoliday,
-      approvedOvertimeHours: round2(approvedOvertime?.totalHours ?? 0),
-      approvedOvertimePay: round2(approvedOvertime?.totalPay ?? 0),
+      approvedOvertimeHours,
+      approvedOvertimePay,
+      totalPay,
       approvedOvertimeAdjustmentIds: approvedOvertime?.adjustmentIds ?? [],
     };
   });
 
   const grossTotal = round2(
     normalizedRowSnapshots.reduce(
-      (sum, snapshot) => sum + snapshot.row.regularPay + snapshot.approvedOvertimePay,
+      (sum, snapshot) =>
+        sum +
+        snapshot.regularPayExcludingHoliday +
+        snapshot.holidayPay +
+        snapshot.approvedOvertimePay,
       0,
     ),
   );
   const netTotal = round2(
     normalizedRowSnapshots.reduce(
-      (sum, snapshot) => sum + snapshot.baseTotalPay + snapshot.approvedOvertimePay,
+      (sum, snapshot) => sum + snapshot.totalPay,
       0,
     ),
   );
 
   let runId = input.payrollRunId;
+
+  if (!runId) {
+    const existingRunQuery = database
+      .from("payroll_runs")
+      .select("id, created_at")
+      .eq("period_label", input.attendancePeriod)
+      .eq("site_name", normalizeSiteName(input.siteName))
+      .neq("status", "rejected")
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    const { data: existingRuns, error: existingRunLookupError } =
+      await existingRunQuery;
+
+    if (existingRunLookupError) {
+      throw createPayrollSaveError(
+        "PAYROLL_SAVE_LOOKUP_EXISTING_RUN_FAILED",
+        "Failed to check for an existing payroll run.",
+        {
+          attendanceImportId: input.attendanceImportId,
+          siteName: normalizeSiteName(input.siteName),
+          attendancePeriod: input.attendancePeriod,
+          message: existingRunLookupError.message,
+          code: existingRunLookupError.code,
+          details: existingRunLookupError.details,
+          hint: existingRunLookupError.hint,
+        },
+      );
+    }
+
+    const matchedExistingRun = ((existingRuns ?? []) as Array<{
+      id: string;
+      created_at: string;
+    }>).find(Boolean);
+
+    if (matchedExistingRun) {
+      runId = matchedExistingRun.id;
+    }
+  }
 
   if (runId) {
     const { error: updateRunError } = await database
@@ -528,7 +643,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
     overtime_pay: snapshot.approvedOvertimePay,
     holiday_pay: snapshot.holidayPay,
     deductions_total: snapshot.cashAdvance,
-    total_pay: round2(snapshot.baseTotalPay + snapshot.approvedOvertimePay),
+    total_pay: snapshot.totalPay,
   }));
 
   const { data: insertedItems, error: itemsError } = await database
@@ -708,16 +823,24 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
 
   let runId: string | null = adjustment.payroll_run_id ?? null;
 
-  if (!runId && adjustment.attendance_import_id && adjustment.period_label) {
-    const { data: matchedRun } = await database
+  if (!runId && adjustment.period_label) {
+    let matchedRunQuery = database
       .from("payroll_runs")
       .select("id")
-      .eq("attendance_import_id", adjustment.attendance_import_id)
       .eq("period_label", adjustment.period_label)
       .neq("status", "rejected")
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+
+    if (adjustment.site_name) {
+      matchedRunQuery = matchedRunQuery.eq("site_name", normalizeSiteName(adjustment.site_name));
+    }
+
+    matchedRunQuery = adjustment.attendance_import_id
+      ? matchedRunQuery.eq("attendance_import_id", adjustment.attendance_import_id)
+      : matchedRunQuery;
+
+    const { data: matchedRun } = await matchedRunQuery.maybeSingle();
 
     runId = (matchedRun?.id as string | undefined) ?? null;
   }

@@ -162,7 +162,7 @@ interface PayrollEditModalProps {
 
 export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const { currentAttendanceImportId, attendancePeriod } = useAppState();
-  const { editingPayrollRow, payrollEditDraft } = payroll;
+  const { editingPayrollRow, editingPayrollSourceRow, payrollEditDraft } = payroll;
 
   const [activeAdjustmentForm, setActiveAdjustmentForm] =
     useState<AdjustmentFormType>(null);
@@ -183,6 +183,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     PayrollPaidLeaveEntry[]
   >([]);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const [overtimeValidationMessage, setOvertimeValidationMessage] =
+    useState<string | null>(null);
 
   useEffect(() => {
     setActiveAdjustmentForm(null);
@@ -387,7 +389,20 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   function addOvertime() {
     const hours = parseNonNegativeValue(overtimeHoursInput);
     const pay = parseNonNegativeValue(overtimePayInput);
-    if (hours <= 0 && pay <= 0) return;
+    if (hours <= 0 && pay <= 0) {
+      setOvertimeValidationMessage(
+        "Add overtime hours or overtime pay before submitting.",
+      );
+      return;
+    }
+    if (hours <= 0) {
+      setOvertimeValidationMessage("Overtime hours must be greater than 0.");
+      return;
+    }
+    if (pay <= 0) {
+      setOvertimeValidationMessage("Overtime pay must be greater than 0.");
+      return;
+    }
 
     setOvertimeEntries((prev) => [
       ...prev,
@@ -400,6 +415,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
         status: "pending",
       },
     ]);
+    setOvertimeValidationMessage(null);
     setOvertimeHoursInput("");
     setOvertimePayInput("");
     setOvertimeNotes("");
@@ -452,7 +468,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
         attendanceImportId: currentAttendanceImportId,
         employeeName: editingPayrollRow.worker,
         roleCode: editingPayrollRow.role,
-        siteName: editingPayrollRow.site,
+        siteName: editingPayrollSourceRow?.site ?? editingPayrollRow.site,
         attendancePeriod,
         overtimeEntries: nextPendingEntries,
       });
@@ -650,9 +666,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           placeholder="0"
                           value={overtimeHoursInput}
                           onChange={(e) =>
-                            setOvertimeHoursInput(
-                              normalizeNumericInput(e.target.value),
-                            )
+                            {
+                              setOvertimeHoursInput(
+                                normalizeNumericInput(e.target.value),
+                              );
+                              setOvertimeValidationMessage(null);
+                            }
                           }
                           className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                         />
@@ -667,9 +686,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           placeholder="0"
                           value={overtimePayInput}
                           onChange={(e) =>
-                            setOvertimePayInput(
-                              normalizeNumericInput(e.target.value),
-                            )
+                            {
+                              setOvertimePayInput(
+                                normalizeNumericInput(e.target.value),
+                              );
+                              setOvertimeValidationMessage(null);
+                            }
                           }
                           className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                         />
@@ -684,20 +706,39 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         type="text"
                         placeholder="(Optional)"
                         value={overtimeNotes}
-                        onChange={(e) => setOvertimeNotes(e.target.value)}
+                        onChange={(e) => {
+                          setOvertimeNotes(e.target.value);
+                          setOvertimeValidationMessage(null);
+                        }}
                         className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                       />
                     </div>
 
+                    {overtimeValidationMessage ? (
+                      <p className="text-xs font-medium text-red-600">
+                        {overtimeValidationMessage}
+                      </p>
+                    ) : null}
+
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={() => setActiveAdjustmentForm(null)}
+                        onClick={() => {
+                          setOvertimeValidationMessage(null);
+                          setActiveAdjustmentForm(null);
+                        }}
                         className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
                       >
                         Cancel
                       </button>
-                      <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
+                      <button
+                        type="submit"
+                        disabled={
+                          parseNonNegativeValue(overtimeHoursInput) <= 0 ||
+                          parseNonNegativeValue(overtimePayInput) <= 0
+                        }
+                        className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                      >
                         Add Overtime
                       </button>
                     </div>

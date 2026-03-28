@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -19,6 +19,7 @@ import {
 import SignOutButton from "@/components/auth/SignOutButton";
 import ProfileAvatar from "@/components/dashboard/ProfileAvatar";
 import { useAppState } from "@/features/app/AppStateProvider";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
@@ -85,7 +86,7 @@ export default function DashboardShell({
   const [open, setOpen] = useState(false);
   const { hasAttendanceData, currentPayrollRunId, workspaceReset } =
     useAppState();
-  const sidebarWidth = "258px";
+  const sidebarWidth = "286px";
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
   const isWorkflowRoute =
@@ -112,10 +113,82 @@ export default function DashboardShell({
         hasAttendanceData ||
         Boolean(currentPayrollRunId) ||
         isAnalyticsRoute));
+  const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
+  const previousPendingCountRef = useRef<number | null>(null);
+  const canPlayNotificationSoundRef = useRef(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
+
+  useEffect(() => {
+    function enableSound() {
+      canPlayNotificationSoundRef.current = true;
+    }
+
+    window.addEventListener("pointerdown", enableSound, { once: true });
+    window.addEventListener("keydown", enableSound, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", enableSound);
+      window.removeEventListener("keydown", enableSound);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isCeo) {
+      setPendingOvertimeCount(0);
+      previousPendingCountRef.current = null;
+      return;
+    }
+
+    let cancelled = false;
+    const supabase = createSupabaseBrowserClient();
+
+    async function loadPendingOvertimeCount() {
+      const { count, error } = await supabase
+        .from("payroll_adjustments")
+        .select("id", { count: "exact", head: true })
+        .eq("adjustment_type", "overtime")
+        .eq("status", "pending");
+
+      if (cancelled || error) return;
+
+      const nextCount = count ?? 0;
+      const previousCount = previousPendingCountRef.current;
+      setPendingOvertimeCount(nextCount);
+
+      if (
+        previousCount !== null &&
+        nextCount > previousCount &&
+        canPlayNotificationSoundRef.current
+      ) {
+        const audio = new Audio("/sounds/overtime-approval.mp3");
+        audio.volume = 0.9;
+        void audio.play().catch(() => undefined);
+      }
+
+      previousPendingCountRef.current = nextCount;
+    }
+
+    void loadPendingOvertimeCount();
+
+    const intervalId = window.setInterval(() => {
+      void loadPendingOvertimeCount();
+    }, 30000);
+
+    function handleWindowFocus() {
+      void loadPendingOvertimeCount();
+    }
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, [isCeo]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -159,7 +232,7 @@ export default function DashboardShell({
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          "group flex items-center gap-2 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                           active
                             ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                             : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -203,7 +276,17 @@ export default function DashboardShell({
                         >
                           <item.icon size={15} />
                         </div>
-                        <span className="font-medium">{item.label}</span>
+                        <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
+                          {item.label}
+                        </span>
+                        {item.href === "/overtime-approvals" &&
+                        pendingOvertimeCount > 0 ? (
+                          <span className="ml-1 inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white">
+                            {pendingOvertimeCount > 99
+                              ? "99+"
+                              : pendingOvertimeCount}
+                          </span>
+                        ) : null}
                       </Link>
                     );
                   })}
@@ -432,7 +515,7 @@ export default function DashboardShell({
           </div>
         </aside>
 
-        <div className="min-h-screen lg:pl-[258px]">
+        <div className="min-h-screen lg:pl-[286px]">
           <main className="min-h-screen bg-white p-6">{children}</main>
         </div>
       </div>

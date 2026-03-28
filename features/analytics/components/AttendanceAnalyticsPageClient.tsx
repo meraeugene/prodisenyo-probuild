@@ -30,13 +30,13 @@ function AttendanceAnalyticsLoadingState() {
           <div className="space-y-4">
             <SkeletonBlock className="h-3 w-40 rounded-full" />
             <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
-              <div className="flex h-[280px] items-end gap-4 sm:h-[320px]">
-                <SkeletonBlock className="h-[58%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[84%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[70%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[92%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[63%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[78%] flex-1 rounded-t-2xl rounded-b-md" />
+              <div className="flex h-[220px] items-end gap-3 sm:h-[250px]">
+                <SkeletonBlock className="h-[52%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[76%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[64%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[84%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[58%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[72%] flex-1 rounded-t-xl rounded-b-md" />
               </div>
             </div>
           </div>
@@ -44,13 +44,13 @@ function AttendanceAnalyticsLoadingState() {
           <div className="space-y-4">
             <SkeletonBlock className="h-3 w-40 rounded-full" />
             <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
-              <div className="flex h-[280px] items-end gap-4 sm:h-[320px]">
-                <SkeletonBlock className="h-[64%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[55%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[89%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[73%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[81%] flex-1 rounded-t-2xl rounded-b-md" />
-                <SkeletonBlock className="h-[61%] flex-1 rounded-t-2xl rounded-b-md" />
+              <div className="flex h-[220px] items-end gap-3 sm:h-[250px]">
+                <SkeletonBlock className="h-[60%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[50%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[80%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[66%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[74%] flex-1 rounded-t-xl rounded-b-md" />
+                <SkeletonBlock className="h-[56%] flex-1 rounded-t-xl rounded-b-md" />
               </div>
             </div>
           </div>
@@ -61,16 +61,16 @@ function AttendanceAnalyticsLoadingState() {
               <SkeletonBlock className="h-3 w-28 rounded-full" />
             </div>
             <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(24,83,43,0.04)]">
-              <div className="relative h-[320px] overflow-hidden sm:h-[360px]">
-                <div className="absolute inset-x-0 top-[18%] border-t border-dashed border-apple-mist/80" />
-                <div className="absolute inset-x-0 top-[42%] border-t border-dashed border-apple-mist/80" />
-                <div className="absolute inset-x-0 top-[66%] border-t border-dashed border-apple-mist/80" />
+              <div className="relative h-[240px] overflow-hidden sm:h-[270px]">
+                <div className="absolute inset-x-0 top-[20%] border-t border-dashed border-apple-mist/80" />
+                <div className="absolute inset-x-0 top-[46%] border-t border-dashed border-apple-mist/80" />
+                <div className="absolute inset-x-0 top-[72%] border-t border-dashed border-apple-mist/80" />
                 <div className="absolute bottom-0 left-[6%] right-[4%] top-[10%]">
-                  <div className="absolute bottom-[18%] left-[6%] h-[38%] w-[14%] rounded-t-[40px] bg-apple-mist/60" />
-                  <div className="absolute bottom-[18%] left-[22%] h-[54%] w-[14%] rounded-t-[40px] bg-apple-mist/70" />
-                  <div className="absolute bottom-[18%] left-[38%] h-[34%] w-[14%] rounded-t-[40px] bg-apple-mist/60" />
-                  <div className="absolute bottom-[18%] left-[54%] h-[71%] w-[14%] rounded-t-[40px] bg-apple-mist/80" />
-                  <div className="absolute bottom-[18%] left-[70%] h-[49%] w-[14%] rounded-t-[40px] bg-apple-mist/65" />
+                  <div className="absolute bottom-[14%] left-[6%] h-[34%] w-[14%] rounded-t-[32px] bg-apple-mist/60" />
+                  <div className="absolute bottom-[14%] left-[22%] h-[48%] w-[14%] rounded-t-[32px] bg-apple-mist/70" />
+                  <div className="absolute bottom-[14%] left-[38%] h-[30%] w-[14%] rounded-t-[32px] bg-apple-mist/60" />
+                  <div className="absolute bottom-[14%] left-[54%] h-[64%] w-[14%] rounded-t-[32px] bg-apple-mist/80" />
+                  <div className="absolute bottom-[14%] left-[70%] h-[44%] w-[14%] rounded-t-[32px] bg-apple-mist/65" />
                 </div>
               </div>
             </div>
@@ -78,12 +78,12 @@ function AttendanceAnalyticsLoadingState() {
 
           <div className="space-y-4 lg:col-span-2">
             <SkeletonBlock className="h-3 w-40 rounded-full" />
-            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 sm:h-[360px]">
+            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 sm:h-[300px]">
               <div className="grid h-full gap-4">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div key={index} className="flex items-center gap-4">
                     <SkeletonBlock className="h-4 w-28 rounded-full" />
-                    <SkeletonBlock className="h-9 flex-1 rounded-full" />
+                    <SkeletonBlock className="h-7 flex-1 rounded-full" />
                   </div>
                 ))}
               </div>

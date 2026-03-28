@@ -292,7 +292,18 @@ function buildAttendancePeriod(
 function buildPeriodOptions(
   trackedRuns: PayrollRunRow[],
 ): HistoricalDashboardPeriodOption[] {
-  return trackedRuns.map((run) => ({
+  const latestRunByKey = new Map<string, PayrollRunRow>();
+
+  trackedRuns.forEach((run) => {
+    const dedupeKey = [run.period_label, run.site_name].join("|||");
+    const existing = latestRunByKey.get(dedupeKey);
+
+    if (!existing || run.created_at > existing.created_at) {
+      latestRunByKey.set(dedupeKey, run);
+    }
+  });
+
+  return Array.from(latestRunByKey.values()).map((run) => ({
     key: run.id,
     label: run.period_label,
     siteName: run.site_name,
@@ -301,6 +312,23 @@ function buildPeriodOptions(
     attendanceImportId: run.attendance_import_id,
     createdAt: run.created_at,
   }));
+}
+
+function dedupeTrackedRuns(trackedRuns: PayrollRunRow[]): PayrollRunRow[] {
+  const latestRunByKey = new Map<string, PayrollRunRow>();
+
+  trackedRuns.forEach((run) => {
+    const dedupeKey = [run.period_label, run.site_name].join("|||");
+    const existing = latestRunByKey.get(dedupeKey);
+
+    if (!existing || run.created_at > existing.created_at) {
+      latestRunByKey.set(dedupeKey, run);
+    }
+  });
+
+  return Array.from(latestRunByKey.values()).sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  );
 }
 
 export function useHistoricalDashboardData(): HistoricalDashboardState {
@@ -448,11 +476,12 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
         const importRows = (importsResult.data ?? []) as AttendanceImportRow[];
         const payrollRuns = (runsResult.data ?? []) as PayrollRunRow[];
         const trackedRuns = payrollRuns.filter((run) => run.status !== "rejected");
-        const periodOptions = buildPeriodOptions(trackedRuns);
+        const dedupedTrackedRuns = dedupeTrackedRuns(trackedRuns);
+        const periodOptions = buildPeriodOptions(dedupedTrackedRuns);
         const selectedRun =
-          trackedRuns.find((run) => run.id === selectedPeriodKey) ??
-          trackedRuns.find((run) => run.id === currentPayrollRunId) ??
-          trackedRuns[0] ??
+          dedupedTrackedRuns.find((run) => run.id === selectedPeriodKey) ??
+          dedupedTrackedRuns.find((run) => run.id === currentPayrollRunId) ??
+          dedupedTrackedRuns[0] ??
           null;
         const effectiveImportId = isCeo
           ? selectedRun?.attendance_import_id ?? null
@@ -501,7 +530,7 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
         const attendanceRows = (attendanceResult.data ??
           []) as AttendanceRecordRow[];
         const records = mapAttendanceRecords(attendanceRows);
-        const trackedRunsById = new Map(trackedRuns.map((run) => [run.id, run]));
+        const trackedRunsById = new Map(dedupedTrackedRuns.map((run) => [run.id, run]));
         const payrollRows = mapPayrollRows(
           (payrollItemsResult.data ?? []) as PayrollRunItemRow[],
           trackedRunsById,
@@ -530,7 +559,7 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             payrollAttendanceInputs,
             availableSites,
             attendancePeriod,
-            recentActivity: buildRecentActivity(payrollRows, trackedRuns),
+            recentActivity: buildRecentActivity(payrollRows, dedupedTrackedRuns),
             periodOptions,
             selectedPeriodKey: resolvedSelectedPeriodKey,
             selectedPeriodLabel: attendancePeriod,
@@ -540,7 +569,7 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               attendanceRecordCount: attendanceRows.length,
               employeeCount: employees.length,
               payrollRunCount: payrollRuns.length,
-              trackedPayrollRunCount: trackedRuns.length,
+              trackedPayrollRunCount: dedupedTrackedRuns.length,
               payrollRunItemCount: (payrollItemsResult.data ?? []).length,
               availableSiteCount: availableSites.length,
             },

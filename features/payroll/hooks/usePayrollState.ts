@@ -327,6 +327,7 @@ export interface UsePayrollStateResult {
   payrollTotals: { hours: number; pay: number };
   payrollPages: number[];
   editingPayrollRow: PayrollRow | null;
+  editingPayrollSourceRow: PayrollRow | null;
   editingPayrollLogs: DailyLogRow[];
   editingPayrollSummary: {
     attendanceDays: number;
@@ -912,6 +913,11 @@ export function usePayrollState({
     if (editingPayrollDisplayRow) return editingPayrollDisplayRow;
     return payrollBaseComputedRows.find((row) => row.id === editingPayrollRowId) ?? null;
   }, [editingPayrollDisplayRow, payrollBaseComputedRows, editingPayrollRowId]);
+  const editingPayrollSourceRow = useMemo(
+    () =>
+      payrollBaseComputedRows.find((row) => row.id === editingPayrollRowId) ?? null,
+    [payrollBaseComputedRows, editingPayrollRowId],
+  );
 
   const editingPayrollLogs = useMemo(
     () => buildEditingPayrollLogs(dailyRows, editingPayrollRow, attendancePeriod),
@@ -1369,6 +1375,7 @@ export function usePayrollState({
     payrollTotals,
     payrollPages,
     editingPayrollRow,
+    editingPayrollSourceRow,
     editingPayrollLogs,
     editingPayrollSummary,
     editingPayrollAdjustments,

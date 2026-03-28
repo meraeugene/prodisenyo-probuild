@@ -79,5 +79,6 @@ export async function signInAction(
 export async function signOutAction() {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();
+  await new Promise((resolve) => setTimeout(resolve, 350));
   redirect("/auth/login");
 }

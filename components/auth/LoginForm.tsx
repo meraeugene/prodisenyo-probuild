@@ -2,10 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
-import {
-  type AuthActionState,
-  signInAction,
-} from "@/actions/auth";
+import { type AuthActionState, signInAction } from "@/actions/auth";
 
 interface LoginFormProps {
   nextPath: string | null;
@@ -23,7 +20,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
   );
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4 ">
       <input type="hidden" name="next" value={nextPath ?? ""} />
 
       <div className="space-y-2">
@@ -43,7 +40,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 pb-4">
         <label
           htmlFor="password"
           className="text-sm font-medium text-apple-charcoal"
@@ -70,20 +67,6 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3">
-        <label className="flex items-center gap-3 text-sm text-apple-smoke">
-          <input
-            type="checkbox"
-            name="remember"
-            className="h-4 w-4 rounded border-apple-silver text-[#1f6a37] focus:ring-emerald-200"
-          />
-          Keep me signed in
-        </label>
-        <span className="text-xs font-medium text-apple-steel">
-          Secure session
-        </span>
-      </div>
-
       {state.error ? (
         <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.error}
@@ -93,7 +76,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#163f25,#1f6a37,#2f7a46)] px-5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex  h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#163f25,#1f6a37,#2f7a46)] px-5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {pending ? (
           <>

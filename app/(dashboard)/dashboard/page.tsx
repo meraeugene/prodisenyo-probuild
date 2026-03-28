@@ -6,9 +6,11 @@ import {
   ArrowUp,
   BadgeCheck,
   Check,
+  ChevronRight,
   RefreshCw,
   Receipt,
   Wallet,
+  X,
 } from "lucide-react";
 import {
   Bar,
@@ -28,6 +30,7 @@ import { useAppState } from "@/features/app/AppStateProvider";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
+import type { PayrollRow } from "@/lib/payrollEngine";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -40,9 +43,171 @@ const OVERVIEW_CHART_COLORS = [
 ];
 const PESO_SIGN = "\u20B1";
 
+type PayrollSummaryCardKey = "gross" | "deductions" | "net";
+
+interface PayrollSummaryCardDefinition {
+  key: PayrollSummaryCardKey;
+  title: string;
+  badge: string;
+  helper: string;
+  formula: string;
+  amount: number;
+  steps: string[];
+}
+
+interface DashboardSiteCard {
+  siteName: string;
+  shortSite: string;
+  employees: number;
+  payrollTotal: number;
+}
+
 function extractBranchName(value: string): string {
   if (!value) return "";
   return value.trim().split(/\s+/)[0].toUpperCase();
+}
+
+function normalizeEmployeeName(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function splitSiteNames(value: string): string[] {
+  return value
+    .split(",")
+    .map((site) => site.trim())
+    .filter((site) => site.length > 0);
+}
+
+function buildDepartmentCards(payrollRows: PayrollRow[]): DashboardSiteCard[] {
+  const byEmployee = new Map<
+    string,
+    { name: string; totalPay: number; sites: Set<string> }
+  >();
+
+  for (const row of payrollRows) {
+    const key = normalizeEmployeeName(row.worker);
+    const current = byEmployee.get(key) ?? {
+      name: row.worker,
+      totalPay: 0,
+      sites: new Set<string>(),
+    };
+
+    current.totalPay += row.totalPay;
+
+    splitSiteNames(row.site || "Unknown Site").forEach((site) =>
+      current.sites.add(site),
+    );
+
+    if (row.worker.length > current.name.length) {
+      current.name = row.worker;
+    }
+
+    byEmployee.set(key, current);
+  }
+
+  const bySite = new Map<string, DashboardSiteCard>();
+
+  for (const employee of byEmployee.values()) {
+    employee.sites.forEach((siteName) => {
+      const current = bySite.get(siteName) ?? {
+        siteName,
+        shortSite: extractBranchName(siteName),
+        employees: 0,
+        payrollTotal: 0,
+      };
+
+      current.employees += 1;
+      current.payrollTotal += employee.totalPay;
+      bySite.set(siteName, current);
+    });
+  }
+
+  return Array.from(bySite.values()).sort((a, b) =>
+    a.siteName.localeCompare(b.siteName),
+  );
+}
+
+function SummaryFormulaModal({
+  card,
+  onClose,
+}: {
+  card: PayrollSummaryCardDefinition | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!card) return;
+
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "auto";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [card, onClose]);
+
+  if (!card) return null;
+
+  return (
+    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-2xl overflow-hidden rounded-[28px]  bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)]">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/65">
+                How It Was Solved
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                {card.title}
+              </h2>
+              <p className="mt-2 text-sm text-white/75">{card.helper}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/15"
+              aria-label="Close payroll formula modal"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-6 px-6 py-6">
+          <div className="rounded-[22px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel">
+              Current Value
+            </p>
+            <p className="mt-3 text-[34px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+              {PESO_SIGN} {formatPayrollNumber(card.amount)}
+            </p>
+            <p className="mt-3 text-sm text-apple-smoke">{card.formula}</p>
+          </div>
+
+          <div className="grid gap-3">
+            {card.steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex items-start gap-3 rounded-[18px] border border-apple-mist bg-white px-4 py-3"
+              >
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-700">
+                  {index + 1}
+                </div>
+                <p className="text-sm leading-6 text-apple-smoke">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function OverviewPage() {
@@ -63,7 +228,6 @@ export default function OverviewPage() {
   const attendancePeriod =
     data?.attendancePeriod ?? "No recorded payroll period yet";
   const records = data?.records ?? [];
-  const availableSites = data?.availableSites ?? [];
   const activityRows = data?.recentActivity ?? [];
   const periodOptions = data?.periodOptions ?? [];
 
@@ -77,6 +241,8 @@ export default function OverviewPage() {
   const deductions =
     Math.round(Math.max(0, grossPayroll - totalPayroll) * 100) / 100;
   const netPayroll = Math.max(0, totalPayroll);
+  const [activeSummaryCard, setActiveSummaryCard] =
+    useState<PayrollSummaryCardKey | null>(null);
 
   const workforceByBranch = useMemo(
     () =>
@@ -98,24 +264,61 @@ export default function OverviewPage() {
     [payrollInsights.payrollDistributionByProject],
   );
 
-  const siteCards = useMemo(() => {
-    return availableSites.map((siteName) => {
-      const shortSite = extractBranchName(siteName);
-      const workforceMatch = workforceByBranch.find(
-        (item) => item.shortBranch === shortSite,
-      );
-      const payrollMatch = payrollDistributionData.find(
-        (item) => item.shortName === shortSite,
-      );
+  const siteCards = useMemo(
+    () => buildDepartmentCards(payrollRows),
+    [payrollRows],
+  );
 
-      return {
-        siteName,
-        shortSite,
-        employees: workforceMatch?.employees ?? 0,
-        payrollTotal: payrollMatch?.value ?? 0,
-      };
-    });
-  }, [availableSites, payrollDistributionData, workforceByBranch]);
+  const summaryCards = useMemo<PayrollSummaryCardDefinition[]>(
+    () => [
+      {
+        key: "gross",
+        title: "Gross Payroll",
+        badge: "Based on uploaded attendance",
+        helper:
+          "Starts from net payroll analytics, then applies the current 12% uplift used on the dashboard.",
+        formula: `Gross payroll = Net payroll (${PESO_SIGN} ${formatPayrollNumber(netPayroll)}) x 1.12`,
+        amount: grossPayroll,
+        steps: [
+          `The dashboard first reads the synced payroll analytics total of ${PESO_SIGN} ${formatPayrollNumber(netPayroll)}.`,
+          "It applies the current dashboard gross-up rule of 12% to that synced payroll total.",
+          `That gives ${PESO_SIGN} ${formatPayrollNumber(grossPayroll)} for the Gross Payroll card.`,
+        ],
+      },
+      {
+        key: "deductions",
+        title: "Deductions",
+        badge: "Derived from current payroll",
+        helper:
+          "This card shows the gap between the gross payroll card and the synced net payroll card.",
+        formula: `Deductions = Gross payroll (${PESO_SIGN} ${formatPayrollNumber(grossPayroll)}) - Net payroll (${PESO_SIGN} ${formatPayrollNumber(netPayroll)})`,
+        amount: deductions,
+        steps: [
+          `Gross payroll is currently ${PESO_SIGN} ${formatPayrollNumber(grossPayroll)}.`,
+          `Net payroll released is currently ${PESO_SIGN} ${formatPayrollNumber(netPayroll)}.`,
+          `Subtracting those values leaves ${PESO_SIGN} ${formatPayrollNumber(deductions)} in deductions.`,
+        ],
+      },
+      {
+        key: "net",
+        title: "Net Payroll Released",
+        badge: "Synced with payroll analytics",
+        helper:
+          "This card mirrors the net payroll total coming from the payroll analytics dataset for the selected period.",
+        formula: `Net payroll released = Synced payroll analytics total (${PESO_SIGN} ${formatPayrollNumber(totalPayroll)})`,
+        amount: netPayroll,
+        steps: [
+          "The selected payroll period is loaded from saved payroll run items.",
+          "The payroll analytics total is summed from those payroll rows.",
+          `That synced result is shown directly here as ${PESO_SIGN} ${formatPayrollNumber(netPayroll)}.`,
+        ],
+      },
+    ],
+    [deductions, grossPayroll, netPayroll, totalPayroll],
+  );
+
+  const activeSummaryCardDetails =
+    summaryCards.find((card) => card.key === activeSummaryCard) ?? null;
 
   const shouldShowSkeleton = loading && !data && !error;
 
@@ -178,8 +381,8 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
+    <div>
+      <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] mb-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-[12px] font-medium text-white/65">
@@ -232,7 +435,7 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <section>
+      <section className="mb-5">
         <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -405,73 +608,61 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="rounded-[22px] bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                <Wallet size={18} />
-              </div>
-              <p className="text-sm font-medium text-apple-steel">
-                Gross Payroll
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
-              Synced <ArrowUp size={12} />
-            </span>
-          </div>
-          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            {PESO_SIGN} {formatPayrollNumber(grossPayroll)}
-          </p>
-          <p className="mt-3 text-sm font-medium text-apple-charcoal">
-            Based on uploaded attendance
-          </p>
-        </div>
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
+        {summaryCards.map((card) => {
+          const iconWrapClass =
+            card.key === "gross"
+              ? "bg-emerald-50 text-emerald-700"
+              : card.key === "deductions"
+                ? "bg-red-50 text-red-700"
+                : "bg-sky-50 text-sky-700";
+          const Icon =
+            card.key === "gross"
+              ? Wallet
+              : card.key === "deductions"
+                ? Receipt
+                : BadgeCheck;
 
-        <div className="rounded-[22px]  bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-700">
-                <Receipt size={18} />
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() => setActiveSummaryCard(card.key)}
+              className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(24,83,43,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(24,83,43,0.12)]"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconWrapClass}`}
+                  >
+                    <Icon size={18} />
+                  </div>
+                  <p className="text-sm font-medium text-apple-steel">
+                    {card.title}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs text-green-600">
+                    Synced <ArrowUp size={12} />
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-apple-steel">
+                    View math
+                    <ChevronRight size={14} />
+                  </span>
+                </div>
               </div>
-              <p className="text-sm font-medium text-apple-steel">Deductions</p>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
-              Synced <ArrowUp size={12} />
-            </span>
-          </div>
-          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            {PESO_SIGN} {formatPayrollNumber(deductions)}
-          </p>
-          <p className="mt-3 text-sm font-medium text-apple-ash">
-            Derived from current payroll
-          </p>
-        </div>
-
-        <div className="rounded-[22px]  bg-white p-6 shadow-[0_18px_40px_rgba(24,83,43,0.08)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                <BadgeCheck size={18} />
-              </div>
-              <p className="text-sm font-medium text-apple-steel">
-                Net Payroll Released
+              <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+                {PESO_SIGN} {formatPayrollNumber(card.amount)}
               </p>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-green-600 px-3 py-1 text-xs ">
-              Synced <ArrowUp size={12} />
-            </span>
-          </div>
-          <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-            {PESO_SIGN} {formatPayrollNumber(netPayroll)}
-          </p>
-          <p className="mt-3 text-sm font-medium text-apple-charcoal">
-            Synced with payroll analytics
-          </p>
-        </div>
+              <p className="mt-3 text-sm font-medium text-apple-charcoal">
+                {card.badge}
+              </p>
+            </button>
+          );
+        })}
       </section>
 
-      <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <section className="rounded-[12px] bg-white p-5 mb-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-[15px] font-semibold text-apple-charcoal">
             Department Cards
@@ -577,6 +768,11 @@ export default function OverviewPage() {
           {error}
         </section>
       ) : null}
+
+      <SummaryFormulaModal
+        card={activeSummaryCardDetails}
+        onClose={() => setActiveSummaryCard(null)}
+      />
     </div>
   );
 }

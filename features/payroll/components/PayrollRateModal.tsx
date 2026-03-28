@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Search } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { saveEmployeeBranchRatesAction } from "@/actions/payrollRates";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
-import { buildVisiblePages } from "@/features/shared/pagination";
 import {
   extractSiteName,
   formatPayrollNumber,
@@ -16,13 +15,10 @@ interface PayrollRateModalProps {
   payroll: UsePayrollStateResult;
 }
 
-const BRANCH_RATE_PAGE_SIZE = 5;
-
 export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
   const [isPending, startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState("");
   const [branchFilter, setBranchFilter] = useState<"all" | "multi">("all");
-  const [page, setPage] = useState(1);
 
   const editableRows = useMemo(
     () =>
@@ -38,10 +34,10 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           ),
         }))
         .sort((a, b) => {
-          const bySite = a.siteLabel.localeCompare(b.siteLabel);
-          if (bySite !== 0) return bySite;
           const byWorker = a.worker.localeCompare(b.worker);
           if (byWorker !== 0) return byWorker;
+          const bySite = a.siteLabel.localeCompare(b.siteLabel);
+          if (bySite !== 0) return bySite;
           return a.role.localeCompare(b.role);
         }),
     [payroll.payrollBaseComputedRows],
@@ -77,50 +73,62 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
     });
   }, [editableRows, searchTerm, branchFilter, branchCountByEmployee]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredRows.length / BRANCH_RATE_PAGE_SIZE),
-  );
-  const currentPage = Math.min(page, totalPages);
-  const pageStart = (currentPage - 1) * BRANCH_RATE_PAGE_SIZE;
-  const pageEnd = pageStart + BRANCH_RATE_PAGE_SIZE;
-  const paginatedRows = useMemo(
-    () => filteredRows.slice(pageStart, pageEnd),
-    [filteredRows, pageEnd, pageStart],
-  );
-  const visiblePages = useMemo(
-    () => buildVisiblePages(currentPage, totalPages),
-    [currentPage, totalPages],
-  );
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, branchFilter]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
   if (!payroll.showPayrollRateModal) return null;
 
   function handleSave() {
     startTransition(async () => {
       try {
-        const entries = editableRows.map((row) => ({
-          employeeName: row.worker,
-          roleCode: row.role,
-          siteName: row.site,
-          dailyRate:
-            payroll.payrollRateDraft[row.key] ?? row.fallbackRate,
-        }));
+        const changedSummaries: string[] = [];
+        const changedEntries = editableRows
+          .map((row) => {
+            const nextDailyRate =
+              payroll.payrollRateDraft[row.key] ?? row.fallbackRate;
+            const currentDailyRate =
+              payroll.employeeBranchRates[row.key] ?? row.fallbackRate;
 
-        const result = await saveEmployeeBranchRatesAction(entries);
+            if (Math.abs(nextDailyRate - currentDailyRate) < 0.005) {
+              return null;
+            }
+
+            changedSummaries.push(
+              `${row.worker} - ${row.siteLabel}: ${formatPayrollNumber(currentDailyRate)} -> ${formatPayrollNumber(nextDailyRate)}`,
+            );
+
+            return {
+              employeeName: row.worker,
+              roleCode: row.role,
+              siteName: row.site,
+              dailyRate: nextDailyRate,
+            };
+          })
+          .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+
+        if (changedEntries.length === 0) {
+          toast.info("No branch rate changes to save.");
+          return;
+        }
+
+        const result = await saveEmployeeBranchRatesAction(changedEntries);
 
         payroll.setEmployeeBranchRates({ ...payroll.payrollRateDraft });
         payroll.applyPayrollRates();
-        toast.success(`Saved ${result.saved} branch-specific employee rate(s).`);
+        const primaryMessage =
+          changedSummaries[0] ??
+          (result.saved === 1
+            ? "Saved 1 branch rate change."
+            : `Saved ${result.saved} branch rate changes.`);
+
+        const extraCount = changedSummaries.length - 1;
+        const description =
+          extraCount > 0
+            ? `${changedSummaries.slice(1, 3).join(" | ")}${
+                extraCount > 2 ? ` | +${extraCount - 2} more change${extraCount - 2 === 1 ? "" : "s"}` : ""
+              }`
+            : "Branch-specific employee rate updated.";
+
+        toast.success(primaryMessage, {
+          description,
+        });
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -191,9 +199,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           </p>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-apple-mist">
+        <div className="mt-4 max-h-[56vh] overflow-y-auto rounded-2xl border border-apple-mist">
           <table className="min-w-full text-sm">
-            <thead className="bg-apple-snow/70">
+            <thead className="sticky top-0 z-10 bg-apple-snow/95 backdrop-blur-sm">
               <tr className="border-b border-apple-mist">
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-apple-steel">
                   Employee
@@ -210,8 +218,8 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               </tr>
             </thead>
             <tbody>
-              {paginatedRows.length > 0 ? (
-                paginatedRows.map((row) => (
+              {filteredRows.length > 0 ? (
+                filteredRows.map((row) => (
                   <tr key={row.key} className="border-b border-apple-mist/70 last:border-0">
                     <td className="px-4 py-3 font-medium text-apple-charcoal">
                       <div className="flex items-center gap-2">
@@ -267,69 +275,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
         </div>
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <p className="text-sm text-apple-steel">
-              Showing {filteredRows.length === 0 ? 0 : pageStart + 1}-
-              {Math.min(pageEnd, filteredRows.length)} of {filteredRows.length} rows
-            </p>
-
-            {filteredRows.length > BRANCH_RATE_PAGE_SIZE ? (
-              <div className="flex flex-wrap items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setPage(1)}
-                  disabled={currentPage === 1}
-                  className="h-8 rounded-[10px] border border-apple-silver px-2.5 text-xs font-semibold text-apple-charcoal transition hover:border-[#7ebd8b] disabled:cursor-not-allowed disabled:border-apple-mist disabled:text-apple-silver"
-                >
-                  First
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="flex h-8 items-center justify-center rounded-[10px] border border-apple-silver px-3 text-xs font-semibold text-apple-charcoal transition hover:border-[#7ebd8b] disabled:cursor-not-allowed disabled:border-apple-mist disabled:text-apple-silver"
-                  aria-label="Previous page"
-                >
-                  <ArrowLeft size={14} />
-                </button>
-
-                {visiblePages.map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => setPage(pageNumber)}
-                    className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition ${
-                      currentPage === pageNumber
-                        ? "border-[#1f6a37] bg-[#1f6a37] text-white"
-                        : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPage((prev) => Math.min(totalPages, prev + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="flex h-8 items-center justify-center rounded-[10px] border border-apple-silver px-3 text-xs font-semibold text-apple-charcoal transition hover:border-[#7ebd8b] disabled:cursor-not-allowed disabled:border-apple-mist disabled:text-apple-silver"
-                  aria-label="Next page"
-                >
-                  <ArrowRight size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="h-8 rounded-[10px] border border-apple-silver px-2.5 text-xs font-semibold text-apple-charcoal transition hover:border-[#7ebd8b] disabled:cursor-not-allowed disabled:border-apple-mist disabled:text-apple-silver"
-                >
-                  Last
-                </button>
-              </div>
-            ) : null}
-          </div>
+          <p className="text-sm text-apple-steel">
+            Showing {filteredRows.length} row{filteredRows.length === 1 ? "" : "s"} in alphabetical order
+          </p>
 
           <div className="flex justify-end gap-2">
           <button

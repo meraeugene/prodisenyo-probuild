@@ -1,10 +1,5 @@
 import LoginForm from "@/components/auth/LoginForm";
-import {
-  BriefcaseBusiness,
-  Building2,
-  Fingerprint,
-  ShieldCheck,
-} from "lucide-react";
+import { BriefcaseBusiness, Building2, ShieldCheck } from "lucide-react";
 
 export const metadata = {
   title: "Login",

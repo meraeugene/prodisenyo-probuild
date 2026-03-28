@@ -34,7 +34,6 @@ import { buildVisiblePages } from "@/features/shared/pagination";
 import {
   allocateCombinedBranchPay,
   buildEditingPayrollLogs,
-  computeDaysWorked,
   FIXED_PAY_RATE_PER_DAY,
 } from "@/features/payroll/utils/payrollSelectors";
 import {
@@ -45,7 +44,10 @@ import {
   formatPayrollNumber,
   toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
-import { getLogOverrideKey } from "@/features/payroll/utils/payrollMappers";
+import {
+  buildEmployeeBranchRateKey,
+  getLogOverrideKey,
+} from "@/features/payroll/utils/payrollMappers";
 
 interface PayrollSectionProps {
   dailyRowsCount: number;
@@ -86,6 +88,7 @@ interface GroupedEmployeeMetrics {
   paidLeavePay: number;
   cashAdvancePay: number;
   totalPay: number;
+  dailyRates: number[];
 }
 
 interface GroupedPayrollFilters {
@@ -127,6 +130,10 @@ function formatDaysLabel(daysWorked: number): string {
   return `${daysWorked.toLocaleString("en-PH")} day${
     daysWorked === 1 ? "" : "s"
   }`;
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function compareGroupedEmployees(
@@ -238,14 +245,50 @@ function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string }> {
   );
 }
 
-function buildGroupedEmployeeCompensation(employee: GroupedEmployeePayrollRow) {
-  const breakdown = employee.sites.map((row) => ({
-    site: extractSiteName(row.site) || row.site || "Unknown Site",
-    hoursWorked: row.hoursWorked,
-    // Use the effective row rate (already normalized in payroll state)
-    // to avoid floating noise like 500.01 when the intended rate is 500.00.
-    dailyRatePerDay: row.rate * 8,
-  }));
+function buildGroupedEmployeeCompensation(
+  employee: GroupedEmployeePayrollRow,
+  payroll: UsePayrollStateResult,
+) {
+  const employeeKey = normalizeEmployeeName(employee.name);
+  const roleKey = employee.role;
+  const hoursBySite = new Map<string, number>();
+
+  payroll.payrollAttendanceInputs.forEach((record) => {
+    if (normalizeEmployeeName(record.name) !== employeeKey) return;
+    if ((normalizeRoleCode(record.role) ?? "UNKNOWN") !== roleKey) return;
+
+    const siteName = extractSiteName(record.site) || record.site || "Unknown Site";
+    hoursBySite.set(siteName, (hoursBySite.get(siteName) ?? 0) + record.hours);
+  });
+
+  const breakdown =
+    hoursBySite.size > 0
+      ? Array.from(hoursBySite.entries()).map(([site, hoursWorked]) => {
+          const matchingRow =
+            employee.sites.find((row) =>
+              row.site
+                .split(",")
+                .map((value) => extractSiteName(value) || value.trim())
+                .includes(site),
+            ) ?? employee.sites[0];
+          const role = matchingRow?.role ?? employee.role;
+          const rateKey = buildEmployeeBranchRateKey(employee.name, role, site);
+          const fallbackRate = Number.isFinite(matchingRow?.rate)
+            ? (matchingRow?.rate ?? 0) * 8
+            : FIXED_PAY_RATE_PER_DAY;
+
+          return {
+            site,
+            hoursWorked,
+            dailyRatePerDay:
+              payroll.employeeBranchRates[rateKey] ?? fallbackRate,
+          };
+        })
+      : employee.sites.map((row) => ({
+          site: extractSiteName(row.site) || row.site || "Unknown Site",
+          hoursWorked: row.hoursWorked,
+          dailyRatePerDay: row.rate * 8,
+        }));
 
   return allocateCombinedBranchPay(breakdown);
 }
@@ -254,7 +297,7 @@ function buildGroupedEmployeeMetrics(
   employee: GroupedEmployeePayrollRow,
   payroll: UsePayrollStateResult,
 ): GroupedEmployeeMetrics {
-  const compensation = buildGroupedEmployeeCompensation(employee);
+  const compensation = buildGroupedEmployeeCompensation(employee, payroll);
   let approvedOvertimePay = 0;
   let paidLeavePay = 0;
   let cashAdvancePay = 0;
@@ -287,21 +330,25 @@ function buildGroupedEmployeeMetrics(
       paidLeavePay -
       cashAdvancePay,
   );
+  const dailyRates = Array.from(
+    new Set(
+      compensation.breakdown
+        .map((entry) => round2(entry.dailyRatePerDay))
+        .filter((rate) => Number.isFinite(rate) && rate > 0),
+    ),
+  ).sort((a, b) => a - b);
 
   return {
     totalHours: compensation.totalWorkedHours,
     payableDays: compensation.totalPayableDays,
     basePay: compensation.totalBasePay,
-    paidHolidayPay,
-    approvedOvertimePay,
-    paidLeavePay,
-    cashAdvancePay,
-    totalPay,
+    paidHolidayPay: round2(paidHolidayPay),
+    approvedOvertimePay: round2(approvedOvertimePay),
+    paidLeavePay: round2(paidLeavePay),
+    cashAdvancePay: round2(cashAdvancePay),
+    totalPay: round2(totalPay),
+    dailyRates,
   };
-}
-
-function getGroupedEmployeeKey(employee: GroupedEmployeePayrollRow): string {
-  return normalizeEmployeeName(employee.name);
 }
 
 function buildPayslipRecord(
@@ -311,7 +358,7 @@ function buildPayslipRecord(
 ): PayslipExportRecord | null {
   const representativeRow = pickRepresentativeRow(employee.sites);
   if (!representativeRow) return null;
-  const compensation = buildGroupedEmployeeCompensation(employee);
+  const compensation = buildGroupedEmployeeCompensation(employee, payroll);
   const metrics = buildGroupedEmployeeMetrics(employee, payroll);
 
   const site = summarizeGroupedSites(employee.sites)
@@ -356,7 +403,7 @@ function buildPayslipRecord(
     ratePerDay:
       compensation.totalPayableDays > 0
         ? compensation.totalBasePay / compensation.totalPayableDays
-        : 0,
+        : metrics.dailyRates[0] ?? 0,
     totalPay: metrics.totalPay,
     attendanceLogs: employeeLogs.map((log) => {
       const overrideHours = mergedLogOverrides[getLogOverrideKey(log)];
@@ -497,7 +544,7 @@ export default function PayrollSection({
       totalPay += buildGroupedEmployeeMetrics(employee, payroll).totalPay;
     }
 
-    return { pay: totalPay };
+    return { pay: round2(totalPay) };
   }, [groupedPayrollRows, payroll]);
 
   const groupedPayslipRecords = useMemo(
@@ -815,6 +862,7 @@ export default function PayrollSection({
                           <th
                             key={h}
                             className={`px-4 py-3.5 text-2xs font-semibold uppercase tracking-widest text-[#9babaf] ${
+                              h === "#" ||
                               h === "Days Worked" ||
                               h === "Rate/Day" ||
                               h === "Total Pay"
@@ -832,7 +880,7 @@ export default function PayrollSection({
                     <tbody>
                       {groupedPayrollPreviewRows.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-10">
+                          <td colSpan={8} className="py-10">
                             <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
                               <Search size={22} className="text-apple-silver" />
 
@@ -848,7 +896,9 @@ export default function PayrollSection({
                           </td>
                         </tr>
                       ) : (
-                        groupedPayrollPreviewRows.map((employee) => {
+                        groupedPayrollPreviewRows.map((employee, index) => {
+                          const employeeNumber =
+                            groupedPayrollPreviewStart + index + 1;
                           const representativeRow = pickRepresentativeRow(
                             employee.sites,
                           );
@@ -859,22 +909,22 @@ export default function PayrollSection({
                             employee,
                             payroll,
                           );
-                          const employeeDaysWorked = employeeMetrics.payableDays;
+                          const employeeDaysWorked =
+                            employeeMetrics.payableDays;
                           const employeeTotalPay = employeeMetrics.totalPay;
-                          const positiveRateRow =
-                            employee.sites.find(
-                              (row) =>
-                                Number.isFinite(row.rate) && row.rate > 0,
-                            ) ?? representativeRow;
-                          const employeeDailyRate =
-                            positiveRateRow && positiveRateRow.rate > 0
-                              ? Number((positiveRateRow.rate * 8).toFixed(2))
-                              : FIXED_PAY_RATE_PER_DAY;
-                          const employeePayslipRecord = buildPayslipRecord(
-                            employee,
-                            payrollPeriodLabel,
-                            payroll,
-                          );
+                          const employeeDailyRateLabel =
+                            employeeMetrics.dailyRates.length <= 1
+                              ? formatPayrollNumber(
+                                  employeeMetrics.dailyRates[0] ??
+                                    FIXED_PAY_RATE_PER_DAY,
+                                )
+                              : "Mixed";
+                          const employeeDailyRateTitle =
+                            employeeMetrics.dailyRates.length > 1
+                              ? `Branch rates: ${employeeMetrics.dailyRates
+                                  .map((rate) => formatPayrollNumber(rate))
+                                  .join(", ")}`
+                              : undefined;
 
                           return (
                             <tr
@@ -902,8 +952,11 @@ export default function PayrollSection({
                               <td className="px-4 py-3 text-sm font-mono text-apple-charcoal text-right">
                                 {formatDaysLabel(employeeDaysWorked)}
                               </td>
-                              <td className="px-4 py-3 text-sm font-mono text-apple-ash text-right">
-                                {formatPayrollNumber(employeeDailyRate)}
+                              <td
+                                className="px-4 py-3 text-sm font-mono text-apple-ash text-right"
+                                title={employeeDailyRateTitle}
+                              >
+                                {employeeDailyRateLabel}
                               </td>
                               <td className="px-4 py-3 text-sm font-mono text-apple-charcoal font-semibold text-right">
                                 {formatPayrollNumber(employeeTotalPay)}
@@ -1176,7 +1229,7 @@ ${
                   if (!representativeRow) return;
 
                   const compensation =
-                    buildGroupedEmployeeCompensation(selectedEmployee);
+                    buildGroupedEmployeeCompensation(selectedEmployee, payroll);
                   const metrics = buildGroupedEmployeeMetrics(
                     selectedEmployee,
                     payroll,
