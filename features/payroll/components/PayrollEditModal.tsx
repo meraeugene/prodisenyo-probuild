@@ -63,6 +63,7 @@ const DAILY_HOURS_GRID_COLOR = "#bbf7d0";
 const CLOCK_IN_BAR_TOP_COLOR = "#15803d";
 const CLOCK_IN_BAR_BOTTOM_COLOR = "#4ade80";
 const CLOCK_IN_GRID_COLOR = "#d1fae5";
+const OVERTIME_ALERT_HOURS = 10;
 type AdjustmentFormType = "cashAdvance" | "overtime" | "paidLeave" | null;
 
 function parseNonNegativeValue(value: string): number {
@@ -296,7 +297,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
         FULL_WORKDAY_HOURS,
   );
   const daysWorked = computeDaysWorked(totalWorkedHours);
-  const remainingHours = branchPayAllocation.ignoredHours;
   const paidHolidayBonusDays = holidayLogDateSet.size;
   const underHoursLogs = currentLogsForPay.filter(
     (log) =>
@@ -304,11 +304,17 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
       log.hours < FULL_WORKDAY_HOURS &&
       !holidayLogDateSet.has(log.date),
   );
+  const highOvertimeHoursLogs = currentLogsForPay.filter(
+    (log) =>
+      log.hours >= OVERTIME_ALERT_HOURS && !holidayLogDateSet.has(log.date),
+  );
   const overtimeLogs = currentLogsForPay.filter(
     (log) =>
       computeSameDayOvertimeMinutes(log.otIn, log.otOut) > 0 &&
       !holidayLogDateSet.has(log.date),
   );
+  const hasHoursReviewWarning =
+    underHoursLogs.length > 0 || highOvertimeHoursLogs.length > 0;
   const baseWorkedPay =
     sitePayBreakdownWithAllocation.length > 0
       ? branchPayAllocation.totalBasePay
@@ -932,6 +938,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     pending until CEO approval.
                   </p>
                 )}
+                {highOvertimeHoursLogs.length > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-rose-700">
+                    Logs with 10.00 hours or more are flagged for overtime
+                    review before saving.
+                  </p>
+                )}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[980px] text-sm">
@@ -975,6 +987,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                         const isUnderRequiredHours =
                           getHoursNumber(log) > 0 &&
                           getHoursNumber(log) < FULL_WORKDAY_HOURS;
+                        const isHighOvertimeHours =
+                          getHoursNumber(log) >= OVERTIME_ALERT_HOURS &&
+                          !isPaidHoliday;
                         const isOvertimeDay =
                           computeSameDayOvertimeMinutes(log.otIn, log.otOut) > 0 &&
                           !isPaidHoliday;
@@ -988,7 +1003,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             className={`border-b border-apple-mist/60 last:border-0 ${
                               isPaidHoliday
                                 ? "bg-sky-50/50"
-                                : isUnderRequiredHours
+                                : isHighOvertimeHours
+                                  ? "bg-rose-50/60"
+                                  : isUnderRequiredHours
                                   ? "bg-yellow-50"
                                   : "odd:bg-apple-snow/30"
                             }`}
@@ -1008,7 +1025,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                                     Under 8h
                                   </span>
                                 )}
-                                {isOvertimeDay && (
+                                {isHighOvertimeHours && (
+                                  <span className="w-fit rounded-full border border-rose-300 bg-rose-100 px-2 py-0.5 text-2xs font-semibold text-rose-800">
+                                    10h+ Overtime
+                                  </span>
+                                )}
+                                {isOvertimeDay && !isHighOvertimeHours && (
                                   <span className="w-fit rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-2xs font-semibold text-emerald-800">
                                     Overtime
                                   </span>
@@ -1162,14 +1184,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-apple-charcoal">
-                    Ignored Remaining Hours (&lt;8)
-                  </span>
-                  <span className="font-mono font-semibold text-apple-charcoal text-right">
-                    {formatPayrollNumber(remainingHours)} hrs
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-apple-charcoal">Base Pay</span>
                   <span className="font-mono font-semibold text-apple-charcoal text-right">
                     {formatPeso(baseWorkedPay)}
@@ -1253,6 +1267,13 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
                     Worked hours are below 8.00, so no full paid day is counted
                     yet.
+                  </div>
+                )}
+                {hasHoursReviewWarning && (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                    Overtime hours (10h+) or lacking time (&lt;8h) may affect
+                    payroll calculation. Please double-check all logs before
+                    saving.
                   </div>
                 )}
                 <div className="border-t border-apple-mist pt-2 mt-2 flex items-center justify-between gap-3">

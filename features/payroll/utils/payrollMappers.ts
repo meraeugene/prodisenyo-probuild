@@ -28,7 +28,22 @@ export function parsePayrollIdentity(employeeText: string): {
 }
 
 export function getLogOverrideKey(log: DailyLogRow): string {
-  return `${log.date}|||${log.employee}|||${log.site}`;
+  const normalizeSegment = (value: string): string => {
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : "-";
+  };
+
+  return [
+    normalizeSegment(log.date),
+    normalizeSegment(log.employee),
+    normalizeSegment(log.site),
+    normalizeSegment(log.time1In),
+    normalizeSegment(log.time1Out),
+    normalizeSegment(log.time2In),
+    normalizeSegment(log.time2Out),
+    normalizeSegment(log.otIn),
+    normalizeSegment(log.otOut),
+  ].join("|||");
 }
 
 export function normalizeEmployeeNameKey(name: string): string {
