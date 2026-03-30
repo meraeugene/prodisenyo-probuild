@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import PayrollInsightsDashboard from "@/components/PayrollInsightsDashboard";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
@@ -100,13 +102,21 @@ function PayrollAnalyticsLoadingState() {
 }
 
 export default function PayrollAnalyticsPageClient() {
+  const searchParams = useSearchParams();
   const { data, loading, error, selectedPeriodKey, setSelectedPeriodKey } =
     useHistoricalDashboardData();
+  const runIdFromQuery = searchParams.get("runId");
   const payrollRows = data?.payrollRows ?? [];
   const attendanceRows = data?.payrollAttendanceInputs ?? [];
+  const dailyPaidPoints = data?.payrollDailyPaidPoints ?? [];
   const periodOptions = data?.periodOptions ?? [];
-  const hasPayrollAnalyticsData =
-    payrollRows.length > 0 && attendanceRows.length > 0;
+  const hasPayrollAnalyticsData = payrollRows.length > 0;
+
+  useEffect(() => {
+    if (!runIdFromQuery) return;
+    if (runIdFromQuery === selectedPeriodKey) return;
+    setSelectedPeriodKey(runIdFromQuery);
+  }, [runIdFromQuery, selectedPeriodKey, setSelectedPeriodKey]);
 
   return (
     <div className="space-y-4">
@@ -143,6 +153,7 @@ export default function PayrollAnalyticsPageClient() {
         <PayrollInsightsDashboard
           payrollRows={payrollRows}
           attendanceRows={attendanceRows}
+          dailyPaidPoints={dailyPaidPoints}
         />
       ) : error ? (
         <section className="rounded-[14px] border border-red-100 bg-red-50 p-6 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">

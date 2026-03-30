@@ -76,7 +76,7 @@ export default function PayrollPage() {
     }
 
     toast.success(
-      "Payroll preview generated. Review it, then save the payroll run.",
+      "Payroll preview generated. Review it, then submit the payroll report.",
     );
   }
 
@@ -106,8 +106,8 @@ export default function PayrollPage() {
         });
         toast.success(
           currentPayrollRunId
-            ? "Payroll changes saved. Pending overtime stays in the CEO queue."
-            : "Payroll saved and tracked for this pay period.",
+            ? "Payroll report updated. Pending overtime stays in the CEO queue."
+            : "Payroll report submitted and tracked for this pay period.",
         );
       } catch (error) {
         console.error("PAYROLL_SAVE_FAILED", {
@@ -119,7 +119,9 @@ export default function PayrollPage() {
           payrollRowCount: payroll.payrollRows.length,
         });
         toast.error(
-          error instanceof Error ? error.message : "Unable to save payroll.",
+          error instanceof Error
+            ? error.message
+            : "Unable to submit payroll report.",
         );
       }
     });
@@ -139,7 +141,7 @@ export default function PayrollPage() {
       <DashboardPageHero
         eyebrow="Payroll"
         title="Generate Payroll"
-        description="Review grouped employee rows, manage paid holidays and rates, then export the finished payroll report."
+        description="Review grouped employee rows, manage paid holidays and rates, then submit the finished payroll report."
       />
 
       <PayrollSection
@@ -180,13 +182,13 @@ export default function PayrollPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-apple-steel">
-                    Save Payroll
+                    Submit Payroll Report
                   </p>
                   <h2 className="mt-1 text-xl font-semibold tracking-tight text-apple-charcoal">
-                    Save this payroll for the current period?
+                    Submit this payroll report for the current period?
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-apple-steel">
-                    This will save the payroll for{" "}
+                    This will submit the payroll report for{" "}
                     <span className="font-semibold text-apple-charcoal">
                       {site}
                     </span>{" "}
@@ -218,9 +220,9 @@ export default function PayrollPage() {
 
               <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 px-4 py-3">
                 <p className="text-sm leading-6 text-emerald-900">
-                  This saves the payroll record and keeps it available in the
-                  system. Only overtime requests continue through the separate
-                  approval flow.
+                  This submits the payroll report and keeps it available in the
+                  CEO report center. Only overtime requests continue through the
+                  separate approval flow.
                 </p>
               </div>
             </div>
@@ -246,7 +248,7 @@ export default function PayrollPage() {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Send size={15} />
-                Confirm And Save
+                Confirm Submission
               </button>
             </div>
           </div>

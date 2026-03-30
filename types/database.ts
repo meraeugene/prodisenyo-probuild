@@ -350,6 +350,45 @@ export interface Database {
           total_pay?: number;
         };
       };
+      payroll_run_daily_totals: {
+        Row: {
+          id: string;
+          payroll_run_id: string;
+          payroll_run_item_id: string | null;
+          attendance_import_id: string | null;
+          employee_name: string;
+          role_code: string;
+          site_name: string;
+          payout_date: string;
+          hours_worked: number;
+          total_pay: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          payroll_run_id: string;
+          payroll_run_item_id?: string | null;
+          attendance_import_id?: string | null;
+          employee_name: string;
+          role_code: string;
+          site_name: string;
+          payout_date: string;
+          hours_worked?: number;
+          total_pay?: number;
+          created_at?: string;
+        };
+        Update: {
+          payroll_run_id?: string;
+          payroll_run_item_id?: string | null;
+          attendance_import_id?: string | null;
+          employee_name?: string;
+          role_code?: string;
+          site_name?: string;
+          payout_date?: string;
+          hours_worked?: number;
+          total_pay?: number;
+        };
+      };
       payroll_adjustments: {
         Row: {
           id: string;

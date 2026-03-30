@@ -216,6 +216,20 @@ create table if not exists public.payroll_run_items (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.payroll_run_daily_totals (
+  id uuid primary key default gen_random_uuid(),
+  payroll_run_id uuid not null references public.payroll_runs(id) on delete cascade,
+  payroll_run_item_id uuid references public.payroll_run_items(id) on delete cascade,
+  attendance_import_id uuid references public.attendance_imports(id) on delete set null,
+  employee_name text not null,
+  role_code text not null,
+  site_name text not null,
+  payout_date date not null,
+  hours_worked numeric(10,2) not null default 0,
+  total_pay numeric(14,2) not null default 0,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.payroll_adjustments (
   id uuid primary key default gen_random_uuid(),
   payroll_run_id uuid references public.payroll_runs(id) on delete cascade,
@@ -270,6 +284,9 @@ create index if not exists payroll_runs_status_idx on public.payroll_runs(status
 create index if not exists payroll_runs_period_idx on public.payroll_runs(period_start, period_end);
 create unique index if not exists employee_branch_rates_lookup_idx on public.employee_branch_rates(employee_name_key, role_code, site_name_key);
 create index if not exists payroll_run_items_payroll_run_id_idx on public.payroll_run_items(payroll_run_id);
+create index if not exists payroll_run_daily_totals_payroll_run_id_idx on public.payroll_run_daily_totals(payroll_run_id);
+create index if not exists payroll_run_daily_totals_payout_date_idx on public.payroll_run_daily_totals(payout_date);
+create unique index if not exists payroll_run_daily_totals_item_date_idx on public.payroll_run_daily_totals(payroll_run_item_id, payout_date);
 create index if not exists payroll_adjustments_payroll_run_id_idx on public.payroll_adjustments(payroll_run_id);
 create index if not exists payroll_adjustments_status_idx on public.payroll_adjustments(status);
 create index if not exists payroll_adjustments_attendance_import_id_idx on public.payroll_adjustments(attendance_import_id);
@@ -302,6 +319,7 @@ alter table public.role_rates enable row level security;
 alter table public.employee_branch_rates enable row level security;
 alter table public.payroll_runs enable row level security;
 alter table public.payroll_run_items enable row level security;
+alter table public.payroll_run_daily_totals enable row level security;
 alter table public.payroll_adjustments enable row level security;
 alter table public.audit_logs enable row level security;
 
@@ -370,6 +388,9 @@ drop policy if exists "payroll runs updated by payroll managers and ceo" on publ
 drop policy if exists "payroll run items readable by authenticated users" on public.payroll_run_items;
 drop policy if exists "payroll run items inserted by payroll managers and ceo" on public.payroll_run_items;
 drop policy if exists "payroll run items updated by payroll managers and ceo" on public.payroll_run_items;
+drop policy if exists "payroll run daily totals readable by authenticated users" on public.payroll_run_daily_totals;
+drop policy if exists "payroll run daily totals inserted by payroll managers and ceo" on public.payroll_run_daily_totals;
+drop policy if exists "payroll run daily totals updated by payroll managers and ceo" on public.payroll_run_daily_totals;
 drop policy if exists "payroll adjustments readable by authenticated users" on public.payroll_adjustments;
 drop policy if exists "payroll adjustments inserted by payroll managers and ceo" on public.payroll_adjustments;
 drop policy if exists "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments;
@@ -402,6 +423,9 @@ create policy "payroll runs updated by payroll managers and ceo" on public.payro
 create policy "payroll run items readable by authenticated users" on public.payroll_run_items for select using (auth.role() = 'authenticated');
 create policy "payroll run items inserted by payroll managers and ceo" on public.payroll_run_items for insert with check (public.is_ceo() or public.is_payroll_manager());
 create policy "payroll run items updated by payroll managers and ceo" on public.payroll_run_items for update using (public.is_ceo() or public.is_payroll_manager()) with check (public.is_ceo() or public.is_payroll_manager());
+create policy "payroll run daily totals readable by authenticated users" on public.payroll_run_daily_totals for select using (auth.role() = 'authenticated');
+create policy "payroll run daily totals inserted by payroll managers and ceo" on public.payroll_run_daily_totals for insert with check (public.is_ceo() or public.is_payroll_manager());
+create policy "payroll run daily totals updated by payroll managers and ceo" on public.payroll_run_daily_totals for update using (public.is_ceo() or public.is_payroll_manager()) with check (public.is_ceo() or public.is_payroll_manager());
 create policy "payroll adjustments readable by authenticated users" on public.payroll_adjustments for select using (auth.role() = 'authenticated');
 create policy "payroll adjustments inserted by payroll managers and ceo" on public.payroll_adjustments for insert with check (public.is_ceo() or public.is_payroll_manager());
 create policy "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments for update using (public.is_ceo() or public.is_payroll_manager()) with check (public.is_ceo() or public.is_payroll_manager());

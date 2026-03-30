@@ -53,14 +53,8 @@ function normalizeEmployeeKey(name: string): string {
   return name.trim().toLowerCase();
 }
 
-function parseIsoDate(isoDate: string): Date | null {
-  const parsed = new Date(`${isoDate}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed;
-}
-
-function workerKey(role: string, name: string): string {
-  return `${role}|||${name}`;
+function workerKey(name: string): string {
+  return normalizeEmployeeKey(name);
 }
 
 function splitSiteNames(value: string): string[] {
@@ -75,7 +69,7 @@ function getDailyHoursByWorker(
 ): Map<string, Map<string, number>> {
   const map = new Map<string, Map<string, number>>();
   for (const row of attendanceRows) {
-    const key = workerKey(row.role, row.name);
+    const key = workerKey(row.name);
     const daily = map.get(key) ?? new Map<string, number>();
     daily.set(row.date, (daily.get(row.date) ?? 0) + row.hours);
     map.set(key, daily);
@@ -88,7 +82,7 @@ function getSiteHoursByWorker(
 ): Map<string, Map<string, number>> {
   const map = new Map<string, Map<string, number>>();
   for (const row of attendanceRows) {
-    const key = workerKey(row.role, row.name);
+    const key = workerKey(row.name);
     const sites = map.get(key) ?? new Map<string, number>();
     sites.set(row.site, (sites.get(row.site) ?? 0) + row.hours);
     map.set(key, sites);
@@ -103,7 +97,7 @@ function buildTrend(
   const perDate = new Map<string, { regular: number; overtime: number }>();
 
   for (const row of payrollRows) {
-    const dailyHours = workerDailyHours.get(workerKey(row.role, row.worker));
+    const dailyHours = workerDailyHours.get(workerKey(row.worker));
     if (!dailyHours || dailyHours.size === 0) continue;
 
     const totalHours = Array.from(dailyHours.values()).reduce(
@@ -121,31 +115,10 @@ function buildTrend(
     }
   }
 
-  const sortedDates = Array.from(perDate.keys()).sort((a, b) => a.localeCompare(b));
-  if (sortedDates.length === 0) return [];
-
-  const firstDate = parseIsoDate(sortedDates[0]);
-  if (!firstDate) return [];
-
-  const perWeek = new Map<number, { regular: number; overtime: number }>();
-  const dayMs = 24 * 60 * 60 * 1000;
-
-  for (const dateText of sortedDates) {
-    const date = parseIsoDate(dateText);
-    if (!date) continue;
-    const daysDiff = Math.floor((date.getTime() - firstDate.getTime()) / dayMs);
-    const weekNo = Math.floor(daysDiff / 7) + 1;
-    const current = perWeek.get(weekNo) ?? { regular: 0, overtime: 0 };
-    const value = perDate.get(dateText)!;
-    current.regular += value.regular;
-    current.overtime += value.overtime;
-    perWeek.set(weekNo, current);
-  }
-
-  return Array.from(perWeek.entries())
-    .sort((a, b) => a[0] - b[0])
-    .map(([weekNo, value]) => ({
-      period: `Week ${weekNo}`,
+  return Array.from(perDate.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([dateText, value]) => ({
+      period: dateText,
       regular: round2(value.regular),
       overtime: round2(value.overtime),
       total: round2(value.regular + value.overtime),
@@ -162,7 +135,7 @@ function buildProjectComposition(
   >();
 
   for (const row of payrollRows) {
-    const sites = workerSiteHours.get(workerKey(row.role, row.worker));
+    const sites = workerSiteHours.get(workerKey(row.worker));
     if (!sites || sites.size === 0) {
       const fallbackSites = splitSiteNames(row.site || "Unknown Site");
       const ratio = fallbackSites.length > 0 ? 1 / fallbackSites.length : 1;

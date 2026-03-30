@@ -719,11 +719,7 @@ export default function PayrollSection({
                     ) : (
                       <Calculator size={14} />
                     )}
-                    {savePending
-                      ? "Saving..."
-                      : currentPayrollRunId
-                        ? "Save Payroll Changes"
-                        : "Save Payroll"}
+                    {savePending ? "Submitting..." : "Submit Payroll Report"}
                   </button>
                 )}
                 <button

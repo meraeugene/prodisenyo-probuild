@@ -11,6 +11,10 @@ import {
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
 import {
+  buildDailyPaidPointsFromStoredTotals,
+  type DailyPaidPoint,
+} from "@/lib/payrollTrend";
+import {
   buildDailyRows,
   selectAvailableSites,
 } from "@/features/attendance/utils/attendanceSelectors";
@@ -22,6 +26,8 @@ type AttendanceImportRow =
   Database["public"]["Tables"]["attendance_imports"]["Row"];
 type PayrollRunRow = Database["public"]["Tables"]["payroll_runs"]["Row"];
 type PayrollRunItemRow = Database["public"]["Tables"]["payroll_run_items"]["Row"];
+type PayrollRunDailyTotalRow =
+  Database["public"]["Tables"]["payroll_run_daily_totals"]["Row"];
 
 export interface RecentPayrollActivityRow {
   type: string;
@@ -56,6 +62,7 @@ export interface HistoricalDashboardData {
   records: AttendanceRecord[];
   payrollRows: PayrollRow[];
   payrollAttendanceInputs: AttendanceRecordInput[];
+  payrollDailyPaidPoints: DailyPaidPoint[];
   availableSites: string[];
   attendancePeriod: string;
   recentActivity: RecentPayrollActivityRow[];
@@ -390,6 +397,7 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               records: [],
               payrollRows: [],
               payrollAttendanceInputs: [],
+              payrollDailyPaidPoints: [],
               availableSites: [],
               attendancePeriod: "No recorded payroll period yet",
               recentActivity: [],
@@ -527,6 +535,21 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           );
         }
 
+        const payrollDailyTotalsResult =
+          trackedRunIds.length > 0
+            ? await supabase
+                .from("payroll_run_daily_totals")
+                .select("payroll_run_id, payout_date, total_pay")
+                .in("payroll_run_id", trackedRunIds)
+                .order("payout_date", { ascending: true })
+            : { data: [], error: null };
+
+        if (payrollDailyTotalsResult.error) {
+          throw new Error(
+            `[HISTORICAL_LOAD_DAILY_TOTALS_FAILED] ${payrollDailyTotalsResult.error.message}`,
+          );
+        }
+
         const attendanceRows = (attendanceResult.data ??
           []) as AttendanceRecordRow[];
         const records = mapAttendanceRecords(attendanceRows);
@@ -536,6 +559,11 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           trackedRunsById,
         );
         const payrollAttendanceInputs = buildAttendanceInputs(records, employeeRows);
+        const payrollDailyPaidPoints = buildDailyPaidPointsFromStoredTotals(
+          (payrollDailyTotalsResult.data ?? []) as Array<
+            Pick<PayrollRunDailyTotalRow, "payroll_run_id" | "payout_date" | "total_pay">
+          >,
+        );
         const employees = buildEmployeesFromAttendance(records);
         const availableSites = selectAvailableSites(records);
         const attendancePeriod = buildAttendancePeriod(
@@ -557,6 +585,7 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             records,
             payrollRows,
             payrollAttendanceInputs,
+            payrollDailyPaidPoints,
             availableSites,
             attendancePeriod,
             recentActivity: buildRecentActivity(payrollRows, dedupedTrackedRuns),

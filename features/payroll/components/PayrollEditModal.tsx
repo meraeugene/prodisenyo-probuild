@@ -659,7 +659,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     className="w-full rounded-xl border border-gray-200 bg-apple-snow/40 p-4 space-y-4"
                   >
                     <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
-                      Save the payroll after adding overtime so this request can
+                      Submit the payroll report after adding overtime so this
+                      request can
                       be submitted for CEO approval.
                     </div>
                     <div className="flex flex-wrap gap-4">

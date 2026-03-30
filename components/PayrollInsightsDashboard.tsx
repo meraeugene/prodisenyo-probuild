@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
+  Area,
+  AreaChart,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -17,10 +19,17 @@ import {
 } from "recharts";
 import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
+import {
+  aggregateDailyPaidPoints,
+  aggregateDailyPointsToCalendarWeeks,
+  type DailyPaidPoint,
+  type TrendRange,
+} from "@/lib/payrollTrend";
 
 interface PayrollInsightsDashboardProps {
   payrollRows: PayrollRow[];
   attendanceRows: AttendanceRecordInput[];
+  dailyPaidPoints?: DailyPaidPoint[];
 }
 
 const THEME_BRANCH_COLORS = [
@@ -62,6 +71,14 @@ function formatCurrency(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+function formatCompactCurrency(value: number): string {
+  const absolute = Math.abs(value);
+  if (absolute >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+  if (absolute >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (absolute >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toLocaleString("en-PH");
 }
 
 function shorten(value: string, max = 16): string {
@@ -183,11 +200,35 @@ function KpiCard({ label, value }: { label: string; value: string | number }) {
 export default function PayrollInsightsDashboard({
   payrollRows,
   attendanceRows,
+  dailyPaidPoints = [],
 }: PayrollInsightsDashboardProps) {
+  const [trendRange, setTrendRange] = useState<TrendRange>("daily");
   const insights = useMemo(
     () => buildPayrollInsightsData(payrollRows, attendanceRows),
     [payrollRows, attendanceRows],
   );
+  const dailyPaidTrend = useMemo<DailyPaidPoint[]>(
+    () => {
+      if (dailyPaidPoints.length > 0) {
+        return [...dailyPaidPoints].sort((a, b) => a.date.localeCompare(b.date));
+      }
+
+      return insights.payrollCostTrend
+        .map((point) => ({
+          date: point.period,
+          total: point.total,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    },
+    [dailyPaidPoints, insights.payrollCostTrend],
+  );
+  const payrollPaidTrend = useMemo(() => {
+    if (trendRange === "weekly") {
+      return aggregateDailyPointsToCalendarWeeks(dailyPaidTrend);
+    }
+
+    return aggregateDailyPaidPoints(dailyPaidTrend, trendRange);
+  }, [dailyPaidTrend, trendRange]);
 
   const projectDistributionData = useMemo(() => {
     return insights.payrollDistributionByProject.map((item, index) => ({
@@ -257,6 +298,93 @@ export default function PayrollInsightsDashboard({
               value={formatCurrency(insights.kpis.averageSalary)}
             />
           </div>
+
+          <ChartCard
+            title="Payroll Paid Trend"
+            height="h-[360px]"
+            actions={
+              <div className="inline-flex rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-1">
+                {(["daily", "weekly", "monthly", "yearly"] as TrendRange[]).map(
+                  (option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setTrendRange(option)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
+                        trendRange === option
+                          ? "bg-[#1f6a37] text-white"
+                          : "text-apple-steel hover:text-apple-charcoal"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ),
+                )}
+              </div>
+            }
+          >
+            {payrollPaidTrend.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm text-apple-steel">No trend data available.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={payrollPaidTrend}
+                  margin={{ top: 10, right: 12, left: 8, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="analyticsTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="rgb(var(--theme-chart-grid))"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "rgb(var(--theme-chart-axis))",
+                      fontSize: 11,
+                    }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "rgb(var(--theme-chart-axis))",
+                      fontSize: 11,
+                    }}
+                    tickFormatter={(value) => formatCompactCurrency(Number(value))}
+                  />
+                  <Tooltip
+                    content={<ChartTooltip valueFormatter={formatCurrency} />}
+                    cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    name="Paid Total"
+                    stroke="rgb(var(--theme-chart-3))"
+                    strokeWidth={3}
+                    fill="url(#analyticsTrendFill)"
+                    dot={{ r: 0 }}
+                    activeDot={{
+                      r: 5,
+                      fill: "rgb(var(--theme-chart-3))",
+                      stroke: "white",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
             <ChartCard

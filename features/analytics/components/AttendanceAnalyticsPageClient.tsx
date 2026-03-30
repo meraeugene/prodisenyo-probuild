@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import AttendanceAnalyticsSection from "@/features/analytics/components/AttendanceAnalyticsSection";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
@@ -96,13 +98,21 @@ function AttendanceAnalyticsLoadingState() {
 }
 
 export default function AttendanceAnalyticsPageClient() {
+  const searchParams = useSearchParams();
   const { data, loading, error, selectedPeriodKey, setSelectedPeriodKey } =
     useHistoricalDashboardData();
+  const runIdFromQuery = searchParams.get("runId");
   const employees = data?.employees ?? [];
   const records = data?.records ?? [];
   const periodOptions = data?.periodOptions ?? [];
   const viewerRole = data?.viewerRole ?? null;
   const isCeo = viewerRole === "ceo";
+
+  useEffect(() => {
+    if (!runIdFromQuery) return;
+    if (runIdFromQuery === selectedPeriodKey) return;
+    setSelectedPeriodKey(runIdFromQuery);
+  }, [runIdFromQuery, selectedPeriodKey, setSelectedPeriodKey]);
 
   return (
     <div className="space-y-4">

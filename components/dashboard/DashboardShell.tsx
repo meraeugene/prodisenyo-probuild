@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Clock3,
   LayoutDashboard,
+  LineChart,
   Settings,
   Upload,
   UserRoundSearch,
@@ -34,6 +35,11 @@ const CEO_GENERAL_ITEMS = [
     href: "/overtime-approvals",
     label: "Overtime Approvals",
     icon: Clock3,
+  },
+  {
+    href: "/payroll-reports",
+    label: "Payroll Reports",
+    icon: LineChart,
   },
 ] as const;
 
@@ -106,7 +112,7 @@ export default function DashboardShell({
   const isAnalyticsRoute =
     pathname === "/attendance-analytics" || pathname === "/payroll-analytics";
   const canSeeAnalyticsNav =
-    isCeo ||
+    !isCeo &&
     (!workspaceReset &&
       (navState.hasSavedAttendance ||
         navState.hasSavedPayroll ||

@@ -16,6 +16,7 @@ const PROTECTED_PREFIXES = [
   "/generate-payroll",
   "/attendance-analytics",
   "/payroll-analytics",
+  "/payroll-reports",
   "/settings",
 ] as const;
 
@@ -30,10 +31,11 @@ const CEO_ALLOWED_PREFIXES = [
   "/overtime-approvals",
   "/attendance-analytics",
   "/payroll-analytics",
+  "/payroll-reports",
   "/settings",
 ] as const;
 
-const CEO_ONLY_PREFIXES = ["/overtime-approvals"] as const;
+const CEO_ONLY_PREFIXES = ["/overtime-approvals", "/payroll-reports"] as const;
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some(

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Clock3,
   Loader2,
@@ -56,6 +58,15 @@ interface PayrollApprovalQueueProps {
   refreshToken?: number;
 }
 
+interface AttendanceLogRow {
+  id: string;
+  log_date: string;
+  log_time: string;
+  log_type: "IN" | "OUT";
+  log_source: "Time1" | "Time2" | "OT";
+  site_name: string;
+}
+
 function formatMoney(value: number): string {
   return value.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
@@ -75,6 +86,25 @@ function formatRequestedAt(value: string): string {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatLogDate(value: string): string {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return value;
+  return date.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatLogTime(value: string): string {
+  const date = new Date(`1970-01-01T${value}`);
+  if (!Number.isFinite(date.getTime())) return value;
+  return date.toLocaleTimeString("en-PH", {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -137,8 +167,17 @@ export default function PayrollApprovalQueue({
   const [pendingActionType, setPendingActionType] = useState<
     "approve" | "reject" | null
   >(null);
+  const [expandedLogRequestIds, setExpandedLogRequestIds] = useState<
+    Record<string, boolean>
+  >({});
+  const [employeeLogsByRequestId, setEmployeeLogsByRequestId] = useState<
+    Record<string, AttendanceLogRow[]>
+  >({});
+  const [employeeLogsLoadingByRequestId, setEmployeeLogsLoadingByRequestId] =
+    useState<Record<string, boolean>>({});
+  const [employeeLogsErrorByRequestId, setEmployeeLogsErrorByRequestId] =
+    useState<Record<string, string | null>>({});
   const [isPending, startTransition] = useTransition();
-  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,6 +185,10 @@ export default function PayrollApprovalQueue({
     async function loadPendingRequests() {
       if (role !== "ceo") {
         setPendingRequests([]);
+        setExpandedLogRequestIds({});
+        setEmployeeLogsByRequestId({});
+        setEmployeeLogsLoadingByRequestId({});
+        setEmployeeLogsErrorByRequestId({});
         setLoading(false);
         return;
       }
@@ -179,12 +222,85 @@ export default function PayrollApprovalQueue({
     return () => {
       cancelled = true;
     };
-  }, [role, refreshToken, reloadNonce]);
+  }, [role, refreshToken]);
 
   const hasRequests = useMemo(
     () => pendingRequests.length > 0,
     [pendingRequests.length],
   );
+
+  async function loadEmployeeLogsForRequest(request: PendingOvertimeRequest) {
+    if (!request.id) return;
+
+    if (!request.attendance_import_id || !request.employee_name) {
+      setEmployeeLogsErrorByRequestId((prev) => ({
+        ...prev,
+        [request.id]:
+          "No linked attendance import was found for this overtime request.",
+      }));
+      return;
+    }
+
+    setEmployeeLogsLoadingByRequestId((prev) => ({
+      ...prev,
+      [request.id]: true,
+    }));
+    setEmployeeLogsErrorByRequestId((prev) => ({
+      ...prev,
+      [request.id]: null,
+    }));
+
+    const supabase = createSupabaseBrowserClient();
+    const { data, error } = await supabase
+      .from("attendance_records")
+      .select("id, log_date, log_time, log_type, log_source, site_name")
+      .eq("import_id", request.attendance_import_id)
+      .eq("employee_name", request.employee_name)
+      .order("log_date", { ascending: false })
+      .order("log_time", { ascending: false })
+      .limit(150);
+
+    if (error) {
+      setEmployeeLogsByRequestId((prev) => ({
+        ...prev,
+        [request.id]: [],
+      }));
+      setEmployeeLogsErrorByRequestId((prev) => ({
+        ...prev,
+        [request.id]: "Unable to load employee attendance logs.",
+      }));
+      setEmployeeLogsLoadingByRequestId((prev) => ({
+        ...prev,
+        [request.id]: false,
+      }));
+      return;
+    }
+
+    setEmployeeLogsByRequestId((prev) => ({
+      ...prev,
+      [request.id]: (data ?? []) as AttendanceLogRow[],
+    }));
+    setEmployeeLogsLoadingByRequestId((prev) => ({
+      ...prev,
+      [request.id]: false,
+    }));
+  }
+
+  function toggleRequestLogs(request: PendingOvertimeRequest) {
+    const isOpen = Boolean(expandedLogRequestIds[request.id]);
+    const nextOpen = !isOpen;
+
+    setExpandedLogRequestIds((prev) => ({
+      ...prev,
+      [request.id]: nextOpen,
+    }));
+
+    if (!nextOpen) return;
+    if (employeeLogsByRequestId[request.id]) return;
+    if (employeeLogsLoadingByRequestId[request.id]) return;
+
+    void loadEmployeeLogsForRequest(request);
+  }
 
   function handleAction(adjustmentId: string, action: "approve" | "reject") {
     setPendingActionId(adjustmentId);
@@ -205,6 +321,26 @@ export default function PayrollApprovalQueue({
         setPendingRequests((prev) =>
           prev.filter((request) => request.id !== adjustmentId),
         );
+        setExpandedLogRequestIds((prev) => {
+          const next = { ...prev };
+          delete next[adjustmentId];
+          return next;
+        });
+        setEmployeeLogsByRequestId((prev) => {
+          const next = { ...prev };
+          delete next[adjustmentId];
+          return next;
+        });
+        setEmployeeLogsLoadingByRequestId((prev) => {
+          const next = { ...prev };
+          delete next[adjustmentId];
+          return next;
+        });
+        setEmployeeLogsErrorByRequestId((prev) => {
+          const next = { ...prev };
+          delete next[adjustmentId];
+          return next;
+        });
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -305,6 +441,69 @@ export default function PayrollApprovalQueue({
                           &quot;{request.notes}&quot;
                         </div>
                       )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleRequestLogs(request)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-apple-mist bg-white px-3 py-1.5 text-[11px] font-semibold text-apple-charcoal transition hover:border-apple-steel"
+                      >
+                        {expandedLogRequestIds[request.id] ? (
+                          <>
+                            Hide Employee Logs
+                            <ChevronUp size={14} />
+                          </>
+                        ) : (
+                          <>
+                            View Employee Logs
+                            <ChevronDown size={14} />
+                          </>
+                        )}
+                      </button>
+
+                      {expandedLogRequestIds[request.id] ? (
+                        <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
+                          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] bg-[rgb(var(--apple-snow))] px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-apple-steel">
+                            <span>Date</span>
+                            <span>Time</span>
+                            <span>Type</span>
+                            <span>Source</span>
+                            <span>Site</span>
+                          </div>
+
+                          <div className="max-h-[220px] overflow-y-auto divide-y divide-apple-mist">
+                            {employeeLogsLoadingByRequestId[request.id] ? (
+                              <p className="px-3 py-4 text-xs text-apple-steel">
+                                Loading attendance logs...
+                              </p>
+                            ) : employeeLogsErrorByRequestId[request.id] ? (
+                              <p className="px-3 py-4 text-xs text-red-700">
+                                {employeeLogsErrorByRequestId[request.id]}
+                              </p>
+                            ) : (employeeLogsByRequestId[request.id] ?? []).length ===
+                              0 ? (
+                              <p className="px-3 py-4 text-xs text-apple-steel">
+                                No attendance logs found for this employee in the
+                                linked import.
+                              </p>
+                            ) : (
+                              (employeeLogsByRequestId[request.id] ?? []).map((log) => (
+                                <div
+                                  key={log.id}
+                                  className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] items-center px-3 py-2 text-xs text-apple-charcoal"
+                                >
+                                  <span>{formatLogDate(log.log_date)}</span>
+                                  <span>{formatLogTime(log.log_time)}</span>
+                                  <span>{log.log_type}</span>
+                                  <span>{log.log_source}</span>
+                                  <span className="truncate">{log.site_name}</span>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 

@@ -72,6 +72,33 @@ function splitSiteNames(value: string): string[] {
     .filter((site) => site.length > 0);
 }
 
+function toIsoDate(value: Date): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function buildDateRange(start: string | null, end: string | null): string[] {
+  if (!start || !end) return [];
+  const startDate = new Date(`${start}T00:00:00`);
+  const endDate = new Date(`${end}T00:00:00`);
+  if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime())) {
+    return [];
+  }
+  if (endDate.getTime() < startDate.getTime()) return [];
+
+  const dates: string[] = [];
+  const cursor = new Date(startDate);
+  let guard = 0;
+  while (cursor.getTime() <= endDate.getTime() && guard < 93) {
+    dates.push(toIsoDate(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+    guard += 1;
+  }
+  return dates;
+}
+
 function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
   const cashAdvance = round2(
     Number.isFinite(override?.cashAdvanceTotal)
@@ -103,6 +130,74 @@ function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
     overtimeHours,
     leavePay,
   };
+}
+
+interface DailyPayAllocationPoint {
+  date: string;
+  hoursWorked: number;
+  totalPay: number;
+}
+
+function buildDailyPayAllocations(params: {
+  totalPay: number;
+  totalHoursWorked: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+  dailyHoursByDate: Map<string, number>;
+}): DailyPayAllocationPoint[] {
+  const totalPay = round2(Math.max(0, params.totalPay));
+  if (totalPay <= 0) return [];
+
+  const sortedDailyHoursEntries = Array.from(params.dailyHoursByDate.entries())
+    .filter(([, hours]) => Number.isFinite(hours) && hours > 0)
+    .sort((a, b) => a[0].localeCompare(b[0]));
+
+  if (sortedDailyHoursEntries.length > 0) {
+    const sumHours = sortedDailyHoursEntries.reduce(
+      (sum, [, hours]) => sum + hours,
+      0,
+    );
+
+    if (sumHours > 0) {
+      let allocated = 0;
+
+      return sortedDailyHoursEntries.map(([date, hours], index) => {
+        const isLast = index === sortedDailyHoursEntries.length - 1;
+        const payPortion = isLast
+          ? round2(totalPay - allocated)
+          : round2(totalPay * (hours / sumHours));
+        allocated = round2(allocated + payPortion);
+
+        return {
+          date,
+          hoursWorked: round2(hours),
+          totalPay: payPortion,
+        };
+      });
+    }
+  }
+
+  const fallbackDates = buildDateRange(params.periodStart, params.periodEnd);
+  const dates =
+    fallbackDates.length > 0
+      ? fallbackDates
+      : [params.periodEnd ?? params.periodStart ?? toIsoDate(new Date())];
+  const fallbackHours = dates.length > 0 ? params.totalHoursWorked / dates.length : 0;
+  let allocated = 0;
+
+  return dates.map((date, index) => {
+    const isLast = index === dates.length - 1;
+    const payPortion = isLast
+      ? round2(totalPay - allocated)
+      : round2(totalPay / dates.length);
+    allocated = round2(allocated + payPortion);
+
+    return {
+      date,
+      hoursWorked: round2(Math.max(0, fallbackHours)),
+      totalPay: payPortion,
+    };
+  });
 }
 
 interface RequestOvertimeApprovalInput {
@@ -587,6 +682,25 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         },
       );
     }
+
+    const { error: deleteDailyTotalsError } = await database
+      .from("payroll_run_daily_totals")
+      .delete()
+      .eq("payroll_run_id", runId);
+
+    if (deleteDailyTotalsError) {
+      throw createPayrollSaveError(
+        "PAYROLL_SAVE_CLEAR_DAILY_TOTALS_FAILED",
+        "Failed to replace payroll daily totals.",
+        {
+          runId,
+          message: deleteDailyTotalsError.message,
+          code: deleteDailyTotalsError.code,
+          details: deleteDailyTotalsError.details,
+          hint: deleteDailyTotalsError.hint,
+        },
+      );
+    }
   } else {
     const { data: payrollRun, error: payrollRunError } = await database
       .from("payroll_runs")
@@ -677,6 +791,97 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       item.id,
     ]),
   );
+
+  const dailyTotalsPayload: Array<Record<string, unknown>> = [];
+
+  for (const snapshot of normalizedRowSnapshots) {
+    const rowKey = `${snapshot.row.role}|||${snapshot.row.worker}|||${snapshot.row.site}`.toLowerCase();
+    const payrollRunItemId = itemIdByKey.get(rowKey) ?? null;
+    if (!payrollRunItemId) continue;
+
+    const normalizedSites = new Set(
+      splitSiteNames(snapshot.row.site).map((site) => normalizeSiteName(site)),
+    );
+    const normalizedEmployeeName = normalizeEmployeeNameKey(snapshot.row.worker);
+    const normalizedRoleCode = snapshot.row.role.trim().toUpperCase();
+    const strictDailyHoursByDate = new Map<string, number>();
+    const fallbackDailyHoursByDate = new Map<string, number>();
+
+    input.payrollAttendanceInputs.forEach((record) => {
+      if (normalizeEmployeeNameKey(record.name) !== normalizedEmployeeName) return;
+
+      const siteName = normalizeSiteName(record.site);
+      if (normalizedSites.size > 0 && !normalizedSites.has(siteName)) return;
+
+      const recordDate = record.date?.trim();
+      if (!recordDate) return;
+      const recordHours = Number.isFinite(record.hours) ? record.hours : 0;
+      if (recordHours <= 0) return;
+
+      fallbackDailyHoursByDate.set(
+        recordDate,
+        round2((fallbackDailyHoursByDate.get(recordDate) ?? 0) + recordHours),
+      );
+
+      const recordRole = (record.role ?? "").trim().toUpperCase();
+      if (recordRole !== normalizedRoleCode) return;
+
+      strictDailyHoursByDate.set(
+        recordDate,
+        round2((strictDailyHoursByDate.get(recordDate) ?? 0) + recordHours),
+      );
+    });
+
+    const effectiveDailyHoursByDate =
+      strictDailyHoursByDate.size > 0
+        ? strictDailyHoursByDate
+        : fallbackDailyHoursByDate;
+
+    const allocations = buildDailyPayAllocations({
+      totalPay: snapshot.totalPay,
+      totalHoursWorked: snapshot.row.hoursWorked,
+      periodStart: periodRange.start,
+      periodEnd: periodRange.end,
+      dailyHoursByDate: effectiveDailyHoursByDate,
+    });
+
+    allocations
+      .filter((entry) => entry.totalPay > 0)
+      .forEach((entry) => {
+        dailyTotalsPayload.push({
+          payroll_run_id: runId,
+          payroll_run_item_id: payrollRunItemId,
+          attendance_import_id: input.attendanceImportId,
+          employee_name: snapshot.row.worker,
+          role_code: snapshot.row.role,
+          site_name: snapshot.row.site,
+          payout_date: entry.date,
+          hours_worked: entry.hoursWorked,
+          total_pay: entry.totalPay,
+        });
+      });
+  }
+
+  if (dailyTotalsPayload.length > 0) {
+    const { error: dailyTotalsError } = await database
+      .from("payroll_run_daily_totals")
+      .insert(dailyTotalsPayload);
+
+    if (dailyTotalsError) {
+      throw createPayrollSaveError(
+        "PAYROLL_SAVE_DAILY_TOTALS_FAILED",
+        "Failed to save payroll daily totals.",
+        {
+          runId,
+          rowCount: dailyTotalsPayload.length,
+          message: dailyTotalsError.message,
+          code: dailyTotalsError.code,
+          details: dailyTotalsError.details,
+          hint: dailyTotalsError.hint,
+        },
+      );
+    }
+  }
 
   const adjustmentPayload: Array<Record<string, unknown>> = [];
   const approvedAdjustmentRelinks: Array<{
@@ -877,7 +1082,7 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
     if (!itemError && item) {
       const { data: run, error: runError } = await database
         .from("payroll_runs")
-        .select("id, gross_total, net_total")
+        .select("id, gross_total, net_total, period_end")
         .eq("id", runId)
         .single();
 
@@ -928,6 +1133,60 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
 
         if (linkItemError) {
           throw new Error("Failed to relink approved overtime request.");
+        }
+
+        const payoutDate =
+          adjustment.effective_date ??
+          run.period_end ??
+          toIsoDate(new Date());
+
+        const { data: existingDailyTotal, error: existingDailyTotalError } =
+          await database
+            .from("payroll_run_daily_totals")
+            .select("id, total_pay, hours_worked")
+            .eq("payroll_run_item_id", item.id)
+            .eq("payout_date", payoutDate)
+            .maybeSingle();
+
+        if (existingDailyTotalError) {
+          throw new Error("Failed to load payroll daily total.");
+        }
+
+        if (existingDailyTotal) {
+          const { error: updateDailyTotalError } = await database
+            .from("payroll_run_daily_totals")
+            .update({
+              total_pay: round2(
+                (existingDailyTotal.total_pay ?? 0) + (adjustment.amount ?? 0),
+              ),
+              hours_worked: round2(
+                (existingDailyTotal.hours_worked ?? 0) +
+                  (adjustment.quantity ?? 0),
+              ),
+            })
+            .eq("id", existingDailyTotal.id);
+
+          if (updateDailyTotalError) {
+            throw new Error("Failed to update payroll daily total.");
+          }
+        } else {
+          const { error: insertDailyTotalError } = await database
+            .from("payroll_run_daily_totals")
+            .insert({
+              payroll_run_id: runId,
+              payroll_run_item_id: item.id,
+              attendance_import_id: adjustment.attendance_import_id,
+              employee_name: adjustment.employee_name,
+              role_code: adjustment.role_code,
+              site_name: adjustment.site_name,
+              payout_date: payoutDate,
+              hours_worked: round2(adjustment.quantity ?? 0),
+              total_pay: round2(adjustment.amount ?? 0),
+            });
+
+          if (insertDailyTotalError) {
+            throw new Error("Failed to create payroll daily total.");
+          }
         }
       }
     }

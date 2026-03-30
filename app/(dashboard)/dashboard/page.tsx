@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -32,7 +34,21 @@ import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSel
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import type { PayrollRow } from "@/lib/payrollEngine";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
+import {
+  aggregateDailyPaidPoints,
+  buildDailyPaidPointsFromStoredTotals,
+  buildDailyPaidPointsFromPayrollRuns,
+  buildWeeklyPointsFromPayrollReports,
+  type PayrollRunDailyTotalInput,
+  type PayrollTrendAttendanceLogInput,
+  type PayrollTrendRunInput,
+  type PayrollTrendRunItemInput,
+  type TrendPoint,
+  type TrendRange,
+} from "@/lib/payrollTrend";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { cn } from "@/lib/utils";
+import type { Database } from "@/types/database";
 
 const OVERVIEW_CHART_COLORS = [
   "rgb(var(--theme-chart-1))",
@@ -62,6 +78,40 @@ interface DashboardSiteCard {
   payrollTotal: number;
 }
 
+type DashboardPayrollRunRow = Pick<
+  Database["public"]["Tables"]["payroll_runs"]["Row"],
+  | "id"
+  | "attendance_import_id"
+  | "period_label"
+  | "period_start"
+  | "period_end"
+  | "submitted_at"
+  | "created_at"
+  | "net_total"
+  | "status"
+>;
+
+type DashboardPayrollRunItemRow = Pick<
+  Database["public"]["Tables"]["payroll_run_items"]["Row"],
+  "payroll_run_id" | "employee_name" | "site_name" | "hours_worked" | "total_pay"
+>;
+
+type DashboardAttendanceLogRow = Pick<
+  Database["public"]["Tables"]["attendance_records"]["Row"],
+  | "import_id"
+  | "employee_name"
+  | "log_date"
+  | "log_time"
+  | "log_type"
+  | "log_source"
+  | "site_name"
+>;
+
+type DashboardPayrollDailyTotalRow = Pick<
+  Database["public"]["Tables"]["payroll_run_daily_totals"]["Row"],
+  "payroll_run_id" | "payout_date" | "total_pay"
+>;
+
 function extractBranchName(value: string): string {
   if (!value) return "";
   return value.trim().split(/\s+/)[0].toUpperCase();
@@ -76,6 +126,33 @@ function splitSiteNames(value: string): string[] {
     .split(",")
     .map((site) => site.trim())
     .filter((site) => site.length > 0);
+}
+
+function formatCompactCurrency(value: number): string {
+  const absolute = Math.abs(value);
+  if (absolute >= 1_000_000_000) {
+    return `${(value / 1_000_000_000).toFixed(1)}B`;
+  }
+  if (absolute >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (absolute >= 1_000) {
+    return `${(value / 1_000).toFixed(1)}K`;
+  }
+  return value.toLocaleString("en-PH");
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function formatTrendPercent(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`;
 }
 
 function buildDepartmentCards(payrollRows: PayrollRow[]): DashboardSiteCard[] {
@@ -223,13 +300,37 @@ export default function OverviewPage() {
   } = useHistoricalDashboardData();
   const [role, setRole] = useState<"ceo" | "payroll_manager" | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const payrollRows = data?.payrollRows ?? [];
-  const payrollAttendanceInputs = data?.payrollAttendanceInputs ?? [];
+  const [ceoTrendRange, setCeoTrendRange] = useState<TrendRange>("daily");
+  const [ceoSubmittedRuns, setCeoSubmittedRuns] = useState<
+    PayrollTrendRunInput[]
+  >([]);
+  const [ceoDailyTotals, setCeoDailyTotals] = useState<
+    PayrollRunDailyTotalInput[]
+  >([]);
+  const [ceoFallbackRunItems, setCeoFallbackRunItems] = useState<
+    PayrollTrendRunItemInput[]
+  >([]);
+  const [ceoFallbackAttendanceLogs, setCeoFallbackAttendanceLogs] = useState<
+    PayrollTrendAttendanceLogInput[]
+  >([]);
+  const [ceoTrendLoading, setCeoTrendLoading] = useState(true);
+  const [ceoTrendReloadNonce, setCeoTrendReloadNonce] = useState(0);
+  const payrollRows = useMemo(() => data?.payrollRows ?? [], [data?.payrollRows]);
+  const payrollAttendanceInputs = useMemo(
+    () => data?.payrollAttendanceInputs ?? [],
+    [data?.payrollAttendanceInputs],
+  );
   const attendancePeriod =
     data?.attendancePeriod ?? "No recorded payroll period yet";
-  const records = data?.records ?? [];
-  const activityRows = data?.recentActivity ?? [];
-  const periodOptions = data?.periodOptions ?? [];
+  const records = useMemo(() => data?.records ?? [], [data?.records]);
+  const activityRows = useMemo(
+    () => data?.recentActivity ?? [],
+    [data?.recentActivity],
+  );
+  const periodOptions = useMemo(
+    () => data?.periodOptions ?? [],
+    [data?.periodOptions],
+  );
 
   const payrollInsights = useMemo(
     () => buildPayrollInsightsData(payrollRows, payrollAttendanceInputs),
@@ -320,6 +421,81 @@ export default function OverviewPage() {
   const activeSummaryCardDetails =
     summaryCards.find((card) => card.key === activeSummaryCard) ?? null;
 
+  const ceoDailyTrend = useMemo(() => {
+    const storedDailyPoints = buildDailyPaidPointsFromStoredTotals(ceoDailyTotals);
+    const totalsByDate = new Map<string, number>(
+      storedDailyPoints.map((point) => [point.date, point.total]),
+    );
+
+    const runIdsWithStoredDailyTotals = new Set(
+      ceoDailyTotals.map((row) => row.payroll_run_id),
+    );
+    const runsNeedingFallback = ceoSubmittedRuns.filter(
+      (run) => !runIdsWithStoredDailyTotals.has(run.id),
+    );
+
+    if (
+      runsNeedingFallback.length === 0 ||
+      ceoFallbackRunItems.length === 0
+    ) {
+      return storedDailyPoints;
+    }
+
+    const fallbackDailyPoints = buildDailyPaidPointsFromPayrollRuns(
+      runsNeedingFallback,
+      ceoFallbackRunItems,
+      ceoFallbackAttendanceLogs,
+    );
+
+    fallbackDailyPoints.forEach((point) => {
+      totalsByDate.set(
+        point.date,
+        round2((totalsByDate.get(point.date) ?? 0) + point.total),
+      );
+    });
+
+    return Array.from(totalsByDate.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, total]) => ({
+        date,
+        total: round2(total),
+      }));
+  }, [
+    ceoDailyTotals,
+    ceoFallbackAttendanceLogs,
+    ceoFallbackRunItems,
+    ceoSubmittedRuns,
+  ]);
+
+  const ceoPayrollTrend = useMemo<TrendPoint[]>(() => {
+    if (ceoTrendRange === "weekly") {
+      return buildWeeklyPointsFromPayrollReports(ceoSubmittedRuns);
+    }
+
+    return aggregateDailyPaidPoints(ceoDailyTrend, ceoTrendRange);
+  }, [ceoDailyTrend, ceoSubmittedRuns, ceoTrendRange]);
+
+  const ceoLatestTrendPoint = ceoPayrollTrend[ceoPayrollTrend.length - 1] ?? null;
+  const ceoPreviousTrendPoint =
+    ceoPayrollTrend[ceoPayrollTrend.length - 2] ?? null;
+  const ceoOverallSubmittedPayroll = useMemo(
+    () =>
+      Math.round(
+        ceoSubmittedRuns.reduce((sum, run) => sum + (run.net_total ?? 0), 0) *
+          100,
+      ) / 100,
+    [ceoSubmittedRuns],
+  );
+  const ceoSubmittedReportCount = ceoSubmittedRuns.length;
+  const ceoTrendPercent =
+    ceoLatestTrendPoint &&
+    ceoPreviousTrendPoint &&
+    ceoPreviousTrendPoint.total > 0
+      ? ((ceoLatestTrendPoint.total - ceoPreviousTrendPoint.total) /
+          ceoPreviousTrendPoint.total) *
+        100
+      : null;
+
   const shouldShowSkeleton = loading && !data && !error;
 
   useEffect(() => {
@@ -361,6 +537,159 @@ export default function OverviewPage() {
     router.replace("/upload-attendance");
   }, [currentPayrollRunId, role, router, workspaceReset]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCeoTrendData() {
+      if (role !== "ceo") {
+        setCeoSubmittedRuns([]);
+        setCeoDailyTotals([]);
+        setCeoFallbackRunItems([]);
+        setCeoFallbackAttendanceLogs([]);
+        setCeoTrendLoading(false);
+        return;
+      }
+
+      setCeoTrendLoading(true);
+      const supabase = createSupabaseBrowserClient();
+
+      const { data: runsData, error: runsError } = await supabase
+        .from("payroll_runs")
+        .select(
+          "id, attendance_import_id, period_label, period_start, period_end, submitted_at, created_at, net_total, status",
+        )
+        .eq("status", "submitted")
+        .order("submitted_at", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true });
+
+      if (cancelled) return;
+
+      if (runsError) {
+        setCeoSubmittedRuns([]);
+        setCeoDailyTotals([]);
+        setCeoFallbackRunItems([]);
+        setCeoFallbackAttendanceLogs([]);
+        setCeoTrendLoading(false);
+        return;
+      }
+
+      const runs = (runsData ?? []) as DashboardPayrollRunRow[];
+      const runIds = runs.map((run) => run.id);
+
+      if (runIds.length === 0) {
+        setCeoSubmittedRuns([]);
+        setCeoDailyTotals([]);
+        setCeoFallbackRunItems([]);
+        setCeoFallbackAttendanceLogs([]);
+        setCeoTrendLoading(false);
+        return;
+      }
+
+      const { data: dailyTotalsData, error: dailyTotalsError } = await supabase
+        .from("payroll_run_daily_totals")
+        .select("payroll_run_id, payout_date, total_pay")
+        .in("payroll_run_id", runIds)
+        .order("payout_date", { ascending: true });
+
+      if (cancelled) return;
+
+      const dailyTotalsRows = dailyTotalsError
+        ? []
+        : ((dailyTotalsData ?? []) as DashboardPayrollDailyTotalRow[]);
+      const runIdsWithDailyTotals = new Set(
+        dailyTotalsRows.map((row) => row.payroll_run_id),
+      );
+      const fallbackRuns = runs.filter(
+        (run) => !runIdsWithDailyTotals.has(run.id),
+      );
+      const fallbackRunIds = fallbackRuns.map((run) => run.id);
+      const fallbackImportIds = Array.from(
+        new Set(
+          fallbackRuns
+            .map((run) => run.attendance_import_id)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      );
+
+      const fallbackItemsResult =
+        fallbackRunIds.length > 0
+          ? await supabase
+              .from("payroll_run_items")
+              .select(
+                "payroll_run_id, employee_name, site_name, hours_worked, total_pay",
+              )
+              .in("payroll_run_id", fallbackRunIds)
+          : { data: [], error: null };
+      const fallbackAttendanceResult =
+        fallbackImportIds.length > 0
+          ? await supabase
+              .from("attendance_records")
+              .select(
+                "import_id, employee_name, log_date, log_time, log_type, log_source, site_name",
+              )
+              .in("import_id", fallbackImportIds)
+              .order("log_date", { ascending: true })
+              .order("log_time", { ascending: true })
+          : { data: [], error: null };
+
+      if (cancelled) return;
+
+      setCeoSubmittedRuns(
+        runs.map((run) => ({
+          id: run.id,
+          attendance_import_id: run.attendance_import_id,
+          period_label: run.period_label,
+          period_start: run.period_start,
+          period_end: run.period_end,
+          submitted_at: run.submitted_at,
+          created_at: run.created_at,
+          net_total: run.net_total,
+        })),
+      );
+      setCeoDailyTotals(
+        dailyTotalsRows.map((row) => ({
+          payroll_run_id: row.payroll_run_id,
+          payout_date: row.payout_date,
+          total_pay: row.total_pay,
+        })),
+      );
+      setCeoFallbackRunItems(
+        fallbackItemsResult.error
+          ? []
+          : ((fallbackItemsResult.data ?? []) as DashboardPayrollRunItemRow[]).map(
+              (item) => ({
+                payroll_run_id: item.payroll_run_id,
+                employee_name: item.employee_name,
+                site_name: item.site_name,
+                hours_worked: item.hours_worked,
+                total_pay: item.total_pay,
+              }),
+            ),
+      );
+      setCeoFallbackAttendanceLogs(
+        fallbackAttendanceResult.error
+          ? []
+          : ((fallbackAttendanceResult.data ??
+              []) as DashboardAttendanceLogRow[]).map((row) => ({
+              import_id: row.import_id,
+              employee_name: row.employee_name,
+              log_date: row.log_date,
+              log_time: row.log_time,
+              log_type: row.log_type,
+              log_source: row.log_source,
+              site_name: row.site_name,
+            })),
+      );
+      setCeoTrendLoading(false);
+    }
+
+    void loadCeoTrendData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [role, ceoTrendReloadNonce]);
+
   if (shouldShowSkeleton) {
     return <DashboardOverviewSkeleton />;
   }
@@ -373,6 +702,7 @@ export default function OverviewPage() {
     setIsRefreshing(true);
     try {
       refreshData();
+      setCeoTrendReloadNonce((value) => value + 1);
       router.refresh();
       await new Promise((resolve) => window.setTimeout(resolve, 500));
     } finally {
@@ -386,20 +716,31 @@ export default function OverviewPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-[12px] font-medium text-white/65">
-              Total Payroll This Period
+              {role === "ceo"
+                ? "Overall Submitted Payroll"
+                : "Total Payroll This Period"}
             </p>
             <div className="mt-3 flex items-center gap-3">
               <h1 className="text-[40px] font-semibold tracking-[-0.03em]">
-                {PESO_SIGN} {formatPayrollNumber(netPayroll)}
+                {PESO_SIGN}{" "}
+                {formatPayrollNumber(
+                  role === "ceo" ? ceoOverallSubmittedPayroll : netPayroll,
+                )}
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[rgb(var(--theme-chart-5))]">
                 Synced <ArrowUp size={12} />
               </span>
             </div>
-            <p className="mt-3 text-sm text-white/70">{attendancePeriod}</p>
+            <p className="mt-3 text-sm text-white/70">
+              {role === "ceo"
+                ? `Across ${ceoSubmittedReportCount.toLocaleString("en-PH")} submitted report${
+                    ceoSubmittedReportCount === 1 ? "" : "s"
+                  }`
+                : attendancePeriod}
+            </p>
           </div>
 
-          {periodOptions.length > 0 ? (
+          {role !== "ceo" && periodOptions.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               <select
                 value={selectedPeriodKey ?? ""}
@@ -431,11 +772,161 @@ export default function OverviewPage() {
                 Sync
               </button>
             </div>
+          ) : role === "ceo" ? (
+            <button
+              type="button"
+              onClick={handleSync}
+              disabled={isRefreshing || ceoTrendLoading}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60 text-[rgb(var(--apple-black))] hover:bg-[rgb(var(--apple-silver))]"
+            >
+              <RefreshCw
+                size={16}
+                className={isRefreshing ? "animate-spin" : ""}
+              />
+              Sync
+            </button>
           ) : null}
         </div>
       </section>
 
-      <section className="mb-5">
+      {role === "ceo" ? (
+        <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                CEO Payroll Report Trend
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+                Submitted Payroll Movement
+              </h2>
+              <p className="mt-1 text-sm text-apple-steel">
+                Daily paid totals across submitted payroll reports, with weekly,
+                monthly, and yearly views.
+              </p>
+              {ceoTrendPercent !== null ? (
+                <p
+                  className={cn(
+                    "mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
+                    ceoTrendPercent >= 0
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-rose-50 text-rose-700",
+                  )}
+                >
+                  {formatTrendPercent(ceoTrendPercent)}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="inline-flex rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-1">
+              {(["daily", "weekly", "monthly", "yearly"] as TrendRange[]).map(
+                (range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => setCeoTrendRange(range)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition",
+                      ceoTrendRange === range
+                        ? "bg-[#1f6a37] text-white"
+                        : "text-apple-steel hover:text-apple-charcoal",
+                    )}
+                  >
+                    {range}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="mt-5 h-[320px]">
+            {ceoTrendLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-apple-steel">
+                Loading trend data...
+              </div>
+            ) : ceoPayrollTrend.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-apple-steel">
+                No submitted payroll reports yet.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={ceoPayrollTrend}
+                  margin={{ top: 10, right: 10, left: 8, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="ceoDashboardTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.32} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="rgb(var(--theme-chart-grid))"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                    tickFormatter={(value) => formatCompactCurrency(Number(value))}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const point = payload[0]?.payload as TrendPoint | undefined;
+                      if (!point) return null;
+
+                      return (
+                        <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl">
+                          <p className="text-xs font-semibold">{point.label}</p>
+                          <p className="mt-1 text-sm font-semibold text-emerald-700">
+                            {PESO_SIGN} {formatPayrollNumber(point.total)}
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#16a34a"
+                    strokeWidth={3}
+                    fill="url(#ceoDashboardTrendFill)"
+                    dot={{ r: 0 }}
+                    activeDot={{
+                      r: 5,
+                      fill: "#16a34a",
+                      stroke: "white",
+                      strokeWidth: 2,
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {ceoLatestTrendPoint ? (
+            <div className="mt-4 rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-3">
+              <p className="text-xs text-apple-steel">
+                Latest {ceoTrendRange} paid total:{" "}
+                <span className="font-semibold text-apple-charcoal">
+                  {PESO_SIGN} {formatPayrollNumber(ceoLatestTrendPoint.total)}
+                </span>
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {role !== "ceo" ? (
+        <>
+          <section className="mb-5">
         <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -606,9 +1097,9 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
-      </section>
+          </section>
 
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
+          <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
         {summaryCards.map((card) => {
           const iconWrapClass =
             card.key === "gross"
@@ -660,9 +1151,9 @@ export default function OverviewPage() {
             </button>
           );
         })}
-      </section>
+          </section>
 
-      <section className="rounded-[12px] bg-white p-5 mb-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          <section className="rounded-[12px] bg-white p-5 mb-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-[15px] font-semibold text-apple-charcoal">
             Department Cards
@@ -708,9 +1199,9 @@ export default function OverviewPage() {
             </div>
           )}
         </div>
-      </section>
+          </section>
 
-      <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-[15px] font-semibold text-apple-charcoal">
             Recent Payroll Activity
@@ -761,7 +1252,9 @@ export default function OverviewPage() {
             )}
           </div>
         </div>
-      </section>
+          </section>
+        </>
+      ) : null}
 
       {error ? (
         <section className="rounded-[12px] border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
