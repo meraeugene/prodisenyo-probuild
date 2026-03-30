@@ -112,13 +112,13 @@ export default function DashboardShell({
   const isAnalyticsRoute =
     pathname === "/attendance-analytics" || pathname === "/payroll-analytics";
   const canSeeAnalyticsNav =
-    !isCeo &&
     (!workspaceReset &&
       (navState.hasSavedAttendance ||
         navState.hasSavedPayroll ||
         hasAttendanceData ||
         Boolean(currentPayrollRunId) ||
-        isAnalyticsRoute));
+        isAnalyticsRoute ||
+        isCeo));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
@@ -459,7 +459,12 @@ export default function DashboardShell({
               ) : null}
             </nav>
 
-            <div className="mt-auto space-y-1">
+            <div className="mt-auto space-y-1 pt-3">
+              <div className="px-3 pb-1 pt-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                  Account
+                </p>
+              </div>
               <Link
                 href="/settings"
                 className={cn(
@@ -471,7 +476,7 @@ export default function DashboardShell({
               >
                 <div
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                    "flex h-7 w-7 mr items-center justify-center rounded-full transition-colors",
                     settingsActive
                       ? "bg-[#1f6a37] text-white"
                       : "text-apple-smoke group-hover:text-apple-charcoal",

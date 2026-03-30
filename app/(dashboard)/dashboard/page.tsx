@@ -924,8 +924,7 @@ export default function OverviewPage() {
         </section>
       ) : null}
 
-      {role !== "ceo" ? (
-        <>
+      <>
           <section className="mb-5">
         <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="mb-5 flex items-center justify-between">
@@ -937,6 +936,26 @@ export default function OverviewPage() {
                 Historical charts from Supabase attendance and approved payroll.
               </p>
             </div>
+            {role === "ceo" && periodOptions.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-steel">
+                  Payroll Period
+                </p>
+                <select
+                  value={selectedPeriodKey ?? ""}
+                  onChange={(event) =>
+                    setSelectedPeriodKey(event.target.value || null)
+                  }
+                  className="h-10 min-w-[300px] rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37]"
+                >
+                  {periodOptions.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label} - {option.siteName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </div>
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
@@ -1132,14 +1151,11 @@ export default function OverviewPage() {
                     {card.title}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div >
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs text-green-600">
                     Synced <ArrowUp size={12} />
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-apple-steel">
-                    View math
-                    <ChevronRight size={14} />
-                  </span>
+                  
                 </div>
               </div>
               <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
@@ -1253,8 +1269,7 @@ export default function OverviewPage() {
           </div>
         </div>
           </section>
-        </>
-      ) : null}
+      </>
 
       {error ? (
         <section className="rounded-[12px] border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
