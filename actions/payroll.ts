@@ -1232,3 +1232,48 @@ export async function rejectOvertimeAdjustmentAction(adjustmentId: string) {
     status: "rejected" as const,
   };
 }
+
+export async function deletePayrollReportAction(payrollRunId: string) {
+  const { user } = await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+  const runId = payrollRunId.trim();
+
+  if (!runId) {
+    throw new Error("Payroll report ID is required.");
+  }
+
+  const { data: payrollRun, error: payrollRunError } = await database
+    .from("payroll_runs")
+    .select("id, status, site_name, period_label")
+    .eq("id", runId)
+    .single();
+
+  if (payrollRunError || !payrollRun) {
+    throw new Error("Payroll report not found.");
+  }
+
+  const { error: deleteError } = await database
+    .from("payroll_runs")
+    .delete()
+    .eq("id", runId);
+
+  if (deleteError) {
+    throw new Error("Failed to delete payroll report.");
+  }
+
+  await database.from("audit_logs").insert({
+    actor_id: user.id,
+    action: "payroll_report_deleted",
+    entity_type: "payroll_run",
+    entity_id: runId,
+    payload: {
+      status: payrollRun.status,
+      site_name: payrollRun.site_name,
+      period_label: payrollRun.period_label,
+    },
+  });
+
+  return {
+    payrollRunId: runId,
+  };
+}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, RefreshCw, ScrollText, X } from "lucide-react";
+import { Eye, MoreHorizontal, RefreshCw, ScrollText, Trash2, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { deletePayrollReportAction } from "@/actions/payroll";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -72,6 +74,12 @@ interface ReportDetailsState {
 interface PayrollItemLogFilters {
   search: string;
   site: string;
+}
+
+interface ReportActionsMenuState {
+  runId: string;
+  top: number;
+  left: number;
 }
 
 interface DailyAttendanceRow {
@@ -447,10 +455,13 @@ export default function PayrollReportsPageClient() {
   const [reports, setReports] = useState<PayrollRunRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedRunIds, setExpandedRunIds] = useState<Record<string, boolean>>({});
   const [detailsByRunId, setDetailsByRunId] = useState<Record<string, ReportDetailsState>>({});
   const [filtersByRunId, setFiltersByRunId] = useState<Record<string, PayrollItemLogFilters>>({});
+  const [openMenu, setOpenMenu] = useState<ReportActionsMenuState | null>(null);
+  const [deleteConfirmReport, setDeleteConfirmReport] = useState<PayrollRunRow | null>(null);
   const [activeModal, setActiveModal] = useState<{ runId: string; itemId: string } | null>(null);
 
   const loadReports = useCallback(async () => {
@@ -479,6 +490,54 @@ export default function PayrollReportsPageClient() {
   useEffect(() => {
     void loadReports();
   }, [loadReports]);
+
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const handleDocumentMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("[data-report-actions-root]")) return;
+      setOpenMenu(null);
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    };
+    const closeMenu = () => setOpenMenu(null);
+
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
+      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("resize", closeMenu);
+    };
+  }, [openMenu]);
+
+  useEffect(() => {
+    if (!deleteConfirmReport) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && deletingRunId !== deleteConfirmReport.id) {
+        setDeleteConfirmReport(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [deleteConfirmReport, deletingRunId]);
 
   const sortedReports = useMemo(
     () => [...reports].sort((a, b) => new Date(b.submitted_at ?? b.created_at).getTime() - new Date(a.submitted_at ?? a.created_at).getTime()),
@@ -547,6 +606,44 @@ export default function PayrollReportsPageClient() {
     void loadReportDetails(report);
   }
 
+  async function handleDeleteReport(report: PayrollRunRow) {
+    setDeletingRunId(report.id);
+    setError(null);
+
+    try {
+      await deletePayrollReportAction(report.id);
+
+      setReports((prev) => prev.filter((row) => row.id !== report.id));
+      setExpandedRunIds((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setDetailsByRunId((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setFiltersByRunId((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setActiveModal((prev) =>
+        prev && prev.runId === report.id ? null : prev,
+      );
+      setDeleteConfirmReport(null);
+    } catch (deleteError) {
+      const message =
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Failed to delete payroll report.";
+      setError(message);
+    } finally {
+      setDeletingRunId(null);
+      setOpenMenu(null);
+    }
+  }
+
+  const openMenuReport = openMenu ? sortedReports.find((row) => row.id === openMenu.runId) ?? null : null;
+  const openMenuReportExpanded = openMenuReport ? Boolean(expandedRunIds[openMenuReport.id]) : false;
   const activeReport = activeModal ? sortedReports.find((row) => row.id === activeModal.runId) ?? null : null;
   const activeDetails = activeModal ? detailsByRunId[activeModal.runId] : null;
   const activeItem = activeModal ? activeDetails?.payrollItems.find((item) => item.id === activeModal.itemId) ?? null : null;
@@ -620,8 +717,8 @@ export default function PayrollReportsPageClient() {
               });
 
               return (
-                <div key={report.id} className="overflow-hidden rounded-xl border border-apple-mist">
-                  <div className="overflow-x-auto">
+                <div key={report.id} className="rounded-xl border border-apple-mist">
+                  <div className="overflow-x-auto overflow-y-visible">
                     <table className="min-w-[980px] w-full text-sm">
                       <thead>
                         <tr className="bg-[rgb(var(--apple-snow))] text-left">
@@ -647,10 +744,25 @@ export default function PayrollReportsPageClient() {
                           <td className="px-4 py-3 text-center">
                             <button
                               type="button"
-                              onClick={() => toggleRunDetails(report)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-apple-mist bg-white px-2.5 py-1.5 text-[11px] font-semibold text-apple-charcoal transition hover:border-apple-steel"
+                              onClick={(event) => {
+                                const buttonRect =
+                                  event.currentTarget.getBoundingClientRect();
+                                setOpenMenu((prev) =>
+                                  prev?.runId === report.id
+                                    ? null
+                                    : {
+                                        runId: report.id,
+                                        top: buttonRect.bottom + 6,
+                                        left: buttonRect.right,
+                                      },
+                                );
+                              }}
+                              data-report-actions-root
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label="Open report actions"
+                              disabled={deletingRunId === report.id}
                             >
-                              {isExpanded ? <>Hide Logs <ChevronUp size={13} /></> : <>View Logs <ChevronDown size={13} /></>}
+                              <MoreHorizontal size={16} />
                             </button>
                           </td>
                         </tr>
@@ -764,6 +876,105 @@ export default function PayrollReportsPageClient() {
           </div>
         )}
       </section>
+
+      {openMenu && openMenuReport
+        ? createPortal(
+            <div
+              data-report-actions-root
+              className="fixed z-[140] min-w-[170px] -translate-x-full overflow-hidden rounded-lg border border-apple-mist bg-white text-left shadow-[0_14px_36px_rgba(16,24,40,0.18)]"
+              style={{ top: openMenu.top, left: openMenu.left }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  toggleRunDetails(openMenuReport);
+                  setOpenMenu(null);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-apple-charcoal transition hover:bg-emerald-50 hover:text-emerald-800",
+                  openMenuReportExpanded ? "bg-emerald-50 text-emerald-800" : "",
+                )}
+              >
+                <Eye size={14} />
+                {openMenuReportExpanded ? "Hide Logs" : "View Logs"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteConfirmReport(openMenuReport);
+                  setOpenMenu(null);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={deletingRunId === openMenuReport.id}
+              >
+                <Trash2 size={14} />
+                {deletingRunId === openMenuReport.id
+                  ? "Deleting..."
+                  : "Delete Payroll"}
+              </button>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {deleteConfirmReport
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+              onMouseDown={(event) => {
+                if (
+                  event.target === event.currentTarget &&
+                  deletingRunId !== deleteConfirmReport.id
+                ) {
+                  setDeleteConfirmReport(null);
+                }
+              }}
+            >
+              <div className="w-full max-w-md overflow-hidden rounded-2xl  bg-white shadow-[0_24px_64px_rgba(15,23,42,0.26)]">
+                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                    Confirm Delete
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold tracking-[-0.02em]">
+                    Delete Payroll Report?
+                  </h3>
+                </div>
+                <div className="space-y-4 px-5 py-4">
+                  <p className="text-sm text-apple-charcoal">
+                    Delete payroll report for{" "}
+                    <span className="font-semibold">
+                      {formatPeriodLabel(deleteConfirmReport)}
+                    </span>
+                    ? This cannot be undone.
+                  </p>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmReport(null)}
+                      disabled={deletingRunId === deleteConfirmReport.id}
+                      className="inline-flex h-9 items-center rounded-lg border border-apple-mist bg-white px-3 text-sm font-semibold text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void handleDeleteReport(deleteConfirmReport);
+                      }}
+                      disabled={deletingRunId === deleteConfirmReport.id}
+                      className="inline-flex h-9 items-center rounded-lg bg-rose-600 px-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {deletingRunId === deleteConfirmReport.id
+                        ? "Deleting..."
+                        : "Delete Payroll"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
       {error ? <section className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-sm text-red-700">{error}</section> : null}
 
