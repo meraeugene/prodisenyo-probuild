@@ -12,10 +12,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { buildDailyRows } from "@/features/attendance/utils/attendanceSelectors";
+import {
+  expandIsoRange,
+  extractIsoPayrollRange,
+} from "@/features/payroll/utils/payrollDateHelpers";
+import {
+  extractSiteName,
+  formatLogTime as formatPayrollLogTime,
+  toWeekLabel,
+} from "@/features/payroll/utils/payrollFormatters";
 import {
   approveOvertimeAdjustmentAction,
   rejectOvertimeAdjustmentAction,
 } from "@/actions/payroll";
+import type { AttendanceRecord, DailyLogRow } from "@/types";
 
 interface PendingOvertimeRequest {
   id: string;
@@ -30,6 +41,8 @@ interface PendingOvertimeRequest {
   notes: string | null;
   created_at: string;
   effective_date: string | null;
+  period_start: string | null;
+  period_end: string | null;
   payroll_runs:
     | {
         site_name: string;
@@ -91,23 +104,57 @@ function formatRequestedAt(value: string): string {
   });
 }
 
-function formatLogDate(value: string): string {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return value;
-  return date.toLocaleDateString("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+function resolveRequestPeriod(request: PendingOvertimeRequest): {
+  start: string | null;
+  end: string | null;
+} {
+  const parsedPeriod = extractIsoPayrollRange(request.period_label ?? "");
+  const start = request.period_start ?? parsedPeriod?.start ?? null;
+  const end = request.period_end ?? parsedPeriod?.end ?? start;
+
+  return { start, end };
 }
 
-function formatLogTime(value: string): string {
-  const date = new Date(`1970-01-01T${value}`);
-  if (!Number.isFinite(date.getTime())) return value;
-  return date.toLocaleTimeString("en-PH", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+function buildRequestDailyLogRows(
+  request: PendingOvertimeRequest,
+  logs: AttendanceLogRow[],
+): DailyLogRow[] {
+  const employeeName = request.employee_name?.trim() || "Unknown Employee";
+  const attendanceRecords: AttendanceRecord[] = logs.map((log) => ({
+    date: log.log_date,
+    employee: employeeName,
+    logTime: log.log_time,
+    type: log.log_type,
+    source: log.log_source,
+    site: log.site_name,
+  }));
+  const groupedRows = buildDailyRows(attendanceRecords).sort((a, b) =>
+    a.date.localeCompare(b.date),
+  );
+  const { start, end } = resolveRequestPeriod(request);
+  const periodDates = start && end ? expandIsoRange(start, end) : [];
+
+  if (periodDates.length === 0) {
+    return groupedRows;
+  }
+
+  const rowsByDate = new Map(groupedRows.map((row) => [row.date, row]));
+
+  return periodDates.map(
+    (date) =>
+      rowsByDate.get(date) ?? {
+        date,
+        employee: employeeName,
+        time1In: "",
+        time1Out: "",
+        time2In: "",
+        time2Out: "",
+        otIn: "",
+        otOut: "",
+        hours: 0,
+        site: "",
+      },
+  );
 }
 
 function ApprovalQueueSkeleton() {
@@ -198,7 +245,7 @@ export default function PayrollApprovalQueue({
       const { data, error } = await supabase
         .from("payroll_adjustments")
         .select(
-          "id, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
+          "id, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, period_start, period_end, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
         )
         .eq("adjustment_type", "overtime")
         .eq("status", "pending")
@@ -251,13 +298,24 @@ export default function PayrollApprovalQueue({
     }));
 
     const supabase = createSupabaseBrowserClient();
-    const { data, error } = await supabase
+    const { start, end } = resolveRequestPeriod(request);
+    let query = supabase
       .from("attendance_records")
       .select("id, log_date, log_time, log_type, log_source, site_name")
       .eq("import_id", request.attendance_import_id)
-      .eq("employee_name", request.employee_name)
-      .order("log_date", { ascending: false })
-      .order("log_time", { ascending: false })
+      .eq("employee_name", request.employee_name);
+
+    if (start) {
+      query = query.gte("log_date", start);
+    }
+
+    if (end) {
+      query = query.lte("log_date", end);
+    }
+
+    const { data, error } = await query
+      .order("log_date", { ascending: true })
+      .order("log_time", { ascending: true })
       .limit(150);
 
     if (error) {
@@ -400,11 +458,15 @@ export default function PayrollApprovalQueue({
               item?.employee_name ?? request.employee_name ?? "Unknown Employee";
             const periodLabel =
               run?.period_label ?? request.period_label ?? "Unknown Period";
+            const requestDailyLogs = buildRequestDailyLogRows(
+              request,
+              employeeLogsByRequestId[request.id] ?? [],
+            );
 
             return (
               <div
                 key={request.id}
-                className="group rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all w-fit"
+                className="group w-full max-w-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all"
               >
                 <div className="grid gap-6 ">
                   <div className="min-w-0 space-y-3">
@@ -464,15 +526,13 @@ export default function PayrollApprovalQueue({
 
                       {expandedLogRequestIds[request.id] ? (
                         <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-                          <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] bg-[rgb(var(--apple-snow))] px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-apple-steel">
-                            <span>Date</span>
-                            <span>Time</span>
-                            <span>Type</span>
-                            <span>Source</span>
-                            <span>Site</span>
+                          <div className="border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-apple-steel">
+                              All Report Logs
+                            </p>
                           </div>
 
-                          <div className="max-h-[220px] overflow-y-auto divide-y divide-apple-mist">
+                          <div className="max-h-[320px] overflow-auto">
                             {employeeLogsLoadingByRequestId[request.id] ? (
                               <p className="px-3 py-4 text-xs text-apple-steel">
                                 Loading attendance logs...
@@ -481,25 +541,104 @@ export default function PayrollApprovalQueue({
                               <p className="px-3 py-4 text-xs text-red-700">
                                 {employeeLogsErrorByRequestId[request.id]}
                               </p>
-                            ) : (employeeLogsByRequestId[request.id] ?? []).length ===
-                              0 ? (
+                            ) : requestDailyLogs.length === 0 ? (
                               <p className="px-3 py-4 text-xs text-apple-steel">
                                 No attendance logs found for this employee in the
                                 linked import.
                               </p>
                             ) : (
-                              (employeeLogsByRequestId[request.id] ?? []).map((log) => (
-                                <div
-                                  key={log.id}
-                                  className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] items-center px-3 py-2 text-xs text-apple-charcoal"
-                                >
-                                  <span>{formatLogDate(log.log_date)}</span>
-                                  <span>{formatLogTime(log.log_time)}</span>
-                                  <span>{log.log_type}</span>
-                                  <span>{log.log_source}</span>
-                                  <span className="truncate">{log.site_name}</span>
-                                </div>
-                              ))
+                              <table className="min-w-[760px] w-full text-xs">
+                                <thead>
+                                  <tr className="border-b border-apple-mist">
+                                    {[
+                                      "Date/Week",
+                                      "Site",
+                                      "Time1 In",
+                                      "Time1 Out",
+                                      "Time2 In",
+                                      "Time2 Out",
+                                      "OT In",
+                                      "OT Out",
+                                      "Hours",
+                                    ].map((header) => (
+                                      <th
+                                        key={header}
+                                        className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-apple-steel ${
+                                          header === "Hours"
+                                            ? "text-right"
+                                            : "text-left"
+                                        }`}
+                                      >
+                                        {header}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {requestDailyLogs.map((log, index) => (
+                                    <tr
+                                      key={`${request.id}-${log.date}-${index}`}
+                                      className="border-b border-apple-mist/60 text-apple-charcoal last:border-0 odd:bg-apple-snow/30"
+                                    >
+                                      <td className="px-3 py-2.5 font-medium">
+                                        {toWeekLabel(log.date)}
+                                      </td>
+                                      <td className="px-3 py-2.5 text-apple-smoke">
+                                        {extractSiteName(log.site) || "-"}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.time1In ? (
+                                          formatPayrollLogTime(log.time1In)
+                                        ) : (
+                                          <span className="text-red-500">
+                                            Missed
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.time1Out ? (
+                                          formatPayrollLogTime(log.time1Out)
+                                        ) : (
+                                          <span className="text-red-500">
+                                            Missed
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.time2In ? (
+                                          formatPayrollLogTime(log.time2In)
+                                        ) : (
+                                          <span className="text-red-500">
+                                            Missed
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.time2Out ? (
+                                          formatPayrollLogTime(log.time2Out)
+                                        ) : (
+                                          <span className="text-red-500">
+                                            Missed
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.otIn
+                                          ? formatPayrollLogTime(log.otIn)
+                                          : "-"}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        {log.otOut
+                                          ? formatPayrollLogTime(log.otOut)
+                                          : "-"}
+                                      </td>
+                                      <td className="px-3 py-2.5 text-right font-semibold">
+                                        {log.hours.toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             )}
                           </div>
                         </div>
