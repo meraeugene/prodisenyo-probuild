@@ -182,7 +182,8 @@ function buildDailyPayAllocations(params: {
     fallbackDates.length > 0
       ? fallbackDates
       : [params.periodEnd ?? params.periodStart ?? toIsoDate(new Date())];
-  const fallbackHours = dates.length > 0 ? params.totalHoursWorked / dates.length : 0;
+  const fallbackHours =
+    dates.length > 0 ? params.totalHoursWorked / dates.length : 0;
   let allocated = 0;
 
   return dates.map((date, index) => {
@@ -1230,6 +1231,125 @@ export async function rejectOvertimeAdjustmentAction(adjustmentId: string) {
     adjustmentId,
     runId: (adjustment.payroll_run_id as string | null) ?? null,
     status: "rejected" as const,
+  };
+}
+
+export async function approvePayrollReportAction(payrollRunId: string) {
+  const { user } = await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+  const runId = payrollRunId.trim();
+
+  if (!runId) {
+    throw new Error("Payroll report ID is required.");
+  }
+
+  const { data: payrollRun, error: payrollRunError } = await database
+    .from("payroll_runs")
+    .select("id, status, site_name, period_label")
+    .eq("id", runId)
+    .single();
+
+  if (payrollRunError || !payrollRun) {
+    throw new Error("Payroll report not found.");
+  }
+
+  if (payrollRun.status !== "submitted") {
+    throw new Error("Only pending payroll reports can be approved.");
+  }
+
+  const approvedAt = new Date().toISOString();
+  const { error: approveError } = await database
+    .from("payroll_runs")
+    .update({
+      status: "approved" satisfies PayrollRunStatus,
+      approved_by: user.id,
+      approved_at: approvedAt,
+      rejected_at: null,
+      rejection_reason: null,
+    })
+    .eq("id", runId)
+    .eq("status", "submitted");
+
+  if (approveError) {
+    throw new Error("Failed to approve payroll report.");
+  }
+
+  await database.from("audit_logs").insert({
+    actor_id: user.id,
+    action: "payroll_report_approved",
+    entity_type: "payroll_run",
+    entity_id: runId,
+    payload: {
+      status: "approved",
+      site_name: payrollRun.site_name,
+      period_label: payrollRun.period_label,
+      approved_at: approvedAt,
+    },
+  });
+
+  return {
+    payrollRunId: runId,
+    status: "approved" as const,
+    approvedAt,
+  };
+}
+
+export async function rejectPayrollReportAction(payrollRunId: string) {
+  const { user } = await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+  const runId = payrollRunId.trim();
+
+  if (!runId) {
+    throw new Error("Payroll report ID is required.");
+  }
+
+  const { data: payrollRun, error: payrollRunError } = await database
+    .from("payroll_runs")
+    .select("id, status, site_name, period_label")
+    .eq("id", runId)
+    .single();
+
+  if (payrollRunError || !payrollRun) {
+    throw new Error("Payroll report not found.");
+  }
+
+  if (payrollRun.status !== "submitted") {
+    throw new Error("Only pending payroll reports can be rejected.");
+  }
+
+  const rejectedAt = new Date().toISOString();
+  const { error: rejectError } = await database
+    .from("payroll_runs")
+    .update({
+      status: "rejected" satisfies PayrollRunStatus,
+      approved_by: null,
+      approved_at: null,
+      rejected_at: rejectedAt,
+    })
+    .eq("id", runId)
+    .eq("status", "submitted");
+
+  if (rejectError) {
+    throw new Error("Failed to reject payroll report.");
+  }
+
+  await database.from("audit_logs").insert({
+    actor_id: user.id,
+    action: "payroll_report_rejected",
+    entity_type: "payroll_run",
+    entity_id: runId,
+    payload: {
+      status: "rejected",
+      site_name: payrollRun.site_name,
+      period_label: payrollRun.period_label,
+      rejected_at: rejectedAt,
+    },
+  });
+
+  return {
+    payrollRunId: runId,
+    status: "rejected" as const,
+    rejectedAt,
   };
 }
 

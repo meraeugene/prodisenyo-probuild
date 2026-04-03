@@ -106,8 +106,8 @@ export default function PayrollPage() {
         });
         toast.success(
           currentPayrollRunId
-            ? "Payroll report updated. Pending overtime stays in the CEO queue."
-            : "Payroll report submitted and tracked for this pay period.",
+            ? "Payroll report updated and kept in the CEO review queue."
+            : "Payroll report submitted for CEO review.",
         );
       } catch (error) {
         console.error("PAYROLL_SAVE_FAILED", {
@@ -192,7 +192,7 @@ export default function PayrollPage() {
                     <span className="font-semibold text-apple-charcoal">
                       {site}
                     </span>{" "}
-                    and store the current payroll details for this period.
+                    and place it in the CEO payroll report review queue.
                   </p>
                 </div>
               </div>
@@ -220,9 +220,10 @@ export default function PayrollPage() {
 
               <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 px-4 py-3">
                 <p className="text-sm leading-6 text-emerald-900">
-                  This submits the payroll report and keeps it available in the
-                  CEO report center. Only overtime requests continue through the
-                  separate approval flow.
+                  This submits the payroll report as pending CEO review. It will
+                  only appear in the CEO dashboard totals after the CEO accepts
+                  it. Only overtime requests continue through the separate
+                  approval flow.
                 </p>
               </div>
             </div>

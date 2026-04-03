@@ -1,9 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, MoreHorizontal, RefreshCw, ScrollText, Trash2, X } from "lucide-react";
+import {
+  CheckCircle2,
+  Eye,
+  MoreHorizontal,
+  RefreshCw,
+  ScrollText,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
 import { createPortal } from "react-dom";
-import { deletePayrollReportAction } from "@/actions/payroll";
+import {
+  approvePayrollReportAction,
+  deletePayrollReportAction,
+  rejectPayrollReportAction,
+} from "@/actions/payroll";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -105,6 +118,13 @@ function statusBadgeClass(status: PayrollRunStatus): string {
   if (status === "submitted") return "bg-sky-50 text-sky-700 border-sky-200";
   if (status === "draft") return "bg-amber-50 text-amber-700 border-amber-200";
   return "bg-rose-50 text-rose-700 border-rose-200";
+}
+
+function statusLabel(status: PayrollRunStatus): string {
+  if (status === "submitted") return "Pending Review";
+  if (status === "approved") return "Approved";
+  if (status === "draft") return "Draft";
+  return "Rejected";
 }
 
 function normalizeKey(value: string): string {
@@ -456,6 +476,7 @@ export default function PayrollReportsPageClient() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
+  const [pendingDecisionRunId, setPendingDecisionRunId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedRunIds, setExpandedRunIds] = useState<Record<string, boolean>>({});
   const [detailsByRunId, setDetailsByRunId] = useState<Record<string, ReportDetailsState>>({});
@@ -470,7 +491,7 @@ export default function PayrollReportsPageClient() {
     const { data, error: loadError } = await supabase
       .from("payroll_runs")
       .select("id, attendance_import_id, site_name, period_label, period_start, period_end, status, gross_total, net_total, created_at, submitted_at")
-      .eq("status", "submitted")
+      .neq("status", "rejected")
       .order("submitted_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false });
 
@@ -642,18 +663,85 @@ export default function PayrollReportsPageClient() {
     }
   }
 
+  async function handleApproveReport(report: PayrollRunRow) {
+    setPendingDecisionRunId(report.id);
+    setError(null);
+
+    try {
+      const result = await approvePayrollReportAction(report.id);
+      setReports((prev) =>
+        prev.map((row) =>
+          row.id === report.id
+            ? {
+                ...row,
+                status: "approved",
+                submitted_at: row.submitted_at ?? result.approvedAt,
+              }
+            : row,
+        ),
+      );
+    } catch (approveError) {
+      setError(
+        approveError instanceof Error
+          ? approveError.message
+          : "Failed to approve payroll report.",
+      );
+    } finally {
+      setPendingDecisionRunId(null);
+      setOpenMenu(null);
+    }
+  }
+
+  async function handleRejectReport(report: PayrollRunRow) {
+    setPendingDecisionRunId(report.id);
+    setError(null);
+
+    try {
+      await rejectPayrollReportAction(report.id);
+      setReports((prev) => prev.filter((row) => row.id !== report.id));
+      setExpandedRunIds((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setDetailsByRunId((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setFiltersByRunId((prev) => {
+        const { [report.id]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setActiveModal((prev) =>
+        prev && prev.runId === report.id ? null : prev,
+      );
+    } catch (rejectError) {
+      setError(
+        rejectError instanceof Error
+          ? rejectError.message
+          : "Failed to reject payroll report.",
+      );
+    } finally {
+      setPendingDecisionRunId(null);
+      setOpenMenu(null);
+    }
+  }
+
   const openMenuReport = openMenu ? sortedReports.find((row) => row.id === openMenu.runId) ?? null : null;
   const openMenuReportExpanded = openMenuReport ? Boolean(expandedRunIds[openMenuReport.id]) : false;
   const activeReport = activeModal ? sortedReports.find((row) => row.id === activeModal.runId) ?? null : null;
   const activeDetails = activeModal ? detailsByRunId[activeModal.runId] : null;
   const activeItem = activeModal ? activeDetails?.payrollItems.find((item) => item.id === activeModal.itemId) ?? null : null;
+  const pendingReportsCount = useMemo(
+    () => reports.filter((report) => report.status === "submitted").length,
+    [reports],
+  );
 
   return (
     <div >
       <DashboardPageHero
         eyebrow="Payroll Reports"
-        title="Submitted Payroll Reports"
-        description="Review submitted payroll reports and open each employee's read-only calculation details and logs."
+        title="Payroll Report Review"
+        description="Pending payroll reports stay here for CEO review. Only approved payroll reports flow into the CEO dashboard totals."
         actions={
           <button
             type="button"
@@ -674,18 +762,18 @@ export default function PayrollReportsPageClient() {
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">Report Archive</p>
-            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">Submitted Payroll Reports</h2>
+            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">Pending And Approved Payroll Reports</h2>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
             <ScrollText size={12} />
-            {sortedReports.length.toLocaleString("en-PH")} reports
+            {pendingReportsCount.toLocaleString("en-PH")} pending
           </span>
         </div>
 
         {loading ? (
           <p className="text-sm text-apple-steel">Loading reports...</p>
         ) : sortedReports.length === 0 ? (
-          <p className="text-sm text-apple-steel">No submitted payroll reports yet.</p>
+          <p className="text-sm text-apple-steel">No payroll reports are waiting for review.</p>
         ) : (
           <div className="space-y-3">
             {sortedReports.map((report) => {
@@ -739,7 +827,7 @@ export default function PayrollReportsPageClient() {
                           <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(report.net_total ?? 0)}</td>
                           <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(report.gross_total ?? 0)}</td>
                           <td className="px-4 py-3 text-center">
-                            <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>{report.status}</span>
+                            <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>{statusLabel(report.status)}</span>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <button
@@ -760,7 +848,7 @@ export default function PayrollReportsPageClient() {
                               data-report-actions-root
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
                               aria-label="Open report actions"
-                              disabled={deletingRunId === report.id}
+                              disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
                             >
                               <MoreHorizontal size={16} />
                             </button>
@@ -898,6 +986,36 @@ export default function PayrollReportsPageClient() {
                 <Eye size={14} />
                 {openMenuReportExpanded ? "Hide Logs" : "View Logs"}
               </button>
+              {openMenuReport.status === "submitted" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleApproveReport(openMenuReport);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={pendingDecisionRunId === openMenuReport.id}
+                  >
+                    <CheckCircle2 size={14} />
+                    {pendingDecisionRunId === openMenuReport.id
+                      ? "Updating..."
+                      : "Approve Payroll"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleRejectReport(openMenuReport);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={pendingDecisionRunId === openMenuReport.id}
+                  >
+                    <XCircle size={14} />
+                    {pendingDecisionRunId === openMenuReport.id
+                      ? "Updating..."
+                      : "Reject Payroll"}
+                  </button>
+                </>
+              ) : null}
               <button
                 type="button"
                 onClick={() => {
@@ -905,7 +1023,7 @@ export default function PayrollReportsPageClient() {
                   setOpenMenu(null);
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={deletingRunId === openMenuReport.id}
+                disabled={deletingRunId === openMenuReport.id || pendingDecisionRunId === openMenuReport.id}
               >
                 <Trash2 size={14} />
                 {deletingRunId === openMenuReport.id

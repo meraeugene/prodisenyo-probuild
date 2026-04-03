@@ -12,10 +12,12 @@ import {
   Clock3,
   LayoutDashboard,
   LineChart,
+  Menu,
   Settings,
   Upload,
   UserRoundSearch,
   Wallet,
+  X,
 } from "lucide-react";
 import SignOutButton from "@/components/auth/SignOutButton";
 import ProfileAvatar from "@/components/dashboard/ProfileAvatar";
@@ -120,6 +122,7 @@ export default function DashboardShell({
         isAnalyticsRoute ||
         isCeo));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
+  const [pendingPayrollReportCount, setPendingPayrollReportCount] = useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
 
@@ -144,6 +147,7 @@ export default function DashboardShell({
   useEffect(() => {
     if (!isCeo) {
       setPendingOvertimeCount(0);
+      setPendingPayrollReportCount(0);
       previousPendingCountRef.current = null;
       return;
     }
@@ -152,17 +156,25 @@ export default function DashboardShell({
     const supabase = createSupabaseBrowserClient();
 
     async function loadPendingOvertimeCount() {
-      const { count, error } = await supabase
-        .from("payroll_adjustments")
-        .select("id", { count: "exact", head: true })
-        .eq("adjustment_type", "overtime")
-        .eq("status", "pending");
+      const [{ count: overtimeCount, error: overtimeError }, { count: payrollReportCount, error: payrollReportError }] =
+        await Promise.all([
+          supabase
+            .from("payroll_adjustments")
+            .select("id", { count: "exact", head: true })
+            .eq("adjustment_type", "overtime")
+            .eq("status", "pending"),
+          supabase
+            .from("payroll_runs")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "submitted"),
+        ]);
 
-      if (cancelled || error) return;
+      if (cancelled || overtimeError || payrollReportError) return;
 
-      const nextCount = count ?? 0;
+      const nextCount = overtimeCount ?? 0;
       const previousCount = previousPendingCountRef.current;
       setPendingOvertimeCount(nextCount);
+      setPendingPayrollReportCount(payrollReportCount ?? 0);
 
       if (
         previousCount !== null &&
@@ -199,6 +211,14 @@ export default function DashboardShell({
   return (
     <div className="min-h-screen bg-white">
       <div className="min-h-screen">
+        {/* Mobile sidebar overlay */}
+        {open && (
+          <div
+            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+            onClick={() => setOpen(false)}
+          />
+        )}
+
         <aside
           className={cn(
             "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-apple-mist bg-white transition-transform duration-300 lg:translate-x-0",
@@ -219,6 +239,15 @@ export default function DashboardShell({
                 Prodisenyo PayTrack
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
+              aria-label="Close navigation"
+            >
+              <X size={16} />
+            </button>
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-3 pt-5">
@@ -238,7 +267,7 @@ export default function DashboardShell({
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "group flex items-center gap-2 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                           active
                             ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                             : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -291,6 +320,14 @@ export default function DashboardShell({
                             {pendingOvertimeCount > 99
                               ? "99+"
                               : pendingOvertimeCount}
+                          </span>
+                        ) : null}
+                        {item.href === "/payroll-reports" &&
+                        pendingPayrollReportCount > 0 ? (
+                          <span className="ml-1 inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white">
+                            {pendingPayrollReportCount > 99
+                              ? "99+"
+                              : pendingPayrollReportCount}
                           </span>
                         ) : null}
                       </Link>
@@ -527,6 +564,29 @@ export default function DashboardShell({
         </aside>
 
         <div className="min-h-screen lg:pl-[286px]">
+          {/* Mobile top bar */}
+          <div
+            className="sticky top-0 z-30 flex items-center justify-between border-b border-apple-mist bg-white px-4 lg:hidden"
+            style={{ height: headerHeight }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-apple-mist text-apple-charcoal">
+                <Building2 className="h-4 w-4" strokeWidth={1.5} />
+              </div>
+              <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
+                Prodisenyo PayTrack
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-apple-mist text-apple-charcoal hover:bg-apple-mist/40"
+              aria-label="Open navigation"
+            >
+              <Menu size={18} />
+            </button>
+          </div>
+
           <main className="min-h-screen bg-white p-6">{children}</main>
         </div>
       </div>

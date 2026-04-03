@@ -57,6 +57,63 @@ export interface HistoricalDashboardPeriodOption {
   createdAt: string;
 }
 
+export interface HistoricalDashboardSelectedRun {
+  id: string;
+  attendanceImportId: string | null;
+  siteName: string;
+  periodLabel: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  status: PayrollRunStatus;
+  submittedAt: string | null;
+  createdAt: string;
+}
+
+export type HistoricalDashboardPayrollItem =
+  Pick<
+    PayrollRunItemRow,
+    | "id"
+    | "payroll_run_id"
+    | "employee_name"
+    | "role_code"
+    | "site_name"
+    | "days_worked"
+    | "hours_worked"
+    | "overtime_hours"
+    | "regular_pay"
+    | "overtime_pay"
+    | "holiday_pay"
+    | "deductions_total"
+    | "total_pay"
+  >;
+
+export type HistoricalDashboardAttendanceLog =
+  Pick<
+    AttendanceRecordRow,
+    | "id"
+    | "import_id"
+    | "employee_name"
+    | "log_date"
+    | "log_time"
+    | "log_type"
+    | "log_source"
+    | "site_name"
+  >;
+
+export type HistoricalDashboardDailyTotal =
+  Pick<
+    PayrollRunDailyTotalRow,
+    | "id"
+    | "payroll_run_id"
+    | "payroll_run_item_id"
+    | "employee_name"
+    | "role_code"
+    | "site_name"
+    | "payout_date"
+    | "hours_worked"
+    | "total_pay"
+  >;
+
 export interface HistoricalDashboardData {
   employees: Employee[];
   records: AttendanceRecord[];
@@ -69,6 +126,10 @@ export interface HistoricalDashboardData {
   periodOptions: HistoricalDashboardPeriodOption[];
   selectedPeriodKey: string | null;
   selectedPeriodLabel: string;
+  selectedRun: HistoricalDashboardSelectedRun | null;
+  selectedPayrollItems: HistoricalDashboardPayrollItem[];
+  selectedAttendanceLogs: HistoricalDashboardAttendanceLog[];
+  selectedPayrollDailyTotals: HistoricalDashboardDailyTotal[];
   viewerRole: "ceo" | "payroll_manager" | null;
   debug: HistoricalDashboardDebug;
 }
@@ -404,6 +465,10 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
               periodOptions: [],
               selectedPeriodKey: null,
               selectedPeriodLabel: "No recorded payroll period yet",
+              selectedRun: null,
+              selectedPayrollItems: [],
+              selectedAttendanceLogs: [],
+              selectedPayrollDailyTotals: [],
               viewerRole: role ?? null,
               debug: {
                 attendanceImportCount: 0,
@@ -483,7 +548,9 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
         const employeeRows = (employeesResult.data ?? []) as EmployeeRow[];
         const importRows = (importsResult.data ?? []) as AttendanceImportRow[];
         const payrollRuns = (runsResult.data ?? []) as PayrollRunRow[];
-        const trackedRuns = payrollRuns.filter((run) => run.status !== "rejected");
+        const trackedRuns = payrollRuns.filter((run) =>
+          isCeo ? run.status === "approved" : run.status !== "rejected",
+        );
         const dedupedTrackedRuns = dedupeTrackedRuns(trackedRuns);
         const periodOptions = buildPeriodOptions(dedupedTrackedRuns);
         const selectedRun =
@@ -539,7 +606,9 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           trackedRunIds.length > 0
             ? await supabase
                 .from("payroll_run_daily_totals")
-                .select("payroll_run_id, payout_date, total_pay")
+                .select(
+                  "id, payroll_run_id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay",
+                )
                 .in("payroll_run_id", trackedRunIds)
                 .order("payout_date", { ascending: true })
             : { data: [], error: null };
@@ -592,6 +661,57 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             periodOptions,
             selectedPeriodKey: resolvedSelectedPeriodKey,
             selectedPeriodLabel: attendancePeriod,
+            selectedRun: selectedRun
+              ? {
+                  id: selectedRun.id,
+                  attendanceImportId: selectedRun.attendance_import_id,
+                  siteName: selectedRun.site_name,
+                  periodLabel: selectedRun.period_label,
+                  periodStart: selectedRun.period_start,
+                  periodEnd: selectedRun.period_end,
+                  status: selectedRun.status,
+                  submittedAt: selectedRun.submitted_at,
+                  createdAt: selectedRun.created_at,
+                }
+              : null,
+            selectedPayrollItems: ((payrollItemsResult.data ??
+              []) as PayrollRunItemRow[]).map((item) => ({
+              id: item.id,
+              payroll_run_id: item.payroll_run_id,
+              employee_name: item.employee_name,
+              role_code: item.role_code,
+              site_name: item.site_name,
+              days_worked: item.days_worked,
+              hours_worked: item.hours_worked,
+              overtime_hours: item.overtime_hours,
+              regular_pay: item.regular_pay,
+              overtime_pay: item.overtime_pay,
+              holiday_pay: item.holiday_pay,
+              deductions_total: item.deductions_total,
+              total_pay: item.total_pay,
+            })),
+            selectedAttendanceLogs: attendanceRows.map((row) => ({
+              id: row.id,
+              import_id: row.import_id,
+              employee_name: row.employee_name,
+              log_date: row.log_date,
+              log_time: row.log_time,
+              log_type: row.log_type,
+              log_source: row.log_source,
+              site_name: row.site_name,
+            })),
+            selectedPayrollDailyTotals: ((payrollDailyTotalsResult.data ??
+              []) as PayrollRunDailyTotalRow[]).map((row) => ({
+              id: row.id,
+              payroll_run_id: row.payroll_run_id,
+              payroll_run_item_id: row.payroll_run_item_id,
+              employee_name: row.employee_name,
+              role_code: row.role_code,
+              site_name: row.site_name,
+              payout_date: row.payout_date,
+              hours_worked: row.hours_worked,
+              total_pay: row.total_pay,
+            })),
             viewerRole: role ?? null,
             debug: {
               attendanceImportCount: importRows.length,

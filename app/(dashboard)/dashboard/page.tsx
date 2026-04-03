@@ -6,7 +6,6 @@ import {
   ArrowUp,
   BadgeCheck,
   Check,
-  ChevronRight,
   RefreshCw,
   Receipt,
   Wallet,
@@ -29,10 +28,10 @@ import {
 import ChartTooltip from "@/components/charts/ChartTooltip";
 import { DashboardOverviewSkeleton } from "@/components/dashboard/DashboardLoadingSkeleton";
 import { useAppState } from "@/features/app/AppStateProvider";
+import CeoDepartmentReview from "@/features/dashboard/components/CeoDepartmentReview";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
-import type { PayrollRow } from "@/lib/payrollEngine";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
 import {
   aggregateDailyPaidPoints,
@@ -69,13 +68,6 @@ interface PayrollSummaryCardDefinition {
   formula: string;
   amount: number;
   steps: string[];
-}
-
-interface DashboardSiteCard {
-  siteName: string;
-  shortSite: string;
-  employees: number;
-  payrollTotal: number;
 }
 
 type DashboardPayrollRunRow = Pick<
@@ -117,17 +109,6 @@ function extractBranchName(value: string): string {
   return value.trim().split(/\s+/)[0].toUpperCase();
 }
 
-function normalizeEmployeeName(name: string): string {
-  return name.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function splitSiteNames(value: string): string[] {
-  return value
-    .split(",")
-    .map((site) => site.trim())
-    .filter((site) => site.length > 0);
-}
-
 function formatCompactCurrency(value: number): string {
   const absolute = Math.abs(value);
   if (absolute >= 1_000_000_000) {
@@ -153,55 +134,6 @@ function formatTrendPercent(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}%`;
-}
-
-function buildDepartmentCards(payrollRows: PayrollRow[]): DashboardSiteCard[] {
-  const byEmployee = new Map<
-    string,
-    { name: string; totalPay: number; sites: Set<string> }
-  >();
-
-  for (const row of payrollRows) {
-    const key = normalizeEmployeeName(row.worker);
-    const current = byEmployee.get(key) ?? {
-      name: row.worker,
-      totalPay: 0,
-      sites: new Set<string>(),
-    };
-
-    current.totalPay += row.totalPay;
-
-    splitSiteNames(row.site || "Unknown Site").forEach((site) =>
-      current.sites.add(site),
-    );
-
-    if (row.worker.length > current.name.length) {
-      current.name = row.worker;
-    }
-
-    byEmployee.set(key, current);
-  }
-
-  const bySite = new Map<string, DashboardSiteCard>();
-
-  for (const employee of byEmployee.values()) {
-    employee.sites.forEach((siteName) => {
-      const current = bySite.get(siteName) ?? {
-        siteName,
-        shortSite: extractBranchName(siteName),
-        employees: 0,
-        payrollTotal: 0,
-      };
-
-      current.employees += 1;
-      current.payrollTotal += employee.totalPay;
-      bySite.set(siteName, current);
-    });
-  }
-
-  return Array.from(bySite.values()).sort((a, b) =>
-    a.siteName.localeCompare(b.siteName),
-  );
 }
 
 function SummaryFormulaModal({
@@ -298,7 +230,7 @@ export default function OverviewPage() {
     setSelectedPeriodKey,
     refreshData,
   } = useHistoricalDashboardData();
-  const [role, setRole] = useState<"ceo" | "payroll_manager" | null>(null);
+  const role = data?.viewerRole ?? null;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [ceoTrendRange, setCeoTrendRange] = useState<TrendRange>("daily");
   const [ceoSubmittedRuns, setCeoSubmittedRuns] = useState<
@@ -326,6 +258,19 @@ export default function OverviewPage() {
   const activityRows = useMemo(
     () => data?.recentActivity ?? [],
     [data?.recentActivity],
+  );
+  const selectedRun = data?.selectedRun ?? null;
+  const selectedPayrollItems = useMemo(
+    () => data?.selectedPayrollItems ?? [],
+    [data?.selectedPayrollItems],
+  );
+  const selectedAttendanceLogs = useMemo(
+    () => data?.selectedAttendanceLogs ?? [],
+    [data?.selectedAttendanceLogs],
+  );
+  const selectedPayrollDailyTotals = useMemo(
+    () => data?.selectedPayrollDailyTotals ?? [],
+    [data?.selectedPayrollDailyTotals],
   );
   const periodOptions = useMemo(
     () => data?.periodOptions ?? [],
@@ -363,11 +308,6 @@ export default function OverviewPage() {
         fill: OVERVIEW_CHART_COLORS[index % OVERVIEW_CHART_COLORS.length],
       })),
     [payrollInsights.payrollDistributionByProject],
-  );
-
-  const siteCards = useMemo(
-    () => buildDepartmentCards(payrollRows),
-    [payrollRows],
   );
 
   const summaryCards = useMemo<PayrollSummaryCardDefinition[]>(
@@ -499,39 +439,6 @@ export default function OverviewPage() {
   const shouldShowSkeleton = loading && !data && !error;
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadRole() {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || cancelled) {
-        setRole(null);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      setRole(
-        (data as { role: "ceo" | "payroll_manager" } | null)?.role ?? null,
-      );
-    }
-
-    void loadRole();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     if (role !== "payroll_manager") return;
     if (!workspaceReset && currentPayrollRunId) return;
     router.replace("/upload-attendance");
@@ -558,7 +465,7 @@ export default function OverviewPage() {
         .select(
           "id, attendance_import_id, period_label, period_start, period_end, submitted_at, created_at, net_total, status",
         )
-        .eq("status", "submitted")
+        .eq("status", "approved")
         .order("submitted_at", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: true });
 
@@ -717,7 +624,7 @@ export default function OverviewPage() {
           <div>
             <p className="text-[12px] font-medium text-white/65">
               {role === "ceo"
-                ? "Overall Submitted Payroll"
+                ? "Overall Approved Payroll"
                 : "Total Payroll This Period"}
             </p>
             <div className="mt-3 flex items-center gap-3">
@@ -733,7 +640,7 @@ export default function OverviewPage() {
             </div>
             <p className="mt-3 text-sm text-white/70">
               {role === "ceo"
-                ? `Across ${ceoSubmittedReportCount.toLocaleString("en-PH")} submitted report${
+                ? `Across ${ceoSubmittedReportCount.toLocaleString("en-PH")} approved report${
                     ceoSubmittedReportCount === 1 ? "" : "s"
                   }`
                 : attendancePeriod}
@@ -797,10 +704,10 @@ export default function OverviewPage() {
                 CEO Payroll Report Trend
               </p>
               <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-                Submitted Payroll Movement
+                Approved Payroll Movement
               </h2>
               <p className="mt-1 text-sm text-apple-steel">
-                Daily paid totals across submitted payroll reports, with weekly,
+                Daily paid totals across approved payroll reports, with weekly,
                 monthly, and yearly views.
               </p>
               {ceoTrendPercent !== null ? (
@@ -845,7 +752,7 @@ export default function OverviewPage() {
               </div>
             ) : ceoPayrollTrend.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-apple-steel">
-                No submitted payroll reports yet.
+                No approved payroll reports yet.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -921,6 +828,79 @@ export default function OverviewPage() {
               </p>
             </div>
           ) : null}
+        </section>
+      ) : null}
+
+      {role === "ceo" ? (
+        <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                CEO Payroll Review
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+                {selectedRun ? "Selected Approved Payroll" : "No Approved Payroll Selected"}
+              </h2>
+              <p className="mt-1 text-sm text-apple-steel">
+                Only CEO-approved payroll reports are reflected here. Use the period selector to switch between approved runs.
+              </p>
+            </div>
+
+            {selectedRun ? (
+              <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sky-700">
+                {selectedRun.status}
+              </span>
+            ) : null}
+          </div>
+
+          {selectedRun ? (
+            <div className="mt-4 grid gap-3 rounded-[18px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                  Site
+                </p>
+                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  {selectedRun.siteName}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                  Payroll Period
+                </p>
+                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  {selectedRun.periodLabel}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                  Submitted
+                </p>
+                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  {selectedRun.submittedAt
+                    ? new Date(selectedRun.submittedAt).toLocaleString("en-PH", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })
+                    : "Not submitted"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                  Employees
+                </p>
+                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  {selectedPayrollItems.length.toLocaleString("en-PH")}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-[18px] border border-dashed border-apple-mist bg-[rgb(var(--apple-snow))] p-4 text-sm text-apple-steel">
+              No approved payroll report is available for review yet.
+            </div>
+          )}
         </section>
       ) : null}
 
@@ -1169,53 +1149,12 @@ export default function OverviewPage() {
         })}
           </section>
 
-          <section className="rounded-[12px] bg-white p-5 mb-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-[15px] font-semibold text-apple-charcoal">
-            Department Cards
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {siteCards.length > 0 ? (
-            siteCards.map((card) => (
-              <div
-                key={card.siteName}
-                className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white  shadow-[0_18px_36px_rgba(22,101,52,0.16)]"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">{card.shortSite}</p>
-                  <span className="text-[11px] text-white/65">SITE</span>
-                </div>
-
-                <p className="mt-6 text-[12px] uppercase tracking-[0.28em] text-white/55">
-                  Employees
-                </p>
-                <p className="mt-2 text-[28px] font-semibold tracking-[-0.03em]">
-                  {card.employees.toLocaleString("en-PH")}
-                </p>
-
-                <p className="mt-6 text-[12px] uppercase tracking-[0.28em] text-white/55">
-                  Total Payroll
-                </p>
-                <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em]">
-                  {PESO_SIGN} {formatPayrollNumber(card.payrollTotal)}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">OPERATIONS</p>
-                <span className="text-[11px] text-white/65">DEPT</span>
-              </div>
-              <p className="mt-8 text-sm text-white/70">
-                No sites uploaded yet.
-              </p>
-            </div>
-          )}
-        </div>
-          </section>
+          <CeoDepartmentReview
+            attendancePeriod={attendancePeriod}
+            payrollItems={selectedPayrollItems}
+            attendanceLogs={selectedAttendanceLogs}
+            dailyTotals={selectedPayrollDailyTotals}
+          />
 
           <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="mb-4 flex items-center justify-between">

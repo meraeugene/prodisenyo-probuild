@@ -643,7 +643,7 @@ export default function PayrollSection({
               {currentPayrollRunStatus && (
                 <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-2xs font-semibold text-sky-700">
                   {currentPayrollRunStatus === "submitted"
-                    ? "SAVED"
+                    ? "PENDING REVIEW"
                     : currentPayrollRunStatus.toUpperCase()}
                 </span>
               )}
@@ -652,8 +652,8 @@ export default function PayrollSection({
               Generate Payroll
             </h2>
             <p className="text-sm text-apple-smoke mt-1">
-              Generate a preview after reviewing attendance logs, then save the
-              official payroll record for this period.
+              Generate a preview after reviewing attendance logs, then submit the
+              payroll record for CEO review.
             </p>
             {/* {payroll.payrollSaveNotice && (
               <p className="mt-2 text-xs font-semibold text-green-700">
