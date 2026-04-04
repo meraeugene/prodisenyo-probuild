@@ -159,40 +159,51 @@ function buildRequestDailyLogRows(
 
 function ApprovalQueueSkeleton() {
   return (
-    <div className="mt-4 space-y-3" aria-hidden="true">
+    <div
+      className="mt-4 grid items-stretch gap-3 md:grid-cols-2 "
+      aria-hidden="true"
+    >
       {Array.from({ length: 2 }).map((_, index) => (
         <div
           key={`approval-skeleton-${index}`}
-          className="rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-4"
+          className="h-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)]"
         >
-          <div className="animate-pulse space-y-4">
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
-              <div className="min-w-0 space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="h-4 w-28 rounded-full bg-apple-mist" />
-                  <div className="h-6 w-28 rounded-full bg-apple-mist/80" />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <div className="h-3 w-24 rounded-full bg-apple-mist/80" />
-                  <div className="h-3 w-32 rounded-full bg-apple-mist/80" />
-                  <div className="h-3 w-24 rounded-full bg-apple-mist/80" />
-                </div>
+          <div className="flex h-full flex-col animate-pulse">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="h-5 w-32 rounded-full bg-apple-mist" />
+                <div className="h-6 w-28 rounded-full bg-apple-mist/80" />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <div className="h-4 w-28 rounded-full bg-apple-mist/80" />
+                <div className="h-4 w-36 rounded-full bg-apple-mist/80" />
+              </div>
+
+              <div className="space-y-2">
                 <div className="h-3 w-40 rounded-full bg-apple-mist/70" />
                 <div className="h-10 w-full rounded-xl border border-apple-mist bg-white/80" />
               </div>
 
-              <div className="rounded-xl border border-apple-mist bg-white px-4 py-3">
-                <div className="space-y-2">
-                  <div className="h-3 w-20 rounded-full bg-apple-mist/70" />
-                  <div className="h-7 w-24 rounded-full bg-apple-mist" />
-                  <div className="h-3 w-14 rounded-full bg-apple-mist/80" />
-                </div>
+              <div className="space-y-2">
+                <div className="h-8 w-36 rounded-lg border border-apple-mist bg-white/80" />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-apple-mist pt-4">
-              <div className="h-10 w-24 rounded-[10px] bg-apple-mist/80" />
-              <div className="h-10 w-24 rounded-[10px] bg-apple-mist" />
+            <div className="mt-6 rounded-2xl border border-apple-mist bg-white p-4 shadow-sm">
+              <div className="space-y-2">
+                <div className="h-3 w-20 rounded-full bg-apple-mist/70" />
+                <div className="h-8 w-24 rounded-full bg-apple-mist" />
+                <div className="h-3 w-16 rounded-full bg-apple-mist/80" />
+              </div>
+            </div>
+
+            <div className="mt-auto flex items-end justify-between gap-4 pt-6">
+              <div className="h-3 w-36 rounded-full bg-apple-mist/70" />
+              <div className="flex gap-2">
+                <div className="h-10 w-24 rounded-xl bg-apple-mist/80" />
+                <div className="h-10 w-36 rounded-xl bg-apple-mist" />
+              </div>
             </div>
           </div>
         </div>
@@ -435,7 +446,7 @@ export default function PayrollApprovalQueue({
         </span>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4">
         {loading ? (
           <ApprovalQueueSkeleton />
         ) : !hasRequests ? (
@@ -443,34 +454,35 @@ export default function PayrollApprovalQueue({
             No overtime requests are waiting for approval.
           </p>
         ) : (
-          pendingRequests.map((request) => {
-            const run = getRelationValue(request.payroll_runs);
-            const item = getRelationValue(request.payroll_run_items);
-            const rowBusy = isPending && pendingActionId === request.id;
-            const rejectBusy = rowBusy && pendingActionType === "reject";
-            const approveBusy = rowBusy && pendingActionType === "approve";
-            const siteLabel =
-              item?.site_name?.trim() ||
-              request.site_name?.trim() ||
-              run?.site_name ||
-              "Unknown Site";
-            const employeeLabel =
-              item?.employee_name ?? request.employee_name ?? "Unknown Employee";
-            const periodLabel =
-              run?.period_label ?? request.period_label ?? "Unknown Period";
-            const requestDailyLogs = buildRequestDailyLogRows(
-              request,
-              employeeLogsByRequestId[request.id] ?? [],
-            );
+          <div className="grid items-stretch gap-3 md:grid-cols-2 ">
+            {pendingRequests.map((request) => {
+              const run = getRelationValue(request.payroll_runs);
+              const item = getRelationValue(request.payroll_run_items);
+              const rowBusy = isPending && pendingActionId === request.id;
+              const rejectBusy = rowBusy && pendingActionType === "reject";
+              const approveBusy = rowBusy && pendingActionType === "approve";
+              const siteLabel =
+                item?.site_name?.trim() ||
+                request.site_name?.trim() ||
+                run?.site_name ||
+                "Unknown Site";
+              const employeeLabel =
+                item?.employee_name ??
+                request.employee_name ??
+                "Unknown Employee";
+              const periodLabel =
+                run?.period_label ?? request.period_label ?? "Unknown Period";
+              const requestDailyLogs = buildRequestDailyLogRows(
+                request,
+                employeeLogsByRequestId[request.id] ?? [],
+              );
 
-            return (
-              <div
-                key={request.id}
-                className="group w-full max-w-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all"
-              >
-                <div className="grid gap-6 ">
+              return (
+                <div
+                  key={request.id}
+                  className="group flex h-full w-full max-w-full flex-col rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all"
+                >
                   <div className="min-w-0 space-y-3">
-                    {/* Header: Name & Status */}
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
                         {employeeLabel}
@@ -481,25 +493,21 @@ export default function PayrollApprovalQueue({
                       </span>
                     </div>
 
-                    {/* Metadata Row */}
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-apple-steel">
                       <div className="flex items-center gap-1.5">
                         <MapPin size={14} className="text-apple-smoke" />
                         {siteLabel}
                       </div>
                       <div className="hidden h-3 w-px bg-apple-mist lg:block" />
-                      <div className="font-medium">
-                        {periodLabel}
-                      </div>
+                      <div className="font-medium">{periodLabel}</div>
                     </div>
 
-                    {/* Request Date & Notes */}
                     <div className="space-y-2">
                       <p className="text-[11px] font-medium text-apple-smoke/80">
                         Requested {formatRequestedAt(request.created_at)}
                       </p>
                       {request.notes && (
-                        <div className="relative rounded-xl border border-apple-mist/50 bg-blue-50 px-3.5 py-2.5 text-xs italic  shadow-sm">
+                        <div className="relative rounded-xl border border-apple-mist/50 bg-blue-50 px-3.5 py-2.5 text-xs italic shadow-sm">
                           &quot;{request.notes}&quot;
                         </div>
                       )}
@@ -543,8 +551,8 @@ export default function PayrollApprovalQueue({
                               </p>
                             ) : requestDailyLogs.length === 0 ? (
                               <p className="px-3 py-4 text-xs text-apple-steel">
-                                No attendance logs found for this employee in the
-                                linked import.
+                                No attendance logs found for this employee in
+                                the linked import.
                               </p>
                             ) : (
                               <table className="min-w-[760px] w-full text-xs">
@@ -646,8 +654,7 @@ export default function PayrollApprovalQueue({
                     </div>
                   </div>
 
-                  {/* Financial Highlight Card */}
-                  <div className="flex flex-col justify-center rounded-2xl border border-apple-mist bg-white p-4 shadow-sm lg:self-start">
+                  <div className="mt-6 rounded-2xl border border-apple-mist bg-white p-4 shadow-sm">
                     <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-apple-steel/80">
                       Overtime Pay
                     </p>
@@ -662,48 +669,47 @@ export default function PayrollApprovalQueue({
                       {request.quantity === 1 ? "" : "s"}
                     </div>
                   </div>
-                </div>
 
-                {/* Footer Actions */}
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 ">
-                  <div className="text-[11px] text-apple-steel italic">
-                    Review required before payroll cutoff
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleAction(request.id, "reject")}
-                      disabled={rowBusy}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-bold text-red-600 transition-colors bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
-                      aria-label={`Reject overtime request for ${item?.employee_name ?? "employee"}`}
-                    >
-                      {rejectBusy ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <XCircle size={16} />
-                      )}
-                      Reject
-                    </button>
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-6">
+                    <div className="text-[11px] italic text-apple-steel">
+                      Review required before payroll cutoff
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleAction(request.id, "reject")}
+                        disabled={rowBusy}
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
+                        aria-label={`Reject overtime request for ${item?.employee_name ?? "employee"}`}
+                      >
+                        {rejectBusy ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <XCircle size={16} />
+                        )}
+                        Reject
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleAction(request.id, "approve")}
-                      disabled={rowBusy}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
-                      aria-label={`Approve overtime request for ${item?.employee_name ?? "employee"}`}
-                    >
-                      {approveBusy ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <CheckCircle2 size={16} />
-                      )}
-                      Approve Request
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAction(request.id, "approve")}
+                        disabled={rowBusy}
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+                        aria-label={`Approve overtime request for ${item?.employee_name ?? "employee"}`}
+                      >
+                        {approveBusy ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <CheckCircle2 size={16} />
+                        )}
+                        Approve Request
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
     </section>

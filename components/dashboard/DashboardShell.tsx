@@ -45,10 +45,6 @@ const CEO_GENERAL_ITEMS = [
   },
 ] as const;
 
-const ATTENDANCE_READY_GENERAL_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-];
-
 const GENERAL_WORKFLOW_ITEMS = [
   {
     href: "/review-attendance",
@@ -99,14 +95,7 @@ export default function DashboardShell({
   const settingsActive = pathname === "/settings";
   const isWorkflowRoute =
     pathname === "/review-attendance" || pathname === "/generate-payroll";
-  const isDashboardRoute = pathname === "/dashboard";
   const isCeo = profile?.role === "ceo";
-  const canSeeDashboardNav =
-    isCeo ||
-    (!workspaceReset &&
-      (navState.hasSavedPayroll ||
-        Boolean(currentPayrollRunId) ||
-        isDashboardRoute));
   const canSeeWorkflowNav =
     isCeo ||
     (!workspaceReset &&
@@ -386,55 +375,6 @@ export default function DashboardShell({
                   </motion.div>
                 ) : null}
               </AnimatePresence>
-
-              {!isCeo && canSeeDashboardNav ? (
-                <motion.div
-                  key="attendance-ready-general-nav"
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
-                  className="space-y-3 overflow-hidden"
-                >
-                  {ATTENDANCE_READY_GENERAL_ITEMS.map((item, index) => {
-                    const active = pathname === item.href;
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          duration: 0.22,
-                          delay: index * 0.04,
-                          ease: "easeOut",
-                        }}
-                      >
-                        <Link
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className={cn(
-                            "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                            active
-                              ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                              : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                              active
-                                ? "bg-[#1f6a37] text-white"
-                                : "text-apple-smoke group-hover:text-apple-charcoal",
-                            )}
-                          >
-                            <item.icon size={15} />
-                          </div>
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              ) : null}
 
               {canSeeAnalyticsNav ? (
                 <motion.div
