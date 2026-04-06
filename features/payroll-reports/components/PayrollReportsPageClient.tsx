@@ -1225,7 +1225,7 @@ export default function PayrollReportsPageClient() {
     }));
 
     const supabase = createSupabaseBrowserClient();
-    const [itemsResult, logsResult, totalsResult] = await Promise.all([
+    const [itemsResult, initialLogsResult, totalsResult] = await Promise.all([
       supabase
         .from("payroll_run_items")
         .select("id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay")
@@ -1246,12 +1246,44 @@ export default function PayrollReportsPageClient() {
         .order("payout_date", { ascending: true }),
     ]);
 
-    if (itemsResult.error || logsResult.error || totalsResult.error) {
+    let attendanceLogsData = (initialLogsResult.data ?? []) as AttendanceLogRow[];
+    let attendanceLogsError = initialLogsResult.error;
+
+    if (
+      !attendanceLogsError &&
+      attendanceLogsData.length === 0 &&
+      report.period_start &&
+      report.period_end
+    ) {
+      const fallbackSites = splitSiteNames(report.site_name).filter((site) => site.length > 0);
+      let fallbackQuery = supabase
+        .from("attendance_records")
+        .select("id, employee_name, log_date, log_time, log_type, log_source, site_name")
+        .gte("log_date", report.period_start)
+        .lte("log_date", report.period_end)
+        .order("log_date", { ascending: true })
+        .order("log_time", { ascending: true });
+
+      if (fallbackSites.length === 1) {
+        fallbackQuery = fallbackQuery.eq("site_name", fallbackSites[0]);
+      } else if (fallbackSites.length > 1) {
+        fallbackQuery = fallbackQuery.in("site_name", fallbackSites);
+      }
+
+      const fallbackLogsResult = await fallbackQuery;
+      if (fallbackLogsResult.error) {
+        attendanceLogsError = fallbackLogsResult.error;
+      } else {
+        attendanceLogsData = (fallbackLogsResult.data ?? []) as AttendanceLogRow[];
+      }
+    }
+
+    if (itemsResult.error || attendanceLogsError || totalsResult.error) {
       setDetailsByRunId((prev) => ({
         ...prev,
         [report.id]: {
           loading: false,
-          error: itemsResult.error?.message || logsResult.error?.message || totalsResult.error?.message || "Unable to load report logs.",
+          error: itemsResult.error?.message || attendanceLogsError?.message || totalsResult.error?.message || "Unable to load report logs.",
           payrollItems: [],
           attendanceLogs: [],
           dailyTotals: [],
@@ -1266,7 +1298,7 @@ export default function PayrollReportsPageClient() {
         loading: false,
         error: null,
         payrollItems: (itemsResult.data ?? []) as PayrollRunItemRow[],
-        attendanceLogs: (logsResult.data ?? []) as AttendanceLogRow[],
+        attendanceLogs: attendanceLogsData,
         dailyTotals: (totalsResult.data ?? []) as PayrollRunDailyTotalRow[],
       },
     }));

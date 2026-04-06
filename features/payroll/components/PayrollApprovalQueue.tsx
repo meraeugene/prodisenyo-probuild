@@ -23,6 +23,7 @@ import {
   formatLogTime as formatPayrollLogTime,
   toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
+import { parseOvertimeRequestNotes } from "@/features/payroll/utils/overtimeRequestNotes";
 import {
   approveOvertimeAdjustmentAction,
   rejectOvertimeAdjustmentAction,
@@ -132,6 +133,11 @@ function buildRequestDailyLogRows(
   request: PendingOvertimeRequest,
   logs: AttendanceLogRow[],
 ): DailyLogRow[] {
+  const parsedNotes = parseOvertimeRequestNotes(request.notes);
+  if (parsedNotes.editedLogs.length > 0) {
+    return [...parsedNotes.editedLogs].sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   const employeeName = request.employee_name?.trim() || "Unknown Employee";
   const attendanceRecords: AttendanceRecord[] = logs.map((log) => ({
     date: log.log_date,
@@ -502,6 +508,23 @@ export default function PayrollApprovalQueue({
   ): Promise<void> {
     if (!request.id) return;
 
+    const parsedNotes = parseOvertimeRequestNotes(request.notes);
+    if (parsedNotes.editedLogs.length > 0) {
+      setEmployeeLogsByRequestId((prev) => ({
+        ...prev,
+        [request.id]: [],
+      }));
+      setEmployeeLogsErrorByRequestId((prev) => ({
+        ...prev,
+        [request.id]: null,
+      }));
+      setEmployeeLogsLoadingByRequestId((prev) => ({
+        ...prev,
+        [request.id]: false,
+      }));
+      return;
+    }
+
     if (!request.attendance_import_id || !request.employee_name) {
       setEmployeeLogsErrorByRequestId((prev) => ({
         ...prev,
@@ -740,9 +763,9 @@ export default function PayrollApprovalQueue({
                       <p className="text-[11px] font-medium text-apple-smoke/80">
                         Requested {formatRequestedAt(request.created_at)}
                       </p>
-                      {request.notes && (
+                      {parseOvertimeRequestNotes(request.notes).displayNotes && (
                         <div className="relative rounded-xl border border-apple-mist/50 bg-blue-50 px-3.5 py-2.5 text-xs italic shadow-sm">
-                          &quot;{request.notes}&quot;
+                          &quot;{parseOvertimeRequestNotes(request.notes).displayNotes}&quot;
                         </div>
                       )}
                     </div>

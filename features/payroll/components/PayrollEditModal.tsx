@@ -41,6 +41,10 @@ import {
   buildEmployeeBranchRateKey,
   getLogOverrideKey,
 } from "@/features/payroll/utils/payrollMappers";
+import {
+  buildOvertimeRequestNotes,
+  parseOvertimeRequestNotes,
+} from "@/features/payroll/utils/overtimeRequestNotes";
 import { computeSameDayOvertimeMinutes } from "@/lib/utils";
 import {
   allocateCombinedBranchPay,
@@ -462,6 +466,10 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     try {
       const nextPendingEntries = pendingOvertimeEntries.map((entry) => ({
         ...entry,
+        notes: buildOvertimeRequestNotes(
+          parseOvertimeRequestNotes(entry.notes).displayNotes,
+          currentLogsForPay,
+        ),
         status: "pending" as const,
       }));
 
