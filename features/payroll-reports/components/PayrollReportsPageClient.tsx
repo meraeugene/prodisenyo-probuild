@@ -13,14 +13,39 @@ import {
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type TooltipProps,
+} from "recharts";
+import {
   approvePayrollReportAction,
   deletePayrollReportAction,
   rejectPayrollReportAction,
 } from "@/actions/payroll";
 import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
-import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
+import type { DailyLogRow } from "@/types";
+import {
+  extractSiteName,
+  formatPayrollNumber,
+} from "@/features/payroll/utils/payrollFormatters";
+import {
+  buildEditingPayrollLogs,
+  computeBasePay,
+} from "@/features/payroll/utils/payrollSelectors";
+import { normalizeEmployeeNameKey } from "@/features/payroll/utils/payrollMappers";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { cn } from "@/lib/utils";
+import type { PayrollRow } from "@/lib/payrollEngine";
 import type { Database, PayrollRunStatus } from "@/types/database";
 
 type PayrollRunRow = Pick<
@@ -32,7 +57,6 @@ type PayrollRunRow = Pick<
   | "period_start"
   | "period_end"
   | "status"
-  | "gross_total"
   | "net_total"
   | "created_at"
   | "submitted_at"
@@ -47,6 +71,7 @@ type PayrollRunItemRow = Pick<
   | "days_worked"
   | "hours_worked"
   | "overtime_hours"
+  | "rate_per_day"
   | "regular_pay"
   | "overtime_pay"
   | "holiday_pay"
@@ -71,6 +96,7 @@ type PayrollRunDailyTotalRow = Pick<
   | "payroll_run_item_id"
   | "employee_name"
   | "role_code"
+  | "site_name"
   | "payout_date"
   | "hours_worked"
   | "total_pay"
@@ -84,28 +110,36 @@ interface ReportDetailsState {
   dailyTotals: PayrollRunDailyTotalRow[];
 }
 
-interface PayrollItemLogFilters {
-  search: string;
-  site: string;
-}
-
 interface ReportActionsMenuState {
   runId: string;
   top: number;
   left: number;
 }
 
-interface DailyAttendanceRow {
-  date: string;
-  site: string;
-  t1In: string | null;
-  t1Out: string | null;
-  t2In: string | null;
-  t2Out: string | null;
-  otIn: string | null;
-  otOut: string | null;
+interface ReportSiteSummary {
+  siteName: string;
+  employees: number;
+  payroll: number;
   hours: number;
 }
+
+interface ReportTrendPoint {
+  date: string;
+  label: string;
+  paid: number;
+  hours: number;
+  employees: number;
+}
+
+interface ReportCompositionDatum {
+  name: string;
+  value: number;
+  color: string;
+}
+
+const EMPTY_PAYROLL_ITEMS: PayrollRunItemRow[] = [];
+const EMPTY_ATTENDANCE_LOGS: AttendanceLogRow[] = [];
+const EMPTY_DAILY_TOTALS: PayrollRunDailyTotalRow[] = [];
 
 const PESO_SIGN = "\u20B1";
 
@@ -144,6 +178,17 @@ function formatDateTime(value: string | null): string {
   });
 }
 
+function formatPeso(value: number): string {
+  return `${PESO_SIGN} ${formatPayrollNumber(value)}`;
+}
+
+function formatCompactValue(value: number): string {
+  return new Intl.NumberFormat("en-PH", {
+    notation: "compact",
+    maximumFractionDigits: value >= 1000 ? 1 : 0,
+  }).format(value);
+}
+
 function formatLogDate(value: string): string {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return value;
@@ -162,10 +207,16 @@ function formatPeriodLabel(report: PayrollRunRow): string {
   return report.period_label || "Unknown period";
 }
 
+function formatChartDateLabel(value: string): string {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return value;
+  return date.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+}
+
 function splitSiteNames(value: string): string[] {
   return value
     .split(",")
-    .map((site) => site.trim())
+    .map((site) => extractSiteName(site) || site.trim())
     .filter((site) => site.length > 0);
 }
 
@@ -190,43 +241,73 @@ function pairHours(inTime: string | null, outTime: string | null): number {
   return diff / 60;
 }
 
-function buildDailyRows(logs: AttendanceLogRow[]): DailyAttendanceRow[] {
-  const map = new Map<string, DailyAttendanceRow>();
+function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
+  const map = new Map<string, DailyLogRow>();
+
   for (const log of logs) {
-    const site = log.site_name?.trim() || "Unknown Site";
-    const key = `${log.log_date}|||${site.toLowerCase()}`;
-    const row = map.get(key) ?? {
-      date: log.log_date,
-      site,
-      t1In: null,
-      t1Out: null,
-      t2In: null,
-      t2Out: null,
-      otIn: null,
-      otOut: null,
-      hours: 0,
-    };
+    const site = extractSiteName(log.site_name ?? "") || log.site_name?.trim() || "Unknown Site";
+    const employee = log.employee_name?.trim() || "Unknown Employee";
+    const employeeKey = normalizeEmployeeNameKey(employee);
+    const key = `${employeeKey}|||${log.log_date}|||${site.toLowerCase()}`;
+    const row =
+      map.get(key) ??
+      {
+        date: log.log_date,
+        employee,
+        time1In: "",
+        time1Out: "",
+        time2In: "",
+        time2Out: "",
+        otIn: "",
+        otOut: "",
+        hours: 0,
+        site,
+      };
 
     const currentMinutes = toMinutes(log.log_time);
+    if (employee.length > row.employee.length) {
+      row.employee = employee;
+    }
+
     if (log.log_source === "Time1") {
       if (log.log_type === "IN") {
-        row.t1In = !row.t1In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.t1In)) ? log.log_time : row.t1In;
+        row.time1In =
+          !row.time1In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.time1In))
+            ? log.log_time ?? ""
+            : row.time1In;
       } else {
-        row.t1Out = !row.t1Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.t1Out)) ? log.log_time : row.t1Out;
+        row.time1Out =
+          !row.time1Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.time1Out))
+            ? log.log_time ?? ""
+            : row.time1Out;
       }
     }
+
     if (log.log_source === "Time2") {
       if (log.log_type === "IN") {
-        row.t2In = !row.t2In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.t2In)) ? log.log_time : row.t2In;
+        row.time2In =
+          !row.time2In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.time2In))
+            ? log.log_time ?? ""
+            : row.time2In;
       } else {
-        row.t2Out = !row.t2Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.t2Out)) ? log.log_time : row.t2Out;
+        row.time2Out =
+          !row.time2Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.time2Out))
+            ? log.log_time ?? ""
+            : row.time2Out;
       }
     }
+
     if (log.log_source === "OT") {
       if (log.log_type === "IN") {
-        row.otIn = !row.otIn || (currentMinutes >= 0 && currentMinutes < toMinutes(row.otIn)) ? log.log_time : row.otIn;
+        row.otIn =
+          !row.otIn || (currentMinutes >= 0 && currentMinutes < toMinutes(row.otIn))
+            ? log.log_time ?? ""
+            : row.otIn;
       } else {
-        row.otOut = !row.otOut || (currentMinutes >= 0 && currentMinutes > toMinutes(row.otOut)) ? log.log_time : row.otOut;
+        row.otOut =
+          !row.otOut || (currentMinutes >= 0 && currentMinutes > toMinutes(row.otOut))
+            ? log.log_time ?? ""
+            : row.otOut;
       }
     }
 
@@ -234,63 +315,174 @@ function buildDailyRows(logs: AttendanceLogRow[]): DailyAttendanceRow[] {
   }
 
   return Array.from(map.values())
-    .map((row) => ({ ...row, hours: round2(pairHours(row.t1In, row.t1Out) + pairHours(row.t2In, row.t2Out) + pairHours(row.otIn, row.otOut)) }))
+    .map((row) => ({
+      ...row,
+      hours: round2(
+        pairHours(row.time1In || null, row.time1Out || null) +
+          pairHours(row.time2In || null, row.time2Out || null) +
+          pairHours(row.otIn || null, row.otOut || null),
+      ),
+    }))
+    .sort((a, b) => {
+      const byDate = a.date.localeCompare(b.date);
+      if (byDate !== 0) return byDate;
+      const bySite = a.site.localeCompare(b.site);
+      if (bySite !== 0) return bySite;
+      return a.employee.localeCompare(b.employee);
+    });
+}
+
+function buildSiteSummaries(payrollItems: PayrollRunItemRow[]): ReportSiteSummary[] {
+  const siteMap = new Map<
+    string,
+    { employeeIds: Set<string>; payroll: number; hours: number }
+  >();
+
+  for (const item of payrollItems) {
+    const siteNames = splitSiteNames(item.site_name);
+    const normalizedSiteNames = siteNames.length > 0 ? siteNames : ["Unknown Site"];
+    const payrollShare = normalizedSiteNames.length > 0 ? item.total_pay / normalizedSiteNames.length : item.total_pay;
+    const hoursShare = normalizedSiteNames.length > 0 ? item.hours_worked / normalizedSiteNames.length : item.hours_worked;
+
+    for (const siteName of normalizedSiteNames) {
+      const existing =
+        siteMap.get(siteName) ?? {
+          employeeIds: new Set<string>(),
+          payroll: 0,
+          hours: 0,
+        };
+      existing.employeeIds.add(item.id);
+      existing.payroll = round2(existing.payroll + payrollShare);
+      existing.hours = round2(existing.hours + hoursShare);
+      siteMap.set(siteName, existing);
+    }
+  }
+
+  return Array.from(siteMap.entries())
+    .map(([siteName, value]) => ({
+      siteName,
+      employees: value.employeeIds.size,
+      payroll: round2(value.payroll),
+      hours: round2(value.hours),
+    }))
+    .sort((a, b) => b.payroll - a.payroll);
+}
+
+function buildDailyTrend(dailyTotals: PayrollRunDailyTotalRow[]): ReportTrendPoint[] {
+  const dateMap = new Map<
+    string,
+    { paid: number; hours: number; employeeIds: Set<string> }
+  >();
+
+  for (const row of dailyTotals) {
+    const existing =
+      dateMap.get(row.payout_date) ?? {
+        paid: 0,
+        hours: 0,
+        employeeIds: new Set<string>(),
+      };
+    existing.paid = round2(existing.paid + (row.total_pay ?? 0));
+    existing.hours = round2(existing.hours + (row.hours_worked ?? 0));
+    if (row.payroll_run_item_id) existing.employeeIds.add(row.payroll_run_item_id);
+    dateMap.set(row.payout_date, existing);
+  }
+
+  return Array.from(dateMap.entries())
+    .map(([date, value]) => ({
+      date,
+      label: formatChartDateLabel(date),
+      paid: round2(value.paid),
+      hours: round2(value.hours),
+      employees: value.employeeIds.size,
+    }))
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function buildSiteDistribution(payrollItems: PayrollRunItemRow[]): ReportCompositionDatum[] {
+  const colors = ["#166534", "#22c55e", "#0f766e", "#f59e0b", "#2563eb", "#dc2626"];
+  return buildSiteSummaries(payrollItems).map((item, index) => ({
+    name: item.siteName,
+    value: item.payroll,
+    color: colors[index % colors.length],
+  }));
 }
 
 function EmployeeLogsModal({
   report,
   item,
   attendanceLogs,
-  dailyTotals,
   onClose,
 }: {
   report: PayrollRunRow;
   item: PayrollRunItemRow;
   attendanceLogs: AttendanceLogRow[];
-  dailyTotals: PayrollRunDailyTotalRow[];
   onClose: () => void;
 }) {
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handler);
     };
   }, [onClose]);
 
   const scopedLogs = useMemo(
-    () =>
-      attendanceLogs.filter(
-        (log) => normalizeKey(log.employee_name) === normalizeKey(item.employee_name),
-      ),
-    [attendanceLogs, item.employee_name],
+    () => buildPayrollStyleDailyRows(attendanceLogs),
+    [attendanceLogs],
   );
-  const dailyRows = useMemo(() => buildDailyRows(scopedLogs), [scopedLogs]);
-  const scopedDailyTotals = useMemo(
-    () =>
-      dailyTotals
-        .filter(
-          (row) =>
-            row.payroll_run_item_id === item.id ||
-            (normalizeKey(row.employee_name) === normalizeKey(item.employee_name) &&
-              (row.role_code ?? "").trim().toUpperCase() === item.role_code.trim().toUpperCase()),
-        )
-        .sort((a, b) => a.payout_date.localeCompare(b.payout_date)),
-    [dailyTotals, item.id, item.employee_name, item.role_code],
+  const payrollStyleRow = useMemo<PayrollRow>(
+    () => ({
+      id: item.id,
+      worker: item.employee_name,
+      role: item.role_code,
+      site: item.site_name,
+      date: formatPeriodLabel(report),
+      hoursWorked: item.hours_worked,
+      overtimeHours: item.overtime_hours,
+      defaultRate: item.rate_per_day / 8,
+      customRate: null,
+      rate: item.rate_per_day / 8,
+      regularPay: item.regular_pay,
+      overtimePay: item.overtime_pay,
+      totalPay: item.total_pay,
+    }),
+    [item, report],
   );
+  const dailyRows = useMemo(
+    () => buildEditingPayrollLogs(scopedLogs, payrollStyleRow, formatPeriodLabel(report)),
+    [scopedLogs, payrollStyleRow, report],
+  );
+  const scopedDailyTotals = useMemo(() => {
+    const totalsByDate = new Map<string, { hours: number; paid: number }>();
 
-  const attendanceDays = new Set(scopedLogs.map((log) => log.log_date)).size;
-  const inLogs = scopedLogs.filter((log) => log.log_type === "IN").length;
-  const outLogs = scopedLogs.filter((log) => log.log_type === "OUT").length;
-  const otLogs = scopedLogs.filter((log) => log.log_source === "OT").length;
+    for (const row of dailyRows) {
+      const existing = totalsByDate.get(row.date) ?? { hours: 0, paid: 0 };
+      existing.hours = round2(existing.hours + row.hours);
+      totalsByDate.set(row.date, existing);
+    }
+
+    return Array.from(totalsByDate.entries())
+      .map(([date, value]) => ({
+        id: `${item.id}-${date}`,
+        payout_date: date,
+        hours_worked: value.hours,
+        total_pay: computeBasePay(value.hours, item.rate_per_day),
+      }))
+      .sort((a, b) => a.payout_date.localeCompare(b.payout_date));
+  }, [dailyRows, item.id, item.rate_per_day]);
+
+  const attendanceDays = dailyRows.filter((row) => row.hours > 0).length;
+  const inLogs = dailyRows.filter((row) => row.time1In || row.time2In || row.otIn).length;
+  const outLogs = dailyRows.filter((row) => row.time1Out || row.time2Out || row.otOut).length;
+  const otLogs = dailyRows.filter((row) => row.otIn || row.otOut).length;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
       <div className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl  bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
         <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
           <div className="flex items-start justify-between gap-4">
@@ -370,9 +562,9 @@ function EmployeeLogsModal({
                         <tr key={`${row.date}|||${row.site}`}>
                           <td className="px-3 py-2 text-apple-smoke">{formatLogDate(row.date)}</td>
                           <td className="px-3 py-2 text-apple-smoke">{row.site}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.t1In)} - {formatLogTime(row.t1Out)}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.t2In)} - {formatLogTime(row.t2Out)}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.otIn)} - {formatLogTime(row.otOut)}</td>
+                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.time1In || null)} - {formatLogTime(row.time1Out || null)}</td>
+                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.time2In || null)} - {formatLogTime(row.time2Out || null)}</td>
+                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.otIn || null)} - {formatLogTime(row.otOut || null)}</td>
                           <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{row.hours.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         </tr>
                       ))
@@ -447,27 +639,448 @@ function MetricRow({ label, value, valueClass }: { label: string; value: string;
   );
 }
 
-function PayrollItemLogsSectionSkeleton() {
+function ReportAnalyticsTooltip({
+  active,
+  payload,
+  label,
+  valueFormatter,
+}: TooltipProps<any, any> & {
+  valueFormatter?: (value: number, name: string) => string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+
   return (
-    <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-      <div className="border-b border-apple-mist px-3 py-3">
-        <div className="h-3 w-32 animate-pulse rounded bg-[rgb(var(--apple-mist))]" />
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <div className="h-9 w-[220px] animate-pulse rounded-lg bg-[rgb(var(--apple-snow))]" />
-          <div className="h-9 w-[180px] animate-pulse rounded-lg bg-[rgb(var(--apple-snow))]" />
-        </div>
-      </div>
-      <div className="px-3 py-3">
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-9 w-full animate-pulse rounded bg-[rgb(var(--apple-snow))]"
-            />
-          ))}
-        </div>
+    <div className="min-w-[156px] rounded-xl border border-apple-mist bg-white px-3 py-2 shadow-[0_10px_28px_rgba(2,6,23,0.08)]">
+      {label ? (
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-apple-smoke">
+          {label}
+        </p>
+      ) : null}
+      <div className="space-y-1">
+        {payload.map((entry, index) => {
+          const numericValue =
+            typeof entry.value === "number" ? entry.value : Number(entry.value ?? 0);
+          const name = String(entry.name ?? entry.dataKey ?? "Value");
+
+          return (
+            <div key={`${name}-${index}`} className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: entry.color ?? "rgb(var(--theme-chart-2))" }}
+              />
+              <span className="text-[11px] text-apple-smoke">{name}</span>
+              <span className="ml-auto text-[12px] font-semibold text-apple-charcoal">
+                {valueFormatter ? valueFormatter(numericValue, name) : formatPayrollNumber(numericValue)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function ReportDashboardSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-24 animate-pulse rounded-2xl bg-[rgb(var(--apple-snow))]"
+          />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <div className="h-[320px] animate-pulse rounded-2xl bg-[rgb(var(--apple-snow))]" />
+        <div className="space-y-4">
+          <div className="h-[152px] animate-pulse rounded-2xl bg-[rgb(var(--apple-snow))]" />
+          <div className="h-[152px] animate-pulse rounded-2xl bg-[rgb(var(--apple-snow))]" />
+        </div>
+      </div>
+      <div className="h-[420px] animate-pulse rounded-2xl bg-[rgb(var(--apple-snow))]" />
+    </div>
+  );
+}
+
+function ReportStatCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-emerald-500/15 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white shadow-[0_14px_28px_rgba(17,46,26,0.18)]">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{value}</p>
+      {helper ? <p className="mt-2 text-xs text-white/70">{helper}</p> : null}
+    </div>
+  );
+}
+
+function PayrollReportModal({
+  report,
+  details,
+  onClose,
+  onRefresh,
+}: {
+  report: PayrollRunRow;
+  details: ReportDetailsState | null;
+  onClose: () => void;
+  onRefresh: () => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [siteFilter, setSiteFilter] = useState("all");
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  const payrollItems = details?.payrollItems ?? EMPTY_PAYROLL_ITEMS;
+  const attendanceLogs = details?.attendanceLogs ?? EMPTY_ATTENDANCE_LOGS;
+  const dailyTotals = details?.dailyTotals ?? EMPTY_DAILY_TOTALS;
+  const activeItem = payrollItems.find((item) => item.id === activeItemId) ?? null;
+
+  const siteOptions = useMemo(
+    () =>
+      Array.from(new Set(payrollItems.flatMap((item) => splitSiteNames(item.site_name)))).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [payrollItems],
+  );
+  const filteredPayrollItems = useMemo(() => {
+    const searchTerm = normalizeKey(search);
+    return payrollItems.filter((item) => {
+      const matchesSearch =
+        searchTerm.length === 0 || normalizeKey(item.employee_name).includes(searchTerm);
+      const matchesSite =
+        siteFilter === "all" ||
+        splitSiteNames(item.site_name).some(
+          (site) => normalizeKey(site) === normalizeKey(siteFilter),
+        );
+      return matchesSearch && matchesSite;
+    });
+  }, [payrollItems, search, siteFilter]);
+  const siteSummaries = useMemo(() => buildSiteSummaries(payrollItems), [payrollItems]);
+  const dailyTrend = useMemo(() => buildDailyTrend(dailyTotals), [dailyTotals]);
+  const siteDistribution = useMemo(() => buildSiteDistribution(payrollItems), [payrollItems]);
+  const totalPayroll = useMemo(
+    () => round2(payrollItems.reduce((sum, item) => sum + item.total_pay, 0)),
+    [payrollItems],
+  );
+  const filteredPayrollTotal = useMemo(
+    () => round2(filteredPayrollItems.reduce((sum, item) => sum + item.total_pay, 0)),
+    [filteredPayrollItems],
+  );
+  const totalHoursWorked = useMemo(
+    () => round2(payrollItems.reduce((sum, item) => sum + item.hours_worked, 0)),
+    [payrollItems],
+  );
+  const totalOvertimeHours = useMemo(
+    () => round2(payrollItems.reduce((sum, item) => sum + item.overtime_hours, 0)),
+    [payrollItems],
+  );
+
+  return createPortal(
+    <>
+      <div
+        className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) onClose();
+        }}
+      >
+        <div className="flex max-h-[95vh] w-full max-w-[min(1520px,96vw)] flex-col overflow-hidden rounded-[28px] border border-white/40 bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
+          <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                  View Reports
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                  {formatPeriodLabel(report)}
+                </h2>
+                <p className="mt-2 text-sm text-white/80">
+                  {report.site_name} | {statusLabel(report.status)} | Submitted{" "}
+                  {formatDateTime(report.submitted_at ?? report.created_at)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onRefresh}
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  <RefreshCw size={14} className={details?.loading ? "animate-spin" : ""} />
+                  Refresh Data
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+                  aria-label="Close payroll report modal"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="min-h-0 overflow-y-auto px-6 py-6">
+            {!details || details.loading ? (
+              <ReportDashboardSkeleton />
+            ) : details.error ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+                <p className="text-sm font-semibold text-red-700">{details.error}</p>
+                <button
+                  type="button"
+                  onClick={onRefresh}
+                  className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  <RefreshCw size={14} />
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  <ReportStatCard label="Employees" value={payrollItems.length.toLocaleString("en-PH")} helper="Included in this submitted report" />
+                  <ReportStatCard label="Total Payroll" value={formatPeso(totalPayroll)} helper="Submitted payroll amount" />
+                  <ReportStatCard label="Hours Worked" value={totalHoursWorked.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} helper="Total payroll hours" />
+                  <ReportStatCard label="Overtime Hours" value={totalOvertimeHours.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} helper="Approved overtime included" />
+                  <ReportStatCard label="Attendance Logs" value={attendanceLogs.length.toLocaleString("en-PH")} helper="All report log rows loaded" />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr]">
+                  <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                    <div className="border-b border-apple-mist px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Daily Payroll Trend</p>
+                      <p className="mt-1 text-xs text-apple-steel">Paid totals and worked hours across this submitted report.</p>
+                    </div>
+                    <div className="h-[320px] px-2 py-3">
+                      {dailyTrend.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={dailyTrend} margin={{ top: 12, right: 16, left: 4, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="payrollReportTrendFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#16a34a" stopOpacity={0.28} />
+                                <stop offset="95%" stopColor="#16a34a" stopOpacity={0.05} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--theme-chart-grid))" />
+                            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} />
+                            <YAxis yAxisId="pay" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
+                            <YAxis yAxisId="hours" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
+                            <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value, name) => name === "Paid" ? formatPeso(value) : `${formatPayrollNumber(value)} hrs`} />} />
+                            <Area yAxisId="pay" type="monotone" dataKey="paid" name="Paid" stroke="#16a34a" strokeWidth={3} fill="url(#payrollReportTrendFill)" dot={{ r: 0 }} activeDot={{ r: 5, fill: "#16a34a", stroke: "white", strokeWidth: 2 }} />
+                            <Bar yAxisId="hours" dataKey="hours" name="Hours" fill="#86efac" radius={[8, 8, 0, 0]} barSize={20} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-apple-steel">No daily totals were saved for this report yet.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                      <div className="border-b border-apple-mist px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Site Payroll Breakdown</p>
+                      </div>
+                      <div className="h-[180px] px-2 py-3">
+                        {siteSummaries.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={siteSummaries.slice(0, 6)} layout="vertical" margin={{ top: 8, right: 12, left: 24, bottom: 8 }}>
+                              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgb(var(--theme-chart-grid))" />
+                              <XAxis type="number" hide />
+                              <YAxis dataKey="siteName" type="category" axisLine={false} tickLine={false} width={92} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} />
+                              <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
+                              <Bar dataKey="payroll" name="Payroll" radius={[0, 10, 10, 0]} barSize={18}>
+                                {siteSummaries.slice(0, 6).map((entry, index) => <Cell key={`${entry.siteName}-${index}`} fill={index % 2 === 0 ? "#166534" : "#22c55e"} />)}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm text-apple-steel">No site breakdown found.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                      <div className="border-b border-apple-mist px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Payroll Distribution Per Site</p>
+                      </div>
+                      <div className="h-[220px] px-2 py-3">
+                        {siteDistribution.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={siteDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3}>
+                                {siteDistribution.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
+                              </Pie>
+                              <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm text-apple-steel">No site distribution data found.</div>
+                        )}
+                      </div>
+                      {siteDistribution.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-2 border-t border-apple-mist px-4 py-3 sm:grid-cols-2">
+                          {siteDistribution.map((entry) => (
+                            <div
+                              key={entry.name}
+                              className="flex items-center justify-between rounded-xl bg-[rgb(var(--apple-snow))] px-3 py-2"
+                            >
+                              <div className="flex min-w-0 items-center gap-2">
+                                <span
+                                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                  style={{ backgroundColor: entry.color }}
+                                />
+                                <span className="truncate text-sm font-medium text-apple-charcoal">
+                                  {entry.name}
+                                </span>
+                              </div>
+                              <div className="ml-3 text-right">
+                                <p className="text-sm font-semibold text-emerald-700">
+                                  {formatPeso(entry.value)}
+                                </p>
+                                <p className="text-[11px] text-apple-steel">
+                                  {totalPayroll > 0
+                                    ? `${((entry.value / totalPayroll) * 100).toLocaleString("en-PH", {
+                                        minimumFractionDigits: 1,
+                                        maximumFractionDigits: 1,
+                                      })}%`
+                                    : "0.0%"}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                  <div className="border-b border-apple-mist px-4 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Employee Payrolls</p>
+                        <p className="mt-1 text-xs text-apple-steel">Complete employees and payroll values inside this submitted report.</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] font-semibold text-apple-steel">
+                          {filteredPayrollItems.length.toLocaleString("en-PH")} of {payrollItems.length.toLocaleString("en-PH")} employees
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                          Total Payroll Generated: {formatPeso(filteredPayrollTotal)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <input
+                        type="search"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Search employee..."
+                        className="h-9 min-w-[220px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                      />
+                      <select
+                        value={siteFilter}
+                        onChange={(event) => setSiteFilter(event.target.value)}
+                        className="h-9 min-w-[180px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                      >
+                        <option value="all">All Sites</option>
+                        {siteOptions.map((site) => (
+                          <option key={site} value={site}>
+                            {site}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="max-h-[440px] overflow-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-[rgb(var(--apple-snow))]">
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Employee</th>
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Role</th>
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Site</th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Days</th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Hours</th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Rate</th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Paid</th>
+                          <th className="px-3 py-2 text-center font-semibold uppercase tracking-wider text-apple-steel">View</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-apple-mist">
+                        {filteredPayrollItems.length > 0 ? (
+                          filteredPayrollItems.map((item) => (
+                            <tr key={item.id}>
+                              <td className="px-3 py-2 font-medium text-apple-charcoal">{item.employee_name}</td>
+                              <td className="px-3 py-2 text-apple-smoke">{item.role_code}</td>
+                              <td className="px-3 py-2 text-apple-smoke">{item.site_name}</td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">{item.days_worked.toLocaleString("en-PH")}</td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">
+                                {item.hours_worked.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">{formatPeso(item.rate_per_day)}</td>
+                              <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{formatPeso(item.total_pay)}</td>
+                              <td className="px-3 py-2 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveItemId(item.id)}
+                                  className="rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-[#18532b]"
+                                >
+                                  View Logs
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={8} className="px-3 py-4 text-center text-apple-steel">
+                              No employees match the current filters.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {activeItem ? (
+        <EmployeeLogsModal
+          report={report}
+          item={activeItem}
+          attendanceLogs={attendanceLogs}
+          onClose={() => setActiveItemId(null)}
+        />
+      ) : null}
+    </>,
+    document.body,
   );
 }
 
@@ -478,19 +1091,17 @@ export default function PayrollReportsPageClient() {
   const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
   const [pendingDecisionRunId, setPendingDecisionRunId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [expandedRunIds, setExpandedRunIds] = useState<Record<string, boolean>>({});
   const [detailsByRunId, setDetailsByRunId] = useState<Record<string, ReportDetailsState>>({});
-  const [filtersByRunId, setFiltersByRunId] = useState<Record<string, PayrollItemLogFilters>>({});
   const [openMenu, setOpenMenu] = useState<ReportActionsMenuState | null>(null);
   const [deleteConfirmReport, setDeleteConfirmReport] = useState<PayrollRunRow | null>(null);
-  const [activeModal, setActiveModal] = useState<{ runId: string; itemId: string } | null>(null);
+  const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
   const loadReports = useCallback(async () => {
     setError(null);
     const supabase = createSupabaseBrowserClient();
     const { data, error: loadError } = await supabase
       .from("payroll_runs")
-      .select("id, attendance_import_id, site_name, period_label, period_start, period_end, status, gross_total, net_total, created_at, submitted_at")
+      .select("id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at")
       .neq("status", "rejected")
       .order("submitted_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false });
@@ -565,6 +1176,13 @@ export default function PayrollReportsPageClient() {
     [reports],
   );
 
+  useEffect(() => {
+    if (!activeReportId) return;
+    const report = sortedReports.find((row) => row.id === activeReportId);
+    if (!report || detailsByRunId[report.id]) return;
+    void loadReportDetails(report);
+  }, [activeReportId, detailsByRunId, sortedReports]);
+
   async function loadReportDetails(report: PayrollRunRow) {
     setDetailsByRunId((prev) => ({
       ...prev,
@@ -575,7 +1193,7 @@ export default function PayrollReportsPageClient() {
     const [itemsResult, logsResult, totalsResult] = await Promise.all([
       supabase
         .from("payroll_run_items")
-        .select("id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay")
+        .select("id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay")
         .eq("payroll_run_id", report.id)
         .order("employee_name", { ascending: true }),
       report.attendance_import_id
@@ -585,11 +1203,10 @@ export default function PayrollReportsPageClient() {
             .eq("import_id", report.attendance_import_id)
             .order("log_date", { ascending: true })
             .order("log_time", { ascending: true })
-            .limit(2000)
         : Promise.resolve({ data: [] as AttendanceLogRow[], error: null }),
       supabase
         .from("payroll_run_daily_totals")
-        .select("id, payroll_run_item_id, employee_name, role_code, payout_date, hours_worked, total_pay")
+        .select("id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay")
         .eq("payroll_run_id", report.id)
         .order("payout_date", { ascending: true }),
     ]);
@@ -620,13 +1237,6 @@ export default function PayrollReportsPageClient() {
     }));
   }
 
-  function toggleRunDetails(report: PayrollRunRow) {
-    const nextOpen = !expandedRunIds[report.id];
-    setExpandedRunIds((prev) => ({ ...prev, [report.id]: nextOpen }));
-    if (!nextOpen || detailsByRunId[report.id]) return;
-    void loadReportDetails(report);
-  }
-
   async function handleDeleteReport(report: PayrollRunRow) {
     setDeletingRunId(report.id);
     setError(null);
@@ -635,21 +1245,11 @@ export default function PayrollReportsPageClient() {
       await deletePayrollReportAction(report.id);
 
       setReports((prev) => prev.filter((row) => row.id !== report.id));
-      setExpandedRunIds((prev) => {
-        const { [report.id]: _removed, ...rest } = prev;
-        return rest;
-      });
       setDetailsByRunId((prev) => {
         const { [report.id]: _removed, ...rest } = prev;
         return rest;
       });
-      setFiltersByRunId((prev) => {
-        const { [report.id]: _removed, ...rest } = prev;
-        return rest;
-      });
-      setActiveModal((prev) =>
-        prev && prev.runId === report.id ? null : prev,
-      );
+      setActiveReportId((prev) => (prev === report.id ? null : prev));
       setDeleteConfirmReport(null);
     } catch (deleteError) {
       const message =
@@ -699,21 +1299,11 @@ export default function PayrollReportsPageClient() {
     try {
       await rejectPayrollReportAction(report.id);
       setReports((prev) => prev.filter((row) => row.id !== report.id));
-      setExpandedRunIds((prev) => {
-        const { [report.id]: _removed, ...rest } = prev;
-        return rest;
-      });
       setDetailsByRunId((prev) => {
         const { [report.id]: _removed, ...rest } = prev;
         return rest;
       });
-      setFiltersByRunId((prev) => {
-        const { [report.id]: _removed, ...rest } = prev;
-        return rest;
-      });
-      setActiveModal((prev) =>
-        prev && prev.runId === report.id ? null : prev,
-      );
+      setActiveReportId((prev) => (prev === report.id ? null : prev));
     } catch (rejectError) {
       setError(
         rejectError instanceof Error
@@ -727,10 +1317,8 @@ export default function PayrollReportsPageClient() {
   }
 
   const openMenuReport = openMenu ? sortedReports.find((row) => row.id === openMenu.runId) ?? null : null;
-  const openMenuReportExpanded = openMenuReport ? Boolean(expandedRunIds[openMenuReport.id]) : false;
-  const activeReport = activeModal ? sortedReports.find((row) => row.id === activeModal.runId) ?? null : null;
-  const activeDetails = activeModal ? detailsByRunId[activeModal.runId] : null;
-  const activeItem = activeModal ? activeDetails?.payrollItems.find((item) => item.id === activeModal.itemId) ?? null : null;
+  const activeReport = activeReportId ? sortedReports.find((row) => row.id === activeReportId) ?? null : null;
+  const activeDetails = activeReport ? detailsByRunId[activeReport.id] ?? null : null;
   const pendingReportsCount = useMemo(
     () => reports.filter((report) => report.status === "submitted").length,
     [reports],
@@ -776,191 +1364,60 @@ export default function PayrollReportsPageClient() {
           <p className="text-sm text-apple-steel">No payroll reports are waiting for review.</p>
         ) : (
           <div className="space-y-3">
-            {sortedReports.map((report) => {
-              const details = detailsByRunId[report.id];
-              const isExpanded = Boolean(expandedRunIds[report.id]);
-              const currentFilters = filtersByRunId[report.id] ?? {
-                search: "",
-                site: "all",
-              };
-              const searchTerm = currentFilters.search.trim().toLowerCase();
-              const allPayrollItems = details?.payrollItems ?? [];
-              const siteOptions = Array.from(
-                new Set(
-                  allPayrollItems.flatMap((item) => splitSiteNames(item.site_name)),
-                ),
-              ).sort((a, b) => a.localeCompare(b));
-              const filteredPayrollItems = allPayrollItems.filter((item) => {
-                const matchesSearch =
-                  searchTerm.length === 0 ||
-                  normalizeKey(item.employee_name).includes(
-                    normalizeKey(searchTerm),
-                  );
-                const matchesSite =
-                  currentFilters.site === "all" ||
-                  splitSiteNames(item.site_name).some(
-                    (site) => normalizeKey(site) === normalizeKey(currentFilters.site),
-                  );
-                return matchesSearch && matchesSite;
-              });
-
-              return (
-                <div key={report.id} className="rounded-xl border border-apple-mist">
-                  <div className="overflow-x-auto overflow-y-visible">
-                    <table className="min-w-[980px] w-full text-sm">
-                      <thead>
-                        <tr className="bg-[rgb(var(--apple-snow))] text-left">
-                          <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
-                          <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
-                          <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
-                          <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Net Total</th>
-                          <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Gross Total</th>
-                          <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
-                          <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="bg-white">
-                          <td className="px-4 py-3 text-apple-smoke">{formatDateTime(report.submitted_at ?? report.created_at)}</td>
-                          <td className="px-4 py-3 font-medium text-apple-charcoal">{formatPeriodLabel(report)}</td>
-                          <td className="px-4 py-3 text-apple-smoke">{report.site_name}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(report.net_total ?? 0)}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(report.gross_total ?? 0)}</td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>{statusLabel(report.status)}</span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                const buttonRect =
-                                  event.currentTarget.getBoundingClientRect();
-                                setOpenMenu((prev) =>
-                                  prev?.runId === report.id
-                                    ? null
-                                    : {
-                                        runId: report.id,
-                                        top: buttonRect.bottom + 6,
-                                        left: buttonRect.right,
-                                      },
-                                );
-                              }}
-                              data-report-actions-root
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
-                              aria-label="Open report actions"
-                              disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
-                            >
-                              <MoreHorizontal size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {isExpanded ? (
-                    <div className="border-t border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
-                      {details?.loading ? (
-                        <PayrollItemLogsSectionSkeleton />
-                      ) : details?.error ? (
-                        <p className="text-sm text-red-700">{details.error}</p>
-                      ) : (
-                        <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-                          <div className="border-b border-apple-mist px-3 py-2">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Payroll Item Logs</p>
-                              <span className="text-[11px] font-semibold text-apple-steel">
-                                {filteredPayrollItems.length.toLocaleString("en-PH")} of{" "}
-                                {allPayrollItems.length.toLocaleString("en-PH")} employees
-                              </span>
-                            </div>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <input
-                                type="search"
-                                value={currentFilters.search}
-                                onChange={(event) =>
-                                  setFiltersByRunId((prev) => ({
-                                    ...prev,
-                                    [report.id]: {
-                                      search: event.target.value,
-                                      site: prev[report.id]?.site ?? "all",
+            {sortedReports.map((report) => (
+              <div key={report.id} className="rounded-xl border border-apple-mist">
+                <div className="overflow-x-auto overflow-y-visible">
+                  <table className="min-w-[980px] w-full text-sm">
+                    <thead>
+                      <tr className="bg-[rgb(var(--apple-snow))] text-left">
+                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
+                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
+                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
+                        <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Total Payroll</th>
+                        <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
+                        <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="bg-white">
+                        <td className="px-4 py-3 text-apple-smoke">{formatDateTime(report.submitted_at ?? report.created_at)}</td>
+                        <td className="px-4 py-3 font-medium text-apple-charcoal">{formatPeriodLabel(report)}</td>
+                        <td className="px-4 py-3 text-apple-smoke">{report.site_name}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{formatPeso(report.net_total ?? 0)}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>
+                            {statusLabel(report.status)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              const buttonRect = event.currentTarget.getBoundingClientRect();
+                              setOpenMenu((prev) =>
+                                prev?.runId === report.id
+                                  ? null
+                                  : {
+                                      runId: report.id,
+                                      top: buttonRect.bottom + 6,
+                                      left: buttonRect.right,
                                     },
-                                  }))
-                                }
-                                placeholder="Search employee..."
-                                className="h-9 min-w-[220px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
-                              />
-                              <select
-                                value={currentFilters.site}
-                                onChange={(event) =>
-                                  setFiltersByRunId((prev) => ({
-                                    ...prev,
-                                    [report.id]: {
-                                      search: prev[report.id]?.search ?? "",
-                                      site: event.target.value,
-                                    },
-                                  }))
-                                }
-                                className="h-9 min-w-[180px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
-                              >
-                                <option value="all">All Sites</option>
-                                {siteOptions.map((site) => (
-                                  <option key={site} value={site}>
-                                    {site}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                          <div className="max-h-[340px] overflow-auto">
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="bg-[rgb(var(--apple-snow))]">
-                                  <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Employee</th>
-                                  <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Role</th>
-                                  <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Days</th>
-                                  <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Paid</th>
-                                  <th className="px-3 py-2 text-center font-semibold uppercase tracking-wider text-apple-steel">View</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-apple-mist">
-                                {filteredPayrollItems.length > 0 ? (
-                                  filteredPayrollItems.map((item) => (
-                                    <tr key={item.id}>
-                                      <td className="px-3 py-2 text-apple-charcoal">{item.employee_name}</td>
-                                      <td className="px-3 py-2 text-apple-smoke">{item.role_code}</td>
-                                      <td className="px-3 py-2 text-right text-apple-smoke">{item.days_worked.toLocaleString("en-PH")}</td>
-                                      <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(item.total_pay)}</td>
-                                      <td className="px-3 py-2 text-center">
-                                        <button
-                                          type="button"
-                                          onClick={() => setActiveModal({ runId: report.id, itemId: item.id })}
-                                          className="rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-[#18532b]"
-                                        >
-                                          View Logs
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan={5} className="px-3 py-4 text-center text-apple-steel">
-                                      {allPayrollItems.length > 0
-                                        ? "No payroll item logs match your filters."
-                                        : "No payroll item logs found."}
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
+                              );
+                            }}
+                            data-report-actions-root
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label="Open report actions"
+                            disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
+                          >
+                            <MoreHorizontal size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </section>
@@ -975,16 +1432,14 @@ export default function PayrollReportsPageClient() {
               <button
                 type="button"
                 onClick={() => {
-                  toggleRunDetails(openMenuReport);
+                  setActiveReportId(openMenuReport.id);
+                  void loadReportDetails(openMenuReport);
                   setOpenMenu(null);
                 }}
-                className={cn(
-                  "flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-apple-charcoal transition hover:bg-emerald-50 hover:text-emerald-800",
-                  openMenuReportExpanded ? "bg-emerald-50 text-emerald-800" : "",
-                )}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-apple-charcoal transition hover:bg-emerald-50 hover:text-emerald-800"
               >
                 <Eye size={14} />
-                {openMenuReportExpanded ? "Hide Logs" : "View Logs"}
+                View Reports
               </button>
               {openMenuReport.status === "submitted" ? (
                 <>
@@ -1096,13 +1551,14 @@ export default function PayrollReportsPageClient() {
 
       {error ? <section className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-sm text-red-700">{error}</section> : null}
 
-      {activeModal && activeReport && activeItem && activeDetails ? (
-        <EmployeeLogsModal
+      {activeReport ? (
+        <PayrollReportModal
           report={activeReport}
-          item={activeItem}
-          attendanceLogs={activeDetails.attendanceLogs}
-          dailyTotals={activeDetails.dailyTotals}
-          onClose={() => setActiveModal(null)}
+          details={activeDetails}
+          onClose={() => setActiveReportId(null)}
+          onRefresh={() => {
+            void loadReportDetails(activeReport);
+          }}
         />
       ) : null}
     </div>
