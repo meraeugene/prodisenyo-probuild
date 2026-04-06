@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import LoginForm from "@/components/auth/LoginForm";
 import { BriefcaseBusiness, Building2, ShieldCheck } from "lucide-react";
+import { APP_ROLES, getCurrentProfile } from "@/lib/auth";
 
 export const metadata = {
   title: "Login",
@@ -10,6 +12,16 @@ export default async function LoginPage({
 }: {
   searchParams?: Promise<{ next?: string }>;
 }) {
+  const profile = await getCurrentProfile();
+
+  if (profile) {
+    redirect(
+      profile.role === APP_ROLES.PAYROLL_MANAGER
+        ? "/upload-attendance"
+        : "/dashboard",
+    );
+  }
+
   const params = searchParams ? await searchParams : undefined;
   const nextPath = params?.next ?? null;
 

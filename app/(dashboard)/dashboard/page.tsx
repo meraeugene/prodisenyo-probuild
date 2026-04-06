@@ -28,7 +28,6 @@ import {
 } from "recharts";
 import ChartTooltip from "@/components/charts/ChartTooltip";
 import { DashboardOverviewSkeleton } from "@/components/dashboard/DashboardLoadingSkeleton";
-import { useAppState } from "@/features/app/AppStateProvider";
 import CeoDepartmentReview from "@/features/dashboard/components/CeoDepartmentReview";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { selectWorkforceByBranch } from "@/features/analytics/utils/analyticsSelectors";
@@ -222,7 +221,6 @@ function SummaryFormulaModal({
 
 export default function OverviewPage() {
   const router = useRouter();
-  const { currentPayrollRunId, workspaceReset } = useAppState();
   const {
     data,
     loading,
@@ -231,7 +229,6 @@ export default function OverviewPage() {
     setSelectedPeriodKey,
     refreshData,
   } = useHistoricalDashboardData();
-  const role = data?.viewerRole ?? null;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [ceoTrendRange, setCeoTrendRange] = useState<TrendRange>("daily");
   const [ceoSubmittedRuns, setCeoSubmittedRuns] = useState<
@@ -247,6 +244,7 @@ export default function OverviewPage() {
     PayrollTrendAttendanceLogInput[]
   >([]);
   const [ceoTrendLoading, setCeoTrendLoading] = useState(true);
+  const [ceoTrendReady, setCeoTrendReady] = useState(false);
   const [ceoTrendReloadNonce, setCeoTrendReloadNonce] = useState(0);
   const payrollRows = useMemo(() => data?.payrollRows ?? [], [data?.payrollRows]);
   const payrollAttendanceInputs = useMemo(
@@ -438,26 +436,13 @@ export default function OverviewPage() {
       : null;
 
   const shouldShowSkeleton = loading && !data && !error;
-
-  useEffect(() => {
-    if (role !== "payroll_manager") return;
-    if (!workspaceReset && currentPayrollRunId) return;
-    router.replace("/upload-attendance");
-  }, [currentPayrollRunId, role, router, workspaceReset]);
+  const shouldWaitForCeoDashboard = !error && !ceoTrendReady;
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadCeoTrendData() {
-      if (role !== "ceo") {
-        setCeoSubmittedRuns([]);
-        setCeoDailyTotals([]);
-        setCeoFallbackRunItems([]);
-        setCeoFallbackAttendanceLogs([]);
-        setCeoTrendLoading(false);
-        return;
-      }
-
+      setCeoTrendReady(false);
       setCeoTrendLoading(true);
       const supabase = createSupabaseBrowserClient();
 
@@ -478,6 +463,7 @@ export default function OverviewPage() {
         setCeoFallbackRunItems([]);
         setCeoFallbackAttendanceLogs([]);
         setCeoTrendLoading(false);
+        setCeoTrendReady(true);
         return;
       }
 
@@ -490,6 +476,7 @@ export default function OverviewPage() {
         setCeoFallbackRunItems([]);
         setCeoFallbackAttendanceLogs([]);
         setCeoTrendLoading(false);
+        setCeoTrendReady(true);
         return;
       }
 
@@ -589,6 +576,7 @@ export default function OverviewPage() {
             })),
       );
       setCeoTrendLoading(false);
+      setCeoTrendReady(true);
     }
 
     void loadCeoTrendData();
@@ -596,13 +584,9 @@ export default function OverviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [role, ceoTrendReloadNonce]);
+  }, [ceoTrendReloadNonce]);
 
-  if (shouldShowSkeleton) {
-    return <DashboardOverviewSkeleton />;
-  }
-
-  if (role === "payroll_manager" && (workspaceReset || !currentPayrollRunId)) {
+  if (shouldShowSkeleton || shouldWaitForCeoDashboard) {
     return <DashboardOverviewSkeleton />;
   }
 
@@ -624,81 +608,39 @@ export default function OverviewPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-[12px] font-medium text-white/65">
-              {role === "ceo"
-                ? "Overall Approved Payroll"
-                : "Total Payroll This Period"}
+              Overall Approved Payroll
             </p>
             <div className="mt-3 flex items-center gap-3">
               <h1 className="text-[40px] font-semibold tracking-[-0.03em]">
-                {PESO_SIGN}{" "}
-                {formatPayrollNumber(
-                  role === "ceo" ? ceoOverallSubmittedPayroll : netPayroll,
-                )}
+                {PESO_SIGN} {formatPayrollNumber(ceoOverallSubmittedPayroll)}
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[rgb(var(--theme-chart-5))]">
                 Synced <ArrowUp size={12} />
               </span>
             </div>
             <p className="mt-3 text-sm text-white/70">
-              {role === "ceo"
-                ? `Across ${ceoSubmittedReportCount.toLocaleString("en-PH")} approved report${
-                    ceoSubmittedReportCount === 1 ? "" : "s"
-                  }`
-                : attendancePeriod}
+              {`Across ${ceoSubmittedReportCount.toLocaleString("en-PH")} approved report${
+                ceoSubmittedReportCount === 1 ? "" : "s"
+              }`}
             </p>
           </div>
 
-          {role !== "ceo" && periodOptions.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={selectedPeriodKey ?? ""}
-                onChange={(event) =>
-                  setSelectedPeriodKey(event.target.value || null)
-                }
-                className="h-10 min-w-[280px] rounded-xl border border-white/15 bg-white/10 px-3 text-sm font-medium text-white outline-none transition hover:bg-white/15 focus:border-white/30"
-              >
-                {periodOptions.map((option) => (
-                  <option
-                    key={option.key}
-                    value={option.key}
-                    className="text-apple-charcoal"
-                  >
-                    {option.label} - {option.siteName}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleSync}
-                disabled={isRefreshing || loading}
-                className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold  transition  focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60  text-[rgb(var(--apple-black))] hover:bg-[rgb(var(--apple-silver))]"
-              >
-                <RefreshCw
-                  size={16}
-                  className={isRefreshing ? "animate-spin" : ""}
-                />
-                Sync
-              </button>
-            </div>
-          ) : role === "ceo" ? (
-            <button
-              type="button"
-              onClick={handleSync}
-              disabled={isRefreshing || ceoTrendLoading}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60 text-[rgb(var(--apple-black))] hover:bg-[rgb(var(--apple-silver))]"
-            >
-              <RefreshCw
-                size={16}
-                className={isRefreshing ? "animate-spin" : ""}
-              />
-              Sync
-            </button>
-          ) : null}
+          <button
+            type="button"
+            onClick={handleSync}
+            disabled={isRefreshing || ceoTrendLoading}
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60 text-[rgb(var(--apple-black))] hover:bg-[rgb(var(--apple-silver))]"
+          >
+            <RefreshCw
+              size={16}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
+            Sync
+          </button>
         </div>
       </section>
 
-      {role === "ceo" ? (
-        <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -833,11 +775,9 @@ export default function OverviewPage() {
               </p>
             </div>
           ) : null}
-        </section>
-      ) : null}
+      </section>
 
-      {role === "ceo" ? (
-        <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -906,8 +846,7 @@ export default function OverviewPage() {
               No approved payroll report is available for review yet.
             </div>
           )}
-        </section>
-      ) : null}
+      </section>
 
       <>
           <section className="mb-5">
@@ -921,7 +860,7 @@ export default function OverviewPage() {
                 Historical charts from Supabase attendance and approved payroll.
               </p>
             </div>
-            {role === "ceo" && periodOptions.length > 0 ? (
+            {periodOptions.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-steel">
                   Payroll Period

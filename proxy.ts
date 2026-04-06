@@ -12,8 +12,10 @@ export const config = {
     "/upload-attendance/:path*",
     "/review-attendance/:path*",
     "/generate-payroll/:path*",
+    "/overtime-approvals/:path*",
     "/attendance-analytics/:path*",
     "/payroll-analytics/:path*",
+    "/payroll-reports/:path*",
     "/settings/:path*",
   ],
 };

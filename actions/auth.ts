@@ -69,9 +69,14 @@ export async function signInAction(
   }
 
   const isCeo = profile.role === "ceo";
+  const payrollManagerRequestedDashboard =
+    !isCeo &&
+    (nextPath === "/dashboard" || nextPath.startsWith("/dashboard/"));
   const redirectPath = isCeo
     ? "/dashboard"
-    : nextPath || "/upload-attendance";
+    : payrollManagerRequestedDashboard
+      ? "/upload-attendance"
+      : nextPath || "/upload-attendance";
 
   redirect(redirectPath || DEFAULT_AUTH_REDIRECT);
 }

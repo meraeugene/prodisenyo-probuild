@@ -36,6 +36,7 @@ const CEO_ALLOWED_PREFIXES = [
 ] as const;
 
 const CEO_ONLY_PREFIXES = ["/overtime-approvals", "/payroll-reports"] as const;
+const PAYROLL_MANAGER_REDIRECT_PATH = "/upload-attendance";
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some(
@@ -96,13 +97,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (user && pathname === "/auth/login") {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
-    redirectUrl.searchParams.delete("next");
-    return NextResponse.redirect(redirectUrl);
-  }
-
   if (user) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
@@ -112,9 +106,28 @@ export async function updateSession(request: NextRequest) {
 
     const currentRole = (profile as { role?: string } | null)?.role ?? null;
 
+    if (!profileError && pathname === "/auth/login") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname =
+        currentRole === "payroll_manager"
+          ? PAYROLL_MANAGER_REDIRECT_PATH
+          : "/dashboard";
+      redirectUrl.searchParams.delete("next");
+      redirectUrl.searchParams.delete("required");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (!profileError && currentRole === "payroll_manager" && pathname === "/dashboard") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = PAYROLL_MANAGER_REDIRECT_PATH;
+      redirectUrl.searchParams.delete("required");
+      return NextResponse.redirect(redirectUrl);
+    }
+
     if (!profileError && currentRole === "payroll_manager" && isCeoOnlyPath(pathname)) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/dashboard";
+      redirectUrl.pathname = PAYROLL_MANAGER_REDIRECT_PATH;
+      redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }
 

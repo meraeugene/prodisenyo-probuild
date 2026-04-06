@@ -777,7 +777,7 @@ export default function PayrollApprovalQueue({
                           void openRequestLogs(request);
                         }}
                         disabled={Boolean(employeeLogsLoadingByRequestId[request.id])}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-apple-mist bg-white px-3 py-1.5 text-[11px] font-semibold text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#18532b] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {employeeLogsLoadingByRequestId[request.id] ? (
                           <>
@@ -811,28 +811,7 @@ export default function PayrollApprovalQueue({
                     <div className="text-[11px] italic text-apple-steel">
                       Review required before payroll cutoff
                     </div>
-                    {isResolved ? (
-                      <div
-                        className={cn(
-                          "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold",
-                          request.status === "approved"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-rose-50 text-rose-700",
-                        )}
-                      >
-                        {request.status === "approved" ? (
-                          <>
-                            <CheckCircle2 size={15} />
-                            Approved
-                          </>
-                        ) : (
-                          <>
-                            <XCircle size={15} />
-                            Rejected
-                          </>
-                        )}
-                      </div>
-                    ) : (
+                    {isResolved ? null : (
                       <div className="flex items-center gap-2">
                         <button
                           type="button"

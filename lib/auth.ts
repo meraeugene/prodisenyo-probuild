@@ -53,7 +53,7 @@ export async function requireRole(roles: AppRole | AppRole[]) {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
   if (!profile || !allowedRoles.includes(profile.role)) {
-    redirect("/dashboard");
+    redirect(profile?.role === APP_ROLES.PAYROLL_MANAGER ? "/upload-attendance" : "/dashboard");
   }
 
   return { user, profile };
