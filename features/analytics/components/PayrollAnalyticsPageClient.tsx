@@ -104,7 +104,12 @@ function PayrollAnalyticsLoadingState() {
 export default function PayrollAnalyticsPageClient() {
   const searchParams = useSearchParams();
   const { data, loading, error, selectedPeriodKey, setSelectedPeriodKey } =
-    useHistoricalDashboardData();
+    useHistoricalDashboardData({
+      includeEmployees: true,
+      includeAttendance: true,
+      includePayrollItems: true,
+      includePayrollDailyTotals: true,
+    });
   const runIdFromQuery = searchParams.get("runId");
   const payrollRows = data?.payrollRows ?? [];
   const attendanceRows = data?.payrollAttendanceInputs ?? [];

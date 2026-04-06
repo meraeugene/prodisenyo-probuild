@@ -149,13 +149,13 @@ function round2(value: number): number {
 
 function statusBadgeClass(status: PayrollRunStatus): string {
   if (status === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (status === "submitted") return "bg-sky-50 text-sky-700 border-sky-200";
+  if (status === "submitted") return "bg-amber-50 text-amber-700 border-amber-200";
   if (status === "draft") return "bg-amber-50 text-amber-700 border-amber-200";
   return "bg-rose-50 text-rose-700 border-rose-200";
 }
 
 function statusLabel(status: PayrollRunStatus): string {
-  if (status === "submitted") return "Pending Review";
+  if (status === "submitted") return "Pending";
   if (status === "approved") return "Approved";
   if (status === "draft") return "Draft";
   return "Rejected";
@@ -399,7 +399,7 @@ function buildDailyTrend(dailyTotals: PayrollRunDailyTotalRow[]): ReportTrendPoi
 }
 
 function buildSiteDistribution(payrollItems: PayrollRunItemRow[]): ReportCompositionDatum[] {
-  const colors = ["#166534", "#22c55e", "#0f766e", "#f59e0b", "#2563eb", "#dc2626"];
+  const colors = ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80"];
   return buildSiteSummaries(payrollItems).map((item, index) => ({
     name: item.siteName,
     value: item.payroll,
@@ -807,7 +807,7 @@ function PayrollReportModal({
           if (event.target === event.currentTarget) onClose();
         }}
       >
-        <div className="flex max-h-[95vh] w-full max-w-[min(1520px,96vw)] flex-col overflow-hidden rounded-[28px] border border-white/40 bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
+        <div className="flex max-h-[95vh] w-full max-w-[min(1520px,96vw)] flex-col overflow-hidden rounded-[28px] bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
           <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -823,14 +823,6 @@ function PayrollReportModal({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={onRefresh}
-                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
-                >
-                  <RefreshCw size={14} className={details?.loading ? "animate-spin" : ""} />
-                  Refresh Data
-                </button>
                 <button
                   type="button"
                   onClick={onClose}
@@ -868,29 +860,27 @@ function PayrollReportModal({
                   <ReportStatCard label="Attendance Logs" value={attendanceLogs.length.toLocaleString("en-PH")} helper="All report log rows loaded" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_1fr]">
+                <div className="space-y-4">
                   <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
                     <div className="border-b border-apple-mist px-4 py-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Daily Payroll Trend</p>
                       <p className="mt-1 text-xs text-apple-steel">Paid totals and worked hours across this submitted report.</p>
                     </div>
-                    <div className="h-[320px] px-2 py-3">
+                    <div className="h-[320px] px-3 py-4">
                       {dailyTrend.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={dailyTrend} margin={{ top: 12, right: 16, left: 4, bottom: 0 }}>
+                          <AreaChart data={dailyTrend} margin={{ top: 14, right: 16, left: 18, bottom: 0 }}>
                             <defs>
                               <linearGradient id="payrollReportTrendFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#16a34a" stopOpacity={0.28} />
-                                <stop offset="95%" stopColor="#16a34a" stopOpacity={0.05} />
+                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.26} />
+                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0.03} />
                               </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--theme-chart-grid))" />
-                            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} />
-                            <YAxis yAxisId="pay" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
-                            <YAxis yAxisId="hours" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
-                            <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value, name) => name === "Paid" ? formatPeso(value) : `${formatPayrollNumber(value)} hrs`} />} />
-                            <Area yAxisId="pay" type="monotone" dataKey="paid" name="Paid" stroke="#16a34a" strokeWidth={3} fill="url(#payrollReportTrendFill)" dot={{ r: 0 }} activeDot={{ r: 5, fill: "#16a34a", stroke: "white", strokeWidth: 2 }} />
-                            <Bar yAxisId="hours" dataKey="hours" name="Hours" fill="#86efac" radius={[8, 8, 0, 0]} barSize={20} />
+                            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#d3eee0" />
+                            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#5f6875", fontSize: 11 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#5f6875", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
+                            <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
+                            <Area type="monotone" dataKey="paid" name="Paid" stroke="#16a34a" strokeWidth={3.5} fill="url(#payrollReportTrendFill)" dot={false} activeDot={{ r: 5, fill: "#16a34a", stroke: "white", strokeWidth: 2 }} />
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
@@ -899,21 +889,53 @@ function PayrollReportModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
                     <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
                       <div className="border-b border-apple-mist px-4 py-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Site Payroll Breakdown</p>
                       </div>
-                      <div className="h-[180px] px-2 py-3">
+                      <div className="h-[280px] rounded-[12px] bg-[rgb(var(--apple-snow))] p-4 sm:h-[320px]">
                         {siteSummaries.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={siteSummaries.slice(0, 6)} layout="vertical" margin={{ top: 8, right: 12, left: 24, bottom: 8 }}>
-                              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgb(var(--theme-chart-grid))" />
-                              <XAxis type="number" hide />
-                              <YAxis dataKey="siteName" type="category" axisLine={false} tickLine={false} width={92} tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }} />
-                              <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
-                              <Bar dataKey="payroll" name="Payroll" radius={[0, 10, 10, 0]} barSize={18}>
-                                {siteSummaries.slice(0, 6).map((entry, index) => <Cell key={`${entry.siteName}-${index}`} fill={index % 2 === 0 ? "#166534" : "#22c55e"} />)}
+                            <BarChart
+                              data={siteSummaries.slice(0, 6)}
+                              barCategoryGap="28%"
+                              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            >
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                vertical={false}
+                                stroke="rgb(var(--theme-chart-grid))"
+                              />
+                              <XAxis
+                                dataKey="siteName"
+                                axisLine={false}
+                                tickLine={false}
+                                interval={0}
+                                tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                              />
+                              <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                                tickFormatter={(value) => formatCompactValue(Number(value))}
+                              />
+                              <Tooltip
+                                content={(props) => (
+                                  <ReportAnalyticsTooltip
+                                    {...props}
+                                    valueFormatter={(value) => formatPeso(value)}
+                                  />
+                                )}
+                                cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
+                              />
+                              <Bar dataKey="payroll" name="Payroll" radius={[6, 6, 6, 6]} barSize={44}>
+                                {siteSummaries.slice(0, 6).map((entry, index) => (
+                                  <Cell
+                                    key={`${entry.siteName}-${index}`}
+                                    fill={["rgb(var(--theme-chart-1))","rgb(var(--theme-chart-2))","rgb(var(--theme-chart-3))","rgb(var(--theme-chart-4))","rgb(var(--theme-chart-5))","rgb(var(--theme-chart-1))"][index % 6]}
+                                  />
+                                ))}
                               </Bar>
                             </BarChart>
                           </ResponsiveContainer>
@@ -927,58 +949,70 @@ function PayrollReportModal({
                       <div className="border-b border-apple-mist px-4 py-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Payroll Distribution Per Site</p>
                       </div>
-                      <div className="h-[220px] px-2 py-3">
+                      <div className="px-4 py-4">
                         {siteDistribution.length > 0 ? (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie data={siteDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3}>
-                                {siteDistribution.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
-                              </Pie>
-                              <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
-                            </PieChart>
-                          </ResponsiveContainer>
+                          <div className="grid h-full min-h-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
+                            <div className="h-[220px] min-h-0 sm:h-[240px] lg:h-full lg:min-h-[260px]">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                  <Pie
+                                    data={siteDistribution}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={58}
+                                    outerRadius={90}
+                                    paddingAngle={2}
+                                    stroke="none"
+                                  >
+                                    {siteDistribution.map((entry) => (
+                                      <Cell key={entry.name} fill={entry.color} />
+                                    ))}
+                                  </Pie>
+                                  <Tooltip
+                                    content={(props) => (
+                                      <ReportAnalyticsTooltip
+                                        {...props}
+                                        valueFormatter={(value) => formatPeso(value)}
+                                      />
+                                    )}
+                                  />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </div>
+
+                            <div className="min-h-0 pr-1 lg:pr-2">
+                              {siteDistribution.map((entry, index) => (
+                                <div
+                                  key={`${entry.name}-${index}`}
+                                  className="flex items-start gap-2 py-1"
+                                >
+                                  <span
+                                    className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
+                                    style={{ backgroundColor: entry.color }}
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-2xs font-medium text-apple-smoke">
+                                      {entry.name}
+                                    </p>
+                                    <p className="truncate text-sm font-medium text-apple-charcoal">
+                                      {formatPeso(entry.value)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         ) : (
-                          <div className="flex h-full items-center justify-center text-sm text-apple-steel">No site distribution data found.</div>
+                          <div className="flex h-[260px] items-center justify-center text-sm text-apple-steel">No site distribution data found.</div>
                         )}
                       </div>
-                      {siteDistribution.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-2 border-t border-apple-mist px-4 py-3 sm:grid-cols-2">
-                          {siteDistribution.map((entry) => (
-                            <div
-                              key={entry.name}
-                              className="flex items-center justify-between rounded-xl bg-[rgb(var(--apple-snow))] px-3 py-2"
-                            >
-                              <div className="flex min-w-0 items-center gap-2">
-                                <span
-                                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                                  style={{ backgroundColor: entry.color }}
-                                />
-                                <span className="truncate text-sm font-medium text-apple-charcoal">
-                                  {entry.name}
-                                </span>
-                              </div>
-                              <div className="ml-3 text-right">
-                                <p className="text-sm font-semibold text-emerald-700">
-                                  {formatPeso(entry.value)}
-                                </p>
-                                <p className="text-[11px] text-apple-steel">
-                                  {totalPayroll > 0
-                                    ? `${((entry.value / totalPayroll) * 100).toLocaleString("en-PH", {
-                                        minimumFractionDigits: 1,
-                                        maximumFractionDigits: 1,
-                                      })}%`
-                                    : "0.0%"}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
                     </div>
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                <div className="overflow-hidden rounded-[24px] bg-white shadow-[0_12px_28px_rgba(17,46,26,0.08)]">
                   <div className="border-b border-apple-mist px-4 py-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -1090,6 +1124,7 @@ export default function PayrollReportsPageClient() {
   const [refreshing, setRefreshing] = useState(false);
   const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
   const [pendingDecisionRunId, setPendingDecisionRunId] = useState<string | null>(null);
+  const [pendingDecisionAction, setPendingDecisionAction] = useState<"approve" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [detailsByRunId, setDetailsByRunId] = useState<Record<string, ReportDetailsState>>({});
   const [openMenu, setOpenMenu] = useState<ReportActionsMenuState | null>(null);
@@ -1265,6 +1300,7 @@ export default function PayrollReportsPageClient() {
 
   async function handleApproveReport(report: PayrollRunRow) {
     setPendingDecisionRunId(report.id);
+    setPendingDecisionAction("approve");
     setError(null);
 
     try {
@@ -1288,12 +1324,14 @@ export default function PayrollReportsPageClient() {
       );
     } finally {
       setPendingDecisionRunId(null);
+      setPendingDecisionAction(null);
       setOpenMenu(null);
     }
   }
 
   async function handleRejectReport(report: PayrollRunRow) {
     setPendingDecisionRunId(report.id);
+    setPendingDecisionAction("reject");
     setError(null);
 
     try {
@@ -1312,6 +1350,7 @@ export default function PayrollReportsPageClient() {
       );
     } finally {
       setPendingDecisionRunId(null);
+      setPendingDecisionAction(null);
       setOpenMenu(null);
     }
   }
@@ -1352,72 +1391,78 @@ export default function PayrollReportsPageClient() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">Report Archive</p>
             <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">Pending And Approved Payroll Reports</h2>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <ScrollText size={12} />
             {pendingReportsCount.toLocaleString("en-PH")} pending
           </span>
         </div>
 
         {loading ? (
-          <p className="text-sm text-apple-steel">Loading reports...</p>
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw size={18} className="animate-spin text-[#1f6a37]" aria-label="Loading reports" />
+          </div>
         ) : sortedReports.length === 0 ? (
           <p className="text-sm text-apple-steel">No payroll reports are waiting for review.</p>
         ) : (
-          <div className="space-y-3">
-            {sortedReports.map((report) => (
-              <div key={report.id} className="rounded-xl border border-apple-mist">
-                <div className="overflow-x-auto overflow-y-visible">
-                  <table className="min-w-[980px] w-full text-sm">
-                    <thead>
-                      <tr className="bg-[rgb(var(--apple-snow))] text-left">
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
-                        <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
-                        <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Total Payroll</th>
-                        <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
-                        <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="bg-white">
-                        <td className="px-4 py-3 text-apple-smoke">{formatDateTime(report.submitted_at ?? report.created_at)}</td>
-                        <td className="px-4 py-3 font-medium text-apple-charcoal">{formatPeriodLabel(report)}</td>
-                        <td className="px-4 py-3 text-apple-smoke">{report.site_name}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-apple-charcoal">{formatPeso(report.net_total ?? 0)}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>
-                            {statusLabel(report.status)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              const buttonRect = event.currentTarget.getBoundingClientRect();
-                              setOpenMenu((prev) =>
-                                prev?.runId === report.id
-                                  ? null
-                                  : {
-                                      runId: report.id,
-                                      top: buttonRect.bottom + 6,
-                                      left: buttonRect.right,
-                                    },
-                              );
-                            }}
-                            data-report-actions-root
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
-                            aria-label="Open report actions"
-                            disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
-                          >
-                            <MoreHorizontal size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto overflow-y-visible rounded-xl border border-apple-mist">
+            <table className="min-w-[980px] w-full table-fixed text-sm">
+              <colgroup>
+                <col className="w-[19%]" />
+                <col className="w-[26%]" />
+                <col className="w-[18%]" />
+                <col className="w-[16%]" />
+                <col className="w-[11%]" />
+                <col className="w-[10%]" />
+              </colgroup>
+              <thead>
+                <tr className="bg-[rgb(var(--apple-snow))] text-left">
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Total Payroll</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-apple-mist">
+                {sortedReports.map((report) => (
+                  <tr key={report.id} className="bg-white">
+                    <td className="px-4 py-4 text-apple-smoke">{formatDateTime(report.submitted_at ?? report.created_at)}</td>
+                    <td className="px-4 py-4 font-medium text-apple-charcoal">{formatPeriodLabel(report)}</td>
+                    <td className="px-4 py-4 text-apple-smoke">{report.site_name}</td>
+                    <td className="px-4 py-4 text-right font-semibold text-apple-charcoal">{formatPeso(report.net_total ?? 0)}</td>
+                    <td className="px-4 py-4 text-center">
+                      <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>
+                        {statusLabel(report.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          const buttonRect = event.currentTarget.getBoundingClientRect();
+                          setOpenMenu((prev) =>
+                            prev?.runId === report.id
+                              ? null
+                              : {
+                                  runId: report.id,
+                                  top: buttonRect.bottom + 6,
+                                  left: buttonRect.right,
+                                },
+                          );
+                        }}
+                        data-report-actions-root
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label="Open report actions"
+                        disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
@@ -1452,7 +1497,7 @@ export default function PayrollReportsPageClient() {
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <CheckCircle2 size={14} />
-                    {pendingDecisionRunId === openMenuReport.id
+                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "approve"
                       ? "Updating..."
                       : "Approve Payroll"}
                   </button>
@@ -1465,7 +1510,7 @@ export default function PayrollReportsPageClient() {
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <XCircle size={14} />
-                    {pendingDecisionRunId === openMenuReport.id
+                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "reject"
                       ? "Updating..."
                       : "Reject Payroll"}
                   </button>

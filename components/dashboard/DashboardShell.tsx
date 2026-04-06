@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  Activity,
-  BarChart3,
   Building2,
   ChevronRight,
   Clock3,
@@ -34,14 +32,14 @@ const PRIMARY_NAV_ITEMS = [
 const CEO_GENERAL_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
-    href: "/overtime-approvals",
-    label: "Overtime Approvals",
-    icon: Clock3,
-  },
-  {
     href: "/payroll-reports",
     label: "Payroll Reports",
     icon: LineChart,
+  },
+  {
+    href: "/overtime-approvals",
+    label: "Overtime Approvals",
+    icon: Clock3,
   },
 ] as const;
 
@@ -52,15 +50,6 @@ const GENERAL_WORKFLOW_ITEMS = [
     icon: UserRoundSearch,
   },
   { href: "/generate-payroll", label: "Generate Payroll", icon: Wallet },
-] as const;
-
-const ANALYTICS_NAV_ITEMS = [
-  {
-    href: "/attendance-analytics",
-    label: "Attendance Analytics",
-    icon: Activity,
-  },
-  { href: "/payroll-analytics", label: "Payroll Analytics", icon: BarChart3 },
 ] as const;
 
 type ProfileCardData = Pick<
@@ -100,22 +89,15 @@ export default function DashboardShell({
     isCeo ||
     (!workspaceReset &&
       (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
-  const isAnalyticsRoute =
-    pathname === "/attendance-analytics" || pathname === "/payroll-analytics";
-  const canSeeAnalyticsNav =
-    (!workspaceReset &&
-      (navState.hasSavedAttendance ||
-        navState.hasSavedPayroll ||
-        hasAttendanceData ||
-        Boolean(currentPayrollRunId) ||
-        isAnalyticsRoute ||
-        isCeo));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
   const [pendingPayrollReportCount, setPendingPayrollReportCount] = useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
 
   useEffect(() => {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    setOpen(false);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
 
@@ -188,12 +170,24 @@ export default function DashboardShell({
       void loadPendingOvertimeCount();
     }
 
+    function handlePendingCountChanged() {
+      void loadPendingOvertimeCount();
+    }
+
     window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener(
+      "payroll:pending-count-changed",
+      handlePendingCountChanged,
+    );
 
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener(
+        "payroll:pending-count-changed",
+        handlePendingCountChanged,
+      );
     };
   }, [isCeo]);
 
@@ -376,64 +370,6 @@ export default function DashboardShell({
                 ) : null}
               </AnimatePresence>
 
-              {canSeeAnalyticsNav ? (
-                <motion.div
-                  key="analytics-nav"
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  transition={{
-                    duration: 0.28,
-                    ease: "easeOut",
-                    delay: 0.04,
-                  }}
-                  className="space-y-3 overflow-hidden pt-2"
-                >
-                  <div className="px-3 pb-1 pt-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                      Data Analytics
-                    </p>
-                  </div>
-
-                  {ANALYTICS_NAV_ITEMS.map((item, index) => {
-                    const active = pathname === item.href;
-                    return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          duration: 0.22,
-                          delay: index * 0.04,
-                          ease: "easeOut",
-                        }}
-                      >
-                        <Link
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className={cn(
-                            "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                            active
-                              ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                              : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                              active
-                                ? "bg-[#1f6a37] text-white"
-                                : "text-apple-smoke group-hover:text-apple-charcoal",
-                            )}
-                          >
-                            <item.icon size={15} />
-                          </div>
-                          <span className="font-medium">{item.label}</span>
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              ) : null}
             </nav>
 
             <div className="mt-auto space-y-1 pt-3">

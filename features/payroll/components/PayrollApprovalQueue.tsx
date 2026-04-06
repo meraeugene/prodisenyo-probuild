@@ -2,16 +2,17 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
   CheckCircle2,
   Clock3,
   Loader2,
   MapPin,
+  X,
   XCircle,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { cn } from "@/lib/utils";
 import { buildDailyRows } from "@/features/attendance/utils/attendanceSelectors";
 import {
   expandIsoRange,
@@ -30,6 +31,7 @@ import type { AttendanceRecord, DailyLogRow } from "@/types";
 
 interface PendingOvertimeRequest {
   id: string;
+  status: "pending" | "approved" | "rejected";
   payroll_run_id: string | null;
   attendance_import_id: string | null;
   employee_name: string | null;
@@ -67,6 +69,7 @@ interface PendingOvertimeRequest {
 
 interface PayrollApprovalQueueProps {
   role: "ceo" | "payroll_manager" | null;
+  roleLoading?: boolean;
   onRequestResolved?: (runId: string | null) => void;
   refreshToken?: number;
 }
@@ -78,6 +81,16 @@ interface AttendanceLogRow {
   log_type: "IN" | "OUT";
   log_source: "Time1" | "Time2" | "OT";
   site_name: string;
+}
+
+interface EmployeeLogsModalState {
+  requestId: string;
+  employeeLabel: string;
+  siteLabel: string;
+  periodLabel: string;
+  requestDailyLogs: DailyLogRow[];
+  loading: boolean;
+  error: string | null;
 }
 
 function formatMoney(value: number): string {
@@ -212,8 +225,196 @@ function ApprovalQueueSkeleton() {
   );
 }
 
+function EmployeeLogsModal({
+  modalState,
+  onClose,
+}: {
+  modalState: EmployeeLogsModalState;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="flex max-h-[92vh] w-full max-w-[min(1180px,96vw)] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
+        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                Employee Logs
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                {modalState.employeeLabel}
+              </h2>
+              <p className="mt-2 text-sm text-white/80">
+                {modalState.siteLabel} | {modalState.periodLabel}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+              aria-label="Close employee logs modal"
+            >
+              <X size={17} />
+            </button>
+          </div>
+        </div>
+
+        <div className="min-h-0 overflow-auto px-6 py-6">
+          {modalState.loading ? (
+            <div className="space-y-3 animate-pulse">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-20 rounded-2xl bg-[rgb(var(--apple-snow))]"
+                  />
+                ))}
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+                <div className="border-b border-apple-mist px-4 py-4">
+                  <div className="h-4 w-40 rounded-full bg-apple-mist" />
+                </div>
+                <div className="space-y-2 px-4 py-4">
+                  {Array.from({ length: 8 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="h-10 rounded-xl bg-[rgb(var(--apple-snow))]"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : modalState.error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+              <p className="text-sm font-semibold text-red-700">
+                {modalState.error}
+              </p>
+            </div>
+          ) : modalState.requestDailyLogs.length === 0 ? (
+            <div className="rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 text-sm text-apple-steel">
+              No attendance logs found for this employee in the linked import.
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
+              <div className="border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-apple-steel">
+                  All Report Logs
+                </p>
+              </div>
+
+              <div className="max-h-[62vh] overflow-auto">
+                <table className="min-w-[760px] w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-apple-mist">
+                      {[
+                        "Date/Week",
+                        "Site",
+                        "Time1 In",
+                        "Time1 Out",
+                        "Time2 In",
+                        "Time2 Out",
+                        "OT In",
+                        "OT Out",
+                        "Hours",
+                      ].map((header) => (
+                        <th
+                          key={header}
+                          className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-apple-steel ${
+                            header === "Hours" ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modalState.requestDailyLogs.map((log, index) => (
+                      <tr
+                        key={`${modalState.requestId}-${log.date}-${index}`}
+                        className="border-b border-apple-mist/60 text-apple-charcoal last:border-0 odd:bg-apple-snow/30"
+                      >
+                        <td className="px-3 py-2.5 font-medium">
+                          {toWeekLabel(log.date)}
+                        </td>
+                        <td className="px-3 py-2.5 text-apple-smoke">
+                          {extractSiteName(log.site) || "-"}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.time1In ? (
+                            formatPayrollLogTime(log.time1In)
+                          ) : (
+                            <span className="text-red-500">Missed</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.time1Out ? (
+                            formatPayrollLogTime(log.time1Out)
+                          ) : (
+                            <span className="text-red-500">Missed</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.time2In ? (
+                            formatPayrollLogTime(log.time2In)
+                          ) : (
+                            <span className="text-red-500">Missed</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.time2Out ? (
+                            formatPayrollLogTime(log.time2Out)
+                          ) : (
+                            <span className="text-red-500">Missed</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.otIn ? formatPayrollLogTime(log.otIn) : "-"}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          {log.otOut ? formatPayrollLogTime(log.otOut) : "-"}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-semibold">
+                          {log.hours.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export default function PayrollApprovalQueue({
   role,
+  roleLoading = false,
   onRequestResolved,
   refreshToken = 0,
 }: PayrollApprovalQueueProps) {
@@ -225,9 +426,6 @@ export default function PayrollApprovalQueue({
   const [pendingActionType, setPendingActionType] = useState<
     "approve" | "reject" | null
   >(null);
-  const [expandedLogRequestIds, setExpandedLogRequestIds] = useState<
-    Record<string, boolean>
-  >({});
   const [employeeLogsByRequestId, setEmployeeLogsByRequestId] = useState<
     Record<string, AttendanceLogRow[]>
   >({});
@@ -235,18 +433,26 @@ export default function PayrollApprovalQueue({
     useState<Record<string, boolean>>({});
   const [employeeLogsErrorByRequestId, setEmployeeLogsErrorByRequestId] =
     useState<Record<string, string | null>>({});
+  const [activeLogsRequestId, setActiveLogsRequestId] = useState<string | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadPendingRequests() {
+      if (roleLoading) {
+        setLoading(true);
+        return;
+      }
+
       if (role !== "ceo") {
         setPendingRequests([]);
-        setExpandedLogRequestIds({});
         setEmployeeLogsByRequestId({});
         setEmployeeLogsLoadingByRequestId({});
         setEmployeeLogsErrorByRequestId({});
+        setActiveLogsRequestId(null);
         setLoading(false);
         return;
       }
@@ -256,10 +462,10 @@ export default function PayrollApprovalQueue({
       const { data, error } = await supabase
         .from("payroll_adjustments")
         .select(
-          "id, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, period_start, period_end, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
+          "id, status, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, period_start, period_end, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
         )
         .eq("adjustment_type", "overtime")
-        .eq("status", "pending")
+        .in("status", ["pending", "approved", "rejected"])
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
@@ -280,14 +486,20 @@ export default function PayrollApprovalQueue({
     return () => {
       cancelled = true;
     };
-  }, [role, refreshToken]);
+  }, [role, roleLoading, refreshToken]);
 
   const hasRequests = useMemo(
     () => pendingRequests.length > 0,
     [pendingRequests.length],
   );
+  const pendingCount = useMemo(
+    () => pendingRequests.filter((request) => request.status === "pending").length,
+    [pendingRequests],
+  );
 
-  async function loadEmployeeLogsForRequest(request: PendingOvertimeRequest) {
+  async function loadEmployeeLogsForRequest(
+    request: PendingOvertimeRequest,
+  ): Promise<void> {
     if (!request.id) return;
 
     if (!request.attendance_import_id || !request.employee_name) {
@@ -355,20 +567,19 @@ export default function PayrollApprovalQueue({
     }));
   }
 
-  function toggleRequestLogs(request: PendingOvertimeRequest) {
-    const isOpen = Boolean(expandedLogRequestIds[request.id]);
-    const nextOpen = !isOpen;
-
-    setExpandedLogRequestIds((prev) => ({
-      ...prev,
-      [request.id]: nextOpen,
-    }));
-
-    if (!nextOpen) return;
-    if (employeeLogsByRequestId[request.id]) return;
+  async function openRequestLogs(request: PendingOvertimeRequest) {
     if (employeeLogsLoadingByRequestId[request.id]) return;
 
-    void loadEmployeeLogsForRequest(request);
+    if (
+      employeeLogsByRequestId[request.id] ||
+      employeeLogsErrorByRequestId[request.id]
+    ) {
+      setActiveLogsRequestId(request.id);
+      return;
+    }
+
+    await loadEmployeeLogsForRequest(request);
+    setActiveLogsRequestId(request.id);
   }
 
   function handleAction(adjustmentId: string, action: "approve" | "reject") {
@@ -388,13 +599,16 @@ export default function PayrollApprovalQueue({
         );
         onRequestResolved?.(result.runId);
         setPendingRequests((prev) =>
-          prev.filter((request) => request.id !== adjustmentId),
+          prev.map((request) =>
+            request.id === adjustmentId
+              ? {
+                  ...request,
+                  status: action === "approve" ? "approved" : "rejected",
+                }
+              : request,
+          ),
         );
-        setExpandedLogRequestIds((prev) => {
-          const next = { ...prev };
-          delete next[adjustmentId];
-          return next;
-        });
+        window.dispatchEvent(new Event("payroll:pending-count-changed"));
         setEmployeeLogsByRequestId((prev) => {
           const next = { ...prev };
           delete next[adjustmentId];
@@ -423,7 +637,7 @@ export default function PayrollApprovalQueue({
     });
   }
 
-  if (role !== "ceo") return null;
+  if (!roleLoading && role !== "ceo") return null;
 
   return (
     <section className="rounded-[14px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
@@ -442,7 +656,7 @@ export default function PayrollApprovalQueue({
         </div>
         <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
           <Clock3 size={14} />
-          {pendingRequests.length} pending
+          {pendingCount} pending
         </span>
       </div>
 
@@ -457,19 +671,16 @@ export default function PayrollApprovalQueue({
           <div className="grid items-stretch gap-3 md:grid-cols-2 ">
             {pendingRequests.map((request) => {
               const run = getRelationValue(request.payroll_runs);
-              const item = getRelationValue(request.payroll_run_items);
               const rowBusy = isPending && pendingActionId === request.id;
+              const isResolved = request.status !== "pending";
               const rejectBusy = rowBusy && pendingActionType === "reject";
               const approveBusy = rowBusy && pendingActionType === "approve";
               const siteLabel =
-                item?.site_name?.trim() ||
+                run?.site_name?.trim() ||
                 request.site_name?.trim() ||
-                run?.site_name ||
                 "Unknown Site";
               const employeeLabel =
-                item?.employee_name ??
-                request.employee_name ??
-                "Unknown Employee";
+                request.employee_name ?? "Unknown Employee";
               const periodLabel =
                 run?.period_label ?? request.period_label ?? "Unknown Period";
               const requestDailyLogs = buildRequestDailyLogRows(
@@ -487,9 +698,32 @@ export default function PayrollApprovalQueue({
                       <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
                         {employeeLabel}
                       </h3>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-inset ring-amber-200/40">
-                        <Clock3 size={12} strokeWidth={2.5} />
-                        Pending Approval
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset",
+                          request.status === "approved"
+                            ? "bg-emerald-50 text-emerald-700 ring-emerald-200/40"
+                            : request.status === "rejected"
+                              ? "bg-rose-50 text-rose-700 ring-rose-200/40"
+                              : "bg-amber-50 text-amber-700 ring-amber-200/40",
+                        )}
+                      >
+                        {request.status === "approved" ? (
+                          <>
+                            <CheckCircle2 size={12} strokeWidth={2.5} />
+                            Approved
+                          </>
+                        ) : request.status === "rejected" ? (
+                          <>
+                            <XCircle size={12} strokeWidth={2.5} />
+                            Rejected
+                          </>
+                        ) : (
+                          <>
+                            <Clock3 size={12} strokeWidth={2.5} />
+                            Pending Approval
+                          </>
+                        )}
                       </span>
                     </div>
 
@@ -516,141 +750,21 @@ export default function PayrollApprovalQueue({
                     <div className="space-y-2">
                       <button
                         type="button"
-                        onClick={() => toggleRequestLogs(request)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-apple-mist bg-white px-3 py-1.5 text-[11px] font-semibold text-apple-charcoal transition hover:border-apple-steel"
+                        onClick={() => {
+                          void openRequestLogs(request);
+                        }}
+                        disabled={Boolean(employeeLogsLoadingByRequestId[request.id])}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-apple-mist bg-white px-3 py-1.5 text-[11px] font-semibold text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {expandedLogRequestIds[request.id] ? (
+                        {employeeLogsLoadingByRequestId[request.id] ? (
                           <>
-                            Hide Employee Logs
-                            <ChevronUp size={14} />
+                            <Loader2 size={13} className="animate-spin" />
+                            Loading Logs...
                           </>
                         ) : (
-                          <>
-                            View Employee Logs
-                            <ChevronDown size={14} />
-                          </>
+                          "View Employee Logs"
                         )}
                       </button>
-
-                      {expandedLogRequestIds[request.id] ? (
-                        <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-                          <div className="border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-apple-steel">
-                              All Report Logs
-                            </p>
-                          </div>
-
-                          <div className="max-h-[320px] overflow-auto">
-                            {employeeLogsLoadingByRequestId[request.id] ? (
-                              <p className="px-3 py-4 text-xs text-apple-steel">
-                                Loading attendance logs...
-                              </p>
-                            ) : employeeLogsErrorByRequestId[request.id] ? (
-                              <p className="px-3 py-4 text-xs text-red-700">
-                                {employeeLogsErrorByRequestId[request.id]}
-                              </p>
-                            ) : requestDailyLogs.length === 0 ? (
-                              <p className="px-3 py-4 text-xs text-apple-steel">
-                                No attendance logs found for this employee in
-                                the linked import.
-                              </p>
-                            ) : (
-                              <table className="min-w-[760px] w-full text-xs">
-                                <thead>
-                                  <tr className="border-b border-apple-mist">
-                                    {[
-                                      "Date/Week",
-                                      "Site",
-                                      "Time1 In",
-                                      "Time1 Out",
-                                      "Time2 In",
-                                      "Time2 Out",
-                                      "OT In",
-                                      "OT Out",
-                                      "Hours",
-                                    ].map((header) => (
-                                      <th
-                                        key={header}
-                                        className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-apple-steel ${
-                                          header === "Hours"
-                                            ? "text-right"
-                                            : "text-left"
-                                        }`}
-                                      >
-                                        {header}
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {requestDailyLogs.map((log, index) => (
-                                    <tr
-                                      key={`${request.id}-${log.date}-${index}`}
-                                      className="border-b border-apple-mist/60 text-apple-charcoal last:border-0 odd:bg-apple-snow/30"
-                                    >
-                                      <td className="px-3 py-2.5 font-medium">
-                                        {toWeekLabel(log.date)}
-                                      </td>
-                                      <td className="px-3 py-2.5 text-apple-smoke">
-                                        {extractSiteName(log.site) || "-"}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.time1In ? (
-                                          formatPayrollLogTime(log.time1In)
-                                        ) : (
-                                          <span className="text-red-500">
-                                            Missed
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.time1Out ? (
-                                          formatPayrollLogTime(log.time1Out)
-                                        ) : (
-                                          <span className="text-red-500">
-                                            Missed
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.time2In ? (
-                                          formatPayrollLogTime(log.time2In)
-                                        ) : (
-                                          <span className="text-red-500">
-                                            Missed
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.time2Out ? (
-                                          formatPayrollLogTime(log.time2Out)
-                                        ) : (
-                                          <span className="text-red-500">
-                                            Missed
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.otIn
-                                          ? formatPayrollLogTime(log.otIn)
-                                          : "-"}
-                                      </td>
-                                      <td className="px-3 py-2.5">
-                                        {log.otOut
-                                          ? formatPayrollLogTime(log.otOut)
-                                          : "-"}
-                                      </td>
-                                      <td className="px-3 py-2.5 text-right font-semibold">
-                                        {log.hours.toFixed(2)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            )}
-                          </div>
-                        </div>
-                      ) : null}
                     </div>
                   </div>
 
@@ -674,37 +788,60 @@ export default function PayrollApprovalQueue({
                     <div className="text-[11px] italic text-apple-steel">
                       Review required before payroll cutoff
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleAction(request.id, "reject")}
-                        disabled={rowBusy}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
-                        aria-label={`Reject overtime request for ${item?.employee_name ?? "employee"}`}
-                      >
-                        {rejectBusy ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <XCircle size={16} />
+                    {isResolved ? (
+                      <div
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold",
+                          request.status === "approved"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-rose-50 text-rose-700",
                         )}
-                        Reject
-                      </button>
+                      >
+                        {request.status === "approved" ? (
+                          <>
+                            <CheckCircle2 size={15} />
+                            Approved
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={15} />
+                            Rejected
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleAction(request.id, "reject")}
+                          disabled={rowBusy}
+                          className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
+                          aria-label={`Reject overtime request for ${request.employee_name ?? "employee"}`}
+                        >
+                          {rejectBusy ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <XCircle size={16} />
+                          )}
+                          Reject
+                        </button>
 
-                      <button
-                        type="button"
-                        onClick={() => handleAction(request.id, "approve")}
-                        disabled={rowBusy}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
-                        aria-label={`Approve overtime request for ${item?.employee_name ?? "employee"}`}
-                      >
-                        {approveBusy ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <CheckCircle2 size={16} />
-                        )}
-                        Approve Request
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => handleAction(request.id, "approve")}
+                          disabled={rowBusy}
+                          className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+                          aria-label={`Approve overtime request for ${request.employee_name ?? "employee"}`}
+                        >
+                          {approveBusy ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <CheckCircle2 size={16} />
+                          )}
+                          Approve Request
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -712,6 +849,43 @@ export default function PayrollApprovalQueue({
           </div>
         )}
       </div>
+
+      {activeLogsRequestId
+        ? (() => {
+            const request = pendingRequests.find(
+              (entry) => entry.id === activeLogsRequestId,
+            );
+            if (!request) return null;
+
+            const run = getRelationValue(request.payroll_runs);
+            const siteLabel =
+              run?.site_name?.trim() ||
+              request.site_name?.trim() ||
+              "Unknown Site";
+            const employeeLabel =
+              request.employee_name ?? "Unknown Employee";
+            const periodLabel =
+              run?.period_label ?? request.period_label ?? "Unknown Period";
+
+            return (
+              <EmployeeLogsModal
+                modalState={{
+                  requestId: request.id,
+                  employeeLabel,
+                  siteLabel,
+                  periodLabel,
+                  requestDailyLogs: buildRequestDailyLogRows(
+                    request,
+                    employeeLogsByRequestId[request.id] ?? [],
+                  ),
+                  loading: Boolean(employeeLogsLoadingByRequestId[request.id]),
+                  error: employeeLogsErrorByRequestId[request.id] ?? null,
+                }}
+                onClose={() => setActiveLogsRequestId(null)}
+              />
+            );
+          })()
+        : null}
     </section>
   );
 }

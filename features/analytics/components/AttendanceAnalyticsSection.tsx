@@ -18,7 +18,6 @@ import type { AttendanceRecord, Employee } from "@/types";
 import {
   selectDailyLaborHours,
   selectOvertimeByBranch,
-  selectTopOTEmployees,
   selectWorkforceByBranch,
 } from "@/features/analytics/utils/analyticsSelectors";
 
@@ -49,12 +48,6 @@ function extractBranchName(value: string): string {
   return value.trim().split(/\s+/)[0].toUpperCase();
 }
 
-function shorten(value: string, max = 18): string {
-  if (!value) return "";
-  if (value.length <= max) return value;
-  return `${value.slice(0, max - 1)}...`;
-}
-
 export default function AttendanceAnalyticsSection({
   employees,
   records,
@@ -81,16 +74,6 @@ export default function AttendanceAnalyticsSection({
 
   const dailyLaborHours = useMemo(
     () => selectDailyLaborHours(records),
-    [records],
-  );
-
-  const topOTEmployees = useMemo(
-    () =>
-      selectTopOTEmployees(records).map((item, index) => ({
-        ...item,
-        name: shorten(item.name, 22),
-        fill: getBranchColor(index),
-      })),
     [records],
   );
 
@@ -326,52 +309,6 @@ export default function AttendanceAnalyticsSection({
                       animationDuration={1200}
                     />
                   </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="space-y-4 lg:col-span-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
-                Top Overtime Performers
-              </h3>
-
-              <div className="h-[320px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 sm:h-[360px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={topOTEmployees}
-                    layout="vertical"
-                    barCategoryGap={18}
-                    barGap={4}
-                    margin={{ top: 10, right: 20, left: 52, bottom: 10 }}
-                  >
-                    <XAxis type="number" hide />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fill: "rgb(var(--theme-chart-axis))",
-                        fontSize: 13,
-                        fontWeight: 500,
-                      }}
-                      width={140}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgb(var(--theme-chart-grid))" }}
-                      content={(props) => (
-                        <ChartTooltip {...props} unit="overtime hrs" />
-                      )}
-                    />
-                    <Bar dataKey="hours" radius={[6, 6, 6, 6]} barSize={36}>
-                      {topOTEmployees.map((entry, index) => (
-                        <Cell
-                          key={`top-ot-${entry.name}-${index}`}
-                          fill={entry.fill}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>

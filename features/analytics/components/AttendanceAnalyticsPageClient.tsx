@@ -100,7 +100,12 @@ function AttendanceAnalyticsLoadingState() {
 export default function AttendanceAnalyticsPageClient() {
   const searchParams = useSearchParams();
   const { data, loading, error, selectedPeriodKey, setSelectedPeriodKey } =
-    useHistoricalDashboardData();
+    useHistoricalDashboardData({
+      includeEmployees: false,
+      includeAttendance: true,
+      includePayrollItems: false,
+      includePayrollDailyTotals: false,
+    });
   const runIdFromQuery = searchParams.get("runId");
   const employees = data?.employees ?? [];
   const records = data?.records ?? [];

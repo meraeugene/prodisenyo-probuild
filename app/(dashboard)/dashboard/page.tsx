@@ -6,6 +6,7 @@ import {
   ArrowUp,
   BadgeCheck,
   Check,
+  Loader2,
   RefreshCw,
   Receipt,
   Wallet,
@@ -747,8 +748,12 @@ export default function OverviewPage() {
 
           <div className="mt-5 h-[320px]">
             {ceoTrendLoading ? (
-              <div className="flex h-full items-center justify-center text-sm text-apple-steel">
-                Loading trend data...
+              <div className="flex h-full items-center justify-center">
+                <Loader2
+                  size={26}
+                  className="animate-spin text-[#1f6a37]"
+                  aria-label="Loading trend data"
+                />
               </div>
             ) : ceoPayrollTrend.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-apple-steel">
@@ -1143,6 +1148,9 @@ export default function OverviewPage() {
               </p>
               <p className="mt-3 text-sm font-medium text-apple-charcoal">
                 {card.badge}
+              </p>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
+                View Details
               </p>
             </button>
           );

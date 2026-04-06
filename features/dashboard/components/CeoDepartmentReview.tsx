@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Users, X } from "lucide-react";
+import { Users, X } from "lucide-react";
 import { formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 import { cn } from "@/lib/utils";
 import type {
@@ -938,11 +938,7 @@ export default function CeoDepartmentReview({
   attendanceLogs: HistoricalDashboardAttendanceLog[];
   dailyTotals: HistoricalDashboardDailyTotal[];
 }) {
-  const [activeSiteName, setActiveSiteName] = useState<string | null>(null);
-
   const siteCards = useMemo(() => buildSiteCards(payrollItems), [payrollItems]);
-  const activeSite =
-    siteCards.find((card) => card.siteName === activeSiteName) ?? null;
 
   return (
     <>
@@ -953,8 +949,7 @@ export default function CeoDepartmentReview({
               Department Cards
             </p>
             <p className="mt-1 text-sm text-apple-steel">
-              Open a site to review its employees and logs for the selected
-              payroll.
+              Department totals for the selected payroll.
             </p>
           </div>
         </div>
@@ -962,20 +957,16 @@ export default function CeoDepartmentReview({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {siteCards.length > 0 ? (
             siteCards.map((card) => (
-              <button
+              <div
                 key={card.siteName}
-                type="button"
-                onClick={() => setActiveSiteName(card.siteName)}
-                className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-left text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_42px_rgba(22,101,52,0.22)]"
+                className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-left text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">{card.shortSite}</p>
-                    <p className="mt-1 text-xs text-white/65">{card.siteName}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/85">
-                    <Eye size={12} />
-                    Review
+                  <span className="inline-flex rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/75">
+                    Summary
                   </span>
                 </div>
 
@@ -992,7 +983,7 @@ export default function CeoDepartmentReview({
                 <p className="mt-2 text-[30px] font-semibold tracking-[-0.03em]">
                   {PESO_SIGN} {formatPayrollNumber(card.payrollTotal)}
                 </p>
-              </button>
+              </div>
             ))
           ) : (
             <div className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]">
@@ -1007,17 +998,6 @@ export default function CeoDepartmentReview({
           )}
         </div>
       </section>
-
-      {activeSite ? (
-        <SiteReviewModal
-          siteName={activeSite.siteName}
-          attendancePeriod={attendancePeriod}
-          payrollItems={payrollItems}
-          attendanceLogs={attendanceLogs}
-          dailyTotals={dailyTotals}
-          onClose={() => setActiveSiteName(null)}
-        />
-      ) : null}
     </>
   );
 }

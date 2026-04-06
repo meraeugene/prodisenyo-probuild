@@ -143,6 +143,13 @@ interface HistoricalDashboardState {
   refreshData: () => void;
 }
 
+interface HistoricalDashboardLoadOptions {
+  includeEmployees?: boolean;
+  includeAttendance?: boolean;
+  includePayrollItems?: boolean;
+  includePayrollDailyTotals?: boolean;
+}
+
 function formatMoney(value: number): string {
   return `PHP ${value.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
@@ -399,9 +406,17 @@ function dedupeTrackedRuns(trackedRuns: PayrollRunRow[]): PayrollRunRow[] {
   );
 }
 
-export function useHistoricalDashboardData(): HistoricalDashboardState {
+export function useHistoricalDashboardData(
+  options: HistoricalDashboardLoadOptions = {},
+): HistoricalDashboardState {
   const { currentAttendanceImportId, currentPayrollRunId, workspaceReset } =
     useAppState();
+  const {
+    includeEmployees = true,
+    includeAttendance = true,
+    includePayrollItems = true,
+    includePayrollDailyTotals = true,
+  } = options;
   const [selectedPeriodKey, setSelectedPeriodKey] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
   const [state, setState] = useState<HistoricalDashboardState>({
@@ -494,11 +509,13 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           importsResult,
           runsResult,
         ] = await Promise.all([
-          supabase
-            .from("employees")
-            .select(
-              "id, employee_code, full_name, default_role_code, site_id, created_at, updated_at",
-            ),
+          includeEmployees
+            ? supabase
+                .from("employees")
+                .select(
+                  "id, employee_code, full_name, default_role_code, site_id, created_at, updated_at",
+                )
+            : Promise.resolve({ data: [] as EmployeeRow[], error: null }),
           (() => {
             const query = supabase
               .from("attendance_imports")
@@ -565,17 +582,39 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
             importRows[0]?.id ??
             null;
 
-        const attendanceResult =
-          effectiveImportId
-            ? await supabase
-                .from("attendance_records")
-                .select(
-                  "id, import_id, employee_id, employee_name, log_date, log_time, log_type, log_source, site_name, created_at",
-                )
-                .eq("import_id", effectiveImportId)
-                .order("log_date", { ascending: false })
-                .order("log_time", { ascending: false })
-            : { data: [], error: null };
+        const trackedRunIds = selectedRun ? [selectedRun.id] : [];
+
+        const [attendanceResult, payrollItemsResult, payrollDailyTotalsResult] =
+          await Promise.all([
+            includeAttendance && effectiveImportId
+              ? supabase
+                  .from("attendance_records")
+                  .select(
+                    "id, import_id, employee_id, employee_name, log_date, log_time, log_type, log_source, site_name, created_at",
+                  )
+                  .eq("import_id", effectiveImportId)
+                  .order("log_date", { ascending: false })
+                  .order("log_time", { ascending: false })
+              : Promise.resolve({ data: [] as AttendanceRecordRow[], error: null }),
+            includePayrollItems && trackedRunIds.length > 0
+              ? supabase
+                  .from("payroll_run_items")
+                  .select(
+                    "id, payroll_run_id, employee_id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay, created_at",
+                  )
+                  .in("payroll_run_id", trackedRunIds)
+                  .order("created_at", { ascending: false })
+              : Promise.resolve({ data: [] as PayrollRunItemRow[], error: null }),
+            includePayrollDailyTotals && trackedRunIds.length > 0
+              ? supabase
+                  .from("payroll_run_daily_totals")
+                  .select(
+                    "id, payroll_run_id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay",
+                  )
+                  .in("payroll_run_id", trackedRunIds)
+                  .order("payout_date", { ascending: true })
+              : Promise.resolve({ data: [] as PayrollRunDailyTotalRow[], error: null }),
+          ]);
 
         if (attendanceResult.error) {
           throw new Error(
@@ -583,35 +622,11 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
           );
         }
 
-        const trackedRunIds = selectedRun ? [selectedRun.id] : [];
-
-        const payrollItemsResult =
-          trackedRunIds.length > 0
-            ? await supabase
-                .from("payroll_run_items")
-                .select(
-                  "id, payroll_run_id, employee_id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay, created_at",
-                )
-                .in("payroll_run_id", trackedRunIds)
-                .order("created_at", { ascending: false })
-            : { data: [], error: null };
-
         if (payrollItemsResult.error) {
           throw new Error(
             `[HISTORICAL_LOAD_ITEMS_FAILED] ${payrollItemsResult.error.message}`,
           );
         }
-
-        const payrollDailyTotalsResult =
-          trackedRunIds.length > 0
-            ? await supabase
-                .from("payroll_run_daily_totals")
-                .select(
-                  "id, payroll_run_id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay",
-                )
-                .in("payroll_run_id", trackedRunIds)
-                .order("payout_date", { ascending: true })
-            : { data: [], error: null };
 
         if (payrollDailyTotalsResult.error) {
           throw new Error(
@@ -754,6 +769,10 @@ export function useHistoricalDashboardData(): HistoricalDashboardState {
   }, [
     currentAttendanceImportId,
     currentPayrollRunId,
+    includeAttendance,
+    includeEmployees,
+    includePayrollDailyTotals,
+    includePayrollItems,
     refreshTick,
     workspaceReset,
     selectedPeriodKey,
