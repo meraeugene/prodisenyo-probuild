@@ -25,6 +25,28 @@ export interface BudgetItemFormInput {
   estimatedCost: number;
   actualSpent: number;
   notes: string;
+  sortOrder?: number;
+}
+
+export interface BudgetItemGroup {
+  value: BudgetItemStatus;
+  label: string;
+  dotClassName: string;
+  items: BudgetItemRow[];
+}
+
+export interface BudgetCategoryTotal {
+  value: BudgetItemCategory;
+  label: string;
+  total: number;
+  ratio: number;
+}
+
+export interface BudgetTrackerSummary {
+  startingBudget: number;
+  actualSpent: number;
+  remainingBudget: number;
+  categoryTotals: BudgetCategoryTotal[];
 }
 
 export const BUDGET_PROJECT_TYPE_OPTIONS: Array<{

@@ -16,7 +16,6 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  type TooltipProps,
 } from "recharts";
 import { toast } from "sonner";
 import { requestOvertimeApprovalAction } from "@/actions/payroll";
@@ -53,113 +52,24 @@ import {
   FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
 
-const EMPLOYEE_ANALYTICS_COLORS = [
-  "#15803d",
-  "#f97316",
-  "#dc2626",
-  "#2563eb",
-  "#a855f7",
-];
-
-const DAILY_HOURS_LINE_COLOR = "#15803d";
-const DAILY_HOURS_AREA_COLOR = "#22c55e";
-const DAILY_HOURS_GRID_COLOR = "#bbf7d0";
-const CLOCK_IN_BAR_TOP_COLOR = "#15803d";
-const CLOCK_IN_BAR_BOTTOM_COLOR = "#4ade80";
-const CLOCK_IN_GRID_COLOR = "#d1fae5";
-const OVERTIME_ALERT_HOURS = 10;
-type AdjustmentFormType = "cashAdvance" | "overtime" | "paidLeave" | null;
-
-function parseNonNegativeValue(value: string): number {
-  const parsed = Number.parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) return 0;
-  return parsed;
-}
-
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function isExpandedPlaceholderLog(log: DailyLogRow): boolean {
-  return (
-    log.site.trim() === "" &&
-    !log.time1In &&
-    !log.time1Out &&
-    !log.time2In &&
-    !log.time2Out &&
-    !log.otIn &&
-    !log.otOut
-  );
-}
-
-function createEntryId(): string {
-  return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
-}
-
-function formatPeso(value: number): string {
-  return `\u20B1${formatPayrollNumber(value)}`;
-}
-
-function getAttendanceBreakdownColor(name: string, index: number): string {
-  const key = name.trim().toLowerCase();
-  if (key.includes("attendance")) return "#15803d";
-  if (key.includes("leave")) return "#f97316";
-  if (key.includes("absence")) return "#dc2626";
-  if (key.includes("business trip")) return "#2563eb";
-  return EMPLOYEE_ANALYTICS_COLORS[index % EMPLOYEE_ANALYTICS_COLORS.length];
-}
-
-function chartTickFormatter(value: string): string {
-  if (!value) return "";
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value.slice(5) : value;
-}
-
-function AnalyticsTooltip({
-  active,
-  payload,
-  label,
-  valueFormatter,
-}: TooltipProps<number, string> & {
-  valueFormatter?: (value: number, name: string, item: any) => string;
-}) {
-  if (!active || !payload || payload.length === 0) return null;
-
-  return (
-    <div className="min-w-[148px] rounded-xl border border-apple-mist bg-white px-3 py-2 shadow-[0_10px_28px_rgba(2,6,23,0.08)]">
-      {label ? (
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-apple-smoke">
-          {label}
-        </p>
-      ) : null}
-      <div className="space-y-1">
-        {payload.map((entry, index) => {
-          const numericValue =
-            typeof entry.value === "number"
-              ? entry.value
-              : Number(entry.value ?? 0);
-          const name = String(entry.name ?? entry.dataKey ?? "Value");
-
-          return (
-            <div key={`${name}-${index}`} className="flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{
-                  backgroundColor: entry.color ?? "rgb(var(--theme-chart-2))",
-                }}
-              />
-              <span className="text-[11px] text-apple-smoke">{name}</span>
-              <span className="ml-auto text-[12px] font-semibold text-apple-charcoal">
-                {valueFormatter
-                  ? valueFormatter(numericValue, name, entry.payload)
-                  : formatPayrollNumber(numericValue)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+import {
+  AdjustmentFormType,
+  AnalyticsTooltip,
+  chartTickFormatter,
+  CLOCK_IN_BAR_BOTTOM_COLOR,
+  CLOCK_IN_BAR_TOP_COLOR,
+  CLOCK_IN_GRID_COLOR,
+  createEntryId,
+  DAILY_HOURS_AREA_COLOR,
+  DAILY_HOURS_GRID_COLOR,
+  DAILY_HOURS_LINE_COLOR,
+  formatPeso,
+  getAttendanceBreakdownColor,
+  isExpandedPlaceholderLog,
+  OVERTIME_ALERT_HOURS,
+  parseNonNegativeValue,
+  round2,
+} from "@/features/payroll/utils/payrollEditModalHelpers";
 
 interface PayrollEditModalProps {
   payroll: UsePayrollStateResult;
@@ -167,7 +77,8 @@ interface PayrollEditModalProps {
 
 export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   const { currentAttendanceImportId, attendancePeriod } = useAppState();
-  const { editingPayrollRow, editingPayrollSourceRow, payrollEditDraft } = payroll;
+  const { editingPayrollRow, editingPayrollSourceRow, payrollEditDraft } =
+    payroll;
 
   const [activeAdjustmentForm, setActiveAdjustmentForm] =
     useState<AdjustmentFormType>(null);
@@ -188,8 +99,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     PayrollPaidLeaveEntry[]
   >([]);
   const [isSavingChanges, setIsSavingChanges] = useState(false);
-  const [overtimeValidationMessage, setOvertimeValidationMessage] =
-    useState<string | null>(null);
+  const [overtimeValidationMessage, setOvertimeValidationMessage] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     setActiveAdjustmentForm(null);
@@ -323,9 +235,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     sitePayBreakdownWithAllocation.length > 0
       ? branchPayAllocation.totalBasePay
       : 0;
-  const paidHolidayPay = round2(
-    paidHolidayBonusDays * FIXED_PAY_RATE_PER_DAY,
-  );
+  const paidHolidayPay = round2(paidHolidayBonusDays * FIXED_PAY_RATE_PER_DAY);
   const previewTotalPay = baseWorkedPay + paidHolidayPay;
   const belowFullDayThreshold =
     totalWorkedHours > 0 && branchPayAllocation.totalPayableHours === 0;
@@ -668,8 +578,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   >
                     <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
                       Submit the payroll report after adding overtime so this
-                      request can
-                      be submitted for CEO approval.
+                      request can be submitted for CEO approval.
                     </div>
                     <div className="flex flex-wrap gap-4">
                       <div className="flex flex-col w-full sm:w-[200px]">
@@ -680,14 +589,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           type="number"
                           placeholder="0"
                           value={overtimeHoursInput}
-                          onChange={(e) =>
-                            {
-                              setOvertimeHoursInput(
-                                normalizeNumericInput(e.target.value),
-                              );
-                              setOvertimeValidationMessage(null);
-                            }
-                          }
+                          onChange={(e) => {
+                            setOvertimeHoursInput(
+                              normalizeNumericInput(e.target.value),
+                            );
+                            setOvertimeValidationMessage(null);
+                          }}
                           className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                         />
                       </div>
@@ -700,14 +607,12 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           type="number"
                           placeholder="0"
                           value={overtimePayInput}
-                          onChange={(e) =>
-                            {
-                              setOvertimePayInput(
-                                normalizeNumericInput(e.target.value),
-                              );
-                              setOvertimeValidationMessage(null);
-                            }
-                          }
+                          onChange={(e) => {
+                            setOvertimePayInput(
+                              normalizeNumericInput(e.target.value),
+                            );
+                            setOvertimeValidationMessage(null);
+                          }}
                           className="h-10 px-3 rounded-xl border border-apple-charcoal/40  hover:border-apple-charcoal focus:outline-none  text-sm  focus:bg-white focus:border-black"
                         />
                       </div>
@@ -858,21 +763,21 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           ({entry.hours} hrs)
                         </span>
 
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                              entry.status === "approved"
-                                ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                                : entry.status === "rejected"
-                                  ? "border border-red-200 bg-red-50 text-red-700"
-                                  : "border border-amber-200 bg-amber-50 text-amber-700"
-                            }`}
-                          >
-                            {entry.status === "approved"
-                              ? "Approved"
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                            entry.status === "approved"
+                              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                               : entry.status === "rejected"
-                                ? "Rejected"
-                                : "Pending"}
-                          </span>
+                                ? "border border-red-200 bg-red-50 text-red-700"
+                                : "border border-amber-200 bg-amber-50 text-amber-700"
+                          }`}
+                        >
+                          {entry.status === "approved"
+                            ? "Approved"
+                            : entry.status === "rejected"
+                              ? "Rejected"
+                              : "Pending"}
+                        </span>
 
                         {entry.notes && (
                           <span className="text-xs text-gray-500 truncate">
@@ -1000,8 +905,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           getHoursNumber(log) >= OVERTIME_ALERT_HOURS &&
                           !isPaidHoliday;
                         const isOvertimeDay =
-                          computeSameDayOvertimeMinutes(log.otIn, log.otOut) > 0 &&
-                          !isPaidHoliday;
+                          computeSameDayOvertimeMinutes(log.otIn, log.otOut) >
+                            0 && !isPaidHoliday;
                         const statusFallback = (
                           <span className="text-red-500">Missed</span>
                         );
@@ -1015,8 +920,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                                 : isHighOvertimeHours
                                   ? "bg-rose-50/60"
                                   : isUnderRequiredHours
-                                  ? "bg-yellow-50"
-                                  : "odd:bg-apple-snow/30"
+                                    ? "bg-yellow-50"
+                                    : "odd:bg-apple-snow/30"
                             }`}
                           >
                             <td className="px-3 py-2.5 text-sm text-apple-charcoal">
@@ -1137,17 +1042,17 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     label: "Pending Overtime",
                     value: `${formatPayrollNumber(pendingOvertimeHours)} hrs`,
                   },
-                    {
-                      label: "Approved Overtime",
-                      value: `${formatPayrollNumber(approvedOvertimeHours)} hrs`,
-                    },
-                    {
-                      label: "Rejected Overtime",
-                      value: `${formatPayrollNumber(rejectedOvertimeHours)} hrs`,
-                    },
-                    {
-                      label: "Paid Leave",
-                      value: formatPeso(paidLeavePay),
+                  {
+                    label: "Approved Overtime",
+                    value: `${formatPayrollNumber(approvedOvertimeHours)} hrs`,
+                  },
+                  {
+                    label: "Rejected Overtime",
+                    value: `${formatPayrollNumber(rejectedOvertimeHours)} hrs`,
+                  },
+                  {
+                    label: "Paid Leave",
+                    value: formatPeso(paidLeavePay),
                   },
                   {
                     label: "Paid Holidays (Day)",
@@ -1210,9 +1115,11 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           className="flex items-center justify-between gap-3 text-xs"
                         >
                           <span className="text-apple-charcoal">
-                            {entry.site} · {formatPayrollNumber(entry.hours)} hrs
+                            {entry.site} · {formatPayrollNumber(entry.hours)}{" "}
+                            hrs
                             {" · "}
-                            {formatPayrollNumber(entry.payableDays)} payable day(s)
+                            {formatPayrollNumber(entry.payableDays)} payable
+                            day(s)
                           </span>
                           <span className="font-mono font-semibold text-apple-charcoal text-right">
                             {formatPeso(entry.ratePerDay)}/day
@@ -1253,11 +1160,13 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   </span>
                 </div>
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                  Pending overtime is excluded from total pay until the CEO approves it.
+                  Pending overtime is excluded from total pay until the CEO
+                  approves it.
                 </div>
                 {rejectedOvertimeEntries.length > 0 && (
                   <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                    Rejected overtime stays excluded from total pay until HR submits a new request.
+                    Rejected overtime stays excluded from total pay until HR
+                    submits a new request.
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-3 text-sm">
@@ -1584,19 +1493,6 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              {/* <p className="text-xs text-apple-steel">
-              Saving total hours:{" "}
-              <span className="font-semibold text-apple-charcoal">
-                {formatPayrollNumber(
-                  payroll.hasLogHourOverrides
-                    ? payroll.totalEditedLogHours
-                    : parseNonNegativeOrFallback(
-                        payrollEditDraft.hoursWorked,
-                        editingPayrollRow.hoursWorked,
-                      ),
-                )}
-              </span>
-            </p> */}
               <div className="invisible"></div>
               <div className="flex gap-2">
                 <button

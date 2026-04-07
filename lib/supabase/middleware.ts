@@ -12,6 +12,7 @@ type CookieMutation = {
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/upload-attendance",
+  "/budget-tracker",
   "/review-attendance",
   "/generate-payroll",
   "/attendance-analytics",
@@ -28,6 +29,7 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 
 const CEO_ALLOWED_PREFIXES = [
   "/dashboard",
+  "/budget-tracker",
   "/overtime-approvals",
   "/attendance-analytics",
   "/payroll-analytics",

@@ -134,25 +134,29 @@ drop policy if exists "budget projects readable by ceo" on public.budget_project
 drop policy if exists "budget projects managed by ceo" on public.budget_projects;
 drop policy if exists "budget items readable by ceo" on public.budget_items;
 drop policy if exists "budget items managed by ceo" on public.budget_items;
+drop policy if exists "budget projects readable by payroll managers and ceo" on public.budget_projects;
+drop policy if exists "budget projects managed by payroll managers and ceo" on public.budget_projects;
+drop policy if exists "budget items readable by payroll managers and ceo" on public.budget_items;
+drop policy if exists "budget items managed by payroll managers and ceo" on public.budget_items;
 
-create policy "budget projects readable by ceo"
+create policy "budget projects readable by payroll managers and ceo"
   on public.budget_projects
   for select
-  using (public.is_ceo());
+  using (public.is_ceo() or public.is_payroll_manager());
 
-create policy "budget projects managed by ceo"
+create policy "budget projects managed by payroll managers and ceo"
   on public.budget_projects
   for all
-  using (public.is_ceo())
-  with check (public.is_ceo());
+  using (public.is_ceo() or public.is_payroll_manager())
+  with check (public.is_ceo() or public.is_payroll_manager());
 
-create policy "budget items readable by ceo"
+create policy "budget items readable by payroll managers and ceo"
   on public.budget_items
   for select
-  using (public.is_ceo());
+  using (public.is_ceo() or public.is_payroll_manager());
 
-create policy "budget items managed by ceo"
+create policy "budget items managed by payroll managers and ceo"
   on public.budget_items
   for all
-  using (public.is_ceo())
-  with check (public.is_ceo());
+  using (public.is_ceo() or public.is_payroll_manager())
+  with check (public.is_ceo() or public.is_payroll_manager());

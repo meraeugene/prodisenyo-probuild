@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRole } from "@/lib/auth";
+import { APP_ROLES, requireRole } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type {
   BudgetItemCategory,
@@ -31,6 +31,16 @@ interface SaveBudgetItemInput {
   estimatedCost?: number;
   actualSpent?: number;
   notes?: string;
+  sortOrder?: number;
+}
+
+interface ReorderBudgetItemsInput {
+  projectId: string;
+  items: Array<{
+    id: string;
+    status: BudgetItemStatus;
+    sortOrder: number;
+  }>;
 }
 
 function normalizeCurrencyCode(value: string | undefined): string {
@@ -65,7 +75,7 @@ async function assertBudgetProjectExists(projectId: string) {
 export async function createBudgetProjectAction(
   input: CreateBudgetProjectInput,
 ) {
-  const { user } = await requireRole("ceo");
+  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
   const name = normalizeText(input.name);
   const database = createSupabaseAdminClient() as any;
 
@@ -100,7 +110,7 @@ export async function createBudgetProjectAction(
 }
 
 export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
-  const { user } = await requireRole("ceo");
+  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
   const database = createSupabaseAdminClient() as any;
   const projectId = normalizeText(input.projectId);
   const name = normalizeText(input.name);
@@ -123,6 +133,7 @@ export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
     estimated_cost: normalizeMoney(input.estimatedCost),
     actual_spent: normalizeMoney(input.actualSpent),
     notes: normalizeText(input.notes) || null,
+    sort_order: Math.max(0, Math.floor(Number(input.sortOrder ?? 0))),
     updated_by: user.id,
   };
 
@@ -176,7 +187,7 @@ export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
 }
 
 export async function deleteBudgetItemAction(itemId: string) {
-  await requireRole("ceo");
+  await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(itemId);
 
@@ -194,7 +205,7 @@ export async function deleteBudgetItemAction(itemId: string) {
 }
 
 export async function deleteBudgetProjectAction(projectId: string) {
-  await requireRole("ceo");
+  await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(projectId);
 
@@ -209,6 +220,51 @@ export async function deleteBudgetProjectAction(projectId: string) {
 
   if (error) {
     throw new Error(`Failed to delete budget project. ${error.message}`);
+  }
+
+  revalidatePath("/budget-tracker");
+}
+
+export async function reorderBudgetItemsAction(input: ReorderBudgetItemsInput) {
+  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  const database = createSupabaseAdminClient() as any;
+  const projectId = normalizeText(input.projectId);
+
+  if (!projectId) {
+    throw new Error("Project is required.");
+  }
+
+  await assertBudgetProjectExists(projectId);
+
+  const items = input.items
+    .map((item) => ({
+      id: normalizeText(item.id),
+      status: item.status,
+      sort_order: Math.max(0, Math.floor(Number(item.sortOrder ?? 0))),
+    }))
+    .filter((item) => item.id);
+
+  if (items.length === 0) {
+    return;
+  }
+
+  const updates = items.map((item) =>
+    database
+      .from("budget_items")
+      .update({
+        status: item.status,
+        sort_order: item.sort_order,
+        updated_by: user.id,
+      })
+      .eq("id", item.id)
+      .eq("project_id", projectId),
+  );
+
+  const results = await Promise.all(updates);
+  const failed = results.find((result: { error?: { message?: string } }) => result.error);
+
+  if (failed?.error) {
+    throw new Error(`Failed to reorder budget items. ${failed.error.message}`);
   }
 
   revalidatePath("/budget-tracker");

@@ -1,7 +1,7 @@
 "use client";
 
 import { saveAttendanceImportAction } from "@/actions/attendance";
-import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
+import DashboardPageHero from "@/components/DashboardPageHero";
 import UploadZone from "@/components/UploadZone";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { useRouter } from "next/navigation";

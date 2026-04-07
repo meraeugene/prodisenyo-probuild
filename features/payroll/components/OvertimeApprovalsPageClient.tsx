@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
+import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollApprovalQueue from "@/features/payroll/components/PayrollApprovalQueue";
 
 export default function OvertimeApprovalsPageClient() {

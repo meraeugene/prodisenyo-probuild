@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardPageHero from "@/components/dashboard/DashboardPageHero";
+import DashboardPageHero from "@/components/DashboardPageHero";
 import AttendanceReviewSection from "@/features/attendance/components/AttendanceReviewSection";
 import { useAppState } from "@/features/app/AppStateProvider";
 

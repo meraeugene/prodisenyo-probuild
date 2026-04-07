@@ -1,92 +1,87 @@
-# Prodisenyo — Automated Payroll System
+# Prodisenyo Payroll
 
-> Next.js 14 · TypeScript · Tailwind CSS · Apple-inspired design
-
-A professional payroll automation tool for accountants. Upload your biometric attendance report (XLS/XLSX/CSV), set pay rates, and instantly generate a complete payroll — no manual lookup per employee.
-
----
+Next.js payroll and operations platform for attendance, payroll processing, analytics, dashboards, and budget tracking.
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Start development server
 npm run dev
-
-# 3. Open in browser
-http://localhost:3000
 ```
 
-## Build for Production
+Open `http://localhost:3000`.
+
+## Build
 
 ```bash
 npm run build
 npm start
 ```
 
----
-
 ## Project Structure
 
-```
-paycalc/
-├── app/
-│   ├── components/
-│   │   ├── StepIndicator.tsx   # 3-step progress nav
-│   │   ├── UploadZone.tsx      # Drag-and-drop file upload
-│   │   ├── RateConfig.tsx      # Pay rate configuration
-│   │   ├── SummaryCards.tsx    # KPI summary cards
-│   │   └── PayrollTable.tsx    # Employee payroll table
-│   ├── lib/
-│   │   ├── payroll.ts          # Calculation engine + exports
-│   │   └── parser.ts           # File parsing (XLS/XLSX/CSV)
-│   ├── types/
-│   │   └── index.ts            # TypeScript interfaces
-│   ├── globals.css             # Global styles
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Main page
-├── tailwind.config.ts
-├── tsconfig.json
-└── next.config.js
+```text
+app/                    Route entry points and layouts
+actions/                Server actions and write operations
+features/               Domain code organized by feature
+components/             Shared cross-feature UI components
+lib/                    App-wide infrastructure and shared helpers
+types/                  Shared application types
+public/                 Static assets
+supabase/               Supabase-related files
 ```
 
----
+## Architecture Rules
 
-## Features
+This repo follows a feature-first structure.
 
-| Feature | Description |
-|---|---|
-| **Auto-parsing** | Reads employee names, dept, days, hours from XLS/XLSX/CSV |
-| **Instant calculation** | Gross = (Rate/Day × Days) + (Rate/Hour × OT Multiplier × OT Hours) |
-| **Per-employee rates** | Override default rates for specific employees |
-| **Inline editing** | Edit hours directly in the table — totals update live |
-| **Search & filter** | By name or department |
-| **Export CSV** | One-click payroll export with all columns |
-| **Print ready** | Clean print stylesheet included |
-| **Client-side only** | Zero server uploads, fully private |
+- Keep route files in `app/` thin.
+- Put feature code in `features/<feature-name>/`.
+- Split feature code into `components/`, `hooks/`, `utils/`, and `types.ts` when needed.
+- Put privileged mutations and writes in `actions/*.ts`.
+- Keep shared UI in `components/`.
+- Keep cross-feature infrastructure and helpers in `lib/`.
+- Keep shared types in `types/`.
 
----
+Preferred feature layout:
 
-## Pay Formula
-
-```
-Day Pay   = Rate/Day × Days Present
-OT Pay    = Rate/Hour × OT Multiplier × OT Hours
-Gross Pay = Day Pay + OT Pay
+```text
+features/<feature-name>/
+  components/
+  hooks/
+  utils/
+  types.ts
 ```
 
----
+## Naming Conventions
 
-## Upgrading the Parser
+- React component files: PascalCase
+- Hook files: `use...`
+- Utility files: camelCase
+- Action files: camelCase by domain
+- Feature folder names: kebab-case
 
-The parser in `app/lib/parser.ts` auto-detects column headers. For your specific biometric system export format, update `extractEmployeesFromRows()` to map the exact column positions for Name, Days, Hours, and OT Hours.
+Examples from this repo:
+
+- `features/dashboard/hooks/useHistoricalDashboardData.ts`
+- `features/analytics/utils/analyticsSelectors.ts`
+- `actions/budgetTracker.ts`
+
+## Development Notes
+
+- Prefer adding new UI and logic inside the owning feature instead of placing everything directly in `app/`.
+- If a page or client component gets too large, split UI into `components/`, stateful logic into `hooks/`, pure helpers into `utils/`, and writes into `actions/`.
+- Avoid putting database write logic directly inside React components.
+
+## Codex Repo Rules
+
+Project-specific Codex instructions live in [`AGENTS.md`](./AGENTS.md).
+
+If you want Codex to follow this structure consistently in this folder, keep `AGENTS.md` up to date whenever the architecture changes.
 
 ## Tech Stack
 
-- **Next.js 14** (App Router)
-- **TypeScript** (strict mode)
-- **Tailwind CSS** (custom Apple design tokens)
-- **SheetJS (xlsx)** for spreadsheet parsing
-- **Lucide React** for icons
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Supabase

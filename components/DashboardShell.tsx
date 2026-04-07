@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import SignOutButton from "@/components/auth/SignOutButton";
-import ProfileAvatar from "@/components/dashboard/ProfileAvatar";
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
@@ -34,11 +34,6 @@ const PRIMARY_NAV_ITEMS = [
 
 const CEO_GENERAL_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  {
-    href: "/budget-tracker",
-    label: "Budget Tracker",
-    icon: Receipt,
-  },
   {
     href: "/payroll-reports",
     label: "Payroll Reports",
@@ -58,6 +53,10 @@ const GENERAL_WORKFLOW_ITEMS = [
     icon: UserRoundSearch,
   },
   { href: "/generate-payroll", label: "Generate Payroll", icon: Wallet },
+] as const;
+
+const BUDGET_NAV_ITEMS = [
+  { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
 ] as const;
 
 type ProfileCardData = Pick<
@@ -273,106 +272,73 @@ export default function DashboardShell({
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-4 pb-3 pt-5">
-            {!collapsed ? (
-              <div className="px-3 pb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                  General
-                </p>
-              </div>
-            ) : null}
-
             <nav className="space-y-3">
-              {!isCeo
-                ? PRIMARY_NAV_ITEMS.map((item) => {
-                    const active = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
+              {!collapsed ? (
+                <div className="px-3 pb-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                    {isCeo ? "General" : "Attendance"}
+                  </p>
+                </div>
+              ) : null}
+
+              {(!isCeo ? PRIMARY_NAV_ITEMS : CEO_GENERAL_ITEMS).map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                      collapsed && "justify-center px-2.5",
+                      active
+                        ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                        : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                        active
+                          ? "bg-[#1f6a37] text-white"
+                          : "text-apple-smoke group-hover:text-apple-charcoal",
+                      )}
+                    >
+                      <item.icon size={15} />
+                    </div>
+                    {!collapsed ? (
+                      <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
+                        {item.label}
+                      </span>
+                    ) : null}
+                    {item.href === "/overtime-approvals" &&
+                    pendingOvertimeCount > 0 ? (
+                      <span
                         className={cn(
-                          "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                          collapsed && "justify-center px-2.5",
-                          active
-                            ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                            : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
                         )}
                       >
-                        <div
-                          className={cn(
-                            "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                            active
-                              ? "bg-[#1f6a37] text-white"
-                              : "text-apple-smoke group-hover:text-apple-charcoal",
-                          )}
-                        >
-                          <item.icon size={15} />
-                        </div>
-                        {!collapsed ? (
-                          <span className="font-medium">{item.label}</span>
-                        ) : null}
-                      </Link>
-                    );
-                  })
-                : CEO_GENERAL_ITEMS.map((item) => {
-                    const active = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
+                        {pendingOvertimeCount > 99 ? "99+" : pendingOvertimeCount}
+                      </span>
+                    ) : null}
+                    {item.href === "/payroll-reports" &&
+                    pendingPayrollReportCount > 0 ? (
+                      <span
                         className={cn(
-                          "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                          collapsed && "justify-center px-2.5",
-                          active
-                            ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                            : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
                         )}
                       >
-                        <div
-                          className={cn(
-                            "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                            active
-                              ? "bg-[#1f6a37] text-white"
-                              : "text-apple-smoke group-hover:text-apple-charcoal",
-                          )}
-                        >
-                          <item.icon size={15} />
-                        </div>
-                        {!collapsed ? (
-                          <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
-                            {item.label}
-                          </span>
-                        ) : null}
-                        {item.href === "/overtime-approvals" &&
-                        pendingOvertimeCount > 0 ? (
-                          <span
-                            className={cn(
-                              "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
-                              collapsed ? "absolute -right-1 -top-1" : "ml-1",
-                            )}
-                          >
-                            {pendingOvertimeCount > 99
-                              ? "99+"
-                              : pendingOvertimeCount}
-                          </span>
-                        ) : null}
-                        {item.href === "/payroll-reports" &&
-                        pendingPayrollReportCount > 0 ? (
-                          <span
-                            className={cn(
-                              "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
-                              collapsed ? "absolute -right-1 -top-1" : "ml-1",
-                            )}
-                          >
-                            {pendingPayrollReportCount > 99
-                              ? "99+"
-                              : pendingPayrollReportCount}
-                          </span>
-                        ) : null}
-                      </Link>
-                    );
-                  })}
+                        {pendingPayrollReportCount > 99
+                          ? "99+"
+                          : pendingPayrollReportCount}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
 
               <AnimatePresence initial={false}>
                 {!isCeo && canSeeWorkflowNav ? (
@@ -384,6 +350,13 @@ export default function DashboardShell({
                     transition={{ duration: 0.28, ease: "easeOut" }}
                     className="space-y-3 overflow-hidden"
                   >
+                    {!collapsed ? (
+                      <div className="px-3 pb-1 pt-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                          Payroll
+                        </p>
+                      </div>
+                    ) : null}
                     {GENERAL_WORKFLOW_ITEMS.map((item, index) => {
                       const active = pathname === item.href;
                       return (
@@ -400,6 +373,7 @@ export default function DashboardShell({
                         >
                           <Link
                             href={item.href}
+                            title={collapsed ? item.label : undefined}
                             onClick={() => setOpen(false)}
                             className={cn(
                               "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
@@ -429,6 +403,47 @@ export default function DashboardShell({
                   </motion.div>
                 ) : null}
               </AnimatePresence>
+
+              {!collapsed ? (
+                <div className="px-3 pb-1 pt-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                    Budget
+                  </p>
+                </div>
+              ) : null}
+
+              {BUDGET_NAV_ITEMS.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                      collapsed && "justify-center px-2.5",
+                      active
+                        ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                        : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                        active
+                          ? "bg-[#1f6a37] text-white"
+                          : "text-apple-smoke group-hover:text-apple-charcoal",
+                      )}
+                    >
+                      <item.icon size={15} />
+                    </div>
+                    {!collapsed ? (
+                      <span className="font-medium">{item.label}</span>
+                    ) : null}
+                  </Link>
+                );
+              })}
             </nav>
 
             <div className="mt-auto space-y-1 pt-3">
@@ -441,6 +456,7 @@ export default function DashboardShell({
               ) : null}
               <Link
                 href="/settings"
+                title={collapsed ? "Settings" : undefined}
                 className={cn(
                   "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
                   collapsed && "justify-center px-2.5",
@@ -463,11 +479,28 @@ export default function DashboardShell({
               </Link>
 
               <div className="pt-2">
-                <SignOutButton variant="sidebar" collapsed={collapsed} />
+                <SignOutButton
+                  variant="sidebar"
+                  collapsed={collapsed}
+                  title={collapsed ? "Logout" : undefined}
+                />
               </div>
 
               <div className="pt-4">
-                <div className="rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]">
+                <div
+                  title={
+                    collapsed
+                      ? profile?.full_name?.trim() ||
+                        profile?.username ||
+                        "Signed-in user"
+                      : undefined
+                  }
+                  className={cn(
+                    collapsed
+                      ? "flex justify-center"
+                      : "rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]",
+                  )}
+                >
                   <div
                     className={cn(
                       "flex items-center gap-3",
@@ -479,7 +512,7 @@ export default function DashboardShell({
                         profile?.avatar_path,
                       )}
                       name={profile?.full_name?.trim() || profile?.username}
-                      sizeClassName="h-10 w-10"
+                      sizeClassName={collapsed ? "h-8 w-8" : "h-10 w-10"}
                       textClassName="text-xs"
                     />
                     {!collapsed ? (

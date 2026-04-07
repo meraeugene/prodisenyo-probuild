@@ -1,6 +1,6 @@
 import { getCurrentProfile } from "@/lib/auth";
-import DashboardOverlays from "@/components/dashboard/DashboardOverlays";
-import DashboardShell from "@/components/dashboard/DashboardShell";
+import DashboardOverlays from "@/components/DashboardOverlays";
+import DashboardShell from "@/components/DashboardShell";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({

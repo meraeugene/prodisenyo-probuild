@@ -4,20 +4,24 @@ import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { signOutAction } from "@/actions/auth";
+import { useAppState } from "@/features/app/AppStateProvider";
 
 interface SignOutButtonProps {
   variant?: "sidebar" | "default";
   collapsed?: boolean;
+  title?: string;
 }
 
 function SignOutButtonContent({
   variant,
   submitting,
   collapsed = false,
+  title,
 }: {
   variant: "sidebar" | "default";
   submitting: boolean;
   collapsed?: boolean;
+  title?: string;
 }) {
   const { pending } = useFormStatus();
   const busy = pending || submitting;
@@ -27,6 +31,7 @@ function SignOutButtonContent({
       <button
         type="submit"
         disabled={busy}
+        title={title}
         className={`group relative flex w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${
           collapsed ? "justify-center px-2.5" : ""
         }`}
@@ -64,13 +69,17 @@ function SignOutButtonContent({
 export default function SignOutButton({
   variant = "default",
   collapsed = false,
+  title,
 }: SignOutButtonProps) {
   const [submitting, setSubmitting] = useState(false);
+  const { handleReset } = useAppState();
 
   return (
     <form
+      className="w-full"
       action={signOutAction}
       onSubmitCapture={() => {
+        handleReset();
         setSubmitting(true);
       }}
     >
@@ -78,6 +87,7 @@ export default function SignOutButton({
         variant={variant}
         submitting={submitting}
         collapsed={collapsed}
+        title={title}
       />
     </form>
   );
