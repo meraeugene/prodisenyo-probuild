@@ -1,12 +1,16 @@
 "use client";
 
 function SkeletonBlock({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-apple-mist/70 ${className}`} />;
+  return (
+    <div
+      className={`animate-pulse rounded-2xl bg-apple-mist/70 ${className}`}
+    />
+  );
 }
 
 export function DashboardOverviewSkeleton() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 p-6">
       <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-3">

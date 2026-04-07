@@ -148,8 +148,10 @@ function round2(value: number): number {
 }
 
 function statusBadgeClass(status: PayrollRunStatus): string {
-  if (status === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (status === "submitted") return "bg-amber-50 text-amber-700 border-amber-200";
+  if (status === "approved")
+    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (status === "submitted")
+    return "bg-amber-50 text-amber-700 border-amber-200";
   if (status === "draft") return "bg-amber-50 text-amber-700 border-amber-200";
   return "bg-rose-50 text-rose-700 border-rose-200";
 }
@@ -192,18 +194,26 @@ function formatCompactValue(value: number): string {
 function formatLogDate(value: string): string {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return value;
-  return date.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function formatLogTime(value: string | null): string {
   if (!value) return "--";
   const date = new Date(`1970-01-01T${value}`);
   if (!Number.isFinite(date.getTime())) return value;
-  return date.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
+  return date.toLocaleTimeString("en-PH", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function formatPeriodLabel(report: PayrollRunRow): string {
-  if (report.period_start && report.period_end) return `${report.period_start} to ${report.period_end}`;
+  if (report.period_start && report.period_end)
+    return `${report.period_start} to ${report.period_end}`;
   return report.period_label || "Unknown period";
 }
 
@@ -245,24 +255,25 @@ function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
   const map = new Map<string, DailyLogRow>();
 
   for (const log of logs) {
-    const site = extractSiteName(log.site_name ?? "") || log.site_name?.trim() || "Unknown Site";
+    const site =
+      extractSiteName(log.site_name ?? "") ||
+      log.site_name?.trim() ||
+      "Unknown Site";
     const employee = log.employee_name?.trim() || "Unknown Employee";
     const employeeKey = normalizeEmployeeNameKey(employee);
     const key = `${employeeKey}|||${log.log_date}|||${site.toLowerCase()}`;
-    const row =
-      map.get(key) ??
-      {
-        date: log.log_date,
-        employee,
-        time1In: "",
-        time1Out: "",
-        time2In: "",
-        time2Out: "",
-        otIn: "",
-        otOut: "",
-        hours: 0,
-        site,
-      };
+    const row = map.get(key) ?? {
+      date: log.log_date,
+      employee,
+      time1In: "",
+      time1Out: "",
+      time2In: "",
+      time2Out: "",
+      otIn: "",
+      otOut: "",
+      hours: 0,
+      site,
+    };
 
     const currentMinutes = toMinutes(log.log_time);
     if (employee.length > row.employee.length) {
@@ -272,13 +283,15 @@ function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
     if (log.log_source === "Time1") {
       if (log.log_type === "IN") {
         row.time1In =
-          !row.time1In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.time1In))
-            ? log.log_time ?? ""
+          !row.time1In ||
+          (currentMinutes >= 0 && currentMinutes < toMinutes(row.time1In))
+            ? (log.log_time ?? "")
             : row.time1In;
       } else {
         row.time1Out =
-          !row.time1Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.time1Out))
-            ? log.log_time ?? ""
+          !row.time1Out ||
+          (currentMinutes >= 0 && currentMinutes > toMinutes(row.time1Out))
+            ? (log.log_time ?? "")
             : row.time1Out;
       }
     }
@@ -286,13 +299,15 @@ function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
     if (log.log_source === "Time2") {
       if (log.log_type === "IN") {
         row.time2In =
-          !row.time2In || (currentMinutes >= 0 && currentMinutes < toMinutes(row.time2In))
-            ? log.log_time ?? ""
+          !row.time2In ||
+          (currentMinutes >= 0 && currentMinutes < toMinutes(row.time2In))
+            ? (log.log_time ?? "")
             : row.time2In;
       } else {
         row.time2Out =
-          !row.time2Out || (currentMinutes >= 0 && currentMinutes > toMinutes(row.time2Out))
-            ? log.log_time ?? ""
+          !row.time2Out ||
+          (currentMinutes >= 0 && currentMinutes > toMinutes(row.time2Out))
+            ? (log.log_time ?? "")
             : row.time2Out;
       }
     }
@@ -300,13 +315,15 @@ function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
     if (log.log_source === "OT") {
       if (log.log_type === "IN") {
         row.otIn =
-          !row.otIn || (currentMinutes >= 0 && currentMinutes < toMinutes(row.otIn))
-            ? log.log_time ?? ""
+          !row.otIn ||
+          (currentMinutes >= 0 && currentMinutes < toMinutes(row.otIn))
+            ? (log.log_time ?? "")
             : row.otIn;
       } else {
         row.otOut =
-          !row.otOut || (currentMinutes >= 0 && currentMinutes > toMinutes(row.otOut))
-            ? log.log_time ?? ""
+          !row.otOut ||
+          (currentMinutes >= 0 && currentMinutes > toMinutes(row.otOut))
+            ? (log.log_time ?? "")
             : row.otOut;
       }
     }
@@ -332,7 +349,9 @@ function buildPayrollStyleDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
     });
 }
 
-function buildSiteSummaries(payrollItems: PayrollRunItemRow[]): ReportSiteSummary[] {
+function buildSiteSummaries(
+  payrollItems: PayrollRunItemRow[],
+): ReportSiteSummary[] {
   const siteMap = new Map<
     string,
     { employeeIds: Set<string>; payroll: number; hours: number }
@@ -340,17 +359,23 @@ function buildSiteSummaries(payrollItems: PayrollRunItemRow[]): ReportSiteSummar
 
   for (const item of payrollItems) {
     const siteNames = splitSiteNames(item.site_name);
-    const normalizedSiteNames = siteNames.length > 0 ? siteNames : ["Unknown Site"];
-    const payrollShare = normalizedSiteNames.length > 0 ? item.total_pay / normalizedSiteNames.length : item.total_pay;
-    const hoursShare = normalizedSiteNames.length > 0 ? item.hours_worked / normalizedSiteNames.length : item.hours_worked;
+    const normalizedSiteNames =
+      siteNames.length > 0 ? siteNames : ["Unknown Site"];
+    const payrollShare =
+      normalizedSiteNames.length > 0
+        ? item.total_pay / normalizedSiteNames.length
+        : item.total_pay;
+    const hoursShare =
+      normalizedSiteNames.length > 0
+        ? item.hours_worked / normalizedSiteNames.length
+        : item.hours_worked;
 
     for (const siteName of normalizedSiteNames) {
-      const existing =
-        siteMap.get(siteName) ?? {
-          employeeIds: new Set<string>(),
-          payroll: 0,
-          hours: 0,
-        };
+      const existing = siteMap.get(siteName) ?? {
+        employeeIds: new Set<string>(),
+        payroll: 0,
+        hours: 0,
+      };
       existing.employeeIds.add(item.id);
       existing.payroll = round2(existing.payroll + payrollShare);
       existing.hours = round2(existing.hours + hoursShare);
@@ -368,22 +393,24 @@ function buildSiteSummaries(payrollItems: PayrollRunItemRow[]): ReportSiteSummar
     .sort((a, b) => b.payroll - a.payroll);
 }
 
-function buildDailyTrend(dailyTotals: PayrollRunDailyTotalRow[]): ReportTrendPoint[] {
+function buildDailyTrend(
+  dailyTotals: PayrollRunDailyTotalRow[],
+): ReportTrendPoint[] {
   const dateMap = new Map<
     string,
     { paid: number; hours: number; employeeIds: Set<string> }
   >();
 
   for (const row of dailyTotals) {
-    const existing =
-      dateMap.get(row.payout_date) ?? {
-        paid: 0,
-        hours: 0,
-        employeeIds: new Set<string>(),
-      };
+    const existing = dateMap.get(row.payout_date) ?? {
+      paid: 0,
+      hours: 0,
+      employeeIds: new Set<string>(),
+    };
     existing.paid = round2(existing.paid + (row.total_pay ?? 0));
     existing.hours = round2(existing.hours + (row.hours_worked ?? 0));
-    if (row.payroll_run_item_id) existing.employeeIds.add(row.payroll_run_item_id);
+    if (row.payroll_run_item_id)
+      existing.employeeIds.add(row.payroll_run_item_id);
     dateMap.set(row.payout_date, existing);
   }
 
@@ -398,8 +425,17 @@ function buildDailyTrend(dailyTotals: PayrollRunDailyTotalRow[]): ReportTrendPoi
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function buildSiteDistribution(payrollItems: PayrollRunItemRow[]): ReportCompositionDatum[] {
-  const colors = ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80"];
+function buildSiteDistribution(
+  payrollItems: PayrollRunItemRow[],
+): ReportCompositionDatum[] {
+  const colors = [
+    "#14532d",
+    "#166534",
+    "#15803d",
+    "#16a34a",
+    "#22c55e",
+    "#4ade80",
+  ];
   return buildSiteSummaries(payrollItems).map((item, index) => ({
     name: item.siteName,
     value: item.payroll,
@@ -454,7 +490,12 @@ function EmployeeLogsModal({
     [item, report],
   );
   const dailyRows = useMemo(
-    () => buildEditingPayrollLogs(scopedLogs, payrollStyleRow, formatPeriodLabel(report)),
+    () =>
+      buildEditingPayrollLogs(
+        scopedLogs,
+        payrollStyleRow,
+        formatPeriodLabel(report),
+      ),
     [scopedLogs, payrollStyleRow, report],
   );
   const scopedDailyTotals = useMemo(() => {
@@ -477,8 +518,12 @@ function EmployeeLogsModal({
   }, [dailyRows, item.id, item.rate_per_day]);
 
   const attendanceDays = dailyRows.filter((row) => row.hours > 0).length;
-  const inLogs = dailyRows.filter((row) => row.time1In || row.time2In || row.otIn).length;
-  const outLogs = dailyRows.filter((row) => row.time1Out || row.time2Out || row.otOut).length;
+  const inLogs = dailyRows.filter(
+    (row) => row.time1In || row.time2In || row.otIn,
+  ).length;
+  const outLogs = dailyRows.filter(
+    (row) => row.time1Out || row.time2Out || row.otOut,
+  ).length;
   const otLogs = dailyRows.filter((row) => row.otIn || row.otOut).length;
 
   return (
@@ -487,9 +532,16 @@ function EmployeeLogsModal({
         <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">Calculation Details</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{item.employee_name}</h2>
-              <p className="mt-2 text-sm text-white/80">{item.role_code} | {item.site_name} | {formatPeriodLabel(report)}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                Calculation Details
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                {item.employee_name}
+              </h2>
+              <p className="mt-2 text-sm text-white/80">
+                {item.role_code} | {item.site_name} |{" "}
+                {formatPeriodLabel(report)}
+              </p>
             </div>
             <button
               type="button"
@@ -504,31 +556,70 @@ function EmployeeLogsModal({
 
         <div className="min-h-0 space-y-5 overflow-y-auto px-6 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard label="Days Worked" value={item.days_worked.toLocaleString("en-PH")} />
-            <SummaryCard label="Hours Worked" value={item.hours_worked.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-            <SummaryCard label="Overtime Hours" value={item.overtime_hours.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} />
-            <SummaryCard label="Total Paid" value={`${PESO_SIGN} ${formatPayrollNumber(item.total_pay)}`} />
+            <SummaryCard
+              label="Days Worked"
+              value={item.days_worked.toLocaleString("en-PH")}
+            />
+            <SummaryCard
+              label="Hours Worked"
+              value={item.hours_worked.toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            />
+            <SummaryCard
+              label="Overtime Hours"
+              value={item.overtime_hours.toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            />
+            <SummaryCard
+              label="Total Paid"
+              value={`${PESO_SIGN} ${formatPayrollNumber(item.total_pay)}`}
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
               <div className="border-b border-apple-mist px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Payroll Analytics</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                  Payroll Analytics
+                </p>
               </div>
               <table className="w-full text-xs">
                 <tbody className="divide-y divide-apple-mist">
-                  <MetricRow label="Regular Pay" value={`${PESO_SIGN} ${formatPayrollNumber(item.regular_pay)}`} />
-                  <MetricRow label="Overtime Pay" value={`${PESO_SIGN} ${formatPayrollNumber(item.overtime_pay)}`} />
-                  <MetricRow label="Holiday Pay" value={`${PESO_SIGN} ${formatPayrollNumber(item.holiday_pay)}`} />
-                  <MetricRow label="Deductions" value={`${PESO_SIGN} ${formatPayrollNumber(item.deductions_total)}`} valueClass="text-rose-700" />
-                  <MetricRow label="Net Paid" value={`${PESO_SIGN} ${formatPayrollNumber(item.total_pay)}`} valueClass="font-bold" />
+                  <MetricRow
+                    label="Regular Pay"
+                    value={`${PESO_SIGN} ${formatPayrollNumber(item.regular_pay)}`}
+                  />
+                  <MetricRow
+                    label="Overtime Pay"
+                    value={`${PESO_SIGN} ${formatPayrollNumber(item.overtime_pay)}`}
+                  />
+                  <MetricRow
+                    label="Holiday Pay"
+                    value={`${PESO_SIGN} ${formatPayrollNumber(item.holiday_pay)}`}
+                  />
+                  <MetricRow
+                    label="Deductions"
+                    value={`${PESO_SIGN} ${formatPayrollNumber(item.deductions_total)}`}
+                    valueClass="text-rose-700"
+                  />
+                  <MetricRow
+                    label="Net Paid"
+                    value={`${PESO_SIGN} ${formatPayrollNumber(item.total_pay)}`}
+                    valueClass="font-bold"
+                  />
                 </tbody>
               </table>
             </div>
 
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
               <div className="border-b border-apple-mist px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Attendance Analytics</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                  Attendance Analytics
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-3 p-4 ">
                 <SummaryChip label="Logged Days" value={attendanceDays} />
@@ -542,34 +633,73 @@ function EmployeeLogsModal({
           <div className="space-y-4">
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
               <div className="border-b border-apple-mist px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">All Report Logs</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                  All Report Logs
+                </p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-[rgb(var(--apple-snow))]">
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Date</th>
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Site</th>
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Time1</th>
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Time2</th>
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">OT</th>
-                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Hours</th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        Date
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        Site
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        Time1
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        Time2
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        OT
+                      </th>
+                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                        Hours
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-apple-mist">
                     {dailyRows.length > 0 ? (
                       dailyRows.map((row) => (
                         <tr key={`${row.date}|||${row.site}`}>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogDate(row.date)}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{row.site}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.time1In || null)} - {formatLogTime(row.time1Out || null)}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.time2In || null)} - {formatLogTime(row.time2Out || null)}</td>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogTime(row.otIn || null)} - {formatLogTime(row.otOut || null)}</td>
-                          <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{row.hours.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {formatLogDate(row.date)}
+                          </td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {row.site}
+                          </td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {formatLogTime(row.time1In || null)} -{" "}
+                            {formatLogTime(row.time1Out || null)}
+                          </td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {formatLogTime(row.time2In || null)} -{" "}
+                            {formatLogTime(row.time2Out || null)}
+                          </td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {formatLogTime(row.otIn || null)} -{" "}
+                            {formatLogTime(row.otOut || null)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">
+                            {row.hours.toLocaleString("en-PH", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
                         </tr>
                       ))
                     ) : (
-                      <tr><td colSpan={6} className="px-3 py-4 text-center text-apple-steel">No attendance logs found for this employee.</td></tr>
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-3 py-4 text-center text-apple-steel"
+                        >
+                          No attendance logs found for this employee.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
@@ -578,28 +708,53 @@ function EmployeeLogsModal({
 
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
               <div className="border-b border-apple-mist px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Daily Paid Totals</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                  Daily Paid Totals
+                </p>
               </div>
               <div className="max-h-[300px] overflow-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-[rgb(var(--apple-snow))]">
-                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Date</th>
-                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Hours</th>
-                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Paid</th>
+                      <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                        Date
+                      </th>
+                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                        Hours
+                      </th>
+                      <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                        Paid
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-apple-mist">
                     {scopedDailyTotals.length > 0 ? (
                       scopedDailyTotals.map((row) => (
                         <tr key={row.id}>
-                          <td className="px-3 py-2 text-apple-smoke">{formatLogDate(row.payout_date)}</td>
-                          <td className="px-3 py-2 text-right text-apple-smoke">{(row.hours_worked ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{PESO_SIGN} {formatPayrollNumber(row.total_pay ?? 0)}</td>
+                          <td className="px-3 py-2 text-apple-smoke">
+                            {formatLogDate(row.payout_date)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-apple-smoke">
+                            {(row.hours_worked ?? 0).toLocaleString("en-PH", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">
+                            {PESO_SIGN}{" "}
+                            {formatPayrollNumber(row.total_pay ?? 0)}
+                          </td>
                         </tr>
                       ))
                     ) : (
-                      <tr><td colSpan={3} className="px-3 py-4 text-center text-apple-steel">No daily paid totals found for this employee.</td></tr>
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="px-3 py-4 text-center text-apple-steel"
+                        >
+                          No daily paid totals found for this employee.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
@@ -615,7 +770,9 @@ function EmployeeLogsModal({
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-emerald-400/25 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
+        {label}
+      </p>
       <p className="mt-1 text-sm font-semibold text-white">{value}</p>
     </div>
   );
@@ -624,17 +781,36 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 function SummaryChip({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-emerald-400/25 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-white">{value.toLocaleString("en-PH")}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-white">
+        {value.toLocaleString("en-PH")}
+      </p>
     </div>
   );
 }
 
-function MetricRow({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+function MetricRow({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
   return (
     <tr>
       <td className="px-4 py-2 text-apple-steel">{label}</td>
-      <td className={cn("px-4 py-2 text-right font-semibold text-apple-charcoal", valueClass)}>{value}</td>
+      <td
+        className={cn(
+          "px-4 py-2 text-right font-semibold text-apple-charcoal",
+          valueClass,
+        )}
+      >
+        {value}
+      </td>
     </tr>
   );
 }
@@ -659,18 +835,24 @@ function ReportAnalyticsTooltip({
       <div className="space-y-1">
         {payload.map((entry, index) => {
           const numericValue =
-            typeof entry.value === "number" ? entry.value : Number(entry.value ?? 0);
+            typeof entry.value === "number"
+              ? entry.value
+              : Number(entry.value ?? 0);
           const name = String(entry.name ?? entry.dataKey ?? "Value");
 
           return (
             <div key={`${name}-${index}`} className="flex items-center gap-2">
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: entry.color ?? "rgb(var(--theme-chart-2))" }}
+                style={{
+                  backgroundColor: entry.color ?? "rgb(var(--theme-chart-2))",
+                }}
               />
               <span className="text-[11px] text-apple-smoke">{name}</span>
               <span className="ml-auto text-[12px] font-semibold text-apple-charcoal">
-                {valueFormatter ? valueFormatter(numericValue, name) : formatPayrollNumber(numericValue)}
+                {valueFormatter
+                  ? valueFormatter(numericValue, name)
+                  : formatPayrollNumber(numericValue)}
               </span>
             </div>
           );
@@ -757,20 +939,22 @@ function PayrollReportModal({
   const payrollItems = details?.payrollItems ?? EMPTY_PAYROLL_ITEMS;
   const attendanceLogs = details?.attendanceLogs ?? EMPTY_ATTENDANCE_LOGS;
   const dailyTotals = details?.dailyTotals ?? EMPTY_DAILY_TOTALS;
-  const activeItem = payrollItems.find((item) => item.id === activeItemId) ?? null;
+  const activeItem =
+    payrollItems.find((item) => item.id === activeItemId) ?? null;
 
   const siteOptions = useMemo(
     () =>
-      Array.from(new Set(payrollItems.flatMap((item) => splitSiteNames(item.site_name)))).sort((a, b) =>
-        a.localeCompare(b),
-      ),
+      Array.from(
+        new Set(payrollItems.flatMap((item) => splitSiteNames(item.site_name))),
+      ).sort((a, b) => a.localeCompare(b)),
     [payrollItems],
   );
   const filteredPayrollItems = useMemo(() => {
     const searchTerm = normalizeKey(search);
     return payrollItems.filter((item) => {
       const matchesSearch =
-        searchTerm.length === 0 || normalizeKey(item.employee_name).includes(searchTerm);
+        searchTerm.length === 0 ||
+        normalizeKey(item.employee_name).includes(searchTerm);
       const matchesSite =
         siteFilter === "all" ||
         splitSiteNames(item.site_name).some(
@@ -779,23 +963,34 @@ function PayrollReportModal({
       return matchesSearch && matchesSite;
     });
   }, [payrollItems, search, siteFilter]);
-  const siteSummaries = useMemo(() => buildSiteSummaries(payrollItems), [payrollItems]);
+  const siteSummaries = useMemo(
+    () => buildSiteSummaries(payrollItems),
+    [payrollItems],
+  );
   const dailyTrend = useMemo(() => buildDailyTrend(dailyTotals), [dailyTotals]);
-  const siteDistribution = useMemo(() => buildSiteDistribution(payrollItems), [payrollItems]);
+  const siteDistribution = useMemo(
+    () => buildSiteDistribution(payrollItems),
+    [payrollItems],
+  );
   const totalPayroll = useMemo(
     () => round2(payrollItems.reduce((sum, item) => sum + item.total_pay, 0)),
     [payrollItems],
   );
   const filteredPayrollTotal = useMemo(
-    () => round2(filteredPayrollItems.reduce((sum, item) => sum + item.total_pay, 0)),
+    () =>
+      round2(
+        filteredPayrollItems.reduce((sum, item) => sum + item.total_pay, 0),
+      ),
     [filteredPayrollItems],
   );
   const totalHoursWorked = useMemo(
-    () => round2(payrollItems.reduce((sum, item) => sum + item.hours_worked, 0)),
+    () =>
+      round2(payrollItems.reduce((sum, item) => sum + item.hours_worked, 0)),
     [payrollItems],
   );
   const totalOvertimeHours = useMemo(
-    () => round2(payrollItems.reduce((sum, item) => sum + item.overtime_hours, 0)),
+    () =>
+      round2(payrollItems.reduce((sum, item) => sum + item.overtime_hours, 0)),
     [payrollItems],
   );
 
@@ -840,7 +1035,9 @@ function PayrollReportModal({
               <ReportDashboardSkeleton />
             ) : details.error ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-                <p className="text-sm font-semibold text-red-700">{details.error}</p>
+                <p className="text-sm font-semibold text-red-700">
+                  {details.error}
+                </p>
                 <button
                   type="button"
                   onClick={onRefresh}
@@ -853,38 +1050,125 @@ function PayrollReportModal({
             ) : (
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                  <ReportStatCard label="Employees" value={payrollItems.length.toLocaleString("en-PH")} helper="Included in this submitted report" />
-                  <ReportStatCard label="Total Payroll" value={formatPeso(totalPayroll)} helper="Submitted payroll amount" />
-                  <ReportStatCard label="Hours Worked" value={totalHoursWorked.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} helper="Total payroll hours" />
-                  <ReportStatCard label="Overtime Hours" value={totalOvertimeHours.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} helper="Approved overtime included" />
-                  <ReportStatCard label="Attendance Logs" value={attendanceLogs.length.toLocaleString("en-PH")} helper="All report log rows loaded" />
+                  <ReportStatCard
+                    label="Employees"
+                    value={payrollItems.length.toLocaleString("en-PH")}
+                    helper="Included in this submitted report"
+                  />
+                  <ReportStatCard
+                    label="Total Payroll"
+                    value={formatPeso(totalPayroll)}
+                    helper="Submitted payroll amount"
+                  />
+                  <ReportStatCard
+                    label="Hours Worked"
+                    value={totalHoursWorked.toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    helper="Total payroll hours"
+                  />
+                  <ReportStatCard
+                    label="Overtime Hours"
+                    value={totalOvertimeHours.toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    helper="Approved overtime included"
+                  />
+                  <ReportStatCard
+                    label="Attendance Logs"
+                    value={attendanceLogs.length.toLocaleString("en-PH")}
+                    helper="All report log rows loaded"
+                  />
                 </div>
 
                 <div className="space-y-4">
                   <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
                     <div className="border-b border-apple-mist px-4 py-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Daily Payroll Trend</p>
-                      <p className="mt-1 text-xs text-apple-steel">Paid totals and worked hours across this submitted report.</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                        Daily Payroll Trend
+                      </p>
+                      <p className="mt-1 text-xs text-apple-steel">
+                        Paid totals and worked hours across this submitted
+                        report.
+                      </p>
                     </div>
                     <div className="h-[320px] px-3 py-4">
                       {dailyTrend.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={dailyTrend} margin={{ top: 14, right: 16, left: 18, bottom: 0 }}>
+                          <AreaChart
+                            data={dailyTrend}
+                            margin={{ top: 14, right: 16, left: 18, bottom: 0 }}
+                          >
                             <defs>
-                              <linearGradient id="payrollReportTrendFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.26} />
-                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0.03} />
+                              <linearGradient
+                                id="payrollReportTrendFill"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="#22c55e"
+                                  stopOpacity={0.26}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="#22c55e"
+                                  stopOpacity={0.03}
+                                />
                               </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#d3eee0" />
-                            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#5f6875", fontSize: 11 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#5f6875", fontSize: 11 }} tickFormatter={(value) => formatCompactValue(Number(value))} />
-                            <Tooltip content={(props) => <ReportAnalyticsTooltip {...props} valueFormatter={(value) => formatPeso(value)} />} />
-                            <Area type="monotone" dataKey="paid" name="Paid" stroke="#16a34a" strokeWidth={3.5} fill="url(#payrollReportTrendFill)" dot={false} activeDot={{ r: 5, fill: "#16a34a", stroke: "white", strokeWidth: 2 }} />
+                            <CartesianGrid
+                              strokeDasharray="4 4"
+                              vertical={false}
+                              stroke="#d3eee0"
+                            />
+                            <XAxis
+                              dataKey="label"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#5f6875", fontSize: 11 }}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#5f6875", fontSize: 11 }}
+                              tickFormatter={(value) =>
+                                formatCompactValue(Number(value))
+                              }
+                            />
+                            <Tooltip
+                              content={(props) => (
+                                <ReportAnalyticsTooltip
+                                  {...props}
+                                  valueFormatter={(value) => formatPeso(value)}
+                                />
+                              )}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="paid"
+                              name="Paid"
+                              stroke="#16a34a"
+                              strokeWidth={3.5}
+                              fill="url(#payrollReportTrendFill)"
+                              dot={false}
+                              activeDot={{
+                                r: 5,
+                                fill: "#16a34a",
+                                stroke: "white",
+                                strokeWidth: 2,
+                              }}
+                            />
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm text-apple-steel">No daily totals were saved for this report yet.</div>
+                        <div className="flex h-full items-center justify-center text-sm text-apple-steel">
+                          No daily totals were saved for this report yet.
+                        </div>
                       )}
                     </div>
                   </div>
@@ -892,7 +1176,9 @@ function PayrollReportModal({
                   <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
                     <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
                       <div className="border-b border-apple-mist px-4 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Site Payroll Breakdown</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                          Site Payroll Breakdown
+                        </p>
                       </div>
                       <div className="h-[280px] rounded-[12px] bg-[rgb(var(--apple-snow))] p-4 sm:h-[320px]">
                         {siteSummaries.length > 0 ? (
@@ -900,7 +1186,12 @@ function PayrollReportModal({
                             <BarChart
                               data={siteSummaries.slice(0, 6)}
                               barCategoryGap="28%"
-                              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                              margin={{
+                                top: 10,
+                                right: 10,
+                                left: -20,
+                                bottom: 0,
+                              }}
                             >
                               <CartesianGrid
                                 strokeDasharray="3 3"
@@ -912,42 +1203,74 @@ function PayrollReportModal({
                                 axisLine={false}
                                 tickLine={false}
                                 interval={0}
-                                tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                                tick={{
+                                  fill: "rgb(var(--theme-chart-axis))",
+                                  fontSize: 11,
+                                }}
                               />
                               <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
-                                tickFormatter={(value) => formatCompactValue(Number(value))}
+                                tick={{
+                                  fill: "rgb(var(--theme-chart-axis))",
+                                  fontSize: 11,
+                                }}
+                                tickFormatter={(value) =>
+                                  formatCompactValue(Number(value))
+                                }
                               />
                               <Tooltip
                                 content={(props) => (
                                   <ReportAnalyticsTooltip
                                     {...props}
-                                    valueFormatter={(value) => formatPeso(value)}
+                                    valueFormatter={(value) =>
+                                      formatPeso(value)
+                                    }
                                   />
                                 )}
-                                cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
+                                cursor={{
+                                  fill: "rgb(var(--theme-chart-cursor))",
+                                }}
                               />
-                              <Bar dataKey="payroll" name="Payroll" radius={[6, 6, 6, 6]} barSize={44}>
-                                {siteSummaries.slice(0, 6).map((entry, index) => (
-                                  <Cell
-                                    key={`${entry.siteName}-${index}`}
-                                    fill={["rgb(var(--theme-chart-1))","rgb(var(--theme-chart-2))","rgb(var(--theme-chart-3))","rgb(var(--theme-chart-4))","rgb(var(--theme-chart-5))","rgb(var(--theme-chart-1))"][index % 6]}
-                                  />
-                                ))}
+                              <Bar
+                                dataKey="payroll"
+                                name="Payroll"
+                                radius={[6, 6, 6, 6]}
+                                barSize={44}
+                              >
+                                {siteSummaries
+                                  .slice(0, 6)
+                                  .map((entry, index) => (
+                                    <Cell
+                                      key={`${entry.siteName}-${index}`}
+                                      fill={
+                                        [
+                                          "rgb(var(--theme-chart-1))",
+                                          "rgb(var(--theme-chart-2))",
+                                          "rgb(var(--theme-chart-3))",
+                                          "rgb(var(--theme-chart-4))",
+                                          "rgb(var(--theme-chart-5))",
+                                          "rgb(var(--theme-chart-1))",
+                                        ][index % 6]
+                                      }
+                                    />
+                                  ))}
                               </Bar>
                             </BarChart>
                           </ResponsiveContainer>
                         ) : (
-                          <div className="flex h-full items-center justify-center text-sm text-apple-steel">No site breakdown found.</div>
+                          <div className="flex h-full items-center justify-center text-sm text-apple-steel">
+                            No site breakdown found.
+                          </div>
                         )}
                       </div>
                     </div>
 
                     <div className="overflow-hidden rounded-2xl border border-apple-mist bg-white">
                       <div className="border-b border-apple-mist px-4 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Payroll Distribution Per Site</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                          Payroll Distribution Per Site
+                        </p>
                       </div>
                       <div className="px-4 py-4">
                         {siteDistribution.length > 0 ? (
@@ -967,14 +1290,19 @@ function PayrollReportModal({
                                     stroke="none"
                                   >
                                     {siteDistribution.map((entry) => (
-                                      <Cell key={entry.name} fill={entry.color} />
+                                      <Cell
+                                        key={entry.name}
+                                        fill={entry.color}
+                                      />
                                     ))}
                                   </Pie>
                                   <Tooltip
                                     content={(props) => (
                                       <ReportAnalyticsTooltip
                                         {...props}
-                                        valueFormatter={(value) => formatPeso(value)}
+                                        valueFormatter={(value) =>
+                                          formatPeso(value)
+                                        }
                                       />
                                     )}
                                   />
@@ -1005,7 +1333,9 @@ function PayrollReportModal({
                             </div>
                           </div>
                         ) : (
-                          <div className="flex h-[260px] items-center justify-center text-sm text-apple-steel">No site distribution data found.</div>
+                          <div className="flex h-[260px] items-center justify-center text-sm text-apple-steel">
+                            No site distribution data found.
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1016,15 +1346,23 @@ function PayrollReportModal({
                   <div className="border-b border-apple-mist px-4 py-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">Employee Payrolls</p>
-                        <p className="mt-1 text-xs text-apple-steel">Complete employees and payroll values inside this submitted report.</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                          Employee Payrolls
+                        </p>
+                        <p className="mt-1 text-xs text-apple-steel">
+                          Complete employees and payroll values inside this
+                          submitted report.
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-[11px] font-semibold text-apple-steel">
-                          {filteredPayrollItems.length.toLocaleString("en-PH")} of {payrollItems.length.toLocaleString("en-PH")} employees
+                          {filteredPayrollItems.length.toLocaleString("en-PH")}{" "}
+                          of {payrollItems.length.toLocaleString("en-PH")}{" "}
+                          employees
                         </p>
                         <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                          Total Payroll Generated: {formatPeso(filteredPayrollTotal)}
+                          Total Payroll Generated:{" "}
+                          {formatPeso(filteredPayrollTotal)}
                         </p>
                       </div>
                     </div>
@@ -1054,29 +1392,60 @@ function PayrollReportModal({
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="bg-[rgb(var(--apple-snow))]">
-                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Employee</th>
-                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Role</th>
-                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">Site</th>
-                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Days</th>
-                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Hours</th>
-                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Rate</th>
-                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">Paid</th>
-                          <th className="px-3 py-2 text-center font-semibold uppercase tracking-wider text-apple-steel">View</th>
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                            Employee
+                          </th>
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                            Role
+                          </th>
+                          <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-apple-steel">
+                            Site
+                          </th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                            Days
+                          </th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                            Hours
+                          </th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                            Rate
+                          </th>
+                          <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-apple-steel">
+                            Paid
+                          </th>
+                          <th className="px-3 py-2 text-center font-semibold uppercase tracking-wider text-apple-steel">
+                            View
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-apple-mist">
                         {filteredPayrollItems.length > 0 ? (
                           filteredPayrollItems.map((item) => (
                             <tr key={item.id}>
-                              <td className="px-3 py-2 font-medium text-apple-charcoal">{item.employee_name}</td>
-                              <td className="px-3 py-2 text-apple-smoke">{item.role_code}</td>
-                              <td className="px-3 py-2 text-apple-smoke">{item.site_name}</td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">{item.days_worked.toLocaleString("en-PH")}</td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">
-                                {item.hours_worked.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              <td className="px-3 py-2 font-medium text-apple-charcoal">
+                                {item.employee_name}
                               </td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">{formatPeso(item.rate_per_day)}</td>
-                              <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">{formatPeso(item.total_pay)}</td>
+                              <td className="px-3 py-2 text-apple-smoke">
+                                {item.role_code}
+                              </td>
+                              <td className="px-3 py-2 text-apple-smoke">
+                                {item.site_name}
+                              </td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">
+                                {item.days_worked.toLocaleString("en-PH")}
+                              </td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">
+                                {item.hours_worked.toLocaleString("en-PH", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                              <td className="px-3 py-2 text-right text-apple-smoke">
+                                {formatPeso(item.rate_per_day)}
+                              </td>
+                              <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">
+                                {formatPeso(item.total_pay)}
+                              </td>
                               <td className="px-3 py-2 text-center">
                                 <button
                                   type="button"
@@ -1090,7 +1459,10 @@ function PayrollReportModal({
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={8} className="px-3 py-4 text-center text-apple-steel">
+                            <td
+                              colSpan={8}
+                              className="px-3 py-4 text-center text-apple-steel"
+                            >
                               No employees match the current filters.
                             </td>
                           </tr>
@@ -1123,12 +1495,19 @@ export default function PayrollReportsPageClient() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
-  const [pendingDecisionRunId, setPendingDecisionRunId] = useState<string | null>(null);
-  const [pendingDecisionAction, setPendingDecisionAction] = useState<"approve" | "reject" | null>(null);
+  const [pendingDecisionRunId, setPendingDecisionRunId] = useState<
+    string | null
+  >(null);
+  const [pendingDecisionAction, setPendingDecisionAction] = useState<
+    "approve" | "reject" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
-  const [detailsByRunId, setDetailsByRunId] = useState<Record<string, ReportDetailsState>>({});
+  const [detailsByRunId, setDetailsByRunId] = useState<
+    Record<string, ReportDetailsState>
+  >({});
   const [openMenu, setOpenMenu] = useState<ReportActionsMenuState | null>(null);
-  const [deleteConfirmReport, setDeleteConfirmReport] = useState<PayrollRunRow | null>(null);
+  const [deleteConfirmReport, setDeleteConfirmReport] =
+    useState<PayrollRunRow | null>(null);
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
   const loadReports = useCallback(async () => {
@@ -1136,7 +1515,9 @@ export default function PayrollReportsPageClient() {
     const supabase = createSupabaseBrowserClient();
     const { data, error: loadError } = await supabase
       .from("payroll_runs")
-      .select("id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at")
+      .select(
+        "id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at",
+      )
       .neq("status", "rejected")
       .order("submitted_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false });
@@ -1207,7 +1588,12 @@ export default function PayrollReportsPageClient() {
   }, [deleteConfirmReport, deletingRunId]);
 
   const sortedReports = useMemo(
-    () => [...reports].sort((a, b) => new Date(b.submitted_at ?? b.created_at).getTime() - new Date(a.submitted_at ?? a.created_at).getTime()),
+    () =>
+      [...reports].sort(
+        (a, b) =>
+          new Date(b.submitted_at ?? b.created_at).getTime() -
+          new Date(a.submitted_at ?? a.created_at).getTime(),
+      ),
     [reports],
   );
 
@@ -1221,32 +1607,45 @@ export default function PayrollReportsPageClient() {
   async function loadReportDetails(report: PayrollRunRow) {
     setDetailsByRunId((prev) => ({
       ...prev,
-      [report.id]: { loading: true, error: null, payrollItems: prev[report.id]?.payrollItems ?? [], attendanceLogs: prev[report.id]?.attendanceLogs ?? [], dailyTotals: prev[report.id]?.dailyTotals ?? [] },
+      [report.id]: {
+        loading: true,
+        error: null,
+        payrollItems: prev[report.id]?.payrollItems ?? [],
+        attendanceLogs: prev[report.id]?.attendanceLogs ?? [],
+        dailyTotals: prev[report.id]?.dailyTotals ?? [],
+      },
     }));
 
     const supabase = createSupabaseBrowserClient();
     const [itemsResult, initialLogsResult, totalsResult] = await Promise.all([
       supabase
         .from("payroll_run_items")
-        .select("id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay")
+        .select(
+          "id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay",
+        )
         .eq("payroll_run_id", report.id)
         .order("employee_name", { ascending: true }),
       report.attendance_import_id
         ? supabase
             .from("attendance_records")
-            .select("id, employee_name, log_date, log_time, log_type, log_source, site_name")
+            .select(
+              "id, employee_name, log_date, log_time, log_type, log_source, site_name",
+            )
             .eq("import_id", report.attendance_import_id)
             .order("log_date", { ascending: true })
             .order("log_time", { ascending: true })
         : Promise.resolve({ data: [] as AttendanceLogRow[], error: null }),
       supabase
         .from("payroll_run_daily_totals")
-        .select("id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay")
+        .select(
+          "id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay",
+        )
         .eq("payroll_run_id", report.id)
         .order("payout_date", { ascending: true }),
     ]);
 
-    let attendanceLogsData = (initialLogsResult.data ?? []) as AttendanceLogRow[];
+    let attendanceLogsData = (initialLogsResult.data ??
+      []) as AttendanceLogRow[];
     let attendanceLogsError = initialLogsResult.error;
 
     if (
@@ -1255,10 +1654,14 @@ export default function PayrollReportsPageClient() {
       report.period_start &&
       report.period_end
     ) {
-      const fallbackSites = splitSiteNames(report.site_name).filter((site) => site.length > 0);
+      const fallbackSites = splitSiteNames(report.site_name).filter(
+        (site) => site.length > 0,
+      );
       let fallbackQuery = supabase
         .from("attendance_records")
-        .select("id, employee_name, log_date, log_time, log_type, log_source, site_name")
+        .select(
+          "id, employee_name, log_date, log_time, log_type, log_source, site_name",
+        )
         .gte("log_date", report.period_start)
         .lte("log_date", report.period_end)
         .order("log_date", { ascending: true })
@@ -1274,7 +1677,8 @@ export default function PayrollReportsPageClient() {
       if (fallbackLogsResult.error) {
         attendanceLogsError = fallbackLogsResult.error;
       } else {
-        attendanceLogsData = (fallbackLogsResult.data ?? []) as AttendanceLogRow[];
+        attendanceLogsData = (fallbackLogsResult.data ??
+          []) as AttendanceLogRow[];
       }
     }
 
@@ -1283,7 +1687,11 @@ export default function PayrollReportsPageClient() {
         ...prev,
         [report.id]: {
           loading: false,
-          error: itemsResult.error?.message || attendanceLogsError?.message || totalsResult.error?.message || "Unable to load report logs.",
+          error:
+            itemsResult.error?.message ||
+            attendanceLogsError?.message ||
+            totalsResult.error?.message ||
+            "Unable to load report logs.",
           payrollItems: [],
           attendanceLogs: [],
           dailyTotals: [],
@@ -1387,16 +1795,22 @@ export default function PayrollReportsPageClient() {
     }
   }
 
-  const openMenuReport = openMenu ? sortedReports.find((row) => row.id === openMenu.runId) ?? null : null;
-  const activeReport = activeReportId ? sortedReports.find((row) => row.id === activeReportId) ?? null : null;
-  const activeDetails = activeReport ? detailsByRunId[activeReport.id] ?? null : null;
+  const openMenuReport = openMenu
+    ? (sortedReports.find((row) => row.id === openMenu.runId) ?? null)
+    : null;
+  const activeReport = activeReportId
+    ? (sortedReports.find((row) => row.id === activeReportId) ?? null)
+    : null;
+  const activeDetails = activeReport
+    ? (detailsByRunId[activeReport.id] ?? null)
+    : null;
   const pendingReportsCount = useMemo(
     () => reports.filter((report) => report.status === "submitted").length,
     [reports],
   );
 
   return (
-    <div >
+    <div className="p-6">
       <DashboardPageHero
         eyebrow="Payroll Reports"
         title="Payroll Report Review"
@@ -1420,8 +1834,12 @@ export default function PayrollReportsPageClient() {
       <section className="rounded-[16px] mt-4 border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">Report Archive</p>
-            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">Pending And Approved Payroll Reports</h2>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+              Report Archive
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+              Pending And Approved Payroll Reports
+            </h2>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <ScrollText size={12} />
@@ -1431,10 +1849,16 @@ export default function PayrollReportsPageClient() {
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <RefreshCw size={18} className="animate-spin text-[#1f6a37]" aria-label="Loading reports" />
+            <RefreshCw
+              size={18}
+              className="animate-spin text-[#1f6a37]"
+              aria-label="Loading reports"
+            />
           </div>
         ) : sortedReports.length === 0 ? (
-          <p className="text-sm text-apple-steel">No payroll reports are waiting for review.</p>
+          <p className="text-sm text-apple-steel">
+            No payroll reports are waiting for review.
+          </p>
         ) : (
           <div className="overflow-x-auto overflow-y-visible rounded-xl border border-apple-mist">
             <table className="min-w-[980px] w-full table-fixed text-sm">
@@ -1448,23 +1872,48 @@ export default function PayrollReportsPageClient() {
               </colgroup>
               <thead>
                 <tr className="bg-[rgb(var(--apple-snow))] text-left">
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Total Payroll</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Submitted
+                  </th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Period
+                  </th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Site
+                  </th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Total Payroll
+                  </th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-apple-mist">
                 {sortedReports.map((report) => (
                   <tr key={report.id} className="bg-white">
-                    <td className="px-4 py-4 text-apple-smoke">{formatDateTime(report.submitted_at ?? report.created_at)}</td>
-                    <td className="px-4 py-4 font-medium text-apple-charcoal">{formatPeriodLabel(report)}</td>
-                    <td className="px-4 py-4 text-apple-smoke">{report.site_name}</td>
-                    <td className="px-4 py-4 text-right font-semibold text-apple-charcoal">{formatPeso(report.net_total ?? 0)}</td>
+                    <td className="px-4 py-4 text-apple-smoke">
+                      {formatDateTime(report.submitted_at ?? report.created_at)}
+                    </td>
+                    <td className="px-4 py-4 font-medium text-apple-charcoal">
+                      {formatPeriodLabel(report)}
+                    </td>
+                    <td className="px-4 py-4 text-apple-smoke">
+                      {report.site_name}
+                    </td>
+                    <td className="px-4 py-4 text-right font-semibold text-apple-charcoal">
+                      {formatPeso(report.net_total ?? 0)}
+                    </td>
                     <td className="px-4 py-4 text-center">
-                      <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider", statusBadgeClass(report.status))}>
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider",
+                          statusBadgeClass(report.status),
+                        )}
+                      >
                         {statusLabel(report.status)}
                       </span>
                     </td>
@@ -1472,7 +1921,8 @@ export default function PayrollReportsPageClient() {
                       <button
                         type="button"
                         onClick={(event) => {
-                          const buttonRect = event.currentTarget.getBoundingClientRect();
+                          const buttonRect =
+                            event.currentTarget.getBoundingClientRect();
                           setOpenMenu((prev) =>
                             prev?.runId === report.id
                               ? null
@@ -1486,7 +1936,10 @@ export default function PayrollReportsPageClient() {
                         data-report-actions-root
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Open report actions"
-                        disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
+                        disabled={
+                          deletingRunId === report.id ||
+                          pendingDecisionRunId === report.id
+                        }
                       >
                         <MoreHorizontal size={16} />
                       </button>
@@ -1529,7 +1982,8 @@ export default function PayrollReportsPageClient() {
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <CheckCircle2 size={14} />
-                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "approve"
+                    {pendingDecisionRunId === openMenuReport.id &&
+                    pendingDecisionAction === "approve"
                       ? "Updating..."
                       : "Approve Payroll"}
                   </button>
@@ -1542,7 +1996,8 @@ export default function PayrollReportsPageClient() {
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <XCircle size={14} />
-                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "reject"
+                    {pendingDecisionRunId === openMenuReport.id &&
+                    pendingDecisionAction === "reject"
                       ? "Updating..."
                       : "Reject Payroll"}
                   </button>
@@ -1555,7 +2010,10 @@ export default function PayrollReportsPageClient() {
                   setOpenMenu(null);
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={deletingRunId === openMenuReport.id || pendingDecisionRunId === openMenuReport.id}
+                disabled={
+                  deletingRunId === openMenuReport.id ||
+                  pendingDecisionRunId === openMenuReport.id
+                }
               >
                 <Trash2 size={14} />
                 {deletingRunId === openMenuReport.id
@@ -1626,7 +2084,11 @@ export default function PayrollReportsPageClient() {
           )
         : null}
 
-      {error ? <section className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-sm text-red-700">{error}</section> : null}
+      {error ? (
+        <section className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </section>
+      ) : null}
 
       {activeReport ? (
         <PayrollReportModal

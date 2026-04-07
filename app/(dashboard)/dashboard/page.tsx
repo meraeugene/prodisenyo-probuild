@@ -85,7 +85,11 @@ type DashboardPayrollRunRow = Pick<
 
 type DashboardPayrollRunItemRow = Pick<
   Database["public"]["Tables"]["payroll_run_items"]["Row"],
-  "payroll_run_id" | "employee_name" | "site_name" | "hours_worked" | "total_pay"
+  | "payroll_run_id"
+  | "employee_name"
+  | "site_name"
+  | "hours_worked"
+  | "total_pay"
 >;
 
 type DashboardAttendanceLogRow = Pick<
@@ -246,7 +250,10 @@ export default function OverviewPage() {
   const [ceoTrendLoading, setCeoTrendLoading] = useState(true);
   const [ceoTrendReady, setCeoTrendReady] = useState(false);
   const [ceoTrendReloadNonce, setCeoTrendReloadNonce] = useState(0);
-  const payrollRows = useMemo(() => data?.payrollRows ?? [], [data?.payrollRows]);
+  const payrollRows = useMemo(
+    () => data?.payrollRows ?? [],
+    [data?.payrollRows],
+  );
   const payrollAttendanceInputs = useMemo(
     () => data?.payrollAttendanceInputs ?? [],
     [data?.payrollAttendanceInputs],
@@ -361,7 +368,8 @@ export default function OverviewPage() {
     summaryCards.find((card) => card.key === activeSummaryCard) ?? null;
 
   const ceoDailyTrend = useMemo(() => {
-    const storedDailyPoints = buildDailyPaidPointsFromStoredTotals(ceoDailyTotals);
+    const storedDailyPoints =
+      buildDailyPaidPointsFromStoredTotals(ceoDailyTotals);
     const totalsByDate = new Map<string, number>(
       storedDailyPoints.map((point) => [point.date, point.total]),
     );
@@ -373,10 +381,7 @@ export default function OverviewPage() {
       (run) => !runIdsWithStoredDailyTotals.has(run.id),
     );
 
-    if (
-      runsNeedingFallback.length === 0 ||
-      ceoFallbackRunItems.length === 0
-    ) {
+    if (runsNeedingFallback.length === 0 || ceoFallbackRunItems.length === 0) {
       return storedDailyPoints;
     }
 
@@ -414,7 +419,8 @@ export default function OverviewPage() {
     return aggregateDailyPaidPoints(ceoDailyTrend, ceoTrendRange);
   }, [ceoDailyTrend, ceoSubmittedRuns, ceoTrendRange]);
 
-  const ceoLatestTrendPoint = ceoPayrollTrend[ceoPayrollTrend.length - 1] ?? null;
+  const ceoLatestTrendPoint =
+    ceoPayrollTrend[ceoPayrollTrend.length - 1] ?? null;
   const ceoPreviousTrendPoint =
     ceoPayrollTrend[ceoPayrollTrend.length - 2] ?? null;
   const ceoOverallSubmittedPayroll = useMemo(
@@ -551,21 +557,23 @@ export default function OverviewPage() {
       setCeoFallbackRunItems(
         fallbackItemsResult.error
           ? []
-          : ((fallbackItemsResult.data ?? []) as DashboardPayrollRunItemRow[]).map(
-              (item) => ({
-                payroll_run_id: item.payroll_run_id,
-                employee_name: item.employee_name,
-                site_name: item.site_name,
-                hours_worked: item.hours_worked,
-                total_pay: item.total_pay,
-              }),
-            ),
+          : (
+              (fallbackItemsResult.data ?? []) as DashboardPayrollRunItemRow[]
+            ).map((item) => ({
+              payroll_run_id: item.payroll_run_id,
+              employee_name: item.employee_name,
+              site_name: item.site_name,
+              hours_worked: item.hours_worked,
+              total_pay: item.total_pay,
+            })),
       );
       setCeoFallbackAttendanceLogs(
         fallbackAttendanceResult.error
           ? []
-          : ((fallbackAttendanceResult.data ??
-              []) as DashboardAttendanceLogRow[]).map((row) => ({
+          : (
+              (fallbackAttendanceResult.data ??
+                []) as DashboardAttendanceLogRow[]
+            ).map((row) => ({
               import_id: row.import_id,
               employee_name: row.employee_name,
               log_date: row.log_date,
@@ -603,7 +611,7 @@ export default function OverviewPage() {
   }
 
   return (
-    <div>
+    <div className="p-6">
       <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)] mb-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -641,520 +649,537 @@ export default function OverviewPage() {
       </section>
 
       <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                CEO Payroll Report Trend
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+              CEO Payroll Report Trend
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+              Approved Payroll Movement
+            </h2>
+            <p className="mt-1 text-sm text-apple-steel">
+              Daily paid totals across approved payroll reports, with weekly,
+              monthly, and yearly views.
+            </p>
+            {ceoTrendPercent !== null ? (
+              <p
+                className={cn(
+                  "mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
+                  ceoTrendPercent >= 0
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-rose-50 text-rose-700",
+                )}
+              >
+                {formatTrendPercent(ceoTrendPercent)}
               </p>
-              <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-                Approved Payroll Movement
-              </h2>
-              <p className="mt-1 text-sm text-apple-steel">
-                Daily paid totals across approved payroll reports, with weekly,
-                monthly, and yearly views.
-              </p>
-              {ceoTrendPercent !== null ? (
-                <p
+            ) : null}
+          </div>
+
+          <div className="inline-flex rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-1">
+            {(["daily", "weekly", "monthly", "yearly"] as TrendRange[]).map(
+              (range) => (
+                <button
+                  key={range}
+                  type="button"
+                  onClick={() => setCeoTrendRange(range)}
                   className={cn(
-                    "mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
-                    ceoTrendPercent >= 0
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-rose-50 text-rose-700",
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition",
+                    ceoTrendRange === range
+                      ? "bg-[#1f6a37] text-white"
+                      : "text-apple-steel hover:text-apple-charcoal",
                   )}
                 >
-                  {formatTrendPercent(ceoTrendPercent)}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="inline-flex rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-1">
-              {(["daily", "weekly", "monthly", "yearly"] as TrendRange[]).map(
-                (range) => (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setCeoTrendRange(range)}
-                    className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition",
-                      ceoTrendRange === range
-                        ? "bg-[#1f6a37] text-white"
-                        : "text-apple-steel hover:text-apple-charcoal",
-                    )}
-                  >
-                    {range}
-                  </button>
-                ),
-              )}
-            </div>
-          </div>
-
-          <div className="mt-5 h-[320px]">
-            {ceoTrendLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2
-                  size={26}
-                  className="animate-spin text-[#1f6a37]"
-                  aria-label="Loading trend data"
-                />
-              </div>
-            ) : ceoPayrollTrend.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-apple-steel">
-                No approved payroll reports yet.
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={ceoPayrollTrend}
-                  margin={{ top: 10, right: 10, left: 8, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="ceoDashboardTrendFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.32} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="rgb(var(--theme-chart-grid))"
-                  />
-                  <XAxis
-                    dataKey="label"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
-                    tickFormatter={(value) => formatCompactCurrency(Number(value))}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const point = payload[0]?.payload as TrendPoint | undefined;
-                      if (!point) return null;
-
-                      return (
-                        <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl">
-                          <p className="text-xs font-semibold">{point.label}</p>
-                          <p className="mt-1 text-sm font-semibold text-emerald-700">
-                            {PESO_SIGN} {formatPayrollNumber(point.total)}
-                          </p>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="total"
-                    stroke="#16a34a"
-                    strokeWidth={3}
-                    fill="url(#ceoDashboardTrendFill)"
-                    dot={{ r: 0 }}
-                    activeDot={{
-                      r: 5,
-                      fill: "#16a34a",
-                      stroke: "white",
-                      strokeWidth: 2,
-                    }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+                  {range}
+                </button>
+              ),
             )}
           </div>
+        </div>
 
-          {ceoLatestTrendPoint ? (
-            <div className="mt-4 rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-3">
-              <p className="text-xs text-apple-steel">
-                Latest {ceoTrendRange} paid total:{" "}
-                <span className="font-semibold text-apple-charcoal">
-                  {PESO_SIGN} {formatPayrollNumber(ceoLatestTrendPoint.total)}
-                </span>
-              </p>
+        <div className="mt-5 h-[320px]">
+          {ceoTrendLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <Loader2
+                size={26}
+                className="animate-spin text-[#1f6a37]"
+                aria-label="Loading trend data"
+              />
             </div>
-          ) : null}
+          ) : ceoPayrollTrend.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-apple-steel">
+              No approved payroll reports yet.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={ceoPayrollTrend}
+                margin={{ top: 10, right: 10, left: 8, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="ceoDashboardTrendFill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.32} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="rgb(var(--theme-chart-grid))"
+                />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                  tickFormatter={(value) =>
+                    formatCompactCurrency(Number(value))
+                  }
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const point = payload[0]?.payload as TrendPoint | undefined;
+                    if (!point) return null;
+
+                    return (
+                      <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl">
+                        <p className="text-xs font-semibold">{point.label}</p>
+                        <p className="mt-1 text-sm font-semibold text-emerald-700">
+                          {PESO_SIGN} {formatPayrollNumber(point.total)}
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#16a34a"
+                  strokeWidth={3}
+                  fill="url(#ceoDashboardTrendFill)"
+                  dot={{ r: 0 }}
+                  activeDot={{
+                    r: 5,
+                    fill: "#16a34a",
+                    stroke: "white",
+                    strokeWidth: 2,
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {ceoLatestTrendPoint ? (
+          <div className="mt-4 rounded-xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-3">
+            <p className="text-xs text-apple-steel">
+              Latest {ceoTrendRange} paid total:{" "}
+              <span className="font-semibold text-apple-charcoal">
+                {PESO_SIGN} {formatPayrollNumber(ceoLatestTrendPoint.total)}
+              </span>
+            </p>
+          </div>
+        ) : null}
       </section>
 
       <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                CEO Payroll Review
-              </p>
-              <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-                {selectedRun ? "Selected Approved Payroll" : "No Approved Payroll Selected"}
-              </h2>
-              <p className="mt-1 text-sm text-apple-steel">
-                Only CEO-approved payroll reports are reflected here. Use the period selector to switch between approved runs.
-              </p>
-            </div>
-
-            {selectedRun ? (
-              <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sky-700">
-                {selectedRun.status}
-              </span>
-            ) : null}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+              CEO Payroll Review
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+              {selectedRun
+                ? "Selected Approved Payroll"
+                : "No Approved Payroll Selected"}
+            </h2>
+            <p className="mt-1 text-sm text-apple-steel">
+              Only CEO-approved payroll reports are reflected here. Use the
+              period selector to switch between approved runs.
+            </p>
           </div>
 
           {selectedRun ? (
-            <div className="mt-4 grid gap-3 rounded-[18px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                  Site
-                </p>
-                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                  {selectedRun.siteName}
-                </p>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                  Payroll Period
-                </p>
-                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                  {selectedRun.periodLabel}
-                </p>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                  Submitted
-                </p>
-                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                  {selectedRun.submittedAt
-                    ? new Date(selectedRun.submittedAt).toLocaleString("en-PH", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })
-                    : "Not submitted"}
-                </p>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                  Employees
-                </p>
-                <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                  {selectedPayrollItems.length.toLocaleString("en-PH")}
-                </p>
-              </div>
+            <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sky-700">
+              {selectedRun.status}
+            </span>
+          ) : null}
+        </div>
+
+        {selectedRun ? (
+          <div className="mt-4 grid gap-3 rounded-[18px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                Site
+              </p>
+              <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                {selectedRun.siteName}
+              </p>
             </div>
-          ) : (
-            <div className="mt-4 rounded-[18px] border border-dashed border-apple-mist bg-[rgb(var(--apple-snow))] p-4 text-sm text-apple-steel">
-              No approved payroll report is available for review yet.
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                Payroll Period
+              </p>
+              <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                {selectedRun.periodLabel}
+              </p>
             </div>
-          )}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                Submitted
+              </p>
+              <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                {selectedRun.submittedAt
+                  ? new Date(selectedRun.submittedAt).toLocaleString("en-PH", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })
+                  : "Not submitted"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                Employees
+              </p>
+              <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                {selectedPayrollItems.length.toLocaleString("en-PH")}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-[18px] border border-dashed border-apple-mist bg-[rgb(var(--apple-snow))] p-4 text-sm text-apple-steel">
+            No approved payroll report is available for review yet.
+          </div>
+        )}
       </section>
 
       <>
-          <section className="mb-5">
-        <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <p className="text-[15px] font-semibold text-apple-charcoal">
-                Analytics Overview
-              </p>
-              <p className="mt-1 text-sm text-apple-steel">
-                Historical charts from Supabase attendance and approved payroll.
-              </p>
-            </div>
-            {periodOptions.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-steel">
-                  Payroll Period
+        <section className="mb-5">
+          <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[15px] font-semibold text-apple-charcoal">
+                  Analytics Overview
                 </p>
-                <select
-                  value={selectedPeriodKey ?? ""}
-                  onChange={(event) =>
-                    setSelectedPeriodKey(event.target.value || null)
-                  }
-                  className="h-10 min-w-[300px] rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37]"
-                >
-                  {periodOptions.map((option) => (
-                    <option key={option.key} value={option.key}>
-                      {option.label} - {option.siteName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
-              <div className="mb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
-                  Employees per Branch
-                </p>
-                <p className="mt-1 text-xs text-apple-steel">
-                  Attendance Analytics
+                <p className="mt-1 text-sm text-apple-steel">
+                  Historical charts from Supabase attendance and approved
+                  payroll.
                 </p>
               </div>
-
-              <div className="h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={workforceByBranch}
-                    barCategoryGap="28%"
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              {periodOptions.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-steel">
+                    Payroll Period
+                  </p>
+                  <select
+                    value={selectedPeriodKey ?? ""}
+                    onChange={(event) =>
+                      setSelectedPeriodKey(event.target.value || null)
+                    }
+                    className="h-10 min-w-[300px] rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37]"
                   >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="rgb(var(--theme-chart-grid))"
-                    />
-                    <XAxis
-                      dataKey="shortBranch"
-                      axisLine={false}
-                      tickLine={false}
-                      interval={0}
-                      tick={{
-                        fill: "rgb(var(--theme-chart-axis))",
-                        fontSize: 11,
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fill: "rgb(var(--theme-chart-axis))",
-                        fontSize: 11,
-                      }}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
-                      content={(props) => (
-                        <ChartTooltip {...props} unit="employees" />
-                      )}
-                    />
-                    <Bar dataKey="employees" radius={[6, 6, 6, 6]} barSize={38}>
-                      {workforceByBranch.map((entry, index) => (
-                        <Cell
-                          key={`overview-workforce-${entry.shortBranch}-${index}`}
-                          fill={entry.fill}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                    {periodOptions.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label} - {option.siteName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
             </div>
 
-            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
-              <div className="mb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
-                  Payroll Distribution by Project
-                </p>
-                <p className="mt-1 text-xs text-apple-steel">
-                  Payroll Analytics
-                </p>
-              </div>
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                    Employees per Branch
+                  </p>
+                  <p className="mt-1 text-xs text-apple-steel">
+                    Attendance Analytics
+                  </p>
+                </div>
 
-              <div className="grid h-[260px] grid-cols-[minmax(0,1fr)_160px] gap-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={payrollDistributionData}
-                      dataKey="value"
-                      nameKey="shortName"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={48}
-                      outerRadius={76}
-                      paddingAngle={2}
-                      stroke="none"
+                <div className="h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={workforceByBranch}
+                      barCategoryGap="28%"
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                     >
-                      {payrollDistributionData.map((entry, index) => (
-                        <Cell
-                          key={`overview-payroll-distribution-${entry.name}-${index}`}
-                          fill={entry.fill}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-
-                        const item = payload[0]?.payload as
-                          | {
-                              shortName?: string;
-                              name?: string;
-                              value?: number;
-                            }
-                          | undefined;
-
-                        return (
-                          <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
-                            <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
-                              Branch
-                            </p>
-                            <p className="max-w-[160px] truncate text-xs font-semibold text-apple-smoke">
-                              {item?.shortName ?? item?.name ?? "Unknown"}
-                            </p>
-                            <div className="mt-1 flex items-baseline gap-1">
-                              <span className="text-lg font-bold">
-                                {PESO_SIGN}{" "}
-                                {formatPayrollNumber(item?.value ?? 0)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-
-                <div className="space-y-3 overflow-y-auto pr-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-apple-silver">
-                    Branch
-                  </p>
-                  {payrollDistributionData.length > 0 ? (
-                    payrollDistributionData.map((item, index) => (
-                      <div
-                        key={`overview-payroll-legend-${item.name}-${index}`}
-                        className="flex items-start gap-2"
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="rgb(var(--theme-chart-grid))"
+                      />
+                      <XAxis
+                        dataKey="shortBranch"
+                        axisLine={false}
+                        tickLine={false}
+                        interval={0}
+                        tick={{
+                          fill: "rgb(var(--theme-chart-axis))",
+                          fontSize: 11,
+                        }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fill: "rgb(var(--theme-chart-axis))",
+                          fontSize: 11,
+                        }}
+                      />
+                      <Tooltip
+                        cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
+                        content={(props) => (
+                          <ChartTooltip {...props} unit="employees" />
+                        )}
+                      />
+                      <Bar
+                        dataKey="employees"
+                        radius={[6, 6, 6, 6]}
+                        barSize={38}
                       >
-                        <span
-                          className="mt-1 h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: item.fill }}
-                        />
-                        <div className="min-w-0">
-                          <p className="truncate text-[11px] font-medium text-apple-smoke">
-                            {item.shortName}
-                          </p>
-                          <p className="truncate text-xs font-semibold text-apple-charcoal">
-                            {PESO_SIGN} {formatPayrollNumber(item.value)}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-xs text-apple-steel">
-                      No saved payroll runs yet.
+                        {workforceByBranch.map((entry, index) => (
+                          <Cell
+                            key={`overview-workforce-${entry.shortBranch}-${index}`}
+                            fill={entry.fill}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+                    Payroll Distribution by Project
+                  </p>
+                  <p className="mt-1 text-xs text-apple-steel">
+                    Payroll Analytics
+                  </p>
+                </div>
+
+                <div className="grid h-[260px] grid-cols-[minmax(0,1fr)_160px] gap-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={payrollDistributionData}
+                        dataKey="value"
+                        nameKey="shortName"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={48}
+                        outerRadius={76}
+                        paddingAngle={2}
+                        stroke="none"
+                      >
+                        {payrollDistributionData.map((entry, index) => (
+                          <Cell
+                            key={`overview-payroll-distribution-${entry.name}-${index}`}
+                            fill={entry.fill}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null;
+
+                          const item = payload[0]?.payload as
+                            | {
+                                shortName?: string;
+                                name?: string;
+                                value?: number;
+                              }
+                            | undefined;
+
+                          return (
+                            <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
+                              <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
+                                Branch
+                              </p>
+                              <p className="max-w-[160px] truncate text-xs font-semibold text-apple-smoke">
+                                {item?.shortName ?? item?.name ?? "Unknown"}
+                              </p>
+                              <div className="mt-1 flex items-baseline gap-1">
+                                <span className="text-lg font-bold">
+                                  {PESO_SIGN}{" "}
+                                  {formatPayrollNumber(item?.value ?? 0)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <div className="space-y-3 overflow-y-auto pr-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-apple-silver">
+                      Branch
                     </p>
-                  )}
+                    {payrollDistributionData.length > 0 ? (
+                      payrollDistributionData.map((item, index) => (
+                        <div
+                          key={`overview-payroll-legend-${item.name}-${index}`}
+                          className="flex items-start gap-2"
+                        >
+                          <span
+                            className="mt-1 h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-[11px] font-medium text-apple-smoke">
+                              {item.shortName}
+                            </p>
+                            <p className="truncate text-xs font-semibold text-apple-charcoal">
+                              {PESO_SIGN} {formatPayrollNumber(item.value)}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-apple-steel">
+                        No saved payroll runs yet.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-          </section>
+        </section>
 
-          <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
-        {summaryCards.map((card) => {
-          const iconWrapClass =
-            card.key === "gross"
-              ? "bg-emerald-50 text-emerald-700"
-              : card.key === "deductions"
-                ? "bg-red-50 text-red-700"
-                : "bg-sky-50 text-sky-700";
-          const Icon =
-            card.key === "gross"
-              ? Wallet
-              : card.key === "deductions"
-                ? Receipt
-                : BadgeCheck;
+        <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-5">
+          {summaryCards.map((card) => {
+            const iconWrapClass =
+              card.key === "gross"
+                ? "bg-emerald-50 text-emerald-700"
+                : card.key === "deductions"
+                  ? "bg-red-50 text-red-700"
+                  : "bg-sky-50 text-sky-700";
+            const Icon =
+              card.key === "gross"
+                ? Wallet
+                : card.key === "deductions"
+                  ? Receipt
+                  : BadgeCheck;
 
-          return (
-            <button
-              key={card.key}
-              type="button"
-              onClick={() => setActiveSummaryCard(card.key)}
-              className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(24,83,43,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(24,83,43,0.12)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconWrapClass}`}
-                  >
-                    <Icon size={18} />
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={() => setActiveSummaryCard(card.key)}
+                className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(24,83,43,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(24,83,43,0.12)]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconWrapClass}`}
+                    >
+                      <Icon size={18} />
+                    </div>
+                    <p className="text-sm font-medium text-apple-steel">
+                      {card.title}
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-apple-steel">
-                    {card.title}
-                  </p>
+                  <div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs text-green-600">
+                      Synced <ArrowUp size={12} />
+                    </span>
+                  </div>
                 </div>
-                <div >
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs text-green-600">
-                    Synced <ArrowUp size={12} />
-                  </span>
-                  
-                </div>
-              </div>
-              <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
-                {PESO_SIGN} {formatPayrollNumber(card.amount)}
-              </p>
-              <p className="mt-3 text-sm font-medium text-apple-charcoal">
-                {card.badge}
-              </p>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
-                View Details
-              </p>
-            </button>
-          );
-        })}
-          </section>
+                <p className="mt-6 text-[32px] font-semibold tracking-[-0.03em] text-apple-charcoal">
+                  {PESO_SIGN} {formatPayrollNumber(card.amount)}
+                </p>
+                <p className="mt-3 text-sm font-medium text-apple-charcoal">
+                  {card.badge}
+                </p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
+                  View Details
+                </p>
+              </button>
+            );
+          })}
+        </section>
 
-          <CeoDepartmentReview
-            attendancePeriod={attendancePeriod}
-            payrollItems={selectedPayrollItems}
-            attendanceLogs={selectedAttendanceLogs}
-            dailyTotals={selectedPayrollDailyTotals}
-          />
+        <CeoDepartmentReview
+          attendancePeriod={attendancePeriod}
+          payrollItems={selectedPayrollItems}
+          attendanceLogs={selectedAttendanceLogs}
+          dailyTotals={selectedPayrollDailyTotals}
+        />
 
-          <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-[15px] font-semibold text-apple-charcoal">
-            Recent Payroll Activity
-          </p>
-          <p className="text-xs text-emerald-500">{attendancePeriod}</p>
-        </div>
-
-        <div className="overflow-hidden rounded-[12px] border border-apple-mist">
-          <div className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] bg-[rgb(var(--apple-snow))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-500">
-            <span>Type</span>
-            <span>Employee</span>
-            <span>Amount</span>
-            <span>Status</span>
-            <span>Branch</span>
+        <section className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-[15px] font-semibold text-apple-charcoal">
+              Recent Payroll Activity
+            </p>
+            <p className="text-xs text-emerald-500">{attendancePeriod}</p>
           </div>
 
-          <div className="divide-y divide-apple-mist">
-            {activityRows.length > 0 ? (
-              activityRows.map((row) => (
-                <div
-                  key={`${row.type}-${row.employee}`}
-                  className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] items-center px-4 py-4"
-                >
-                  <span className="text-sm font-medium text-apple-ash">
-                    {row.type}
-                  </span>
-                  <span className="text-sm font-semibold text-apple-charcoal">
-                    {row.employee}
-                  </span>
-                  <span className="text-sm text-apple-ash">{row.amount}</span>
-                  <span
-                    className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                      row.status === "Success"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-[rgb(var(--apple-snow))] text-apple-charcoal"
-                    }`}
+          <div className="overflow-hidden rounded-[12px] border border-apple-mist">
+            <div className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] bg-[rgb(var(--apple-snow))] px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-500">
+              <span>Type</span>
+              <span>Employee</span>
+              <span>Amount</span>
+              <span>Status</span>
+              <span>Branch</span>
+            </div>
+
+            <div className="divide-y divide-apple-mist">
+              {activityRows.length > 0 ? (
+                activityRows.map((row) => (
+                  <div
+                    key={`${row.type}-${row.employee}`}
+                    className="grid grid-cols-[1fr_1.2fr_1fr_0.9fr_1fr] items-center px-4 py-4"
                   >
-                    {row.status === "Success" && <Check size={11} />}
-                    {row.status}
-                  </span>
-                  <span className="text-sm text-apple-smoke">{row.method}</span>
+                    <span className="text-sm font-medium text-apple-ash">
+                      {row.type}
+                    </span>
+                    <span className="text-sm font-semibold text-apple-charcoal">
+                      {row.employee}
+                    </span>
+                    <span className="text-sm text-apple-ash">{row.amount}</span>
+                    <span
+                      className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                        row.status === "Success"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-[rgb(var(--apple-snow))] text-apple-charcoal"
+                      }`}
+                    >
+                      {row.status === "Success" && <Check size={11} />}
+                      {row.status}
+                    </span>
+                    <span className="text-sm text-apple-smoke">
+                      {row.method}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-6 text-sm text-apple-steel">
+                  No saved payroll activity recorded yet.
                 </div>
-              ))
-            ) : (
-              <div className="px-4 py-6 text-sm text-apple-steel">
-                No saved payroll activity recorded yet.
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-          </section>
+        </section>
       </>
 
       {error ? (

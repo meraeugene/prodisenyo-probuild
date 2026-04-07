@@ -443,7 +443,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4 p-6">
         <DashboardPageHero
           eyebrow="Account"
           title="Settings"

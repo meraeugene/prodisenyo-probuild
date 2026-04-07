@@ -6,11 +6,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   Building2,
+  ChevronsLeft,
+  ChevronsRight,
   ChevronRight,
   Clock3,
   LayoutDashboard,
   LineChart,
   Menu,
+  Receipt,
   Settings,
   Upload,
   UserRoundSearch,
@@ -31,6 +34,11 @@ const PRIMARY_NAV_ITEMS = [
 
 const CEO_GENERAL_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    href: "/budget-tracker",
+    label: "Budget Tracker",
+    icon: Receipt,
+  },
   {
     href: "/payroll-reports",
     label: "Payroll Reports",
@@ -77,9 +85,10 @@ export default function DashboardShell({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const { hasAttendanceData, currentPayrollRunId, workspaceReset } =
     useAppState();
-  const sidebarWidth = "286px";
+  const sidebarWidth = collapsed ? "80px" : "286px";
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
   const isWorkflowRoute =
@@ -99,6 +108,14 @@ export default function DashboardShell({
     document.documentElement.style.overflow = "";
     setOpen(false);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname === "/budget-tracker") {
+      setCollapsed(true);
+    } else {
+      setCollapsed(false);
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -127,18 +144,20 @@ export default function DashboardShell({
     const supabase = createSupabaseBrowserClient();
 
     async function loadPendingOvertimeCount() {
-      const [{ count: overtimeCount, error: overtimeError }, { count: payrollReportCount, error: payrollReportError }] =
-        await Promise.all([
-          supabase
-            .from("payroll_adjustments")
-            .select("id", { count: "exact", head: true })
-            .eq("adjustment_type", "overtime")
-            .eq("status", "pending"),
-          supabase
-            .from("payroll_runs")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "submitted"),
-        ]);
+      const [
+        { count: overtimeCount, error: overtimeError },
+        { count: payrollReportCount, error: payrollReportError },
+      ] = await Promise.all([
+        supabase
+          .from("payroll_adjustments")
+          .select("id", { count: "exact", head: true })
+          .eq("adjustment_type", "overtime")
+          .eq("status", "pending"),
+        supabase
+          .from("payroll_runs")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "submitted"),
+      ]);
 
       if (cancelled || overtimeError || payrollReportError) return;
 
@@ -204,7 +223,7 @@ export default function DashboardShell({
 
         <aside
           className={cn(
-            "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-apple-mist bg-white transition-transform duration-300 lg:translate-x-0",
+            "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-visible border-r border-apple-mist bg-white transition-transform duration-300 lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
           style={{ width: sidebarWidth }}
@@ -218,27 +237,49 @@ export default function DashboardShell({
                 <Building2 className="h-4 w-4" strokeWidth={1.5} />
               </div>
 
-              <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
-                Prodisenyo PayTrack
-              </p>
+              {!collapsed ? (
+                <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
+                  Prodisenyo PayTrack
+                </p>
+              ) : null}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
-              aria-label="Close navigation"
-            >
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCollapsed((current) => !current)}
+                className="hidden h-8 w-8 items-center justify-center rounded-lg text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:flex"
+                aria-label={
+                  collapsed ? "Expand navigation" : "Collapse navigation"
+                }
+                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {collapsed ? (
+                  <ChevronsRight size={16} />
+                ) : (
+                  <ChevronsLeft size={16} />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
+                aria-label="Close navigation"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-3 pt-5">
-            <div className="px-3 pb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                General
-              </p>
-            </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-4 pb-3 pt-5">
+            {!collapsed ? (
+              <div className="px-3 pb-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                  General
+                </p>
+              </div>
+            ) : null}
 
             <nav className="space-y-3">
               {!isCeo
@@ -250,7 +291,8 @@ export default function DashboardShell({
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          collapsed && "justify-center px-2.5",
                           active
                             ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                             : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -266,7 +308,9 @@ export default function DashboardShell({
                         >
                           <item.icon size={15} />
                         </div>
-                        <span className="font-medium">{item.label}</span>
+                        {!collapsed ? (
+                          <span className="font-medium">{item.label}</span>
+                        ) : null}
                       </Link>
                     );
                   })
@@ -278,7 +322,8 @@ export default function DashboardShell({
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                          collapsed && "justify-center px-2.5",
                           active
                             ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                             : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -294,12 +339,19 @@ export default function DashboardShell({
                         >
                           <item.icon size={15} />
                         </div>
-                        <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
-                          {item.label}
-                        </span>
+                        {!collapsed ? (
+                          <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
+                            {item.label}
+                          </span>
+                        ) : null}
                         {item.href === "/overtime-approvals" &&
                         pendingOvertimeCount > 0 ? (
-                          <span className="ml-1 inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white">
+                          <span
+                            className={cn(
+                              "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+                              collapsed ? "absolute -right-1 -top-1" : "ml-1",
+                            )}
+                          >
                             {pendingOvertimeCount > 99
                               ? "99+"
                               : pendingOvertimeCount}
@@ -307,7 +359,12 @@ export default function DashboardShell({
                         ) : null}
                         {item.href === "/payroll-reports" &&
                         pendingPayrollReportCount > 0 ? (
-                          <span className="ml-1 inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white">
+                          <span
+                            className={cn(
+                              "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+                              collapsed ? "absolute -right-1 -top-1" : "ml-1",
+                            )}
+                          >
                             {pendingPayrollReportCount > 99
                               ? "99+"
                               : pendingPayrollReportCount}
@@ -345,7 +402,8 @@ export default function DashboardShell({
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                              "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                              "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                              collapsed && "justify-center px-2.5",
                               active
                                 ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                                 : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -361,7 +419,9 @@ export default function DashboardShell({
                             >
                               <item.icon size={15} />
                             </div>
-                            <span className="font-medium">{item.label}</span>
+                            {!collapsed ? (
+                              <span className="font-medium">{item.label}</span>
+                            ) : null}
                           </Link>
                         </motion.div>
                       );
@@ -369,19 +429,21 @@ export default function DashboardShell({
                   </motion.div>
                 ) : null}
               </AnimatePresence>
-
             </nav>
 
             <div className="mt-auto space-y-1 pt-3">
-              <div className="px-3 pb-1 pt-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                  Account
-                </p>
-              </div>
+              {!collapsed ? (
+                <div className="px-3 pb-1 pt-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                    Account
+                  </p>
+                </div>
+              ) : null}
               <Link
                 href="/settings"
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                  "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+                  collapsed && "justify-center px-2.5",
                   settingsActive
                     ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                     : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
@@ -397,16 +459,21 @@ export default function DashboardShell({
                 >
                   <Settings size={15} />
                 </div>
-                <span className="font-medium">Settings</span>
+                {!collapsed ? <span className="font-medium">Settings</span> : null}
               </Link>
 
               <div className="pt-2">
-                <SignOutButton variant="sidebar" />
+                <SignOutButton variant="sidebar" collapsed={collapsed} />
               </div>
 
               <div className="pt-4">
                 <div className="rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]">
-                  <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex items-center gap-3",
+                      collapsed && "justify-center",
+                    )}
+                  >
                     <ProfileAvatar
                       avatarUrl={getProfileAvatarPublicUrl(
                         profile?.avatar_path,
@@ -415,31 +482,40 @@ export default function DashboardShell({
                       sizeClassName="h-10 w-10"
                       textClassName="text-xs"
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-apple-charcoal">
-                        {profile?.full_name?.trim() ||
-                          profile?.username ||
-                          "Signed-in user"}
-                      </p>
-                      <p className="truncate text-xs text-apple-steel">
-                        {profile?.username
-                          ? ` ${formatRoleLabel(profile.role)}`
-                          : "Loading account details..."}
-                      </p>
-                    </div>
+                    {!collapsed ? (
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-apple-charcoal">
+                          {profile?.full_name?.trim() ||
+                            profile?.username ||
+                            "Signed-in user"}
+                        </p>
+                        <p className="truncate text-xs text-apple-steel">
+                          {profile?.username
+                            ? ` ${formatRoleLabel(profile.role)}`
+                            : "Loading account details..."}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
-                <p className="pt-4 text-center text-[11px] text-[#b6c1c7]">
-                  Copyright @2026 Veron Software. <br />
-                  All rights reserved.
-                </p>
+                {!collapsed ? (
+                  <p className="pt-4 text-center text-[11px] text-[#b6c1c7]">
+                    Copyright @2026 Veron Software. <br />
+                    All rights reserved.
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
         </aside>
 
-        <div className="min-h-screen lg:pl-[286px]">
+        <div
+          className={cn(
+            "min-h-screen transition-[padding] duration-300",
+            collapsed ? "lg:pl-[80px]" : "lg:pl-[286px]",
+          )}
+        >
           {/* Mobile top bar */}
           <div
             className="sticky top-0 z-30 flex items-center justify-between border-b border-apple-mist bg-white px-4 lg:hidden"
@@ -463,7 +539,7 @@ export default function DashboardShell({
             </button>
           </div>
 
-          <main className="min-h-screen bg-white p-6">{children}</main>
+          <main className="min-h-screen bg-white ">{children}</main>
         </div>
       </div>
     </div>

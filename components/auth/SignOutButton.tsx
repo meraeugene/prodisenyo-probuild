@@ -7,14 +7,17 @@ import { signOutAction } from "@/actions/auth";
 
 interface SignOutButtonProps {
   variant?: "sidebar" | "default";
+  collapsed?: boolean;
 }
 
 function SignOutButtonContent({
   variant,
   submitting,
+  collapsed = false,
 }: {
   variant: "sidebar" | "default";
   submitting: boolean;
+  collapsed?: boolean;
 }) {
   const { pending } = useFormStatus();
   const busy = pending || submitting;
@@ -24,7 +27,9 @@ function SignOutButtonContent({
       <button
         type="submit"
         disabled={busy}
-        className="group flex w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
+        className={`group relative flex w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${
+          collapsed ? "justify-center px-2.5" : ""
+        }`}
       >
         <div className="flex h-7 w-7 items-center justify-center rounded-full text-apple-smoke transition-colors group-hover:text-apple-charcoal">
           {busy ? (
@@ -33,7 +38,9 @@ function SignOutButtonContent({
             <LogOut size={15} />
           )}
         </div>
-        <span className="font-medium">{busy ? "Logging out..." : "Logout"}</span>
+        {!collapsed ? (
+          <span className="font-medium">{busy ? "Logging out..." : "Logout"}</span>
+        ) : null}
       </button>
     );
   }
@@ -56,6 +63,7 @@ function SignOutButtonContent({
 
 export default function SignOutButton({
   variant = "default",
+  collapsed = false,
 }: SignOutButtonProps) {
   const [submitting, setSubmitting] = useState(false);
 
@@ -66,7 +74,11 @@ export default function SignOutButton({
         setSubmitting(true);
       }}
     >
-      <SignOutButtonContent variant={variant} submitting={submitting} />
+      <SignOutButtonContent
+        variant={variant}
+        submitting={submitting}
+        collapsed={collapsed}
+      />
     </form>
   );
 }

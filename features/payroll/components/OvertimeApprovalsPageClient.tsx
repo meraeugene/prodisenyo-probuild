@@ -16,7 +16,7 @@ export default function OvertimeApprovalsPageClient() {
   }, [isRefreshing]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6">
       <DashboardPageHero
         eyebrow="Approvals"
         title="Overtime Approvals"
@@ -40,10 +40,7 @@ export default function OvertimeApprovalsPageClient() {
         }
       />
 
-      <PayrollApprovalQueue
-        role="ceo"
-        refreshToken={refreshToken}
-      />
+      <PayrollApprovalQueue role="ceo" refreshToken={refreshToken} />
     </div>
   );
 }

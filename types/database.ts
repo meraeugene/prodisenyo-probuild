@@ -18,6 +18,21 @@ export type AdjustmentType =
   | "paid_holiday"
   | "cash_advance"
   | "paid_leave";
+export type BudgetProjectType =
+  | "new_build"
+  | "renovation"
+  | "extension"
+  | "other";
+export type BudgetItemStatus = "upcoming" | "ongoing" | "completed";
+export type BudgetItemCategory =
+  | "materials"
+  | "labor"
+  | "equipment"
+  | "permits"
+  | "services"
+  | "utilities"
+  | "transportation"
+  | "miscellaneous";
 
 export interface Database {
   public: {
@@ -460,6 +475,85 @@ export interface Database {
           updated_at?: string;
         };
       };
+      budget_projects: {
+        Row: {
+          id: string;
+          name: string;
+          project_type: BudgetProjectType | null;
+          currency_code: string;
+          starting_budget: number;
+          is_archived: boolean;
+          created_by: string;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          project_type?: BudgetProjectType | null;
+          currency_code?: string;
+          starting_budget?: number;
+          is_archived?: boolean;
+          created_by: string;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          project_type?: BudgetProjectType | null;
+          currency_code?: string;
+          starting_budget?: number;
+          is_archived?: boolean;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+      };
+      budget_items: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          status: BudgetItemStatus;
+          category: BudgetItemCategory;
+          estimated_cost: number;
+          actual_spent: number;
+          notes: string | null;
+          sort_order: number;
+          created_by: string;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          status?: BudgetItemStatus;
+          category: BudgetItemCategory;
+          estimated_cost?: number;
+          actual_spent?: number;
+          notes?: string | null;
+          sort_order?: number;
+          created_by: string;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          project_id?: string;
+          name?: string;
+          status?: BudgetItemStatus;
+          category?: BudgetItemCategory;
+          estimated_cost?: number;
+          actual_spent?: number;
+          notes?: string | null;
+          sort_order?: number;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+      };
       audit_logs: {
         Row: {
           id: string;
@@ -495,6 +589,9 @@ export interface Database {
       payroll_run_status: PayrollRunStatus;
       adjustment_status: AdjustmentStatus;
       adjustment_type: AdjustmentType;
+      budget_project_type: BudgetProjectType;
+      budget_item_status: BudgetItemStatus;
+      budget_item_category: BudgetItemCategory;
     };
   };
 }
