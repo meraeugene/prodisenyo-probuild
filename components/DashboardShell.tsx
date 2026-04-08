@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   Building2,
+  Calculator,
   ChevronsLeft,
   ChevronsRight,
   ChevronRight,
@@ -44,6 +45,11 @@ const CEO_GENERAL_ITEMS = [
     label: "Overtime Approvals",
     icon: Clock3,
   },
+  {
+    href: "/estimate-reviews",
+    label: "Estimate Reviews",
+    icon: Calculator,
+  },
 ] as const;
 
 const GENERAL_WORKFLOW_ITEMS = [
@@ -59,6 +65,10 @@ const BUDGET_NAV_ITEMS = [
   { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
 ] as const;
 
+const ENGINEER_NAV_ITEMS = [
+  { href: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
+] as const;
+
 type ProfileCardData = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
   "full_name" | "username" | "avatar_path" | "role"
@@ -67,6 +77,7 @@ type ProfileCardData = Pick<
 function formatRoleLabel(role: ProfileCardData["role"] | null): string {
   if (role === "ceo") return "Chief Executive Officer";
   if (role === "payroll_manager") return "Payroll Manager";
+  if (role === "engineer") return "Engineer";
   return "Signed-in user";
 }
 
@@ -93,12 +104,15 @@ export default function DashboardShell({
   const isWorkflowRoute =
     pathname === "/review-attendance" || pathname === "/generate-payroll";
   const isCeo = profile?.role === "ceo";
+  const isEngineer = profile?.role === "engineer";
   const canSeeWorkflowNav =
     isCeo ||
-    (!workspaceReset &&
+    (!isEngineer &&
+      !workspaceReset &&
       (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
   const [pendingPayrollReportCount, setPendingPayrollReportCount] = useState(0);
+  const [pendingEstimateReviewCount, setPendingEstimateReviewCount] = useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
 
@@ -135,6 +149,7 @@ export default function DashboardShell({
     if (!isCeo) {
       setPendingOvertimeCount(0);
       setPendingPayrollReportCount(0);
+      setPendingEstimateReviewCount(0);
       previousPendingCountRef.current = null;
       return;
     }
@@ -146,6 +161,7 @@ export default function DashboardShell({
       const [
         { count: overtimeCount, error: overtimeError },
         { count: payrollReportCount, error: payrollReportError },
+        { count: estimateReviewCount, error: estimateReviewError },
       ] = await Promise.all([
         supabase
           .from("payroll_adjustments")
@@ -156,14 +172,26 @@ export default function DashboardShell({
           .from("payroll_runs")
           .select("id", { count: "exact", head: true })
           .eq("status", "submitted"),
+        supabase
+          .from("project_estimates")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "submitted"),
       ]);
 
-      if (cancelled || overtimeError || payrollReportError) return;
+      if (
+        cancelled ||
+        overtimeError ||
+        payrollReportError ||
+        estimateReviewError
+      ) {
+        return;
+      }
 
       const nextCount = overtimeCount ?? 0;
       const previousCount = previousPendingCountRef.current;
       setPendingOvertimeCount(nextCount);
       setPendingPayrollReportCount(payrollReportCount ?? 0);
+      setPendingEstimateReviewCount(estimateReviewCount ?? 0);
 
       if (
         previousCount !== null &&
@@ -276,12 +304,16 @@ export default function DashboardShell({
               {!collapsed ? (
                 <div className="px-3 pb-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    {isCeo ? "General" : "Attendance"}
+                    {isCeo ? "General" : isEngineer ? "Estimator" : "Attendance"}
                   </p>
                 </div>
               ) : null}
 
-              {(!isCeo ? PRIMARY_NAV_ITEMS : CEO_GENERAL_ITEMS).map((item) => {
+              {(isCeo
+                ? CEO_GENERAL_ITEMS
+                : isEngineer
+                  ? ENGINEER_NAV_ITEMS
+                  : PRIMARY_NAV_ITEMS).map((item) => {
                 const active = pathname === item.href;
                 return (
                   <Link
@@ -334,6 +366,19 @@ export default function DashboardShell({
                         {pendingPayrollReportCount > 99
                           ? "99+"
                           : pendingPayrollReportCount}
+                      </span>
+                    ) : null}
+                    {item.href === "/estimate-reviews" &&
+                    pendingEstimateReviewCount > 0 ? (
+                      <span
+                        className={cn(
+                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
+                        )}
+                      >
+                        {pendingEstimateReviewCount > 99
+                          ? "99+"
+                          : pendingEstimateReviewCount}
                       </span>
                     ) : null}
                   </Link>
@@ -404,7 +449,7 @@ export default function DashboardShell({
                 ) : null}
               </AnimatePresence>
 
-              {!collapsed ? (
+              {!collapsed && !isEngineer ? (
                 <div className="px-3 pb-1 pt-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
                     Budget
@@ -412,7 +457,7 @@ export default function DashboardShell({
                 </div>
               ) : null}
 
-              {BUDGET_NAV_ITEMS.map((item) => {
+              {!isEngineer && BUDGET_NAV_ITEMS.map((item) => {
                 const active = pathname === item.href;
                 return (
                   <Link

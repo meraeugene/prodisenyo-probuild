@@ -13,6 +13,8 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/upload-attendance",
   "/budget-tracker",
+  "/cost-estimator",
+  "/estimate-reviews",
   "/review-attendance",
   "/generate-payroll",
   "/attendance-analytics",
@@ -30,6 +32,7 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 const CEO_ALLOWED_PREFIXES = [
   "/dashboard",
   "/budget-tracker",
+  "/estimate-reviews",
   "/overtime-approvals",
   "/attendance-analytics",
   "/payroll-analytics",
@@ -39,6 +42,8 @@ const CEO_ALLOWED_PREFIXES = [
 
 const CEO_ONLY_PREFIXES = ["/overtime-approvals", "/payroll-reports"] as const;
 const PAYROLL_MANAGER_REDIRECT_PATH = "/upload-attendance";
+const ENGINEER_REDIRECT_PATH = "/cost-estimator";
+const ENGINEER_ALLOWED_PREFIXES = ["/cost-estimator", "/settings"] as const;
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some(
@@ -60,6 +65,12 @@ function isAllowedCeoPath(pathname: string) {
 
 function isCeoOnlyPath(pathname: string) {
   return CEO_ONLY_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+function isAllowedEngineerPath(pathname: string) {
+  return ENGINEER_ALLOWED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
@@ -113,6 +124,8 @@ export async function updateSession(request: NextRequest) {
       redirectUrl.pathname =
         currentRole === "payroll_manager"
           ? PAYROLL_MANAGER_REDIRECT_PATH
+          : currentRole === "engineer"
+            ? ENGINEER_REDIRECT_PATH
           : "/dashboard";
       redirectUrl.searchParams.delete("next");
       redirectUrl.searchParams.delete("required");
@@ -163,6 +176,13 @@ export async function updateSession(request: NextRequest) {
     if (!profileError && currentRole === "ceo" && !isAllowedCeoPath(pathname)) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/dashboard";
+      redirectUrl.searchParams.delete("required");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (!profileError && currentRole === "engineer" && !isAllowedEngineerPath(pathname)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = ENGINEER_REDIRECT_PATH;
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }

@@ -9,6 +9,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import PayrollApprovalQueue from "@/features/payroll/components/PayrollApprovalQueue";
 import PayrollSection from "@/features/payroll/components/PayrollSection";
 import { useAppState } from "@/features/app/AppStateProvider";
+import type { AppRole } from "@/types/database";
 
 export default function PayrollPage() {
   const {
@@ -22,7 +23,7 @@ export default function PayrollPage() {
     setCurrentPayrollRunMeta,
     handleGeneratePayroll,
   } = useAppState();
-  const [role, setRole] = useState<"ceo" | "payroll_manager" | null>(null);
+  const [role, setRole] = useState<AppRole | null>(null);
   const [isPending, startTransition] = useTransition();
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
@@ -46,7 +47,7 @@ export default function PayrollPage() {
         .eq("id", user.id)
         .maybeSingle();
       const profile = (data ?? null) as {
-        role: "ceo" | "payroll_manager";
+        role: AppRole;
       } | null;
 
       if (cancelled) return;

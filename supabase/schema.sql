@@ -8,13 +8,14 @@ begin
     join pg_namespace n on n.oid = t.typnamespace
     where t.typname = 'app_role' and n.nspname = 'public'
   ) then
-    create type public.app_role as enum ('ceo', 'payroll_manager');
+    create type public.app_role as enum ('ceo', 'payroll_manager', 'engineer');
   end if;
 end
 $$;
 
 alter type public.app_role add value if not exists 'ceo';
 alter type public.app_role add value if not exists 'payroll_manager';
+alter type public.app_role add value if not exists 'engineer';
 
 do $$
 begin
@@ -362,6 +363,21 @@ as $$
     from public.profiles p
     where p.id = auth.uid()
       and p.role = 'payroll_manager'::public.app_role
+  )
+$$;
+
+create or replace function public.is_engineer()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists(
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role = 'engineer'::public.app_role
   )
 $$;
 

@@ -1,0 +1,97 @@
+import type {
+  BudgetItemCategory,
+  BudgetProjectType,
+  Database,
+  EstimateStatus,
+} from "@/types/database";
+
+export type CostCatalogItemRow =
+  Database["public"]["Tables"]["cost_catalog_items"]["Row"];
+export type ProjectEstimateRow =
+  Database["public"]["Tables"]["project_estimates"]["Row"];
+export type ProjectEstimateItemRow =
+  Database["public"]["Tables"]["project_estimate_items"]["Row"];
+
+export interface MaterialUnitOption {
+  optionId: string;
+  catalogItemId: string;
+  unitType: string;
+  unitCost: number;
+  rawCostLabel: string;
+  category: BudgetItemCategory;
+  notes: string | null;
+}
+
+export interface MaterialOptionGroup {
+  materialId: string;
+  materialName: string;
+  searchText: string;
+  units: MaterialUnitOption[];
+}
+
+export interface ProjectEstimateDraftLine {
+  id?: string;
+  catalogItemId: string;
+  materialId: string;
+  materialName: string;
+  unitType: string;
+  unitCost: number;
+  quantity: number;
+  lineTotal: number;
+  displayName: string;
+  notes: string;
+  sortOrder: number;
+}
+
+export interface ProjectEstimateDraftForm {
+  id?: string;
+  projectName: string;
+  projectType: BudgetProjectType | "";
+  costEstimate: number;
+  notes: string;
+  items: ProjectEstimateDraftLine[];
+}
+
+export interface EstimateItemModalForm {
+  id?: string;
+  displayName: string;
+  notes: string;
+  materials: EstimateItemModalMaterialForm[];
+}
+
+export interface EstimateItemModalMaterialForm {
+  id: string;
+  saved: boolean;
+  searchInput: string;
+  catalogItemId: string;
+  materialId: string;
+  materialName: string;
+  unitType: string;
+  rawCostLabel: string;
+  unitCostInput: string;
+  quantityInput: string;
+}
+
+export const EMPTY_ESTIMATE_FORM: ProjectEstimateDraftForm = {
+  projectName: "",
+  projectType: "",
+  costEstimate: 0,
+  notes: "",
+  items: [],
+};
+
+export const EMPTY_ESTIMATE_ITEM_MODAL_FORM: EstimateItemModalForm = {
+  displayName: "",
+  notes: "",
+  materials: [],
+};
+
+export const ESTIMATE_STATUS_OPTIONS: Array<{
+  value: EstimateStatus;
+  label: string;
+}> = [
+  { value: "draft", label: "Draft" },
+  { value: "submitted", label: "Submitted" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];

@@ -58,6 +58,7 @@ import {
   type GroupedEmployeeMetrics,
   type GroupedEmployeePayrollRow,
 } from "@/features/payroll/utils/payrollSectionHelpers";
+import type { AppRole } from "@/types/database";
 
 interface PayrollSectionProps {
   dailyRowsCount: number;
@@ -72,7 +73,7 @@ interface PayrollSectionProps {
     | "approved"
     | "rejected"
     | null;
-  currentUserRole: "ceo" | "payroll_manager" | null;
+  currentUserRole: AppRole | null;
   savePending: boolean;
 }
 

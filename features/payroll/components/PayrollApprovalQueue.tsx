@@ -5,9 +5,10 @@ import PayrollApprovalEmployeeLogsModal from "@/features/payroll/components/Payr
 import PayrollApprovalQueueCard from "@/features/payroll/components/PayrollApprovalQueueCard";
 import PayrollApprovalQueueSkeleton from "@/features/payroll/components/PayrollApprovalQueueSkeleton";
 import { usePayrollApprovalQueue } from "@/features/payroll/hooks/usePayrollApprovalQueue";
+import type { AppRole } from "@/types/database";
 
 interface PayrollApprovalQueueProps {
-  role: "ceo" | "payroll_manager" | null;
+  role: AppRole | null;
   roleLoading?: boolean;
   onRequestResolved?: (runId: string | null) => void;
   refreshToken?: number;

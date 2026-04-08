@@ -16,9 +16,10 @@ import {
   type EmployeeLogsModalState,
   type PendingOvertimeRequest,
 } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
+import type { AppRole } from "@/types/database";
 
 interface UsePayrollApprovalQueueOptions {
-  role: "ceo" | "payroll_manager" | null;
+  role: AppRole | null;
   roleLoading?: boolean;
   onRequestResolved?: (runId: string | null) => void;
   refreshToken?: number;

@@ -7,6 +7,7 @@ export const MAX_AVATAR_FILE_SIZE = 2 * 1024 * 1024;
 export function roleLabel(role: ProfileRow["role"] | null) {
   if (role === "ceo") return "Chief Executive Officer";
   if (role === "payroll_manager") return "Payroll Manager";
+  if (role === "engineer") return "Engineer";
   return "Signed-in user";
 }
 

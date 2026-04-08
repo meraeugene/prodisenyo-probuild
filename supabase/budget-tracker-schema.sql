@@ -80,11 +80,14 @@ create table if not exists public.budget_projects (
   currency_code text not null default 'PHP',
   starting_budget numeric(14,2) not null default 0 check (starting_budget >= 0),
   is_archived boolean not null default false,
+  source_estimate_id uuid,
   created_by uuid not null references public.profiles(id) on delete restrict,
   updated_by uuid references public.profiles(id) on delete set null,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.budget_projects add column if not exists source_estimate_id uuid;
 
 create table if not exists public.budget_items (
   id uuid primary key default gen_random_uuid(),
@@ -107,6 +110,10 @@ create index if not exists budget_projects_created_by_idx
 
 create index if not exists budget_projects_active_idx
   on public.budget_projects(is_archived, created_at desc);
+
+create unique index if not exists budget_projects_source_estimate_id_idx
+  on public.budget_projects(source_estimate_id)
+  where source_estimate_id is not null;
 
 create index if not exists budget_items_project_id_idx
   on public.budget_items(project_id);

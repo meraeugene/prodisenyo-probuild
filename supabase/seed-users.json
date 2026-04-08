@@ -16,5 +16,11 @@
     "password": "ChangeMe123!",
     "full_name": "HR Payroll Manager",
     "role": "payroll_manager"
+  },
+  {
+    "username": "engineer",
+    "password": "ChangeMe123!",
+    "full_name": "Project Engineer",
+    "role": "engineer"
   }
 ]

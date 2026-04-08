@@ -5,6 +5,7 @@ import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import type { Database, PayrollRunStatus } from "@/types/database";
 import type { AttendanceRecord, Employee } from "@/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { AppRole } from "@/types/database";
 import { useAppState } from "@/features/app/AppStateProvider";
 import {
   normalizeEmployeeNameKey,
@@ -130,7 +131,7 @@ export interface HistoricalDashboardData {
   selectedPayrollItems: HistoricalDashboardPayrollItem[];
   selectedAttendanceLogs: HistoricalDashboardAttendanceLog[];
   selectedPayrollDailyTotals: HistoricalDashboardDailyTotal[];
-  viewerRole: "ceo" | "payroll_manager" | null;
+  viewerRole: AppRole | null;
   debug: HistoricalDashboardDebug;
 }
 
@@ -461,7 +462,7 @@ export function useHistoricalDashboardData(
           throw new Error(profileError.message);
         }
 
-        const role = (profileData as { role: "ceo" | "payroll_manager" } | null)
+        const role = (profileData as { role: AppRole } | null)
           ?.role;
         const isCeo = role === "ceo";
 

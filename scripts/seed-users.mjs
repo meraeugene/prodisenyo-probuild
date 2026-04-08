@@ -80,9 +80,9 @@ async function readSeedUsers() {
     if (!password) {
       throw new Error(`User ${username} is missing password.`);
     }
-    if (role !== "ceo" && role !== "payroll_manager") {
+    if (role !== "ceo" && role !== "payroll_manager" && role !== "engineer") {
       throw new Error(
-        `User ${username} has invalid role "${role}". Expected "ceo" or "payroll_manager".`,
+        `User ${username} has invalid role "${role}". Expected "ceo", "payroll_manager", or "engineer".`,
       );
     }
 

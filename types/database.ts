@@ -6,13 +6,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type AppRole = "ceo" | "payroll_manager";
+export type AppRole = "ceo" | "payroll_manager" | "engineer";
 export type PayrollRunStatus =
   | "draft"
   | "submitted"
   | "approved"
   | "rejected";
 export type AdjustmentStatus = "pending" | "approved" | "rejected";
+export type EstimateStatus = "draft" | "submitted" | "approved" | "rejected";
 export type AdjustmentType =
   | "overtime"
   | "paid_holiday"
@@ -483,6 +484,7 @@ export interface Database {
           currency_code: string;
           starting_budget: number;
           is_archived: boolean;
+          source_estimate_id: string | null;
           created_by: string;
           updated_by: string | null;
           created_at: string;
@@ -495,6 +497,7 @@ export interface Database {
           currency_code?: string;
           starting_budget?: number;
           is_archived?: boolean;
+          source_estimate_id?: string | null;
           created_by: string;
           updated_by?: string | null;
           created_at?: string;
@@ -506,6 +509,7 @@ export interface Database {
           currency_code?: string;
           starting_budget?: number;
           is_archived?: boolean;
+          source_estimate_id?: string | null;
           updated_by?: string | null;
           updated_at?: string;
         };
@@ -554,6 +558,148 @@ export interface Database {
           updated_at?: string;
         };
       };
+      cost_catalog_items: {
+        Row: {
+          id: string;
+          name: string;
+          category: BudgetItemCategory;
+          unit_label: string;
+          unit_cost: number;
+          notes: string | null;
+          is_active: boolean;
+          created_by: string;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: BudgetItemCategory;
+          unit_label: string;
+          unit_cost?: number;
+          notes?: string | null;
+          is_active?: boolean;
+          created_by: string;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          category?: BudgetItemCategory;
+          unit_label?: string;
+          unit_cost?: number;
+          notes?: string | null;
+          is_active?: boolean;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+      };
+      project_estimates: {
+        Row: {
+          id: string;
+          project_name: string;
+          project_type: BudgetProjectType | null;
+          client_name: string | null;
+          notes: string | null;
+          status: EstimateStatus;
+          estimate_total: number;
+          requested_by: string;
+          submitted_at: string | null;
+          approved_by: string | null;
+          approved_at: string | null;
+          rejected_at: string | null;
+          rejection_reason: string | null;
+          budget_project_id: string | null;
+          source_estimate_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_name: string;
+          project_type?: BudgetProjectType | null;
+          client_name?: string | null;
+          notes?: string | null;
+          status?: EstimateStatus;
+          estimate_total?: number;
+          requested_by: string;
+          submitted_at?: string | null;
+          approved_by?: string | null;
+          approved_at?: string | null;
+          rejected_at?: string | null;
+          rejection_reason?: string | null;
+          budget_project_id?: string | null;
+          source_estimate_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          project_name?: string;
+          project_type?: BudgetProjectType | null;
+          client_name?: string | null;
+          notes?: string | null;
+          status?: EstimateStatus;
+          estimate_total?: number;
+          submitted_at?: string | null;
+          approved_by?: string | null;
+          approved_at?: string | null;
+          rejected_at?: string | null;
+          rejection_reason?: string | null;
+          budget_project_id?: string | null;
+          source_estimate_id?: string | null;
+          updated_at?: string;
+        };
+      };
+      project_estimate_items: {
+        Row: {
+          id: string;
+          estimate_id: string;
+          catalog_item_id: string | null;
+          item_name_snapshot: string;
+          material_name_snapshot: string;
+          category_snapshot: BudgetItemCategory;
+          unit_label_snapshot: string;
+          unit_cost_snapshot: number;
+          quantity: number;
+          line_total: number;
+          notes: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          estimate_id: string;
+          catalog_item_id?: string | null;
+          item_name_snapshot: string;
+          material_name_snapshot: string;
+          category_snapshot: BudgetItemCategory;
+          unit_label_snapshot: string;
+          unit_cost_snapshot?: number;
+          quantity?: number;
+          line_total?: number;
+          notes?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          estimate_id?: string;
+          catalog_item_id?: string | null;
+          item_name_snapshot?: string;
+          material_name_snapshot?: string;
+          category_snapshot?: BudgetItemCategory;
+          unit_label_snapshot?: string;
+          unit_cost_snapshot?: number;
+          quantity?: number;
+          line_total?: number;
+          notes?: string | null;
+          sort_order?: number;
+          updated_at?: string;
+        };
+      };
       audit_logs: {
         Row: {
           id: string;
@@ -588,6 +734,7 @@ export interface Database {
       app_role: AppRole;
       payroll_run_status: PayrollRunStatus;
       adjustment_status: AdjustmentStatus;
+      estimate_status: EstimateStatus;
       adjustment_type: AdjustmentType;
       budget_project_type: BudgetProjectType;
       budget_item_status: BudgetItemStatus;

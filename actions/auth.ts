@@ -6,7 +6,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
-import { DEFAULT_AUTH_REDIRECT } from "@/lib/auth";
+import { DEFAULT_AUTH_REDIRECT, APP_ROLES, getRoleHomePath } from "@/lib/auth";
 
 type ProfileLookupRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
@@ -68,15 +68,13 @@ export async function signInAction(
     return { error: "Invalid username or password." };
   }
 
-  const isCeo = profile.role === "ceo";
-  const payrollManagerRequestedDashboard =
-    !isCeo &&
+  const roleHomePath = getRoleHomePath(profile.role);
+  const nonCeoRequestedDashboard =
+    profile.role !== APP_ROLES.CEO &&
     (nextPath === "/dashboard" || nextPath.startsWith("/dashboard/"));
-  const redirectPath = isCeo
-    ? "/dashboard"
-    : payrollManagerRequestedDashboard
-      ? "/upload-attendance"
-      : nextPath || "/upload-attendance";
+  const redirectPath = nonCeoRequestedDashboard
+    ? roleHomePath
+    : nextPath || roleHomePath;
 
   redirect(redirectPath || DEFAULT_AUTH_REDIRECT);
 }

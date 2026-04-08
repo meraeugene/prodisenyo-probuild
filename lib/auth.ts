@@ -8,9 +8,16 @@ type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 export const APP_ROLES = {
   CEO: "ceo",
   PAYROLL_MANAGER: "payroll_manager",
+  ENGINEER: "engineer",
 } as const satisfies Record<string, AppRole>;
 
 export const DEFAULT_AUTH_REDIRECT = "/dashboard";
+
+export function getRoleHomePath(role: AppRole | null | undefined) {
+  if (role === APP_ROLES.PAYROLL_MANAGER) return "/upload-attendance";
+  if (role === APP_ROLES.ENGINEER) return "/cost-estimator";
+  return "/dashboard";
+}
 
 export const getCurrentUser = cache(async () => {
   const supabase = await createSupabaseServerClient();
@@ -53,7 +60,7 @@ export async function requireRole(roles: AppRole | AppRole[]) {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
   if (!profile || !allowedRoles.includes(profile.role)) {
-    redirect(profile?.role === APP_ROLES.PAYROLL_MANAGER ? "/upload-attendance" : "/dashboard");
+    redirect(getRoleHomePath(profile?.role));
   }
 
   return { user, profile };

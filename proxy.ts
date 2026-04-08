@@ -11,6 +11,8 @@ export const config = {
     "/dashboard/:path*",
     "/upload-attendance/:path*",
     "/budget-tracker/:path*",
+    "/cost-estimator/:path*",
+    "/estimate-reviews/:path*",
     "/review-attendance/:path*",
     "/generate-payroll/:path*",
     "/overtime-approvals/:path*",
