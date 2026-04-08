@@ -24,6 +24,7 @@ import {
 import {
   buildEstimateDraftForm,
   buildEstimateItemModalForm,
+  buildEstimateItemModalFormFromItems,
   buildEstimateItemsMap,
   buildInitialModalMaterial,
   ensureEstimateLineTotals,
@@ -48,8 +49,8 @@ function round2(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-function buildDisplayName(baseName: string, materialName: string, bundleCount: number) {
-  return bundleCount > 1 ? `${baseName} - ${materialName}` : baseName;
+function buildDisplayName(baseName: string) {
+  return baseName;
 }
 
 function setCostEstimatorModalScrollEnabled(enabled: boolean) {
@@ -118,7 +119,8 @@ export function useCostEstimatorPage({
   const [itemModalForm, setItemModalForm] = useState<EstimateItemModalForm>(
     EMPTY_ESTIMATE_ITEM_MODAL_FORM,
   );
-  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [itemModalReadOnly, setItemModalReadOnly] = useState(false);
+  const [editingItemIndices, setEditingItemIndices] = useState<number[] | null>(null);
   const [activeReportEstimateId, setActiveReportEstimateId] = useState<string | null>(
     null,
   );
@@ -379,32 +381,48 @@ export function useCostEstimatorPage({
     });
   }
 
-  function handleOpenAddCostModal(index?: number) {
+  function handleOpenAddCostModal() {
     setCostEstimatorModalScrollEnabled(true);
-
-    const nextItem = typeof index === "number" ? estimateForm.items[index] ?? null : null;
-
-    if (nextItem) {
-      setItemModalForm(buildEstimateItemModalForm(nextItem));
-      setEditingItemIndex(index ?? null);
-      setItemModalOpen(true);
-      return;
-    }
+    setItemModalReadOnly(false);
 
     setItemModalForm({
       ...EMPTY_ESTIMATE_ITEM_MODAL_FORM,
       displayName: "",
       materials: [],
     });
-    setEditingItemIndex(null);
+    setEditingItemIndices(null);
     setItemModalOpen(true);
   }
 
   function handleCloseAddCostModal() {
     setCostEstimatorModalScrollEnabled(false);
     setItemModalOpen(false);
-    setEditingItemIndex(null);
+    setEditingItemIndices(null);
     setItemModalForm(EMPTY_ESTIMATE_ITEM_MODAL_FORM);
+    setItemModalReadOnly(false);
+  }
+
+  function handleOpenItemGroupModal(indices: number[], readOnly: boolean) {
+    setCostEstimatorModalScrollEnabled(true);
+    setItemModalReadOnly(readOnly);
+
+    const groupItems = indices
+      .map((index) => estimateForm.items[index])
+      .filter(Boolean);
+
+    if (groupItems.length === 0) return;
+
+    setItemModalForm(buildEstimateItemModalFormFromItems(groupItems));
+    setEditingItemIndices(indices);
+    setItemModalOpen(true);
+  }
+
+  function handleViewItemModal(indices: number[]) {
+    handleOpenItemGroupModal(indices, true);
+  }
+
+  function handleEditItemModal(indices: number[]) {
+    handleOpenItemGroupModal(indices, false);
   }
 
   function findMaterial(materialId: string) {
@@ -569,6 +587,26 @@ export function useCostEstimatorPage({
           materialOptions,
         );
 
+        if (resolvedUnit && material.catalogItemId) {
+          const normalizedName =
+            resolvedMaterial?.materialName || material.materialName || material.searchInput;
+          const normalizedUnitLabel = material.unitType || resolvedUnit.unitType;
+          const normalizedCategory = resolvedUnit.category;
+          const shouldUpdateCost =
+            Number.isFinite(unitCostValue) && unitCostValue !== resolvedUnit.unitCost;
+
+          if (shouldUpdateCost) {
+            await saveCostCatalogItemAction({
+              id: material.catalogItemId,
+              name: normalizedName,
+              category: normalizedCategory,
+              unitLabel: normalizedUnitLabel,
+              unitCost: unitCostValue,
+              notes: resolvedUnit.notes ?? "Updated from cost estimator",
+            });
+          }
+        }
+
         updateModalMaterial(materialRowId, (current) => ({
           ...current,
           saved: true,
@@ -621,12 +659,15 @@ export function useCostEstimatorPage({
         return;
       }
 
+      const existingItems =
+        editingItemIndices?.map((index) => estimateForm.items[index]).filter(Boolean) ?? [];
+
       const nextItems = itemModalForm.materials.map((material, index) => {
         const { quantityValue, unitCostValue, resolvedMaterial, resolvedUnit } =
           validateModalMaterial(material, materialOptions);
 
         return {
-          id: editingItemIndex !== null && index === 0 ? itemModalForm.id : undefined,
+          id: existingItems[index]?.id ?? undefined,
           catalogItemId: material.catalogItemId,
           materialId: resolvedMaterial?.materialId ?? material.materialId,
           materialName: material.materialName || resolvedMaterial?.materialName || "",
@@ -634,27 +675,25 @@ export function useCostEstimatorPage({
           unitCost: unitCostValue,
           quantity: quantityValue,
           lineTotal: round2(quantityValue * unitCostValue),
-          displayName: buildDisplayName(
-            itemModalForm.displayName.trim(),
-            material.materialName || resolvedMaterial?.materialName || "Material",
-            itemModalForm.materials.length,
-          ),
+          displayName: buildDisplayName(itemModalForm.displayName.trim()),
           notes: itemModalForm.notes,
           sortOrder:
-            editingItemIndex !== null
-              ? editingItemIndex + index
+            editingItemIndices && editingItemIndices.length > 0
+              ? Math.min(...editingItemIndices) + index
               : estimateForm.items.length + index,
         } satisfies ProjectEstimateDraftLine;
       });
 
       setEstimateForm((current) => {
         const baseItems =
-          editingItemIndex === null
+          editingItemIndices === null
             ? current.items
-            : current.items.filter((_, index) => index !== editingItemIndex);
+            : current.items.filter((_, index) => !editingItemIndices.includes(index));
 
         const insertionIndex =
-          editingItemIndex === null ? baseItems.length : editingItemIndex;
+          editingItemIndices === null
+            ? baseItems.length
+            : Math.min(...editingItemIndices);
         const mergedItems = [
           ...baseItems.slice(0, insertionIndex),
           ...nextItems,
@@ -675,12 +714,12 @@ export function useCostEstimatorPage({
     }
   }
 
-  function handleRemoveItem(index: number) {
+  function handleRemoveItem(indices: number[]) {
     setEstimateForm((current) =>
       ensureEstimateLineTotals({
         ...current,
         items: current.items
-          .filter((_, itemIndex) => itemIndex !== index)
+          .filter((_, itemIndex) => !indices.includes(itemIndex))
           .map((item, itemIndex) => ({
             ...item,
             sortOrder: itemIndex,
@@ -697,6 +736,8 @@ export function useCostEstimatorPage({
     isReadOnlyEstimate,
     itemModalOpen,
     itemModalForm,
+    itemModalReadOnly,
+    editingItemIndices,
     materialOptions,
     currentLineTotal,
     currentEstimateTotal,
@@ -714,6 +755,8 @@ export function useCostEstimatorPage({
     handleDeleteEstimate,
     handleDuplicateRejectedEstimate,
     handleOpenAddCostModal,
+    handleViewItemModal,
+    handleEditItemModal,
     handleCloseAddCostModal,
     handleSelectMaterial,
     handleSelectMaterialUnit,

@@ -160,8 +160,9 @@ export default function CostEstimatorPageClient({
               estimate={state.selectedEstimate}
               form={state.estimateForm}
               readOnly={state.isReadOnlyEstimate}
-              onAddCost={() => state.handleOpenAddCostModal()}
-              onEditItem={state.handleOpenAddCostModal}
+              onViewItem={state.handleViewItemModal}
+              onEditItem={state.handleEditItemModal}
+              onDeleteItem={state.handleRemoveItem}
             />
           </div>
 
@@ -180,6 +181,7 @@ export default function CostEstimatorPageClient({
         materials={state.materialOptions}
         computedTotal={state.currentLineTotal}
         editing={Boolean(state.itemModalForm.id)}
+        readOnly={state.itemModalReadOnly}
         pending={state.pendingEstimateAction}
         onClose={state.handleCloseAddCostModal}
         onSelectMaterial={state.handleSelectMaterial}
@@ -192,11 +194,8 @@ export default function CostEstimatorPageClient({
         onRemoveMaterial={state.handleRemoveModalMaterial}
         onSave={state.handleSaveItem}
         onDelete={() => {
-          const index = state.estimateForm.items.findIndex(
-            (item) => item.id === state.itemModalForm.id,
-          );
-          if (index >= 0) {
-            state.handleRemoveItem(index);
+          if (state.editingItemIndices && state.editingItemIndices.length > 0) {
+            state.handleRemoveItem(state.editingItemIndices);
           }
           state.handleCloseAddCostModal();
         }}

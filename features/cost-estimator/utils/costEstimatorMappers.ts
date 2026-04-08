@@ -87,6 +87,34 @@ export function buildEstimateItemModalForm(
   };
 }
 
+export function buildEstimateItemModalFormFromItems(
+  items: Array<ProjectEstimateDraftForm["items"][number]>,
+): EstimateItemModalForm {
+  if (items.length === 0) {
+    return EMPTY_ESTIMATE_ITEM_MODAL_FORM;
+  }
+
+  const baseItem = items[0];
+
+  return {
+    id: baseItem.id,
+    displayName: baseItem.displayName,
+    notes: baseItem.notes,
+    materials: items.map((item) => ({
+      id: item.id ?? crypto.randomUUID(),
+      saved: true,
+      searchInput: item.materialName,
+      catalogItemId: item.catalogItemId,
+      materialId: item.materialId,
+      materialName: item.materialName,
+      unitType: item.unitType,
+      rawCostLabel: item.unitCost ? item.unitCost.toString() : "N/A",
+      unitCostInput: item.unitCost ? item.unitCost.toString() : "",
+      quantityInput: item.quantity ? item.quantity.toString() : "",
+    })),
+  };
+}
+
 export function ensureEstimateLineTotals(form: ProjectEstimateDraftForm) {
   return {
     ...form,
