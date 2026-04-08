@@ -602,6 +602,8 @@ export interface Database {
           project_name: string;
           project_type: BudgetProjectType | null;
           client_name: string | null;
+          location: string | null;
+          owner_name: string | null;
           notes: string | null;
           status: EstimateStatus;
           estimate_total: number;
@@ -621,6 +623,8 @@ export interface Database {
           project_name: string;
           project_type?: BudgetProjectType | null;
           client_name?: string | null;
+          location?: string | null;
+          owner_name?: string | null;
           notes?: string | null;
           status?: EstimateStatus;
           estimate_total?: number;
@@ -639,6 +643,8 @@ export interface Database {
           project_name?: string;
           project_type?: BudgetProjectType | null;
           client_name?: string | null;
+          location?: string | null;
+          owner_name?: string | null;
           notes?: string | null;
           status?: EstimateStatus;
           estimate_total?: number;

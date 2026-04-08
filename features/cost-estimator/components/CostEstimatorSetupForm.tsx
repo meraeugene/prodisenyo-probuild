@@ -28,6 +28,18 @@ export default function CostEstimatorSetupForm({
   ) => void;
   onSubmit: () => void;
 }) {
+  const draftedLabel = form.draftedDate
+    ? new Date(form.draftedDate).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : new Date().toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
   return (
     <section className="flex min-h-[calc(100vh-3rem)] w-full items-center justify-center">
       <div className="w-full max-w-lg">
@@ -82,6 +94,42 @@ export default function CostEstimatorSetupForm({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-apple-charcoal">Location</label>
+            <input
+              value={
+                form.location.trim().toLowerCase() === "philippine peso (php)" ||
+                form.location.trim().toLowerCase() === "php"
+                  ? ""
+                  : form.location
+              }
+              onChange={(event) => onFieldChange("location", event.target.value)}
+              placeholder="e.g. Quezon City, Metro Manila"
+              className="mt-2 w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-apple-charcoal">Owner</label>
+            <input
+              value={form.ownerName}
+              onChange={(event) => onFieldChange("ownerName", event.target.value)}
+              placeholder="e.g. Maria Santos"
+              className="mt-2 w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-apple-charcoal">
+              Date
+            </label>
+            <input
+              value={draftedLabel}
+              readOnly
+              className="mt-2 w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm text-apple-charcoal outline-none"
+            />
           </div>
 
           <div>

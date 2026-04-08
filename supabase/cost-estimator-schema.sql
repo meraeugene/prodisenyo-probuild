@@ -40,6 +40,8 @@ create table if not exists public.project_estimates (
   project_name text not null,
   project_type public.budget_project_type,
   client_name text,
+  location text,
+  owner_name text,
   notes text,
   status public.estimate_status not null default 'draft',
   estimate_total numeric(14,2) not null default 0 check (estimate_total >= 0),
@@ -56,6 +58,8 @@ create table if not exists public.project_estimates (
 );
 
 alter table public.project_estimates alter column client_name drop not null;
+alter table public.project_estimates add column if not exists location text;
+alter table public.project_estimates add column if not exists owner_name text;
 
 create table if not exists public.project_estimate_items (
   id uuid primary key default gen_random_uuid(),

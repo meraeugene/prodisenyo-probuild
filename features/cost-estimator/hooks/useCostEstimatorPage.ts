@@ -225,7 +225,10 @@ export function useCostEstimatorPage({
 
   function handleOpenNewProjectSetup() {
     setSelectedEstimateId(null);
-    setEstimateForm(EMPTY_ESTIMATE_FORM);
+    setEstimateForm({
+      ...EMPTY_ESTIMATE_FORM,
+      draftedDate: new Date().toISOString(),
+    });
     setProjectSetupOpen(true);
     setItemModalOpen(false);
   }
@@ -272,6 +275,8 @@ export function useCostEstimatorPage({
       id: nextForm.id,
       projectName: nextForm.projectName,
       projectType: nextForm.projectType,
+      location: nextForm.location,
+      ownerName: nextForm.ownerName,
       costEstimate: nextForm.items.length > 0 ? derivedEstimateTotal : nextForm.costEstimate,
       notes: nextForm.notes,
       items: nextForm.items.map((item) => ({

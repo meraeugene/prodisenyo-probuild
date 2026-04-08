@@ -35,6 +35,8 @@ interface SaveProjectEstimateDraftInput {
   id?: string;
   projectName?: string;
   projectType?: BudgetProjectType | "";
+  location?: string;
+  ownerName?: string;
   costEstimate?: number;
   notes?: string;
   items: Array<{
@@ -62,6 +64,14 @@ function normalizeText(value: string | undefined) {
 function normalizeOptionalText(value: string | undefined) {
   const normalized = normalizeText(value);
   return normalized || null;
+}
+
+function normalizeLocation(value: string | undefined) {
+  const normalized = normalizeText(value);
+  const lowered = normalized.toLowerCase();
+  if (!normalized) return null;
+  if (lowered === "philippine peso (php)" || lowered === "php") return null;
+  return normalized;
 }
 
 function normalizeMoney(value: number | undefined) {
@@ -357,6 +367,8 @@ export async function saveProjectEstimateDraftAction(
   const headerPayload = {
     project_name: normalizeText(input.projectName),
     project_type: input.projectType || null,
+    location: normalizeLocation(input.location),
+    owner_name: normalizeOptionalText(input.ownerName),
     client_name: null,
     notes: normalizeOptionalText(input.notes),
   };
@@ -560,15 +572,17 @@ export async function duplicateRejectedEstimateAction(estimateId: string) {
     throw new Error("Only rejected estimates can be duplicated.");
   }
 
-  const { data: newEstimate, error: insertError } = await database
-    .from("project_estimates")
-    .insert({
-      project_name: estimate.project_name,
-      project_type: estimate.project_type,
-      client_name: estimate.client_name,
-      notes: estimate.notes,
-      status: "draft",
-      estimate_total: estimate.estimate_total,
+    const { data: newEstimate, error: insertError } = await database
+      .from("project_estimates")
+      .insert({
+        project_name: estimate.project_name,
+        project_type: estimate.project_type,
+        client_name: estimate.client_name,
+        location: estimate.location,
+        owner_name: estimate.owner_name,
+        notes: estimate.notes,
+        status: "draft",
+        estimate_total: estimate.estimate_total,
       requested_by: user.id,
       source_estimate_id: estimate.id,
     })

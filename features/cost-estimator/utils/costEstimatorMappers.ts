@@ -34,13 +34,24 @@ export function buildEstimateDraftForm(
   items: ProjectEstimateItemRow[],
 ): ProjectEstimateDraftForm {
   if (!estimate) {
-    return EMPTY_ESTIMATE_FORM;
+    return {
+      ...EMPTY_ESTIMATE_FORM,
+      draftedDate: new Date().toISOString(),
+    };
   }
 
   return {
     id: estimate.id,
     projectName: estimate.project_name,
     projectType: estimate.project_type ?? "",
+    location:
+      estimate.location?.trim() &&
+      estimate.location.trim().toLowerCase() !== "philippine peso (php)" &&
+      estimate.location.trim().toLowerCase() !== "php"
+        ? estimate.location
+        : "",
+    ownerName: estimate.owner_name ?? "",
+    draftedDate: estimate.created_at,
     costEstimate: estimate.estimate_total ?? 0,
     notes: estimate.notes ?? "",
     items: items.map((item, index) => ({

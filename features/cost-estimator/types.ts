@@ -47,6 +47,9 @@ export interface ProjectEstimateDraftForm {
   id?: string;
   projectName: string;
   projectType: BudgetProjectType | "";
+  location: string;
+  ownerName: string;
+  draftedDate: string;
   costEstimate: number;
   notes: string;
   items: ProjectEstimateDraftLine[];
@@ -75,6 +78,9 @@ export interface EstimateItemModalMaterialForm {
 export const EMPTY_ESTIMATE_FORM: ProjectEstimateDraftForm = {
   projectName: "",
   projectType: "",
+  location: "",
+  ownerName: "",
+  draftedDate: "",
   costEstimate: 0,
   notes: "",
   items: [],
