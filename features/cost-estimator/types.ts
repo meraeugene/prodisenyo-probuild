@@ -11,6 +11,12 @@ export type ProjectEstimateRow =
   Database["public"]["Tables"]["project_estimates"]["Row"];
 export type ProjectEstimateItemRow =
   Database["public"]["Tables"]["project_estimate_items"]["Row"];
+export interface ReviewProjectEstimateRow extends ProjectEstimateRow {
+  requester_profile: Pick<
+    Database["public"]["Tables"]["profiles"]["Row"],
+    "full_name" | "username"
+  > | null;
+}
 
 export interface MaterialUnitOption {
   optionId: string;

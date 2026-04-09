@@ -32,7 +32,7 @@ export default function UploadAttendancePage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       <DashboardPageHero
         isUploadAttendance
         eyebrow="Attendance"

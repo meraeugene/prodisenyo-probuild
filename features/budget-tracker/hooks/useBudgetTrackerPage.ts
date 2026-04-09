@@ -82,6 +82,9 @@ export function useBudgetTrackerPage({
   const [actualSpentInput, setActualSpentInput] = useState("");
   const [projectError, setProjectError] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
+  const [itemFieldErrors, setItemFieldErrors] = useState<
+    Partial<Record<"name" | "status" | "category", string>>
+  >({});
   const [activeDropStatus, setActiveDropStatus] =
     useState<BudgetItemStatus | null>(null);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -293,6 +296,7 @@ export function useBudgetTrackerPage({
     setEstimatedCostInput("");
     setActualSpentInput("");
     setItemError(null);
+    setItemFieldErrors({});
   }
 
   function closeItemModal() {
@@ -320,7 +324,26 @@ export function useBudgetTrackerPage({
     setEstimatedCostInput(formatBudgetNumberForInput(item.estimated_cost ?? 0));
     setActualSpentInput(formatBudgetNumberForInput(item.actual_spent ?? 0));
     setItemError(null);
+    setItemFieldErrors({});
     setItemModalOpen(true);
+  }
+
+  function validateItemForm(form: BudgetItemFormInput) {
+    const errors: Partial<Record<"name" | "status" | "category", string>> = {};
+
+    if (!form.name.trim()) {
+      errors.name = "Cost name is required.";
+    }
+
+    if (!form.status) {
+      errors.status = "Status is required.";
+    }
+
+    if (!form.category) {
+      errors.category = "Category is required.";
+    }
+
+    return errors;
   }
 
   function submitProject(event: FormEvent<HTMLFormElement>) {
@@ -350,6 +373,13 @@ export function useBudgetTrackerPage({
   function submitItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setItemError(null);
+    const nextErrors = validateItemForm(itemForm);
+    if (Object.keys(nextErrors).length > 0) {
+      setItemFieldErrors(nextErrors);
+      return;
+    }
+
+    setItemFieldErrors({});
     setPendingAction("item");
 
     startTransition(async () => {
@@ -587,6 +617,7 @@ export function useBudgetTrackerPage({
     actualSpentInput,
     projectError,
     itemError,
+    itemFieldErrors,
     activeDropStatus,
     draggedItemId,
     pendingAction,

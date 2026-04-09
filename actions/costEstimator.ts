@@ -57,6 +57,15 @@ interface RejectProjectEstimateInput {
   rejectionReason?: string;
 }
 
+interface EngineerEstimateNotificationRow {
+  id: string;
+  project_name: string;
+  status: Database["public"]["Tables"]["project_estimates"]["Row"]["status"];
+  rejection_reason: string | null;
+  rejected_at: string | null;
+  updated_at: string;
+}
+
 function normalizeText(value: string | undefined) {
   return (value ?? "").trim();
 }
@@ -84,6 +93,138 @@ function normalizeQuantity(value: number | undefined) {
   const quantity = Number(value ?? 0);
   if (!Number.isFinite(quantity) || quantity < 0) return 0;
   return Math.round(quantity * 100) / 100;
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
+function isMissingProjectEstimateColumnError(
+  error: unknown,
+  columnName: string,
+) {
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("project_estimates") &&
+    message.includes(columnName.toLowerCase()) &&
+    message.includes("schema cache")
+  );
+}
+
+function buildEstimateHeaderPayload(
+  input: Pick<
+    SaveProjectEstimateDraftInput,
+    "projectName" | "projectType" | "location" | "ownerName" | "notes"
+  >,
+  options?: {
+    includeLocation?: boolean;
+    includeOwnerName?: boolean;
+  },
+) {
+  const includeLocation = options?.includeLocation ?? true;
+  const includeOwnerName = options?.includeOwnerName ?? true;
+
+  return {
+    project_name: normalizeText(input.projectName),
+    project_type: input.projectType || null,
+    ...(includeLocation ? { location: normalizeLocation(input.location) } : {}),
+    ...(includeOwnerName
+      ? { owner_name: normalizeOptionalText(input.ownerName) }
+      : {}),
+    client_name: null,
+    notes: normalizeOptionalText(input.notes),
+  };
+}
+
+async function updateProjectEstimateDraftRecord(params: {
+  database: any;
+  estimateId: string;
+  input: SaveProjectEstimateDraftInput;
+}) {
+  let includeLocation = true;
+  let includeOwnerName = true;
+
+  while (true) {
+    const payload: ProjectEstimateUpdate = {
+      ...buildEstimateHeaderPayload(params.input, {
+        includeLocation,
+        includeOwnerName,
+      }),
+      rejected_at: null,
+      rejection_reason: null,
+    };
+
+    const { data, error } = await params.database
+      .from("project_estimates")
+      .update(payload)
+      .eq("id", params.estimateId)
+      .select("*")
+      .single();
+
+    if (!error) {
+      return data as Database["public"]["Tables"]["project_estimates"]["Row"];
+    }
+
+    if (includeLocation && isMissingProjectEstimateColumnError(error, "location")) {
+      includeLocation = false;
+      continue;
+    }
+
+    if (includeOwnerName && isMissingProjectEstimateColumnError(error, "owner_name")) {
+      includeOwnerName = false;
+      continue;
+    }
+
+    throw new Error(`Failed to update estimate draft. ${error.message}`);
+  }
+}
+
+async function insertProjectEstimateDraftRecord(params: {
+  database: any;
+  userId: string;
+  requestedTotal: number;
+  input: SaveProjectEstimateDraftInput;
+}) {
+  let includeLocation = true;
+  let includeOwnerName = true;
+
+  while (true) {
+    const payload: ProjectEstimateInsert = {
+      ...buildEstimateHeaderPayload(params.input, {
+        includeLocation,
+        includeOwnerName,
+      }),
+      requested_by: params.userId,
+      status: "draft",
+      estimate_total: params.requestedTotal,
+    };
+
+    const { data, error } = await params.database
+      .from("project_estimates")
+      .insert(payload)
+      .select("*")
+      .single();
+
+    if (!error) {
+      return data as Database["public"]["Tables"]["project_estimates"]["Row"];
+    }
+
+    if (includeLocation && isMissingProjectEstimateColumnError(error, "location")) {
+      includeLocation = false;
+      continue;
+    }
+
+    if (includeOwnerName && isMissingProjectEstimateColumnError(error, "owner_name")) {
+      includeOwnerName = false;
+      continue;
+    }
+
+    throw new Error(`Failed to create estimate draft. ${error.message}`);
+  }
 }
 
 function revalidateEstimatorPages() {
@@ -161,43 +302,39 @@ async function persistEstimateItems(params: {
     new Set(
       params.items
         .map((item) => normalizeText(item.catalogItemId))
-        .filter(Boolean),
+        .filter((value) => value && isUuid(value)),
     ),
   );
 
-  if (catalogItemIds.length === 0) {
-    const { error: deleteError } = await params.database
-      .from("project_estimate_items")
-      .delete()
-      .eq("estimate_id", params.estimateId);
+  let catalogRows: Array<{
+    id: string;
+    name: string;
+    category: BudgetItemCategory;
+    unit_label: string;
+    unit_cost: number;
+  }> = [];
 
-    if (deleteError) {
-      throw new Error(`Failed to refresh estimate items. ${deleteError.message}`);
+  if (catalogItemIds.length > 0) {
+    const { data, error: catalogError } = await params.database
+      .from("cost_catalog_items")
+      .select("id, name, category, unit_label, unit_cost")
+      .in("id", catalogItemIds);
+
+    if (catalogError) {
+      throw new Error(`Failed to load materials source. ${catalogError.message}`);
     }
 
-    return {
-      items: [] as Database["public"]["Tables"]["project_estimate_items"]["Row"][],
-      total: 0,
-    };
-  }
-
-  const { data: catalogRows, error: catalogError } = await params.database
-    .from("cost_catalog_items")
-    .select("id, name, category, unit_label, unit_cost")
-    .in("id", catalogItemIds);
-
-  if (catalogError) {
-    throw new Error(`Failed to load materials source. ${catalogError.message}`);
-  }
-
-  const catalogById = new Map(
-    ((catalogRows ?? []) as Array<{
+    catalogRows = (data ?? []) as Array<{
       id: string;
       name: string;
       category: BudgetItemCategory;
       unit_label: string;
       unit_cost: number;
-    }>).map((row) => [row.id, row]),
+    }>;
+  }
+
+  const catalogById = new Map(
+    catalogRows.map((row) => [row.id, row]),
   );
 
   const payload: ProjectEstimateItemInsert[] = params.items
@@ -364,14 +501,6 @@ export async function saveProjectEstimateDraftAction(
   const database = createSupabaseAdminClient() as any;
   const estimateId = normalizeText(input.id);
   const requestedTotal = normalizeMoney(input.costEstimate);
-  const headerPayload = {
-    project_name: normalizeText(input.projectName),
-    project_type: input.projectType || null,
-    location: normalizeLocation(input.location),
-    owner_name: normalizeOptionalText(input.ownerName),
-    client_name: null,
-    notes: normalizeOptionalText(input.notes),
-  };
 
   let estimate: Database["public"]["Tables"]["project_estimates"]["Row"];
 
@@ -384,43 +513,18 @@ export async function saveProjectEstimateDraftAction(
       throw new Error("Only draft estimates can be edited.");
     }
 
-    const payload: ProjectEstimateUpdate = {
-      ...headerPayload,
-      rejected_at: null,
-      rejection_reason: null,
-    };
-
-    const { data, error } = await database
-      .from("project_estimates")
-      .update(payload)
-      .eq("id", estimateId)
-      .select("*")
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to update estimate draft. ${error.message}`);
-    }
-
-    estimate = data;
+    estimate = await updateProjectEstimateDraftRecord({
+      database,
+      estimateId,
+      input,
+    });
   } else {
-    const payload: ProjectEstimateInsert = {
-      ...headerPayload,
-      requested_by: user.id,
-      status: "draft",
-      estimate_total: requestedTotal,
-    };
-
-    const { data, error } = await database
-      .from("project_estimates")
-      .insert(payload)
-      .select("*")
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to create estimate draft. ${error.message}`);
-    }
-
-    estimate = data;
+    estimate = await insertProjectEstimateDraftRecord({
+      database,
+      userId: user.id,
+      requestedTotal,
+      input,
+    });
   }
 
   const persisted = await persistEstimateItems({
@@ -429,13 +533,10 @@ export async function saveProjectEstimateDraftAction(
     items: input.items,
   });
 
-  const nextEstimateTotal =
-    persisted.items.length > 0 ? persisted.total : requestedTotal;
-
   const { data: updatedEstimate, error: updateError } = await database
     .from("project_estimates")
     .update({
-      estimate_total: nextEstimateTotal,
+      estimate_total: requestedTotal,
     })
     .eq("id", estimate.id)
     .select("*")
@@ -483,6 +584,35 @@ export async function deleteProjectEstimateAction(estimateId: string) {
   return { estimateId: normalizedId };
 }
 
+export async function deleteReviewedProjectEstimateAction(estimateId: string) {
+  const { user } = await requireRole(APP_ROLES.CEO);
+  const database = createSupabaseAdminClient() as any;
+  const normalizedId = normalizeText(estimateId);
+
+  if (!normalizedId) {
+    throw new Error("Estimate is required.");
+  }
+
+  const estimate = await loadEstimate(database, normalizedId);
+
+  const { error } = await database
+    .from("project_estimates")
+    .delete()
+    .eq("id", normalizedId);
+
+  if (error) {
+    throw new Error(`Failed to delete estimate. ${error.message}`);
+  }
+
+  await insertAuditLog(database, user.id, "project_estimate_deleted", normalizedId, {
+    status: estimate.status,
+    project_name: estimate.project_name,
+  });
+
+  revalidateEstimatorPages();
+  return { estimateId: normalizedId };
+}
+
 export async function submitProjectEstimateAction(estimateId: string) {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
   const database = createSupabaseAdminClient() as any;
@@ -516,9 +646,7 @@ export async function submitProjectEstimateAction(estimateId: string) {
     throw new Error("Add at least one cost item before submission.");
   }
 
-  const estimateTotal = normalizeMoney(
-    items.reduce((sum, item) => sum + (item.line_total ?? 0), 0),
-  );
+  const estimateTotal = normalizeMoney(estimate.estimate_total);
   const submittedAt = new Date().toISOString();
 
   const { data, error } = await database
@@ -555,7 +683,7 @@ export async function submitProjectEstimateAction(estimateId: string) {
   };
 }
 
-export async function duplicateRejectedEstimateAction(estimateId: string) {
+export async function reopenRejectedEstimateAction(estimateId: string) {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(estimateId);
@@ -566,66 +694,61 @@ export async function duplicateRejectedEstimateAction(estimateId: string) {
 
   const estimate = await loadEstimate(database, normalizedId);
   if (estimate.requested_by !== user.id) {
-    throw new Error("You can only duplicate your own estimates.");
+    throw new Error("You can only reopen your own estimates.");
   }
   if (estimate.status !== "rejected") {
-    throw new Error("Only rejected estimates can be duplicated.");
+    throw new Error("Only rejected estimates can be reopened.");
   }
 
-    const { data: newEstimate, error: insertError } = await database
-      .from("project_estimates")
-      .insert({
-        project_name: estimate.project_name,
-        project_type: estimate.project_type,
-        client_name: estimate.client_name,
-        location: estimate.location,
-        owner_name: estimate.owner_name,
-        notes: estimate.notes,
-        status: "draft",
-        estimate_total: estimate.estimate_total,
-      requested_by: user.id,
-      source_estimate_id: estimate.id,
+  const { data: reopenedEstimate, error } = await database
+    .from("project_estimates")
+    .update({
+      status: "draft",
+      approved_by: null,
+      approved_at: null,
+      submitted_at: null,
+      rejected_at: null,
+      rejection_reason: null,
+      budget_project_id: null,
     })
+    .eq("id", estimate.id)
+    .eq("requested_by", user.id)
+    .eq("status", "rejected")
     .select("*")
     .single();
 
-  if (insertError) {
-    throw new Error(`Failed to duplicate estimate. ${insertError.message}`);
+  if (error) {
+    throw new Error(`Failed to reopen estimate. ${error.message}`);
   }
 
-  const sourceItems = await loadEstimateItems(database, estimate.id);
-  const itemPayload: ProjectEstimateItemInsert[] = sourceItems.map((item) => ({
-    estimate_id: newEstimate.id,
-    catalog_item_id: item.catalog_item_id,
-    item_name_snapshot: item.item_name_snapshot,
-    material_name_snapshot: item.material_name_snapshot,
-    category_snapshot: item.category_snapshot,
-    unit_label_snapshot: item.unit_label_snapshot,
-    unit_cost_snapshot: item.unit_cost_snapshot,
-    quantity: item.quantity,
-    line_total: item.line_total,
-    notes: item.notes,
-    sort_order: item.sort_order,
-  }));
-
-  let insertedItems: Database["public"]["Tables"]["project_estimate_items"]["Row"][] = [];
-  if (itemPayload.length > 0) {
-    const { data, error } = await database
-      .from("project_estimate_items")
-      .insert(itemPayload)
-      .select("*");
-
-    if (error) {
-      throw new Error(`Failed to copy estimate items. ${error.message}`);
-    }
-
-    insertedItems = data;
-  }
+  await insertAuditLog(database, user.id, "project_estimate_reopened", estimate.id, {
+    status: "draft",
+    reopened_from_status: "rejected",
+  });
 
   revalidateEstimatorPages();
   return {
-    estimate: newEstimate,
-    items: insertedItems,
+    estimate: reopenedEstimate,
+    items: await loadEstimateItems(database, estimate.id),
+  };
+}
+
+export async function getEngineerEstimateNotificationsAction() {
+  const { user } = await requireRole(APP_ROLES.ENGINEER);
+  const database = createSupabaseAdminClient() as any;
+
+  const { data, error } = await database
+    .from("project_estimates")
+    .select("id, project_name, status, rejection_reason, rejected_at, updated_at")
+    .eq("requested_by", user.id)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load estimate notifications. ${error.message}`);
+  }
+
+  return {
+    estimates: (data ?? []) as EngineerEstimateNotificationRow[],
   };
 }
 
@@ -644,9 +767,7 @@ export async function approveProjectEstimateAction(estimateId: string) {
   }
 
   const items = await loadEstimateItems(database, estimate.id);
-  const estimateTotal = normalizeMoney(
-    items.reduce((sum, item) => sum + (item.line_total ?? 0), 0),
-  );
+  const estimateTotal = normalizeMoney(estimate.estimate_total);
 
   let budgetProjectId = estimate.budget_project_id;
   if (!budgetProjectId) {

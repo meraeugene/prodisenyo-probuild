@@ -18,7 +18,7 @@ export default function OvertimeApprovalsPageClient() {
   return (
     <div className="space-y-4 p-6">
       <DashboardPageHero
-        eyebrow="Approvals"
+        eyebrow="CEO Review"
         title="Overtime Approvals"
         description="Review overtime requests submitted from saved HR payroll runs and keep approval history tied to the correct pay period."
         actions={

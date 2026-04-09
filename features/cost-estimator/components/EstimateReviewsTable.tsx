@@ -1,30 +1,24 @@
 "use client";
 
-import { CheckCircle2, Eye, XCircle } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import {
   formatEstimateDateTime,
   formatBudgetMoney,
   formatProjectTypeLabel,
 } from "@/features/cost-estimator/utils/costEstimatorFormatters";
-import type { ProjectEstimateRow } from "@/features/cost-estimator/types";
+import type { ReviewProjectEstimateRow } from "@/features/cost-estimator/types";
 
 export default function EstimateReviewsTable({
   estimates,
   pendingReviewsCount,
-  pendingActionId,
-  pendingActionType,
   onOpenReport,
-  onApprove,
-  onReject,
+  onDeleteEstimate,
 }: {
-  estimates: ProjectEstimateRow[];
+  estimates: ReviewProjectEstimateRow[];
   pendingReviewsCount: number;
-  pendingActionId: string | null;
-  pendingActionType: "approve" | "reject" | null;
   onOpenReport: (estimateId: string) => void;
-  onApprove: (estimateId: string) => void;
-  onReject: (estimateId: string) => void;
+  onDeleteEstimate: (estimateId: string) => void;
 }) {
   return (
     <section className="mt-4 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
@@ -55,6 +49,9 @@ export default function EstimateReviewsTable({
               <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
                 Submitted
               </th>
+              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                Submitted By
+              </th>
               <th className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
                 Total
               </th>
@@ -84,6 +81,11 @@ export default function EstimateReviewsTable({
                   <td className="px-3 py-3 text-apple-smoke">
                     {formatEstimateDateTime(estimate.submitted_at ?? estimate.created_at)}
                   </td>
+                  <td className="px-3 py-3 text-apple-smoke">
+                    {estimate.requester_profile?.full_name?.trim() ||
+                      estimate.requester_profile?.username ||
+                      "Unknown engineer"}
+                  </td>
                   <td className="px-3 py-3 text-right font-semibold text-apple-charcoal">
                     {formatBudgetMoney(estimate.estimate_total)}
                   </td>
@@ -100,39 +102,21 @@ export default function EstimateReviewsTable({
                         <Eye size={13} />
                         View
                       </button>
-                      {estimate.status === "submitted" ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => onApprove(estimate.id)}
-                            disabled={pendingActionId === estimate.id}
-                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-emerald-200 px-3 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <CheckCircle2 size={13} />
-                            {pendingActionId === estimate.id && pendingActionType === "approve"
-                              ? "Updating..."
-                              : "Approve"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onReject(estimate.id)}
-                            disabled={pendingActionId === estimate.id}
-                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-rose-200 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <XCircle size={13} />
-                            {pendingActionId === estimate.id && pendingActionType === "reject"
-                              ? "Updating..."
-                              : "Reject"}
-                          </button>
-                        </>
-                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => onDeleteEstimate(estimate.id)}
+                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-rose-200 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                      >
+                        <Trash2 size={13} />
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-3 py-5 text-center text-sm text-apple-steel">
+                <td colSpan={7} className="px-3 py-5 text-center text-sm text-apple-steel">
                   No submitted estimates are waiting for review.
                 </td>
               </tr>

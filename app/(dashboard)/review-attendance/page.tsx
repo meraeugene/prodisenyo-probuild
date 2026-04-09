@@ -21,7 +21,7 @@ export default function ReviewAttendancePage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       <DashboardPageHero
         eyebrow="Attendance"
         title="Review Attendance"

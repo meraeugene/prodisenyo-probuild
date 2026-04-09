@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   deleteProjectEstimateAction,
-  duplicateRejectedEstimateAction,
-  saveCostCatalogItemAction,
+  getEngineerEstimateNotificationsAction,
+  reopenRejectedEstimateAction,
   saveProjectEstimateDraftAction,
   submitProjectEstimateAction,
 } from "@/actions/costEstimator";
@@ -45,6 +45,18 @@ interface UseCostEstimatorPageOptions {
   catalogItems: CostCatalogItemRow[];
 }
 
+type SetupFormErrors = Partial<
+  Record<"projectName" | "projectType" | "location" | "ownerName" | "costEstimate", string>
+>;
+
+type ItemModalErrors = {
+  displayName?: string;
+  materialRows: Record<
+    string,
+    Partial<Record<"searchInput" | "unitType" | "quantityInput", string>>
+  >;
+};
+
 function round2(value: number) {
   return Math.round(value * 100) / 100;
 }
@@ -80,7 +92,10 @@ function validateModalMaterial(
     resolvedMaterial?.units[0] ??
     null;
 
-  if (!material.materialName.trim() || !material.unitType.trim()) {
+  if (
+    (!material.materialName.trim() && !material.searchInput.trim()) ||
+    !material.unitType.trim()
+  ) {
     throw new Error("Select a material and unit type before saving it.");
   }
   if (quantityValue <= 0) {
@@ -100,7 +115,10 @@ export function useCostEstimatorPage({
   items: initialItems,
   catalogItems,
 }: UseCostEstimatorPageOptions) {
-  const initialItemsMap = buildEstimateItemsMap(initialItems);
+  const initialItemsMap = useMemo(
+    () => buildEstimateItemsMap(initialItems),
+    [initialItems],
+  );
   const [estimates, setEstimates] = useState(initialEstimates);
   const [itemsByEstimateId, setItemsByEstimateId] = useState(initialItemsMap);
   const [selectedEstimateId, setSelectedEstimateId] = useState<string | null>(
@@ -125,10 +143,107 @@ export function useCostEstimatorPage({
     null,
   );
   const [pendingEstimateAction, startEstimateTransition] = useTransition();
+  const [pendingEstimateIntent, setPendingEstimateIntent] = useState<
+    "save" | "submit" | "delete" | "duplicate" | null
+  >(null);
   const [pendingDeleteEstimate, setPendingDeleteEstimate] = useState(false);
+  const [saveState, setSaveState] = useState<"saved" | "dirty" | "saving" | "error">(
+    "saved",
+  );
+  const [saveMessage, setSaveMessage] = useState("All changes saved");
+  const [setupFormErrors, setSetupFormErrors] = useState<SetupFormErrors>({});
+  const [itemModalErrors, setItemModalErrors] = useState<ItemModalErrors>({
+    materialRows: {},
+  });
   const [customMaterialOptions, setCustomMaterialOptions] = useState<MaterialOptionGroup[]>(
     [],
   );
+  const [editingMaterialSnapshots, setEditingMaterialSnapshots] = useState<
+    Record<string, EstimateItemModalMaterialForm>
+  >({});
+  const [pendingMaterialRowId, setPendingMaterialRowId] = useState<string | null>(
+    null,
+  );
+  const [rejectionAlert, setRejectionAlert] = useState<{
+    estimateId: string;
+    projectName: string;
+    rejectionReason: string | null;
+  } | null>(null);
+  const pendingExternalSyncRef = useRef(false);
+  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autosaveRevisionRef = useRef(0);
+  const latestAutosaveRef = useRef<{
+    estimateId: string;
+    revision: number;
+  } | null>(null);
+  const knownRejectionTimesRef = useRef<Record<string, string>>({});
+  const canPlayNotificationSoundRef = useRef(false);
+
+  useEffect(() => {
+    setEstimates(initialEstimates);
+  }, [initialEstimates]);
+
+  useEffect(() => {
+    setItemsByEstimateId(initialItemsMap);
+  }, [initialItemsMap]);
+
+  useEffect(() => {
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = window.sessionStorage.getItem(
+        "cost-estimator:seen-rejection-times",
+      );
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as Record<string, string>;
+      knownRejectionTimesRef.current = parsed;
+    } catch {
+      knownRejectionTimesRef.current = {};
+    }
+  }, []);
+
+  function syncFromIncomingEstimates() {
+    const refreshedSelectedEstimate =
+      initialEstimates.find((estimate) => estimate.id === selectedEstimateId) ?? null;
+    const fallbackEstimate = initialEstimates[0] ?? null;
+    const nextSelectedEstimate = refreshedSelectedEstimate ?? fallbackEstimate;
+
+    setSelectedEstimateId(nextSelectedEstimate?.id ?? null);
+    setEstimateForm(
+      buildEstimateDraftForm(
+        nextSelectedEstimate,
+        initialItemsMap[nextSelectedEstimate?.id ?? ""] ?? [],
+      ),
+    );
+  }
+
+  useEffect(() => {
+    if (projectSetupOpen || itemModalOpen) {
+      pendingExternalSyncRef.current = true;
+      return;
+    }
+
+    pendingExternalSyncRef.current = false;
+    syncFromIncomingEstimates();
+  }, [initialEstimates, initialItemsMap]);
+
+  useEffect(() => {
+    if (projectSetupOpen || itemModalOpen || !pendingExternalSyncRef.current) {
+      return;
+    }
+
+    pendingExternalSyncRef.current = false;
+    syncFromIncomingEstimates();
+  }, [itemModalOpen, projectSetupOpen]);
 
   const materialOptions = useMemo(() => {
     const normalized = normalizeMaterialOptions(catalogItems);
@@ -161,6 +276,14 @@ export function useCostEstimatorPage({
   );
   const selectedEstimate =
     sortedEstimates.find((estimate) => estimate.id === selectedEstimateId) ?? null;
+  const persistedSelectedEstimateForm = useMemo(
+    () =>
+      buildEstimateDraftForm(
+        selectedEstimate,
+        itemsByEstimateId[selectedEstimate?.id ?? ""] ?? [],
+      ),
+    [itemsByEstimateId, selectedEstimate],
+  );
   const activeReportEstimate =
     sortedEstimates.find((estimate) => estimate.id === activeReportEstimateId) ?? null;
   const activeReportItems = activeReportEstimate
@@ -172,10 +295,8 @@ export function useCostEstimatorPage({
     () => round2(estimateForm.items.reduce((sum, item) => sum + item.lineTotal, 0)),
     [estimateForm.items],
   );
-  const currentEstimateTotal =
-    estimateForm.items.length > 0
-      ? derivedEstimateTotal
-      : estimateForm.costEstimate;
+  const currentEstimateTotal = derivedEstimateTotal;
+  const plannedEstimateTotal = estimateForm.costEstimate;
   const totalQuantity = useMemo(
     () => round2(estimateForm.items.reduce((sum, item) => sum + item.quantity, 0)),
     [estimateForm.items],
@@ -193,6 +314,226 @@ export function useCostEstimatorPage({
       ),
     [itemModalForm.materials],
   );
+  const hasUnsavedEstimateChanges = useMemo(() => {
+    if (!selectedEstimate || selectedEstimate.status !== "draft") {
+      return false;
+    }
+
+    const normalizeForm = (form: ProjectEstimateDraftForm) => ({
+      projectName: form.projectName.trim(),
+      projectType: form.projectType || "",
+      location: form.location.trim(),
+      ownerName: form.ownerName.trim(),
+      costEstimate: round2(form.costEstimate),
+      notes: form.notes.trim(),
+      items: [...form.items]
+        .map((item) => ({
+          id: item.id ?? "",
+          catalogItemId: item.catalogItemId,
+          materialId: item.materialId,
+          materialName: item.materialName.trim(),
+          unitType: item.unitType.trim(),
+          unitCost: round2(item.unitCost),
+          quantity: round2(item.quantity),
+          lineTotal: round2(item.lineTotal),
+          displayName: item.displayName.trim(),
+          notes: item.notes.trim(),
+          sortOrder: item.sortOrder,
+        }))
+        .sort((left, right) => left.sortOrder - right.sortOrder),
+    });
+
+    return (
+      JSON.stringify(normalizeForm(estimateForm)) !==
+      JSON.stringify(normalizeForm(persistedSelectedEstimateForm))
+    );
+  }, [estimateForm, persistedSelectedEstimateForm, selectedEstimate]);
+
+  useEffect(() => {
+    if (
+      projectSetupOpen ||
+      itemModalOpen ||
+      !selectedEstimate ||
+      selectedEstimate.status !== "draft"
+    ) {
+      setSaveState("saved");
+      setSaveMessage("All changes saved");
+      return;
+    }
+
+    if (!hasUnsavedEstimateChanges) {
+      setSaveState("saved");
+      setSaveMessage("All changes saved");
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+      return;
+    }
+
+    setSaveState("dirty");
+    setSaveMessage("Saving changes...");
+
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    const nextRevision = autosaveRevisionRef.current + 1;
+    autosaveRevisionRef.current = nextRevision;
+    latestAutosaveRef.current = {
+      estimateId: selectedEstimate.id,
+      revision: nextRevision,
+    };
+
+    autosaveTimeoutRef.current = setTimeout(() => {
+      setSaveState("saving");
+      setSaveMessage("Saving changes...");
+
+      startEstimateTransition(async () => {
+        try {
+          const saved = await persistDraft(false);
+          if (
+            latestAutosaveRef.current?.estimateId === saved.estimate.id &&
+            latestAutosaveRef.current?.revision === nextRevision
+          ) {
+            setSaveState("saved");
+            setSaveMessage("All changes saved");
+          }
+        } catch (error) {
+          if (
+            latestAutosaveRef.current?.estimateId === selectedEstimate.id &&
+            latestAutosaveRef.current?.revision === nextRevision
+          ) {
+            setSaveState("error");
+            setSaveMessage("Unable to save changes");
+          }
+          toast.error(
+            error instanceof Error ? error.message : "Failed to save estimate.",
+          );
+        }
+      });
+    }, 900);
+  }, [
+    estimateForm,
+    hasUnsavedEstimateChanges,
+    itemModalOpen,
+    projectSetupOpen,
+    selectedEstimate,
+  ]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      canPlayNotificationSoundRef.current = true;
+    }, 1000);
+
+    let cancelled = false;
+
+    async function loadEstimateNotifications() {
+      if (cancelled || document.hidden) return;
+
+      try {
+        const response = await getEngineerEstimateNotificationsAction();
+        if (cancelled) return;
+
+        const incomingById = new Map(
+          response.estimates.map((estimate) => [estimate.id, estimate]),
+        );
+
+        setEstimates((current) =>
+          sortEstimatesByUpdatedAt(
+            current.map((estimate) => {
+              const incoming = incomingById.get(estimate.id);
+              if (!incoming) return estimate;
+
+              return {
+                ...estimate,
+                status: incoming.status,
+                rejection_reason: incoming.rejection_reason,
+                rejected_at: incoming.rejected_at,
+                updated_at: incoming.updated_at,
+              };
+            }),
+          ),
+        );
+
+        const latestFreshRejection = response.estimates
+          .filter((estimate) => estimate.status === "rejected" && estimate.rejected_at)
+          .sort(
+            (left, right) =>
+              new Date(right.rejected_at as string).getTime() -
+              new Date(left.rejected_at as string).getTime(),
+          )
+          .find((estimate) => {
+            const known = knownRejectionTimesRef.current[estimate.id];
+            return (
+              !known ||
+              new Date(estimate.rejected_at as string).getTime() > new Date(known).getTime()
+            );
+          });
+
+        response.estimates.forEach((estimate) => {
+          if (estimate.rejected_at) {
+            knownRejectionTimesRef.current[estimate.id] = estimate.rejected_at;
+          }
+        });
+
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            "cost-estimator:seen-rejection-times",
+            JSON.stringify(knownRejectionTimesRef.current),
+          );
+        }
+
+        if (latestFreshRejection) {
+          setRejectionAlert({
+            estimateId: latestFreshRejection.id,
+            projectName: latestFreshRejection.project_name,
+            rejectionReason: latestFreshRejection.rejection_reason,
+          });
+
+          if (canPlayNotificationSoundRef.current) {
+            const audio = new Audio("/sounds/overtime-approval.mp3");
+            audio.volume = 0.9;
+            void audio.play().catch(() => undefined);
+          }
+        }
+      } catch {
+        // Keep polling silent during editing so intermittent failures do not disrupt work.
+      }
+    }
+
+    void loadEstimateNotifications();
+
+    const intervalId = window.setInterval(() => {
+      void loadEstimateNotifications();
+    }, 30000);
+
+    function handleWindowFocus() {
+      void loadEstimateNotifications();
+    }
+
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        void loadEstimateNotifications();
+      }
+    }
+
+    function handlePageShow() {
+      void loadEstimateNotifications();
+    }
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
 
   function applyEstimateUpdate(
     estimate: ProjectEstimateRow,
@@ -214,7 +555,7 @@ export function useCostEstimatorPage({
     setProjectSetupOpen(false);
   }
 
-  function handleSelectEstimate(estimateId: string) {
+  function selectEstimateLocally(estimateId: string) {
     const estimate = sortedEstimates.find((entry) => entry.id === estimateId) ?? null;
     setSelectedEstimateId(estimateId);
     setEstimateForm(
@@ -223,7 +564,77 @@ export function useCostEstimatorPage({
     setProjectSetupOpen(false);
   }
 
+  function handleSelectEstimate(estimateId: string) {
+    if (estimateId === selectedEstimateId) {
+      return;
+    }
+
+    if (!selectedEstimate || !hasUnsavedEstimateChanges) {
+      selectEstimateLocally(estimateId);
+      return;
+    }
+
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    setPendingEstimateIntent("save");
+    setSaveState("saving");
+    setSaveMessage("Saving changes...");
+
+    startEstimateTransition(async () => {
+      try {
+        await persistDraft(false);
+        selectEstimateLocally(estimateId);
+        setSaveState("saved");
+        setSaveMessage("All changes saved");
+      } catch (error) {
+        setSaveState("error");
+        setSaveMessage("Unable to save changes");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save estimate.",
+        );
+      } finally {
+        setPendingEstimateIntent(null);
+      }
+    });
+  }
+
   function handleOpenNewProjectSetup() {
+    if (selectedEstimate && hasUnsavedEstimateChanges) {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+
+      setPendingEstimateIntent("save");
+      setSaveState("saving");
+      setSaveMessage("Saving changes...");
+
+      startEstimateTransition(async () => {
+        try {
+          await persistDraft(false);
+          setSelectedEstimateId(null);
+          setEstimateForm({
+            ...EMPTY_ESTIMATE_FORM,
+            draftedDate: new Date().toISOString(),
+          });
+          setProjectSetupOpen(true);
+          setItemModalOpen(false);
+          setSaveState("saved");
+          setSaveMessage("All changes saved");
+        } catch (error) {
+          setSaveState("error");
+          setSaveMessage("Unable to save changes");
+          toast.error(
+            error instanceof Error ? error.message : "Failed to save estimate.",
+          );
+        } finally {
+          setPendingEstimateIntent(null);
+        }
+      });
+      return;
+    }
+
     setSelectedEstimateId(null);
     setEstimateForm({
       ...EMPTY_ESTIMATE_FORM,
@@ -254,6 +665,19 @@ export function useCostEstimatorPage({
     field: Exclude<keyof ProjectEstimateDraftForm, "items" | "id">,
     value: string,
   ) {
+    if (
+      field === "projectName" ||
+      field === "projectType" ||
+      field === "location" ||
+      field === "ownerName" ||
+      field === "costEstimate"
+    ) {
+      setSetupFormErrors((current) => {
+        const { [field]: _removed, ...rest } = current;
+        return rest;
+      });
+    }
+
     setEstimateForm((current) => {
       if (field === "costEstimate") {
         return {
@@ -277,7 +701,7 @@ export function useCostEstimatorPage({
       projectType: nextForm.projectType,
       location: nextForm.location,
       ownerName: nextForm.ownerName,
-      costEstimate: nextForm.items.length > 0 ? derivedEstimateTotal : nextForm.costEstimate,
+      costEstimate: nextForm.costEstimate,
       notes: nextForm.notes,
       items: nextForm.items.map((item) => ({
         id: item.id,
@@ -295,35 +719,62 @@ export function useCostEstimatorPage({
     applyEstimateUpdate(saved.estimate, saved.items);
 
     if (!shouldSubmit) {
-      toast.success(nextForm.id ? "Estimate draft updated." : "Project estimate created.");
-      return;
+      return saved;
     }
 
     const submitted = await submitProjectEstimateAction(saved.estimate.id);
     applyEstimateUpdate(submitted.estimate, submitted.items);
     toast.success("Estimate submitted for CEO review.");
+    return submitted;
   }
 
   function handleSaveEstimate() {
+    if (projectSetupOpen) {
+      const nextErrors = validateSetupForm(estimateForm);
+      if (Object.keys(nextErrors).length > 0) {
+        setSetupFormErrors(nextErrors);
+        return;
+      }
+    }
+
+    setPendingEstimateIntent("save");
     startEstimateTransition(async () => {
       try {
         await persistDraft(false);
+        setSetupFormErrors({});
+        setSaveState("saved");
+        setSaveMessage("All changes saved");
+        toast.success("Project estimate created.");
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to save estimate.",
         );
+      } finally {
+        setPendingEstimateIntent(null);
       }
     });
   }
 
   function handleSubmitEstimate() {
+    setPendingEstimateIntent("submit");
     startEstimateTransition(async () => {
       try {
+        if (autosaveTimeoutRef.current) {
+          clearTimeout(autosaveTimeoutRef.current);
+        }
+        if (hasUnsavedEstimateChanges) {
+          setSaveState("saving");
+          setSaveMessage("Saving changes...");
+        }
         await persistDraft(true);
+        setSaveState("saved");
+        setSaveMessage("All changes saved");
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to submit estimate.",
         );
+      } finally {
+        setPendingEstimateIntent(null);
       }
     });
   }
@@ -332,6 +783,7 @@ export function useCostEstimatorPage({
     if (!selectedEstimate) return;
 
     setPendingDeleteEstimate(true);
+    setPendingEstimateIntent("delete");
     startEstimateTransition(async () => {
       try {
         await deleteProjectEstimateAction(selectedEstimate.id);
@@ -366,22 +818,38 @@ export function useCostEstimatorPage({
         );
       } finally {
         setPendingDeleteEstimate(false);
+        setPendingEstimateIntent(null);
       }
     });
   }
 
-  function handleDuplicateRejectedEstimate() {
+  function handleReopenRejectedEstimate() {
     if (!selectedEstimate) return;
 
+    setPendingEstimateIntent("duplicate");
     startEstimateTransition(async () => {
       try {
-        const duplicated = await duplicateRejectedEstimateAction(selectedEstimate.id);
-        applyEstimateUpdate(duplicated.estimate, duplicated.items);
-        toast.success("Rejected estimate copied into a new draft.");
+        const reopened = await reopenRejectedEstimateAction(selectedEstimate.id);
+        applyEstimateUpdate(reopened.estimate, reopened.items);
+        delete knownRejectionTimesRef.current[selectedEstimate.id];
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            "cost-estimator:seen-rejection-times",
+            JSON.stringify(knownRejectionTimesRef.current),
+          );
+        }
+        setRejectionAlert((current) =>
+          current?.estimateId === selectedEstimate.id ? null : current,
+        );
+        setSaveState("saved");
+        setSaveMessage("All changes saved");
+        toast.success("Rejected estimate reopened for editing.");
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to duplicate estimate.",
+          error instanceof Error ? error.message : "Failed to reopen estimate.",
         );
+      } finally {
+        setPendingEstimateIntent(null);
       }
     });
   }
@@ -389,12 +857,15 @@ export function useCostEstimatorPage({
   function handleOpenAddCostModal() {
     setCostEstimatorModalScrollEnabled(true);
     setItemModalReadOnly(false);
+    setEditingMaterialSnapshots({});
+    const initialMaterial = buildInitialModalMaterial(materialOptions);
 
     setItemModalForm({
       ...EMPTY_ESTIMATE_ITEM_MODAL_FORM,
       displayName: "",
-      materials: [],
+      materials: [initialMaterial],
     });
+    setItemModalErrors({ materialRows: {} });
     setEditingItemIndices(null);
     setItemModalOpen(true);
   }
@@ -405,6 +876,8 @@ export function useCostEstimatorPage({
     setEditingItemIndices(null);
     setItemModalForm(EMPTY_ESTIMATE_ITEM_MODAL_FORM);
     setItemModalReadOnly(false);
+    setEditingMaterialSnapshots({});
+    setItemModalErrors({ materialRows: {} });
   }
 
   function handleOpenItemGroupModal(indices: number[], readOnly: boolean) {
@@ -417,9 +890,33 @@ export function useCostEstimatorPage({
 
     if (groupItems.length === 0) return;
 
-    setItemModalForm(buildEstimateItemModalFormFromItems(groupItems));
+    const modalForm = buildEstimateItemModalFormFromItems(groupItems);
+    const firstMaterial = modalForm.materials[0] ?? null;
+
+    setItemModalForm(
+      readOnly || !firstMaterial
+        ? modalForm
+        : {
+            ...modalForm,
+            materials: modalForm.materials.map((material, index) => ({
+              ...material,
+              saved: index === 0 ? false : true,
+            })),
+          },
+    );
     setEditingItemIndices(indices);
     setItemModalOpen(true);
+    setItemModalErrors({ materialRows: {} });
+    setEditingMaterialSnapshots(
+      readOnly || !firstMaterial
+        ? {}
+        : {
+            [firstMaterial.id]: {
+              ...firstMaterial,
+              saved: true,
+            },
+          },
+    );
   }
 
   function handleViewItemModal(indices: number[]) {
@@ -486,6 +983,13 @@ export function useCostEstimatorPage({
     field: Exclude<keyof EstimateItemModalForm, "materials" | "id">,
     value: string,
   ) {
+    if (field === "displayName") {
+      setItemModalErrors((current) => ({
+        ...current,
+        displayName: undefined,
+      }));
+    }
+
     setItemModalForm((current) => ({
       ...current,
       [field]: value,
@@ -494,9 +998,22 @@ export function useCostEstimatorPage({
 
   function handleMaterialRowFieldChange(
     materialRowId: string,
-    field: "searchInput" | "unitCostInput" | "quantityInput",
+    field: "searchInput" | "unitType" | "unitCostInput" | "quantityInput",
     value: string,
   ) {
+    if (field === "searchInput" || field === "unitType" || field === "quantityInput") {
+      setItemModalErrors((current) => ({
+        ...current,
+        materialRows: {
+          ...current.materialRows,
+          [materialRowId]: {
+            ...current.materialRows[materialRowId],
+            [field]: undefined,
+          },
+        },
+      }));
+    }
+
     updateModalMaterial(materialRowId, (current) => ({
       ...current,
       ...(field === "searchInput"
@@ -506,6 +1023,11 @@ export function useCostEstimatorPage({
             materialName: "",
             catalogItemId: "",
           }
+        : field === "unitType"
+          ? {
+              unitType: value,
+              catalogItemId: "",
+            }
         : {
             [field]: sanitizeBudgetNumericInput(value),
           }),
@@ -520,13 +1042,22 @@ export function useCostEstimatorPage({
   }
 
   function handleSaveModalMaterial(materialRowId: string) {
-    startEstimateTransition(async () => {
+    void (async () => {
       try {
+        setPendingMaterialRowId(materialRowId);
         const material = itemModalForm.materials.find((entry) => entry.id === materialRowId);
         if (!material) return;
 
         const quantityValue = parseBudgetNumberInput(material.quantityInput);
         const unitCostValue = parseBudgetNumberInput(material.unitCostInput);
+        const matchedExistingMaterial =
+          !material.materialId && material.searchInput.trim()
+            ? materialOptions.find(
+                (entry) =>
+                  entry.materialName.toLowerCase() ===
+                  material.searchInput.trim().toLowerCase(),
+              ) ?? null
+            : null;
 
         if (!material.searchInput.trim()) {
           throw new Error("Material name is required.");
@@ -538,35 +1069,50 @@ export function useCostEstimatorPage({
           throw new Error("Quantity must be greater than zero.");
         }
 
-        if (!material.materialId) {
-          const result = await saveCostCatalogItemAction({
-            name: material.searchInput.trim(),
-            category: "materials",
-            unitLabel: material.unitType,
-            unitCost: unitCostValue,
-            notes: "Added from cost estimator",
-          });
+        if (matchedExistingMaterial) {
+          const matchedUnit =
+            matchedExistingMaterial.units.find(
+              (entry) =>
+                entry.unitType.toLowerCase() === material.unitType.trim().toLowerCase(),
+            ) ?? matchedExistingMaterial.units[0] ?? null;
 
+          updateModalMaterial(materialRowId, (current) => ({
+            ...current,
+            saved: true,
+            searchInput: matchedExistingMaterial.materialName,
+            materialId: matchedExistingMaterial.materialId,
+            materialName: matchedExistingMaterial.materialName,
+            catalogItemId: matchedUnit?.catalogItemId ?? "",
+            unitType: material.unitType,
+            rawCostLabel: matchedUnit?.rawCostLabel ?? current.rawCostLabel,
+          }));
+        } else if (!material.materialId) {
+          const customMaterialId = buildMaterialIdFromName(material.searchInput.trim());
+          const customCatalogItemId = `${customMaterialId}:${material.unitType
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "-")}`;
           const customOption: MaterialOptionGroup = {
-            materialId: buildMaterialIdFromName(result.catalogItem.name),
-            materialName: result.catalogItem.name,
-            searchText: `${result.catalogItem.name} ${result.catalogItem.unit_label}`.toLowerCase(),
+            materialId: customMaterialId,
+            materialName: material.searchInput.trim(),
+            searchText: `${material.searchInput.trim()} ${material.unitType}`.toLowerCase(),
             units: [
               {
-                optionId: result.catalogItem.id,
-                catalogItemId: result.catalogItem.id,
-                unitType: result.catalogItem.unit_label,
-                unitCost: result.catalogItem.unit_cost,
-                rawCostLabel: result.catalogItem.unit_cost.toString(),
-                category: result.catalogItem.category,
-                notes: result.catalogItem.notes,
+                optionId: customCatalogItemId,
+                catalogItemId: customCatalogItemId,
+                unitType: material.unitType.trim(),
+                unitCost: unitCostValue,
+                rawCostLabel: unitCostValue.toString(),
+                category: "materials",
+                notes: "Added from cost estimator",
               },
             ],
           };
 
           setCustomMaterialOptions((current) => {
             const withoutDuplicate = current.filter(
-              (entry) => entry.materialName.toLowerCase() !== customOption.materialName.toLowerCase(),
+              (entry) =>
+                entry.materialName.toLowerCase() !== customOption.materialName.toLowerCase(),
             );
             return [...withoutDuplicate, customOption];
           });
@@ -574,57 +1120,70 @@ export function useCostEstimatorPage({
           updateModalMaterial(materialRowId, (current) => ({
             ...current,
             saved: true,
-            searchInput: result.catalogItem.name,
+            searchInput: customOption.materialName,
             materialId: customOption.materialId,
-            materialName: result.catalogItem.name,
-            catalogItemId: result.catalogItem.id,
-            unitType: result.catalogItem.unit_label,
-            rawCostLabel: result.catalogItem.unit_cost.toString(),
-            unitCostInput: result.catalogItem.unit_cost.toString(),
+            materialName: customOption.materialName,
+            catalogItemId: customCatalogItemId,
+            unitType: material.unitType.trim(),
+            rawCostLabel: unitCostValue.toString(),
           }));
+          toast.success("Material saved.");
+        } else {
+          const { resolvedMaterial, resolvedUnit } = validateModalMaterial(
+            material,
+            materialOptions,
+          );
 
-          toast.success("New material saved to the materials list.");
-          return;
+          updateModalMaterial(materialRowId, (current) => ({
+            ...current,
+            saved: true,
+            materialName:
+              current.materialName || resolvedMaterial?.materialName || current.searchInput,
+            unitType: current.unitType || resolvedUnit?.unitType || "",
+          }));
         }
 
-        const { resolvedMaterial, resolvedUnit } = validateModalMaterial(
-          material,
-          materialOptions,
-        );
+        setEditingMaterialSnapshots((current) => {
+          const { [materialRowId]: _removed, ...rest } = current;
+          return rest;
+        });
+        setItemModalForm((current) => {
+          const hasAnotherUnsavedMaterial = current.materials.some(
+            (entry) => !entry.saved && entry.id !== materialRowId,
+          );
 
-        if (resolvedUnit && material.catalogItemId) {
-          const normalizedName =
-            resolvedMaterial?.materialName || material.materialName || material.searchInput;
-          const normalizedUnitLabel = material.unitType || resolvedUnit.unitType;
-          const normalizedCategory = resolvedUnit.category;
-          const shouldUpdateCost =
-            Number.isFinite(unitCostValue) && unitCostValue !== resolvedUnit.unitCost;
-
-          if (shouldUpdateCost) {
-            await saveCostCatalogItemAction({
-              id: material.catalogItemId,
-              name: normalizedName,
-              category: normalizedCategory,
-              unitLabel: normalizedUnitLabel,
-              unitCost: unitCostValue,
-              notes: resolvedUnit.notes ?? "Updated from cost estimator",
-            });
+          if (hasAnotherUnsavedMaterial) {
+            return current;
           }
-        }
 
-        updateModalMaterial(materialRowId, (current) => ({
-          ...current,
-          saved: true,
-          materialName: current.materialName || resolvedMaterial?.materialName || current.searchInput,
-          unitType: current.unitType || resolvedUnit?.unitType || "",
-        }));
+          return {
+            ...current,
+            materials: [buildInitialModalMaterial(materialOptions), ...current.materials],
+          };
+        });
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to save material.");
+      } finally {
+        setPendingMaterialRowId(null);
       }
-    });
+    })();
   }
 
   function handleEditModalMaterial(materialRowId: string) {
+    const targetMaterial =
+      itemModalForm.materials.find((material) => material.id === materialRowId) ?? null;
+
+    if (!targetMaterial) {
+      return;
+    }
+
+    const targetSnapshot =
+      editingMaterialSnapshots[materialRowId] ?? { ...targetMaterial, saved: true };
+
+    setEditingMaterialSnapshots({
+      [materialRowId]: targetSnapshot,
+    });
+
     setItemModalForm((current) => {
       const hasTarget = current.materials.some((material) => material.id === materialRowId);
 
@@ -634,40 +1193,179 @@ export function useCostEstimatorPage({
 
       return {
         ...current,
-        materials: current.materials.map((material) => ({
-          ...material,
-          saved: material.id === materialRowId ? false : true,
-        })),
+        materials: current.materials.reduce<EstimateItemModalMaterialForm[]>(
+          (nextMaterials, material) => {
+            if (material.id === materialRowId) {
+              nextMaterials.push({
+                ...material,
+                saved: false,
+              });
+              return nextMaterials;
+            }
+
+            if (material.saved) {
+              nextMaterials.push({
+                ...material,
+                saved: true,
+              });
+              return nextMaterials;
+            }
+
+            const snapshot = editingMaterialSnapshots[material.id];
+
+            if (snapshot) {
+              nextMaterials.push({
+                ...snapshot,
+                saved: true,
+              });
+            }
+
+            return nextMaterials;
+          },
+          [],
+        ),
       };
     });
   }
 
+  function validateSetupForm(form: ProjectEstimateDraftForm) {
+    const errors: SetupFormErrors = {};
+
+    if (!form.projectName.trim()) {
+      errors.projectName = "Project name is required.";
+    }
+
+    if (!form.projectType) {
+      errors.projectType = "Project type is required.";
+    }
+
+    if (!form.location.trim()) {
+      errors.location = "Location is required.";
+    }
+
+    if (!form.ownerName.trim()) {
+      errors.ownerName = "Owner is required.";
+    }
+
+    if (round2(form.costEstimate) <= 0) {
+      errors.costEstimate = "Cost estimate must be greater than zero.";
+    }
+
+    return errors;
+  }
+
+  function handleCancelModalMaterial(materialRowId: string) {
+    const snapshot = editingMaterialSnapshots[materialRowId];
+
+    if (snapshot) {
+      setItemModalForm((current) => {
+        const restoredMaterials = current.materials.map((material) =>
+          material.id === materialRowId ? { ...snapshot, saved: true } : material,
+        );
+        const hasUnsavedMaterial = restoredMaterials.some((material) => !material.saved);
+
+        return {
+          ...current,
+          materials: hasUnsavedMaterial
+            ? restoredMaterials
+            : [buildInitialModalMaterial(materialOptions), ...restoredMaterials],
+        };
+      });
+      setEditingMaterialSnapshots((current) => {
+        const { [materialRowId]: _removed, ...rest } = current;
+        return rest;
+      });
+      return;
+    }
+
+    handleRemoveModalMaterial(materialRowId);
+  }
+
   function handleRemoveModalMaterial(materialRowId: string) {
-    setItemModalForm((current) => ({
-      ...current,
-      materials: current.materials.filter((material) => material.id !== materialRowId),
-    }));
+    setEditingMaterialSnapshots((current) => {
+      const { [materialRowId]: _removed, ...rest } = current;
+      return rest;
+    });
+    setItemModalForm((current) => {
+      const remainingMaterials = current.materials.filter(
+        (material) => material.id !== materialRowId,
+      );
+
+      return {
+        ...current,
+        materials:
+          remainingMaterials.length > 0
+            ? remainingMaterials
+            : [buildInitialModalMaterial(materialOptions)],
+      };
+    });
   }
 
   function handleSaveItem() {
     try {
-      if (!itemModalForm.displayName.trim()) {
-        toast.error("What is this cost for is required.");
+      const nextErrors: ItemModalErrors = {
+        materialRows: {},
+      };
+      const trimmedDisplayName = itemModalForm.displayName.trim();
+      const validMaterials = itemModalForm.materials.filter((material) => {
+        const hasName =
+          material.materialName.trim().length > 0 ||
+          material.searchInput.trim().length > 0;
+        const hasUnit = material.unitType.trim().length > 0;
+        const quantityValue = parseBudgetNumberInput(material.quantityInput);
+
+        const rowErrors: Partial<
+          Record<"searchInput" | "unitType" | "quantityInput", string>
+        > = {};
+
+        if (!hasName) {
+          rowErrors.searchInput = "Material name is required.";
+        }
+
+        if (!hasUnit) {
+          rowErrors.unitType = "Unit type is required.";
+        }
+
+        if (quantityValue <= 0) {
+          rowErrors.quantityInput = "Quantity must be greater than zero.";
+        }
+
+        if (Object.keys(rowErrors).length > 0) {
+          nextErrors.materialRows[material.id] = rowErrors;
+        }
+
+        return hasName && hasUnit && quantityValue > 0;
+      });
+
+      if (!trimmedDisplayName) {
+        nextErrors.displayName = "Description is required.";
+      }
+
+      if (validMaterials.length === 0) {
+        setItemModalErrors(nextErrors);
         return;
       }
-      if (itemModalForm.materials.length === 0) {
-        toast.error("Add at least one material.");
+
+      const itemDisplayName =
+        trimmedDisplayName ||
+        validMaterials[0]?.materialName.trim() ||
+        validMaterials[0]?.searchInput.trim() ||
+        "";
+
+      if (!itemDisplayName) {
+        setItemModalErrors({
+          ...nextErrors,
+          displayName: "Description is required.",
+        });
         return;
       }
-      if (itemModalForm.materials.some((material) => !material.saved)) {
-        toast.error("Save each material first before adding this cost.");
-        return;
-      }
+
+      setItemModalErrors({ materialRows: {} });
 
       const existingItems =
         editingItemIndices?.map((index) => estimateForm.items[index]).filter(Boolean) ?? [];
 
-      const nextItems = itemModalForm.materials.map((material, index) => {
+      const nextItems = validMaterials.map((material, index) => {
         const { quantityValue, unitCostValue, resolvedMaterial, resolvedUnit } =
           validateModalMaterial(material, materialOptions);
 
@@ -675,12 +1373,15 @@ export function useCostEstimatorPage({
           id: existingItems[index]?.id ?? undefined,
           catalogItemId: material.catalogItemId,
           materialId: resolvedMaterial?.materialId ?? material.materialId,
-          materialName: material.materialName || resolvedMaterial?.materialName || "",
+          materialName:
+            material.materialName ||
+            resolvedMaterial?.materialName ||
+            material.searchInput.trim(),
           unitType: material.unitType || resolvedUnit?.unitType || "",
           unitCost: unitCostValue,
           quantity: quantityValue,
           lineTotal: round2(quantityValue * unitCostValue),
-          displayName: buildDisplayName(itemModalForm.displayName.trim()),
+          displayName: buildDisplayName(itemDisplayName),
           notes: itemModalForm.notes,
           sortOrder:
             editingItemIndices && editingItemIndices.length > 0
@@ -733,6 +1434,10 @@ export function useCostEstimatorPage({
     );
   }
 
+  function handleCloseRejectionAlert() {
+    setRejectionAlert(null);
+  }
+
   return {
     sortedEstimates,
     selectedEstimate,
@@ -741,16 +1446,26 @@ export function useCostEstimatorPage({
     isReadOnlyEstimate,
     itemModalOpen,
     itemModalForm,
+    itemModalErrors,
+    editingMaterialSnapshots,
+    pendingMaterialRowId,
     itemModalReadOnly,
     editingItemIndices,
     materialOptions,
     currentLineTotal,
     currentEstimateTotal,
+    plannedEstimateTotal,
     totalQuantity,
+    hasUnsavedEstimateChanges,
+    saveState,
+    saveMessage,
+    setupFormErrors,
     pendingEstimateAction,
+    pendingEstimateIntent,
     pendingDeleteEstimate,
     activeReportEstimate,
     activeReportItems,
+    rejectionAlert,
     handleSelectEstimate,
     handleOpenNewProjectSetup,
     handleCloseProjectSetup,
@@ -758,7 +1473,7 @@ export function useCostEstimatorPage({
     handleSaveEstimate,
     handleSubmitEstimate,
     handleDeleteEstimate,
-    handleDuplicateRejectedEstimate,
+    handleReopenRejectedEstimate,
     handleOpenAddCostModal,
     handleViewItemModal,
     handleEditItemModal,
@@ -770,9 +1485,11 @@ export function useCostEstimatorPage({
     handleAddModalMaterial,
     handleSaveModalMaterial,
     handleEditModalMaterial,
+    handleCancelModalMaterial,
     handleRemoveModalMaterial,
     handleSaveItem,
     handleRemoveItem,
+    handleCloseRejectionAlert,
     setActiveReportEstimateId,
   };
 }

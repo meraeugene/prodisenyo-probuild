@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import EstimateReviewsPageClient from "@/features/cost-estimator/components/EstimateReviewsPageClient";
 import type {
   ProjectEstimateItemRow,
-  ProjectEstimateRow,
+  ReviewProjectEstimateRow,
 } from "@/features/cost-estimator/types";
 
 export default async function EstimateReviewsPage() {
@@ -12,11 +12,13 @@ export default async function EstimateReviewsPage() {
 
   const { data: estimateData } = await supabase
     .from("project_estimates")
-    .select("*")
+    .select(
+      "*, requester_profile:profiles!project_estimates_requested_by_fkey(full_name, username)",
+    )
     .neq("status", "draft")
     .order("updated_at", { ascending: false });
 
-  const estimates = (estimateData ?? []) as ProjectEstimateRow[];
+  const estimates = (estimateData ?? []) as ReviewProjectEstimateRow[];
   const estimateIds = estimates.map((estimate) => estimate.id);
 
   let items: ProjectEstimateItemRow[] = [];

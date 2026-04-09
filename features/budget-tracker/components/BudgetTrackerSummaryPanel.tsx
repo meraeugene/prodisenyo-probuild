@@ -20,9 +20,14 @@ export default function BudgetTrackerSummaryPanel({
   return (
     <aside className="self-stretch xl:border-l xl:border-apple-mist xl:p-4">
       <div className="h-full max-h-[calc(100vh-110px)] overflow-y-auto pr-2">
-        <h2 className="text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
-          Summary
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
+            Summary
+          </h2>
+          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+            Draft
+          </span>
+        </div>
         <div className="mt-7 space-y-5">
           <div>
             <p className="text-sm text-apple-steel">Starting budget</p>

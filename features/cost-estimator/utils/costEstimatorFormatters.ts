@@ -1,5 +1,6 @@
 import {
   formatBudgetMoney,
+  formatBudgetNumberForInput,
   parseBudgetNumberInput,
   sanitizeBudgetNumericInput,
   getBudgetCategoryLabel,
@@ -13,6 +14,7 @@ import { BUDGET_PROJECT_TYPE_OPTIONS } from "@/features/budget-tracker/types";
 
 export {
   formatBudgetMoney,
+  formatBudgetNumberForInput,
   parseBudgetNumberInput,
   sanitizeBudgetNumericInput,
   getBudgetCategoryLabel,
@@ -28,7 +30,7 @@ export function formatEstimateStatusLabel(status: EstimateStatus) {
 export function getEstimateStatusBadgeClass(status: EstimateStatus) {
   switch (status) {
     case "submitted":
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return "border-sky-200 bg-sky-50 text-sky-700";
     case "approved":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "rejected":

@@ -20,6 +20,7 @@ const PROTECTED_PREFIXES = [
   "/attendance-analytics",
   "/payroll-analytics",
   "/payroll-reports",
+  "/add-user",
   "/settings",
 ] as const;
 
@@ -37,6 +38,7 @@ const CEO_ALLOWED_PREFIXES = [
   "/attendance-analytics",
   "/payroll-analytics",
   "/payroll-reports",
+  "/add-user",
   "/settings",
 ] as const;
 

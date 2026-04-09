@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { type AuthActionState, signInAction } from "@/actions/auth";
 
 interface LoginFormProps {
@@ -80,7 +80,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       >
         {pending ? (
           <>
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+            <LoaderCircle className="h-4 w-4 animate-spin" />
             Signing in...
           </>
         ) : (

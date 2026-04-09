@@ -16,6 +16,7 @@ export default function BudgetTrackerItemModal({
   estimatedCostInput,
   actualSpentInput,
   itemError,
+  itemFieldErrors,
   isPending,
   pendingAction,
   onClose,
@@ -31,6 +32,7 @@ export default function BudgetTrackerItemModal({
   estimatedCostInput: string;
   actualSpentInput: string;
   itemError: string | null;
+  itemFieldErrors: Partial<Record<"name" | "status" | "category", string>>;
   isPending: boolean;
   pendingAction: "project" | "item" | "delete-project" | "delete-item" | null;
   onClose: () => void;
@@ -86,15 +88,26 @@ export default function BudgetTrackerItemModal({
                   }))
                 }
                 placeholder="e.g. kitchen cabinets, architect fee"
-                className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                className={cn(
+                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  itemFieldErrors.name ? "border-rose-300" : "border-apple-mist",
+                )}
               />
+              {itemFieldErrors.name ? (
+                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.name}</p>
+              ) : null}
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
                 Status <span className="text-rose-500">*</span>
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div
+                className={cn(
+                  "grid grid-cols-3 gap-2 rounded-[12px]",
+                  itemFieldErrors.status ? "border border-rose-300 p-1" : "",
+                )}
+              >
                 {BUDGET_ITEM_STATUS_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -122,6 +135,9 @@ export default function BudgetTrackerItemModal({
                   </button>
                 ))}
               </div>
+              {itemFieldErrors.status ? (
+                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.status}</p>
+              ) : null}
             </div>
 
             <div>
@@ -136,7 +152,10 @@ export default function BudgetTrackerItemModal({
                     category: event.target.value as BudgetItemCategory,
                   }))
                 }
-                className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                className={cn(
+                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  itemFieldErrors.category ? "border-rose-300" : "border-apple-mist",
+                )}
               >
                 {BUDGET_ITEM_CATEGORY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -144,6 +163,9 @@ export default function BudgetTrackerItemModal({
                   </option>
                 ))}
               </select>
+              {itemFieldErrors.category ? (
+                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.category}</p>
+              ) : null}
             </div>
 
             <div>
@@ -219,7 +241,7 @@ export default function BudgetTrackerItemModal({
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex flex-1 items-center justify-center rounded-[10px] bg-[#1f6a37] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 items-center justify-center rounded-[10px] bg-[#1f6a37] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pendingAction === "item" ? (
                   <ButtonLoader
@@ -235,7 +257,7 @@ export default function BudgetTrackerItemModal({
                   type="button"
                   onClick={onRemove}
                   disabled={isPending}
-                  className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-rose-200 px-4 py-3 text-sm font-semibold text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-rose-200 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pendingAction === "delete-item" ? (
                     <ButtonLoader label="Deleting" />

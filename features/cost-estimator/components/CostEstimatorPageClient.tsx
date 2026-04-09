@@ -1,13 +1,15 @@
 "use client";
 
-import { Plus, Save, Send, Trash2 } from "lucide-react";
-import DashboardPageHero from "@/components/DashboardPageHero";
-import ButtonLoader from "@/features/budget-tracker/components/ButtonLoader";
+import { useState } from "react";
+import { LoaderCircle, Send } from "lucide-react";
 import CostEstimatorBoard from "@/features/cost-estimator/components/CostEstimatorBoard";
+import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
+import CostEstimatorHeader from "@/features/cost-estimator/components/CostEstimatorHeader";
 import CostEstimatorItemModal from "@/features/cost-estimator/components/CostEstimatorItemModal";
 import CostEstimatorSetupForm from "@/features/cost-estimator/components/CostEstimatorSetupForm";
 import CostEstimatorSummaryPanel from "@/features/cost-estimator/components/CostEstimatorSummaryPanel";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
+import EstimateRejectedAlertModal from "@/features/cost-estimator/components/EstimateRejectedAlertModal";
 import { useCostEstimatorPage } from "@/features/cost-estimator/hooks/useCostEstimatorPage";
 import type {
   CostCatalogItemRow,
@@ -24,18 +26,44 @@ export default function CostEstimatorPageClient({
   items: ProjectEstimateItemRow[];
   catalogItems: CostCatalogItemRow[];
 }) {
+  const [pendingDeleteItemIndices, setPendingDeleteItemIndices] = useState<number[] | null>(
+    null,
+  );
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const state = useCostEstimatorPage({
     estimates,
     items,
     catalogItems,
   });
+  const isSavingChanges = state.saveState === "saving";
+  const isUiLocked = state.pendingEstimateAction || isSavingChanges;
+
+  function handleRequestNewProject() {
+    state.handleOpenNewProjectSetup();
+  }
+
+  function handleConfirmDeleteItem() {
+    if (!pendingDeleteItemIndices) return;
+    state.handleRemoveItem(pendingDeleteItemIndices);
+    setPendingDeleteItemIndices(null);
+  }
+
+  function handleRequestDeleteProject() {
+    setShowDeleteProjectConfirm(true);
+  }
+
+  function handleRequestSubmitEstimate() {
+    setShowSubmitConfirm(true);
+  }
 
   if (state.projectSetupOpen) {
     return (
-      <div className="p-6">
+      <div>
         <CostEstimatorSetupForm
           hasExistingProjects={state.sortedEstimates.length > 0}
           form={state.estimateForm}
+          errors={state.setupFormErrors}
           pending={state.pendingEstimateAction}
           onBack={state.handleCloseProjectSetup}
           onFieldChange={state.handleEstimateFieldChange}
@@ -46,72 +74,22 @@ export default function CostEstimatorPageClient({
   }
 
   return (
-    <div className="p-6">
-      <DashboardPageHero
-        eyebrow="Engineer Workspace"
-        title="Cost Estimator"
-        description="Set up project estimates, add material-based cost lines, and submit completed estimates for CEO review."
+    <div>
+      <CostEstimatorHeader
+        estimates={state.sortedEstimates}
+        selectedEstimate={state.selectedEstimate}
+        uiLocked={isUiLocked}
+        pendingDeleteEstimate={state.pendingDeleteEstimate}
+        saveState={state.saveState}
+        saveMessage={state.saveMessage}
+        onSelectEstimate={state.handleSelectEstimate}
+        onNewProject={handleRequestNewProject}
+        onDeleteProject={handleRequestDeleteProject}
       />
 
-      <section className="mt-4 overflow-hidden rounded-[18px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-apple-mist px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <select
-              value={state.selectedEstimate?.id ?? ""}
-              onChange={(event) => state.handleSelectEstimate(event.target.value)}
-              className="h-11 min-w-[220px] rounded-[10px] border border-apple-mist bg-white px-4 text-sm font-semibold text-apple-charcoal outline-none focus:border-[#1f6a37]"
-            >
-              {state.sortedEstimates.map((estimate) => (
-                <option key={estimate.id} value={estimate.id}>
-                  {estimate.project_name || "Untitled estimate"}
-                </option>
-              ))}
-            </select>
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-              {state.pendingEstimateAction ? "Saving changes..." : "All changes saved"}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={state.handleOpenNewProjectSetup}
-              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50"
-            >
-              New project
-            </button>
-            {!state.isReadOnlyEstimate ? (
-              <button
-                type="button"
-                onClick={() => state.handleOpenAddCostModal()}
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d]"
-              >
-                <Plus size={16} />
-                Add cost
-              </button>
-            ) : null}
-            {!state.isReadOnlyEstimate ? (
-              <button
-                type="button"
-                onClick={state.handleDeleteEstimate}
-                disabled={state.pendingEstimateAction}
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-rose-200 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {state.pendingDeleteEstimate ? (
-                  <ButtonLoader label="Deleting project" />
-                ) : (
-                  <>
-                    <Trash2 size={16} />
-                    Delete project
-                  </>
-                )}
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="grid min-h-[720px] xl:grid-cols-[minmax(0,1fr)_280px]">
-          <div className="space-y-5 px-5 py-5">
+      <section className="grid min-h-[calc(100vh-69px)] xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-5 px-5 py-5">
+          {state.selectedEstimate ? (
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
@@ -123,64 +101,81 @@ export default function CostEstimatorPageClient({
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {!state.isReadOnlyEstimate ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={state.handleSaveEstimate}
-                      disabled={state.pendingEstimateAction}
-                      className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <Save size={15} />
-                      Save draft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={state.handleSubmitEstimate}
-                      disabled={state.pendingEstimateAction}
-                      className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <Send size={15} />
-                      Submit to CEO
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={handleRequestSubmitEstimate}
+                    disabled={isUiLocked}
+                    className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {state.pendingEstimateAction &&
+                    state.pendingEstimateIntent === "submit" ? (
+                      <>
+                        <LoaderCircle size={15} className="animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={15} />
+                        Submit to CEO
+                      </>
+                    )}
+                  </button>
                 ) : state.selectedEstimate?.status === "rejected" ? (
                   <button
                     type="button"
-                    onClick={state.handleDuplicateRejectedEstimate}
-                    disabled={state.pendingEstimateAction}
+                    onClick={state.handleReopenRejectedEstimate}
+                    disabled={isUiLocked}
                     className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    New revision
+                    {state.pendingEstimateAction &&
+                    state.pendingEstimateIntent === "duplicate" ? (
+                      <>
+                        <LoaderCircle size={15} className="animate-spin" />
+                        Opening editor...
+                      </>
+                    ) : (
+                      "Edit project again"
+                    )}
                   </button>
                 ) : null}
               </div>
             </div>
+          ) : null}
 
-            <CostEstimatorBoard
-              estimate={state.selectedEstimate}
-              form={state.estimateForm}
-              readOnly={state.isReadOnlyEstimate}
-              onViewItem={state.handleViewItemModal}
-              onEditItem={state.handleEditItemModal}
-              onDeleteItem={state.handleRemoveItem}
-            />
-          </div>
-
-          <CostEstimatorSummaryPanel
+          <CostEstimatorBoard
             estimate={state.selectedEstimate}
-            costEstimate={state.currentEstimateTotal}
-            itemCount={state.estimateForm.items.length}
-            totalQuantity={state.totalQuantity}
+            form={state.estimateForm}
+            readOnly={state.isReadOnlyEstimate}
+            disabled={isUiLocked}
+            onAddCost={state.handleOpenAddCostModal}
+            onViewItem={state.handleViewItemModal}
+            onEditItem={state.handleEditItemModal}
+            onDeleteItem={setPendingDeleteItemIndices}
           />
         </div>
+
+        <CostEstimatorSummaryPanel
+          estimate={state.selectedEstimate}
+          costEstimate={state.plannedEstimateTotal}
+          currentItemTotal={state.currentEstimateTotal}
+          itemCount={state.estimateForm.items.length}
+          totalQuantity={state.totalQuantity}
+        />
       </section>
 
       <CostEstimatorItemModal
         open={state.itemModalOpen}
         form={state.itemModalForm}
+        errors={state.itemModalErrors}
+        editingMaterialSnapshots={state.editingMaterialSnapshots}
+        pendingMaterialRowId={state.pendingMaterialRowId}
         materials={state.materialOptions}
         computedTotal={state.currentLineTotal}
-        editing={Boolean(state.itemModalForm.id)}
+        editing={Boolean(
+          !state.itemModalReadOnly &&
+            state.editingItemIndices &&
+            state.editingItemIndices.length > 0,
+        )}
         readOnly={state.itemModalReadOnly}
         pending={state.pendingEstimateAction}
         onClose={state.handleCloseAddCostModal}
@@ -191,6 +186,7 @@ export default function CostEstimatorPageClient({
         onAddMaterial={state.handleAddModalMaterial}
         onSaveMaterial={state.handleSaveModalMaterial}
         onEditMaterial={state.handleEditModalMaterial}
+        onCancelMaterial={state.handleCancelModalMaterial}
         onRemoveMaterial={state.handleRemoveModalMaterial}
         onSave={state.handleSaveItem}
         onDelete={() => {
@@ -208,6 +204,52 @@ export default function CostEstimatorPageClient({
           onClose={() => state.setActiveReportEstimateId(null)}
         />
       ) : null}
+
+      <CostEstimatorConfirmModal
+        open={pendingDeleteItemIndices !== null}
+        title="Delete item cost?"
+        description="This will remove the selected item cost from the estimate breakdown."
+        confirmLabel="Delete item cost"
+        confirmTone="danger"
+        pending={isUiLocked}
+        onConfirm={handleConfirmDeleteItem}
+        onCancel={() => setPendingDeleteItemIndices(null)}
+      />
+
+      <CostEstimatorConfirmModal
+        open={showDeleteProjectConfirm}
+        title="Delete project?"
+        description="This will permanently remove the current draft project and its item costs."
+        confirmLabel="Delete project"
+        confirmTone="danger"
+        pending={isUiLocked}
+        onConfirm={() => {
+          setShowDeleteProjectConfirm(false);
+          state.handleDeleteEstimate();
+        }}
+        onCancel={() => setShowDeleteProjectConfirm(false)}
+      />
+
+      <CostEstimatorConfirmModal
+        open={showSubmitConfirm}
+        title="Submit to CEO?"
+        description="Once submitted, this estimate will no longer be editable. Make sure everything is finalized before sending it for review."
+        confirmLabel="Submit to CEO"
+        confirmTone="primary"
+        pending={isUiLocked}
+        onConfirm={() => {
+          setShowSubmitConfirm(false);
+          state.handleSubmitEstimate();
+        }}
+        onCancel={() => setShowSubmitConfirm(false)}
+      />
+
+      <EstimateRejectedAlertModal
+        open={state.rejectionAlert !== null}
+        projectName={state.rejectionAlert?.projectName ?? ""}
+        rejectionReason={state.rejectionAlert?.rejectionReason ?? null}
+        onClose={state.handleCloseRejectionAlert}
+      />
     </div>
   );
 }

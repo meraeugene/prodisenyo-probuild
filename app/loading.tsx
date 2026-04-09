@@ -1,3 +1,5 @@
+import { LoaderCircle } from "lucide-react";
+
 export default function loading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-apple-snow">
@@ -18,7 +20,7 @@ export default function loading() {
         </div>
 
         {/* Spinner */}
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-emerald-700"></div>
+        <LoaderCircle className="h-6 w-6 animate-spin text-emerald-600" />
       </div>
     </div>
   );

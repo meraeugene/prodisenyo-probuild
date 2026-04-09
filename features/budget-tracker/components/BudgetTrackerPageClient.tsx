@@ -109,6 +109,7 @@ export default function BudgetTrackerPageClient({
         estimatedCostInput={state.estimatedCostInput}
         actualSpentInput={state.actualSpentInput}
         itemError={state.itemError}
+        itemFieldErrors={state.itemFieldErrors}
         isPending={state.isPending}
         pendingAction={state.pendingAction}
         onClose={state.closeItemModal}

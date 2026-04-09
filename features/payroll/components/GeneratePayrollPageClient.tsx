@@ -138,7 +138,7 @@ export default function PayrollPage() {
   }
 
   return (
-    <div>
+    <div className="p-4">
       <DashboardPageHero
         eyebrow="Payroll"
         title="Generate Payroll"

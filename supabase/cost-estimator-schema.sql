@@ -58,8 +58,11 @@ create table if not exists public.project_estimates (
 );
 
 alter table public.project_estimates alter column client_name drop not null;
-alter table public.project_estimates add column if not exists location text;
-alter table public.project_estimates add column if not exists owner_name text;
+
+-- Keep older environments in sync with the latest estimate fields.
+alter table public.project_estimates
+  add column if not exists location text,
+  add column if not exists owner_name text;
 
 create table if not exists public.project_estimate_items (
   id uuid primary key default gen_random_uuid(),

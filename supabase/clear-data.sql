@@ -1,6 +1,8 @@
 begin;
 
--- Clears all app data, profiles, and Supabase auth accounts.
+-- Full system data reset.
+-- Clears cost estimator, budget tracker, payroll, attendance,
+-- employee/profile data, audit logs, and Supabase auth users.
 truncate table public.project_estimate_items restart identity cascade;
 truncate table public.project_estimates restart identity cascade;
 truncate table public.cost_catalog_items restart identity cascade;

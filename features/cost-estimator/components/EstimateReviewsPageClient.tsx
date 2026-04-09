@@ -1,22 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { LoaderCircle, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
 import DashboardPageHero from "@/components/DashboardPageHero";
+import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
 import EstimateReviewsTable from "@/features/cost-estimator/components/EstimateReviewsTable";
+import EstimateReviewsTableSkeleton from "@/features/cost-estimator/components/EstimateReviewsTableSkeleton";
 import { useEstimateReviewsPage } from "@/features/cost-estimator/hooks/useEstimateReviewsPage";
 import type {
   ProjectEstimateItemRow,
-  ProjectEstimateRow,
+  ReviewProjectEstimateRow,
 } from "@/features/cost-estimator/types";
 
 export default function EstimateReviewsPageClient({
   estimates,
   items,
 }: {
-  estimates: ProjectEstimateRow[];
+  estimates: ReviewProjectEstimateRow[];
   items: ProjectEstimateItemRow[];
 }) {
+  const router = useRouter();
   const state = useEstimateReviewsPage({ estimates, items });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!isRefreshing) return;
+    const timeout = window.setTimeout(() => setIsRefreshing(false), 600);
+    return () => window.clearTimeout(timeout);
+  }, [isRefreshing]);
 
   return (
     <div className="p-6">
@@ -24,17 +37,35 @@ export default function EstimateReviewsPageClient({
         eyebrow="CEO Review"
         title="Estimate Reviews"
         description="Review engineer-submitted project estimates before bidding and push approved totals into Budget Tracker as new projects."
+        actions={
+          <button
+            type="button"
+            onClick={() => {
+              setIsRefreshing(true);
+              router.refresh();
+            }}
+            disabled={isRefreshing}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw
+              size={14}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
+            Sync
+          </button>
+        }
       />
 
-      <EstimateReviewsTable
-        estimates={state.sortedEstimates}
-        pendingReviewsCount={state.pendingReviewsCount}
-        pendingActionId={state.pendingActionId}
-        pendingActionType={state.pendingActionType}
-        onOpenReport={state.setActiveEstimateId}
-        onApprove={state.handleApproveEstimate}
-        onReject={(estimateId) => state.setRejectEstimateId(estimateId)}
-      />
+      {isRefreshing ? (
+        <EstimateReviewsTableSkeleton />
+      ) : (
+        <EstimateReviewsTable
+          estimates={state.sortedEstimates}
+          pendingReviewsCount={state.pendingReviewsCount}
+          onOpenReport={state.setActiveEstimateId}
+          onDeleteEstimate={state.setDeleteEstimateId}
+        />
+      )}
 
       {state.activeEstimate ? (
         <EstimateReportModal
@@ -50,7 +81,14 @@ export default function EstimateReviewsPageClient({
                   disabled={state.isPending}
                   className="inline-flex h-10 items-center justify-center rounded-xl border border-rose-200 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Reject Estimate
+                  {state.isPending && state.pendingActionType === "reject" ? (
+                    <>
+                      <LoaderCircle size={15} className="mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    "Reject Estimate"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -58,7 +96,14 @@ export default function EstimateReviewsPageClient({
                   disabled={state.isPending}
                   className="inline-flex h-10 items-center justify-center rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Approve Estimate
+                  {state.isPending && state.pendingActionType === "approve" ? (
+                    <>
+                      <LoaderCircle size={15} className="mr-2 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve Estimate"
+                  )}
                 </button>
               </div>
             ) : null
@@ -104,13 +149,31 @@ export default function EstimateReviewsPageClient({
                   disabled={state.isPending}
                   className="inline-flex h-10 items-center justify-center rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {state.isPending ? "Rejecting..." : "Confirm Reject"}
+                  {state.isPending ? (
+                    <>
+                      <LoaderCircle size={15} className="mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    "Confirm Reject"
+                  )}
                 </button>
               </div>
             </div>
           </div>
         </div>
       ) : null}
+
+      <CostEstimatorConfirmModal
+        open={state.deleteEstimateId !== null}
+        title="Delete estimate?"
+        description="This will permanently remove the selected estimate from the review list."
+        confirmLabel="Delete estimate"
+        confirmTone="danger"
+        pending={state.isPending && state.deleteEstimateId !== null}
+        onConfirm={state.handleConfirmDelete}
+        onCancel={() => state.setDeleteEstimateId(null)}
+      />
     </div>
   );
 }

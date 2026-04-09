@@ -31,10 +31,9 @@ export default function RootLayout({
           {children}
           <Toaster
             position="top-right"
-            closeButton
             expand
+            closeButton
             toastOptions={{
-              closeButton: true,
               classNames: {
                 toast:
                   "group border border-apple-mist bg-white text-apple-charcoal shadow-[0_20px_48px_rgba(24,83,43,0.14)] rounded-[20px]",

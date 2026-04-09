@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
   Building2,
@@ -14,9 +15,11 @@ import {
   LayoutDashboard,
   LineChart,
   Menu,
+  Users,
   Receipt,
   Settings,
   Upload,
+  UserPlus,
   UserRoundSearch,
   Wallet,
   X,
@@ -35,6 +38,9 @@ const PRIMARY_NAV_ITEMS = [
 
 const CEO_GENERAL_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+] as const;
+
+const CEO_REVIEW_ITEMS = [
   {
     href: "/payroll-reports",
     label: "Payroll Reports",
@@ -65,6 +71,10 @@ const BUDGET_NAV_ITEMS = [
   { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
 ] as const;
 
+const CEO_ADMIN_ITEMS = [
+  { href: "/add-user", label: "User Management", icon: Users },
+] as const;
+
 const ENGINEER_NAV_ITEMS = [
   { href: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
 ] as const;
@@ -79,6 +89,63 @@ function formatRoleLabel(role: ProfileCardData["role"] | null): string {
   if (role === "payroll_manager") return "Payroll Manager";
   if (role === "engineer") return "Engineer";
   return "Signed-in user";
+}
+
+function renderSidebarLink(params: {
+  item: {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+  };
+  pathname: string;
+  collapsed: boolean;
+  onNavigate: () => void;
+  badgeCount?: number;
+}) {
+  const { item, pathname, collapsed, onNavigate, badgeCount = 0 } = params;
+  const active = pathname === item.href;
+
+  return (
+    <Link
+      key={item.href}
+      href={item.href}
+      title={collapsed ? item.label : undefined}
+      onClick={onNavigate}
+      className={cn(
+        "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+        collapsed && "justify-center px-2.5",
+        active
+          ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+          : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+          active
+            ? "bg-[#1f6a37] text-white"
+            : "text-apple-smoke group-hover:text-apple-charcoal",
+        )}
+      >
+        <item.icon size={15} />
+      </div>
+      {!collapsed ? (
+        <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
+          {item.label}
+        </span>
+      ) : null}
+      {badgeCount > 0 ? (
+        <span
+          className={cn(
+            "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+            collapsed ? "absolute -right-1 -top-1" : "ml-1",
+          )}
+        >
+          {badgeCount > 99 ? "99+" : badgeCount}
+        </span>
+      ) : null}
+    </Link>
+  );
 }
 
 export default function DashboardShell({
@@ -114,6 +181,7 @@ export default function DashboardShell({
   const [pendingPayrollReportCount, setPendingPayrollReportCount] = useState(0);
   const [pendingEstimateReviewCount, setPendingEstimateReviewCount] = useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
+  const previousEstimateReviewCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
 
   useEffect(() => {
@@ -124,7 +192,7 @@ export default function DashboardShell({
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname === "/budget-tracker") {
+    if (pathname === "/budget-tracker" || pathname === "/cost-estimator") {
       setCollapsed(true);
     } else {
       setCollapsed(false);
@@ -151,6 +219,7 @@ export default function DashboardShell({
       setPendingPayrollReportCount(0);
       setPendingEstimateReviewCount(0);
       previousPendingCountRef.current = null;
+      previousEstimateReviewCountRef.current = null;
       return;
     }
 
@@ -189,9 +258,11 @@ export default function DashboardShell({
 
       const nextCount = overtimeCount ?? 0;
       const previousCount = previousPendingCountRef.current;
+      const nextEstimateCount = estimateReviewCount ?? 0;
+      const previousEstimateCount = previousEstimateReviewCountRef.current;
       setPendingOvertimeCount(nextCount);
       setPendingPayrollReportCount(payrollReportCount ?? 0);
-      setPendingEstimateReviewCount(estimateReviewCount ?? 0);
+      setPendingEstimateReviewCount(nextEstimateCount);
 
       if (
         previousCount !== null &&
@@ -203,7 +274,18 @@ export default function DashboardShell({
         void audio.play().catch(() => undefined);
       }
 
+      if (
+        previousEstimateCount !== null &&
+        nextEstimateCount > previousEstimateCount &&
+        canPlayNotificationSoundRef.current
+      ) {
+        const audio = new Audio("/sounds/overtime-approval.mp3");
+        audio.volume = 0.9;
+        void audio.play().catch(() => undefined);
+      }
+
       previousPendingCountRef.current = nextCount;
+      previousEstimateReviewCountRef.current = nextEstimateCount;
     }
 
     void loadPendingOvertimeCount();
@@ -313,77 +395,43 @@ export default function DashboardShell({
                 ? CEO_GENERAL_ITEMS
                 : isEngineer
                   ? ENGINEER_NAV_ITEMS
-                  : PRIMARY_NAV_ITEMS).map((item) => {
-                const active = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                      collapsed && "justify-center px-2.5",
-                      active
-                        ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                        : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                        active
-                          ? "bg-[#1f6a37] text-white"
-                          : "text-apple-smoke group-hover:text-apple-charcoal",
-                      )}
-                    >
-                      <item.icon size={15} />
+                  : PRIMARY_NAV_ITEMS).map((item) =>
+                renderSidebarLink({
+                  item,
+                  pathname,
+                  collapsed,
+                  onNavigate: () => setOpen(false),
+                }),
+              )}
+
+              {isCeo ? (
+                <>
+                  {!collapsed ? (
+                    <div className="px-3 pb-1 pt-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                        Review
+                      </p>
                     </div>
-                    {!collapsed ? (
-                      <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
-                        {item.label}
-                      </span>
-                    ) : null}
-                    {item.href === "/overtime-approvals" &&
-                    pendingOvertimeCount > 0 ? (
-                      <span
-                        className={cn(
-                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
-                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
-                        )}
-                      >
-                        {pendingOvertimeCount > 99 ? "99+" : pendingOvertimeCount}
-                      </span>
-                    ) : null}
-                    {item.href === "/payroll-reports" &&
-                    pendingPayrollReportCount > 0 ? (
-                      <span
-                        className={cn(
-                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
-                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
-                        )}
-                      >
-                        {pendingPayrollReportCount > 99
-                          ? "99+"
-                          : pendingPayrollReportCount}
-                      </span>
-                    ) : null}
-                    {item.href === "/estimate-reviews" &&
-                    pendingEstimateReviewCount > 0 ? (
-                      <span
-                        className={cn(
-                          "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
-                          collapsed ? "absolute -right-1 -top-1" : "ml-1",
-                        )}
-                      >
-                        {pendingEstimateReviewCount > 99
-                          ? "99+"
-                          : pendingEstimateReviewCount}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
+                  ) : null}
+
+                  {CEO_REVIEW_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                      badgeCount:
+                        item.href === "/overtime-approvals"
+                          ? pendingOvertimeCount
+                          : item.href === "/payroll-reports"
+                            ? pendingPayrollReportCount
+                            : item.href === "/estimate-reviews"
+                              ? pendingEstimateReviewCount
+                              : 0,
+                    }),
+                  )}
+                </>
+              ) : null}
 
               <AnimatePresence initial={false}>
                 {!isCeo && canSeeWorkflowNav ? (
@@ -458,37 +506,34 @@ export default function DashboardShell({
               ) : null}
 
               {!isEngineer && BUDGET_NAV_ITEMS.map((item) => {
-                const active = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                      collapsed && "justify-center px-2.5",
-                      active
-                        ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                        : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                        active
-                          ? "bg-[#1f6a37] text-white"
-                          : "text-apple-smoke group-hover:text-apple-charcoal",
-                      )}
-                    >
-                      <item.icon size={15} />
-                    </div>
-                    {!collapsed ? (
-                      <span className="font-medium">{item.label}</span>
-                    ) : null}
-                  </Link>
-                );
+                return renderSidebarLink({
+                  item,
+                  pathname,
+                  collapsed,
+                  onNavigate: () => setOpen(false),
+                });
               })}
+
+              {isCeo ? (
+                <>
+                  {!collapsed ? (
+                    <div className="px-3 pb-1 pt-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                        Admin
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {CEO_ADMIN_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                    }),
+                  )}
+                </>
+              ) : null}
             </nav>
 
             <div className="mt-auto space-y-1 pt-3">
