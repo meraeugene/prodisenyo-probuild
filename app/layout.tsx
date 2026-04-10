@@ -10,11 +10,11 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Prodisenyo PayTrack",
-    template: "%s | Prodisenyo PayTrack",
+    default: "Prodisenyo ProBuild",
+    template: "%s | Prodisenyo ProBuild",
   },
   description:
-    "Prodisenyo PayTrack helps teams upload attendance logs, review worked hours, and generate accurate payroll reports faster.",
+    "Prodisenyo ProBuild helps teams upload documents to generate payroll reports, generate accurate cost estimates, and track project budgets in real-time.",
 };
 
 export default function RootLayout({
@@ -47,8 +47,7 @@ export default function RootLayout({
                   "border-emerald-200 bg-[linear-gradient(180deg,rgba(248,253,250,1),rgba(239,250,243,1))]",
                 error:
                   "border-red-200 bg-[linear-gradient(180deg,rgba(255,250,250,1),rgba(254,242,242,1))]",
-                info:
-                  "border-sky-200 bg-[linear-gradient(180deg,rgba(249,252,255,1),rgba(240,249,255,1))]",
+                info: "border-sky-200 bg-[linear-gradient(180deg,rgba(249,252,255,1),rgba(240,249,255,1))]",
                 warning:
                   "border-amber-200 bg-[linear-gradient(180deg,rgba(255,252,245,1),rgba(254,249,195,0.4))]",
               },

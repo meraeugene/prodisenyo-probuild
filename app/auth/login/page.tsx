@@ -41,10 +41,10 @@ export default async function LoginPage({
                   </div>
                   <div>
                     <p className="text-sm font-semibold tracking-[-0.03em]">
-                      Prodisenyo PayTrack
+                      Prodisenyo ProBuild
                     </p>
                     <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">
-                      Payroll System
+                      Integrated System
                     </p>
                   </div>
                 </div>
@@ -54,7 +54,7 @@ export default async function LoginPage({
                     Secure Sign In
                   </p>
                   <h1 className="mt-4 max-w-sm text-4xl font-semibold tracking-[-0.05em] text-white sm:text-[44px]">
-                    Payroll, attendance, and reports in one place.
+                    Payroll, budget, and cost estimate in one place.
                   </h1>
                 </div>
               </div>
