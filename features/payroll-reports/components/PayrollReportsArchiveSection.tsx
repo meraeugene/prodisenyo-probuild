@@ -1,8 +1,14 @@
 "use client";
 
-import { CheckCircle2, Eye, MoreHorizontal, RefreshCw, ScrollText, Trash2, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Eye,
+  MoreHorizontal,
+  Trash2,
+  XCircle,
+} from "lucide-react";
 import { createPortal } from "react-dom";
-import DashboardPageHero from "@/components/DashboardPageHero";
 import {
   formatPayrollReportDateTime,
   formatPayrollReportPeriodLabel,
@@ -27,9 +33,7 @@ export default function PayrollReportsArchiveSection({
   openMenu,
   openMenuReport,
   deleteConfirmReport,
-  onRefresh,
   onToggleMenu,
-  onCloseMenu,
   onViewReport,
   onApproveReport,
   onRejectReport,
@@ -47,12 +51,7 @@ export default function PayrollReportsArchiveSection({
   openMenu: ReportActionsMenuState | null;
   openMenuReport: PayrollRunRow | null;
   deleteConfirmReport: PayrollRunRow | null;
-  onRefresh: () => void;
-  onToggleMenu: (
-    report: PayrollRunRow,
-    rect: DOMRect,
-  ) => void;
-  onCloseMenu: () => void;
+  onToggleMenu: (report: PayrollRunRow, rect: DOMRect) => void;
   onViewReport: (report: PayrollRunRow) => void;
   onApproveReport: (report: PayrollRunRow) => void;
   onRejectReport: (report: PayrollRunRow) => void;
@@ -62,25 +61,8 @@ export default function PayrollReportsArchiveSection({
 }) {
   return (
     <>
-      <DashboardPageHero
-        eyebrow="Payroll Reports"
-        title="Payroll Report Review"
-        description="Pending payroll reports stay here for CEO review. Only approved payroll reports flow into the CEO dashboard totals."
-        actions={
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={refreshing}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            Sync
-          </button>
-        }
-      />
-
       <section className="mt-4 rounded-[16px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
               Report Archive
@@ -88,18 +70,17 @@ export default function PayrollReportsArchiveSection({
             <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
               Pending And Approved Payroll Reports
             </h2>
+            <p className="mt-2 text-sm text-apple-steel">
+              Review submitted payroll reports before they move forward.
+            </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <ScrollText size={12} />
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            <Clock3 size={12} />
             {pendingReportsCount.toLocaleString("en-PH")} pending
           </span>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw size={18} className="animate-spin text-[#1f6a37]" aria-label="Loading reports" />
-          </div>
-        ) : reports.length === 0 ? (
+        {reports.length === 0 ? (
           <p className="text-sm text-apple-steel">
             No payroll reports are waiting for review.
           </p>
@@ -116,24 +97,40 @@ export default function PayrollReportsArchiveSection({
               </colgroup>
               <thead>
                 <tr className="bg-[rgb(var(--apple-snow))] text-left">
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Submitted</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Period</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Site</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Total Payroll</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Status</th>
-                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">Actions</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Submitted
+                  </th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Period
+                  </th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Site
+                  </th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Total Payroll
+                  </th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-apple-mist">
                 {reports.map((report) => (
                   <tr key={report.id} className="bg-white">
                     <td className="px-4 py-4 text-apple-smoke">
-                      {formatPayrollReportDateTime(report.submitted_at ?? report.created_at)}
+                      {formatPayrollReportDateTime(
+                        report.submitted_at ?? report.created_at,
+                      )}
                     </td>
                     <td className="px-4 py-4 font-medium text-apple-charcoal">
                       {formatPayrollReportPeriodLabel(report)}
                     </td>
-                    <td className="px-4 py-4 text-apple-smoke">{report.site_name}</td>
+                    <td className="px-4 py-4 text-apple-smoke">
+                      {report.site_name}
+                    </td>
                     <td className="px-4 py-4 text-right font-semibold text-apple-charcoal">
                       {formatPayrollReportPeso(report.net_total ?? 0)}
                     </td>
@@ -150,11 +147,19 @@ export default function PayrollReportsArchiveSection({
                     <td className="px-4 py-4 text-center">
                       <button
                         type="button"
-                        onClick={(event) => onToggleMenu(report, event.currentTarget.getBoundingClientRect())}
+                        onClick={(event) =>
+                          onToggleMenu(
+                            report,
+                            event.currentTarget.getBoundingClientRect(),
+                          )
+                        }
                         data-report-actions-root
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-charcoal transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Open report actions"
-                        disabled={deletingRunId === report.id || pendingDecisionRunId === report.id}
+                        disabled={
+                          deletingRunId === report.id ||
+                          pendingDecisionRunId === report.id
+                        }
                       >
                         <MoreHorizontal size={16} />
                       </button>
@@ -191,7 +196,8 @@ export default function PayrollReportsArchiveSection({
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <CheckCircle2 size={14} />
-                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "approve"
+                    {pendingDecisionRunId === openMenuReport.id &&
+                    pendingDecisionAction === "approve"
                       ? "Updating..."
                       : "Approve Payroll"}
                   </button>
@@ -202,7 +208,8 @@ export default function PayrollReportsArchiveSection({
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <XCircle size={14} />
-                    {pendingDecisionRunId === openMenuReport.id && pendingDecisionAction === "reject"
+                    {pendingDecisionRunId === openMenuReport.id &&
+                    pendingDecisionAction === "reject"
                       ? "Updating..."
                       : "Reject Payroll"}
                   </button>
@@ -212,10 +219,15 @@ export default function PayrollReportsArchiveSection({
                 type="button"
                 onClick={() => onAskDelete(openMenuReport)}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={deletingRunId === openMenuReport.id || pendingDecisionRunId === openMenuReport.id}
+                disabled={
+                  deletingRunId === openMenuReport.id ||
+                  pendingDecisionRunId === openMenuReport.id
+                }
               >
                 <Trash2 size={14} />
-                {deletingRunId === openMenuReport.id ? "Deleting..." : "Delete Payroll"}
+                {deletingRunId === openMenuReport.id
+                  ? "Deleting..."
+                  : "Delete Payroll"}
               </button>
             </div>,
             document.body,
@@ -227,7 +239,10 @@ export default function PayrollReportsArchiveSection({
             <div
               className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
               onMouseDown={(event) => {
-                if (event.target === event.currentTarget && deletingRunId !== deleteConfirmReport.id) {
+                if (
+                  event.target === event.currentTarget &&
+                  deletingRunId !== deleteConfirmReport.id
+                ) {
                   onCloseDeleteConfirm();
                 }
               }}
@@ -264,7 +279,9 @@ export default function PayrollReportsArchiveSection({
                       disabled={deletingRunId === deleteConfirmReport.id}
                       className="inline-flex h-9 items-center rounded-lg bg-rose-600 px-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {deletingRunId === deleteConfirmReport.id ? "Deleting..." : "Delete Payroll"}
+                      {deletingRunId === deleteConfirmReport.id
+                        ? "Deleting..."
+                        : "Delete Payroll"}
                     </button>
                   </div>
                 </div>

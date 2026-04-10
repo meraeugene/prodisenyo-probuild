@@ -1,6 +1,8 @@
 "use client";
 
-import { Eye, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Clock3, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { createPortal } from "react-dom";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import {
   formatEstimateDateTime,
@@ -20,6 +22,52 @@ export default function EstimateReviewsTable({
   onOpenReport: (estimateId: string) => void;
   onDeleteEstimate: (estimateId: string) => void;
 }) {
+  const [openMenu, setOpenMenu] = useState<{
+    estimateId: string;
+    top: number;
+    left: number;
+  } | null>(null);
+
+  const openMenuEstimate =
+    estimates.find((estimate) => estimate.id === openMenu?.estimateId) ?? null;
+
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest("[data-estimate-actions-root]")) return;
+      setOpenMenu(null);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    };
+
+    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [openMenu]);
+
+  function handleOpenMenu(estimateId: string, rect: DOMRect) {
+    setOpenMenu((current) =>
+      current?.estimateId === estimateId
+        ? null
+        : {
+            estimateId,
+            top: rect.bottom + 8,
+            left: rect.right,
+          },
+    );
+  }
+
   return (
     <section className="mt-4 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -30,8 +78,12 @@ export default function EstimateReviewsTable({
           <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
             Submitted And Reviewed Estimates
           </h2>
+          <p className="mt-2 text-sm text-apple-steel">
+            Review engineer-submitted estimates before final approval.
+          </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+          <Clock3 size={12} />
           {pendingReviewsCount} pending
         </span>
       </div>
@@ -92,25 +144,18 @@ export default function EstimateReviewsTable({
                   <td className="px-3 py-3 text-center">
                     <EstimateStatusBadge status={estimate.status} />
                   </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onOpenReport(estimate.id)}
-                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-apple-mist px-3 text-xs font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50"
-                      >
-                        <Eye size={13} />
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDeleteEstimate(estimate.id)}
-                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-rose-200 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-                      >
-                        <Trash2 size={13} />
-                        Delete
-                      </button>
-                    </div>
+                  <td className="px-3 py-3 text-center">
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        handleOpenMenu(estimate.id, event.currentTarget.getBoundingClientRect())
+                      }
+                      data-estimate-actions-root
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"
+                      aria-label={`Open actions for ${estimate.project_name}`}
+                    >
+                      <MoreHorizontal size={15} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -124,6 +169,40 @@ export default function EstimateReviewsTable({
           </tbody>
         </table>
       </div>
+
+      {openMenu && openMenuEstimate
+        ? createPortal(
+            <div
+              data-estimate-actions-root
+              className="fixed z-[140] min-w-[154px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
+              style={{ top: openMenu.top, left: openMenu.left }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenMenu(null);
+                  onOpenReport(openMenuEstimate.id);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-emerald-50/70"
+              >
+                <Eye size={13} />
+                View estimate
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenMenu(null);
+                  onDeleteEstimate(openMenuEstimate.id);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50/70"
+              >
+                <Trash2 size={13} />
+                Delete estimate
+              </button>
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

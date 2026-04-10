@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
+import EstimateReviewsSectionSkeleton from "@/features/cost-estimator/components/EstimateReviewsSectionSkeleton";
 import EstimateReviewsTable from "@/features/cost-estimator/components/EstimateReviewsTable";
-import EstimateReviewsTableSkeleton from "@/features/cost-estimator/components/EstimateReviewsTableSkeleton";
 import { useEstimateReviewsPage } from "@/features/cost-estimator/hooks/useEstimateReviewsPage";
 import type {
   ProjectEstimateItemRow,
@@ -47,17 +47,14 @@ export default function EstimateReviewsPageClient({
             disabled={isRefreshing}
             className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <RefreshCw
-              size={14}
-              className={isRefreshing ? "animate-spin" : ""}
-            />
+            <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
             Sync
           </button>
         }
       />
 
       {isRefreshing ? (
-        <EstimateReviewsTableSkeleton />
+        <EstimateReviewsSectionSkeleton />
       ) : (
         <EstimateReviewsTable
           estimates={state.sortedEstimates}

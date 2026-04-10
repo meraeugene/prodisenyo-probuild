@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { MoreHorizontal, Pencil, Trash2, UserPlus } from "lucide-react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
@@ -51,6 +52,11 @@ export default function UserManagementPageClient({
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<{
+    userId: string;
+    top: number;
+    left: number;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const sortedUsers = useMemo(
@@ -64,6 +70,33 @@ export default function UserManagementPageClient({
 
   const deleteTarget =
     sortedUsers.find((user) => user.id === deleteUserId) ?? null;
+  const openMenuUser =
+    sortedUsers.find((user) => user.id === openMenu?.userId) ?? null;
+
+  useEffect(() => {
+    if (!openMenu) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest("[data-user-actions-root]")) return;
+      setOpenMenu(null);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    };
+
+    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [openMenu]);
 
   function validateForm() {
     const nextErrors: FormErrors = {};
@@ -119,6 +152,7 @@ export default function UserManagementPageClient({
   }
 
   function handleEditUser(user: ManagedUserRow) {
+    setOpenMenu(null);
     setEditingUserId(user.id);
     setErrors({});
     setForm({
@@ -194,6 +228,23 @@ export default function UserManagementPageClient({
         );
       }
     });
+  }
+
+  function handleOpenMenu(userId: string, rect: DOMRect) {
+    setOpenMenu((current) =>
+      current?.userId === userId
+        ? null
+        : {
+            userId,
+            top: rect.bottom + 8,
+            left: rect.right,
+          },
+    );
+  }
+
+  function handleAskDelete(userId: string) {
+    setOpenMenu(null);
+    setDeleteUserId(userId);
   }
 
   return (
@@ -429,26 +480,18 @@ export default function UserManagementPageClient({
                           {user.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditUser(user)}
-                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-apple-mist px-3 text-xs font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50"
-                          >
-                            <Pencil size={13} />
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteUserId(user.id)}
-                            disabled={isCurrentUser}
-                            className="inline-flex h-9 items-center gap-1 rounded-lg border border-rose-200 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <Trash2 size={13} />
-                            Delete
-                          </button>
-                        </div>
+                      <td className="px-3 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={(event) =>
+                            handleOpenMenu(user.id, event.currentTarget.getBoundingClientRect())
+                          }
+                          data-user-actions-root
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"
+                          aria-label={`Open actions for ${user.full_name || user.username}`}
+                        >
+                          <MoreHorizontal size={15} />
+                        </button>
                       </td>
                     </tr>
                   );
@@ -473,6 +516,35 @@ export default function UserManagementPageClient({
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteUserId(null)}
       />
+
+      {openMenu && openMenuUser
+        ? createPortal(
+            <div
+              data-user-actions-root
+              className="fixed z-[140] min-w-[148px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
+              style={{ top: openMenu.top, left: openMenu.left }}
+            >
+              <button
+                type="button"
+                onClick={() => handleEditUser(openMenuUser)}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-emerald-50/70"
+              >
+                <Pencil size={13} />
+                Edit user
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAskDelete(openMenuUser.id)}
+                disabled={openMenuUser.id === currentUserId}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-rose-600 transition hover:bg-rose-50/70 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 size={13} />
+                Delete user
+              </button>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import LoginForm from "@/components/auth/LoginForm";
 import { BriefcaseBusiness, Building2, ShieldCheck } from "lucide-react";
 import { getCurrentProfile, getRoleHomePath } from "@/lib/auth";
@@ -58,74 +59,47 @@ export default async function LoginPage({
                 </div>
               </div>
 
-              <div className="grid gap-4 lg:mt-auto">
-                <div className="rounded-[28px] border border-white/10 bg-white/8 p-5 backdrop-blur-md">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/55">
-                      System Flow
-                    </p>
-                    <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-white">
-                      Simple workflow
-                    </p>
+              <div className="grid flex-1 gap-4 lg:mt-auto">
+                <div className="">
+                  <div className="relative mx-auto flex min-h-full items-end justify-center">
+                    <Image
+                      src="/login-robot-team.png"
+                      alt="Payroll robot team"
+                      width={1152}
+                      height={768}
+                      priority
+                      className="relative z-10 h-auto w-full object-contain object-bottom drop-shadow-[0_28px_56px_rgba(0,0,0,0.24)]"
+                    />
                   </div>
+                </div>
+              </div>
 
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl bg-white/8 px-4 py-3">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgb(var(--theme-chart-5))]/25 bg-[rgb(var(--theme-chart-5))]/35 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                        01
-                      </span>
-                      <p className="mt-2 text-sm font-medium text-white">
-                        Upload logs
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <div className="rounded-[24px] border border-white/10 bg-white/8 p-5 backdrop-blur-md">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-white/55">
+                    Access
+                  </p>
+                  <div className="mt-4 flex items-end gap-6">
+                    <div>
+                      <p className="text-3xl font-semibold tracking-[-0.04em]">
+                        24/7
                       </p>
+                      <p className="mt-1 text-xs text-white/65">admin access</p>
                     </div>
-                    <div className="rounded-2xl bg-white/8 px-4 py-3">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgb(var(--theme-chart-5))]/25 bg-[rgb(var(--theme-chart-5))]/35 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                        02
-                      </span>
-                      <p className="mt-2 text-sm font-medium text-white">
-                        Review hours
+                    <div>
+                      <p className="text-3xl text-center font-semibold tracking-[-0.04em]">
+                        1
                       </p>
-                    </div>
-                    <div className="rounded-2xl bg-white/8 px-4 py-3">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgb(var(--theme-chart-5))]/25 bg-[rgb(var(--theme-chart-5))]/35 text-[10px] font-semibold uppercase tracking-[0.12em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                        03
-                      </span>
-                      <p className="mt-2 text-sm font-medium text-white">
-                        Release payroll
+                      <p className="mt-1 text-xs text-white/65">
+                        unified dashboard
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-5 backdrop-blur-md">
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/55">
-                      Access
-                    </p>
-                    <div className="mt-4 flex items-end gap-6">
-                      <div>
-                        <p className="text-3xl font-semibold tracking-[-0.04em]">
-                          24/7
-                        </p>
-                        <p className="mt-1 text-xs text-white/65">
-                          admin access
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-semibold tracking-[-0.04em]">
-                          1
-                        </p>
-                        <p className="mt-1 text-xs text-white/65">
-                          unified dashboard
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/10 bg-white/10 px-5 py-4 text-sm font-medium text-white backdrop-blur-md">
-                    <BriefcaseBusiness className="h-4 w-4 text-[rgb(var(--theme-chart-5))]" />
-                    Internal workspace
-                  </div>
+                <div className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/10 bg-white/10 px-5 py-4 text-sm font-medium text-white backdrop-blur-md">
+                  <BriefcaseBusiness className="h-4 w-4 text-[rgb(var(--theme-chart-5))]" />
+                  Internal workspace
                 </div>
               </div>
             </div>

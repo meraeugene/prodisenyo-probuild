@@ -177,12 +177,13 @@ export default function EstimateReportModal({
               </div>
 
               {estimate.status === "rejected" ? (
-                <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-700">
-                    Rejection Reason
+                <div className="mt-4 rounded-2xl border border-[#dceadb] bg-[#f5faf6] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5b7d63]">
+                    Review Notes
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-rose-900">
-                    {estimate.rejection_reason?.trim() || "No reason provided."}
+                  <p className="mt-2 text-sm leading-6 text-apple-charcoal">
+                    {estimate.rejection_reason?.trim() ||
+                      "No additional notes were provided for this revision request."}
                   </p>
                 </div>
               ) : null}
@@ -262,14 +263,14 @@ export default function EstimateReportModal({
                             </td>
                           </tr>
                         ))}
-                        <tr className="bg-rose-50/80">
+                        <tr className="bg-[#f5faf6]">
                           <td
                             colSpan={4}
-                            className="px-3 py-3 text-right text-sm font-semibold uppercase tracking-[0.12em] text-rose-900"
+                            className="px-3 py-3 text-right text-sm font-semibold uppercase tracking-[0.12em] text-[#345344]"
                           >
                             Item Cost Total
                           </td>
-                          <td className="px-3 py-3 text-right text-base font-semibold text-rose-700">
+                          <td className="px-3 py-3 text-right text-base font-semibold text-[#2d6a4f]">
                             {formatBudgetMoney(overallTotal)}
                           </td>
                         </tr>

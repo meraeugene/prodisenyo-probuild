@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
@@ -73,7 +74,7 @@ export default function CostEstimatorSummaryPanel({
 
         <div>
           <p className="text-sm text-apple-steel">Item cost total</p>
-          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-rose-600">
+          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#2d6a4f]">
             {formatBudgetMoney(currentItemTotal)}
           </p>
         </div>
@@ -97,14 +98,26 @@ export default function CostEstimatorSummaryPanel({
         </div>
 
         {estimate?.status === "rejected" ? (
-          <div className="rounded-[16px] border border-rose-100 bg-rose-50 px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-700">
-              Rejection Reason
-            </p>
-            <p className="mt-2 text-sm leading-7 text-rose-900">
-              {estimate.rejection_reason?.trim() ||
-                "No rejection reason was provided by the reviewer."}
-            </p>
+          <div className="overflow-hidden rounded-[20px] border border-[#dceadb] bg-[linear-gradient(180deg,#fcfffd_0%,#f4f9f5_100%)] px-4 py-4">
+            <div className="flex items-start gap-3">
+              <div className="relative hidden h-[88px] w-[88px] shrink-0 sm:block">
+                <Image
+                  src="/estimate-rejection-robot.png"
+                  alt="Friendly robot assistant"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5b7d63]">
+                  Estimate Update Needed
+                </p>
+                <p className="mt-2 text-sm leading-7 text-apple-charcoal">
+                  {estimate.rejection_reason?.trim() ||
+                    "This estimate needs a few updates before approval. Review the notes and update the project when ready."}
+                </p>
+              </div>
+            </div>
           </div>
         ) : null}
       </div>

@@ -34,7 +34,7 @@ export function getEstimateStatusBadgeClass(status: EstimateStatus) {
     case "approved":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "rejected":
-      return "border-rose-200 bg-rose-50 text-rose-700";
+      return "border-[#cfe3d3] bg-[#eef7f0] text-[#2d6a4f]";
     case "draft":
     default:
       return "border-slate-200 bg-slate-50 text-slate-700";
