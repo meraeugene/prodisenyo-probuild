@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   FolderPlus,
   LoaderCircle,
+  Save,
   Trash2,
 } from "lucide-react";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
@@ -15,9 +16,11 @@ export default function CostEstimatorHeader({
   selectedEstimate,
   uiLocked,
   pendingDeleteEstimate,
+  pendingSaveEstimate,
   saveState,
   saveMessage,
   onSelectEstimate,
+  onSaveDraft,
   onNewProject,
   onDeleteProject,
 }: {
@@ -25,9 +28,11 @@ export default function CostEstimatorHeader({
   selectedEstimate: ProjectEstimateRow | null;
   uiLocked: boolean;
   pendingDeleteEstimate: boolean;
+  pendingSaveEstimate: boolean;
   saveState: "saved" | "dirty" | "saving" | "error";
   saveMessage: string;
   onSelectEstimate: (estimateId: string) => void;
+  onSaveDraft: () => void;
   onNewProject: () => void;
   onDeleteProject: () => void;
 }) {
@@ -87,6 +92,21 @@ export default function CostEstimatorHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+          {!isReadOnlyEstimate && selectedEstimate ? (
+            <button
+              type="button"
+              onClick={onSaveDraft}
+              disabled={uiLocked || saveState !== "dirty"}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pendingSaveEstimate ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              Save draft
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onNewProject}

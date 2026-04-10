@@ -105,5 +105,5 @@ export const ESTIMATE_STATUS_OPTIONS: Array<{
   { value: "draft", label: "Draft" },
   { value: "submitted", label: "Submitted" },
   { value: "approved", label: "Approved" },
-  { value: "rejected", label: "Rejected" },
+  { value: "rejected", label: "Returned" },
 ];

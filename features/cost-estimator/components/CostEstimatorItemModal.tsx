@@ -399,6 +399,9 @@ export default function CostEstimatorItemModal({
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
                           Material Name <span className="text-rose-500">*</span>
+                          <span className="ml-2 text-xs font-medium text-apple-steel">
+                            Editable
+                          </span>
                         </label>
                         <div className="relative">
                           <input
@@ -498,6 +501,9 @@ export default function CostEstimatorItemModal({
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
                           Unit Type <span className="text-rose-500">*</span>
+                          <span className="ml-2 text-xs font-medium text-apple-steel">
+                            Editable
+                          </span>
                         </label>
                         <div
                           className="relative"

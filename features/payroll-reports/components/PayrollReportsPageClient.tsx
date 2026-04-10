@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { Radio } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollReportModal from "@/features/payroll-reports/components/PayrollReportModal";
 import PayrollReportsArchiveSkeleton from "@/features/payroll-reports/components/PayrollReportsArchiveSkeleton";
@@ -17,22 +17,14 @@ export default function PayrollReportsPageClient() {
         title="Payroll Report Review"
         description="Pending payroll reports stay here for CEO review. Only approved payroll reports flow into the CEO dashboard totals."
         actions={
-          <button
-            type="button"
-            onClick={() => {
-              state.setRefreshing(true);
-              void state.loadReports();
-            }}
-            disabled={state.refreshing}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw size={14} className={state.refreshing ? "animate-spin" : ""} />
-            Sync
-          </button>
+          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+            <Radio size={14} className={state.refreshing ? "animate-pulse" : ""} />
+            Live data
+          </div>
         }
       />
 
-      {state.loading || state.refreshing ? (
+      {state.loading && state.sortedReports.length === 0 ? (
         <PayrollReportsArchiveSkeleton />
       ) : (
         <PayrollReportsArchiveSection
@@ -46,6 +38,8 @@ export default function PayrollReportsPageClient() {
           openMenu={state.openMenu}
           openMenuReport={state.openMenuReport}
           deleteConfirmReport={state.deleteConfirmReport}
+          rejectConfirmReport={state.rejectConfirmReport}
+          rejectionReason={state.rejectionReason}
           onToggleMenu={(report, rect) =>
             state.setOpenMenu((prev) =>
               prev?.runId === report.id
@@ -55,18 +49,27 @@ export default function PayrollReportsPageClient() {
           }
           onViewReport={(report) => {
             state.setActiveReportId(report.id);
-            void state.loadReportDetails(report);
             state.setOpenMenu(null);
           }}
           onApproveReport={(report) => {
             void state.handleApproveReport(report);
           }}
           onRejectReport={(report) => {
-            void state.handleRejectReport(report);
+            state.setRejectConfirmReport(report);
+            state.setRejectionReason("");
+            state.setOpenMenu(null);
           }}
           onAskDelete={(report) => {
             state.setDeleteConfirmReport(report);
             state.setOpenMenu(null);
+          }}
+          onCloseRejectConfirm={() => {
+            state.setRejectConfirmReport(null);
+            state.setRejectionReason("");
+          }}
+          onRejectionReasonChange={state.setRejectionReason}
+          onConfirmReject={() => {
+            void state.handleRejectReport();
           }}
           onCloseDeleteConfirm={() => state.setDeleteConfirmReport(null)}
           onDeleteReport={(report) => {
@@ -87,7 +90,7 @@ export default function PayrollReportsPageClient() {
           details={state.activeDetails}
           onClose={() => state.setActiveReportId(null)}
           onRefresh={() => {
-            void state.loadReportDetails(state.activeReport!);
+            void state.loadReportDetails();
           }}
         />
       ) : null}

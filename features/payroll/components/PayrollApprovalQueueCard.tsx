@@ -23,7 +23,8 @@ interface PayrollApprovalQueueCardProps {
   pendingActionType: "approve" | "reject" | null;
   logsLoading: boolean;
   onOpenLogs: (request: PendingOvertimeRequest) => void;
-  onAction: (adjustmentId: string, action: "approve" | "reject") => void;
+  onApprove: (adjustmentId: string) => void;
+  onReject: (request: PendingOvertimeRequest) => void;
 }
 
 export default function PayrollApprovalQueueCard({
@@ -33,7 +34,8 @@ export default function PayrollApprovalQueueCard({
   pendingActionType,
   logsLoading,
   onOpenLogs,
-  onAction,
+  onApprove,
+  onReject,
 }: PayrollApprovalQueueCardProps) {
   const run = getRelationValue(request.payroll_runs);
   const rowBusy = isPending && pendingActionId === request.id;
@@ -58,7 +60,7 @@ export default function PayrollApprovalQueueCard({
               request.status === "approved"
                 ? "bg-emerald-50 text-emerald-700 ring-emerald-200/40"
                 : request.status === "rejected"
-                  ? "bg-rose-50 text-rose-700 ring-rose-200/40"
+                  ? "bg-[#eef7f0] text-[#2d6a4f] ring-[#cfe3d3]"
                   : "bg-amber-50 text-amber-700 ring-amber-200/40",
             )}
           >
@@ -70,7 +72,7 @@ export default function PayrollApprovalQueueCard({
             ) : request.status === "rejected" ? (
               <>
                 <XCircle size={12} strokeWidth={2.5} />
-                Rejected
+                Returned
               </>
             ) : (
               <>
@@ -144,22 +146,22 @@ export default function PayrollApprovalQueueCard({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onAction(request.id, "reject")}
+              onClick={() => onReject(request)}
               disabled={rowBusy}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:opacity-50"
-              aria-label={`Reject overtime request for ${request.employee_name ?? "employee"}`}
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#eef7f0] px-4 text-xs font-bold text-[#2d6a4f] transition-colors hover:bg-[#e2efe5] focus:outline-none focus:ring-2 focus:ring-[#cfe3d3] disabled:opacity-50"
+              aria-label={`Return overtime request for ${request.employee_name ?? "employee"}`}
             >
               {rejectBusy ? (
                 <Loader2 size={14} className="animate-spin" />
               ) : (
                 <XCircle size={16} />
               )}
-              Reject
+              Return
             </button>
 
             <button
               type="button"
-              onClick={() => onAction(request.id, "approve")}
+              onClick={() => onApprove(request.id)}
               disabled={rowBusy}
               className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
               aria-label={`Approve overtime request for ${request.employee_name ?? "employee"}`}

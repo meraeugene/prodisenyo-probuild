@@ -179,7 +179,8 @@ export default function DashboardShell({
       (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
   const [pendingPayrollReportCount, setPendingPayrollReportCount] = useState(0);
-  const [pendingEstimateReviewCount, setPendingEstimateReviewCount] = useState(0);
+  const [pendingEstimateReviewCount, setPendingEstimateReviewCount] =
+    useState(0);
   const previousPendingCountRef = useRef<number | null>(null);
   const previousEstimateReviewCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
@@ -348,7 +349,7 @@ export default function DashboardShell({
 
               {!collapsed ? (
                 <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
-                  Prodisenyo PayTrack
+                  Prodisenyo ProBuild
                 </p>
               ) : null}
             </div>
@@ -386,7 +387,11 @@ export default function DashboardShell({
               {!collapsed ? (
                 <div className="px-3 pb-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    {isCeo ? "General" : isEngineer ? "Estimator" : "Attendance"}
+                    {isCeo
+                      ? "General"
+                      : isEngineer
+                        ? "Estimator"
+                        : "Attendance"}
                   </p>
                 </div>
               ) : null}
@@ -395,7 +400,8 @@ export default function DashboardShell({
                 ? CEO_GENERAL_ITEMS
                 : isEngineer
                   ? ENGINEER_NAV_ITEMS
-                  : PRIMARY_NAV_ITEMS).map((item) =>
+                  : PRIMARY_NAV_ITEMS
+              ).map((item) =>
                 renderSidebarLink({
                   item,
                   pathname,
@@ -505,14 +511,15 @@ export default function DashboardShell({
                 </div>
               ) : null}
 
-              {!isEngineer && BUDGET_NAV_ITEMS.map((item) => {
-                return renderSidebarLink({
-                  item,
-                  pathname,
-                  collapsed,
-                  onNavigate: () => setOpen(false),
-                });
-              })}
+              {!isEngineer &&
+                BUDGET_NAV_ITEMS.map((item) => {
+                  return renderSidebarLink({
+                    item,
+                    pathname,
+                    collapsed,
+                    onNavigate: () => setOpen(false),
+                  });
+                })}
 
               {isCeo ? (
                 <>
@@ -565,7 +572,9 @@ export default function DashboardShell({
                 >
                   <Settings size={15} />
                 </div>
-                {!collapsed ? <span className="font-medium">Settings</span> : null}
+                {!collapsed ? (
+                  <span className="font-medium">Settings</span>
+                ) : null}
               </Link>
 
               <div className="pt-2">

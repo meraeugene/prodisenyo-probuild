@@ -148,7 +148,8 @@ function SortableBudgetItem({
       }}
       className={cn(
         "group w-full cursor-grab rounded-[12px] border border-apple-mist bg-white p-4 text-left shadow-[0_8px_20px_rgba(24,83,43,0.06)] transition-[border-color,box-shadow,background-color] duration-200 hover:border-[#1f6a37]/35 hover:bg-[#fbfefc] hover:shadow-[0_16px_36px_rgba(24,83,43,0.12)] focus-visible:border-[#1f6a37]/45 focus-visible:bg-[#fbfefc] focus-visible:shadow-[0_16px_36px_rgba(24,83,43,0.14)] focus-visible:outline-none active:cursor-grabbing",
-        isBoardDragging && "shadow-none hover:shadow-none focus-visible:shadow-none",
+        isBoardDragging &&
+          "shadow-none hover:shadow-none focus-visible:shadow-none",
         (isDragging || sortableDragging) &&
           "border-[#1f6a37]/20 bg-[#f6fbf7] opacity-55 shadow-none",
       )}
@@ -318,7 +319,7 @@ export default function BudgetTrackerBoard({
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="grid gap-5 px-4 py-3 xl:grid-cols-3">
+      <div className="grid gap-5 p-4 xl:grid-cols-3">
         {groups.map((group) => (
           <BudgetTrackerColumn
             key={group.value}

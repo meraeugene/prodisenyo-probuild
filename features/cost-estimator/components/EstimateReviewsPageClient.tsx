@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { LoaderCircle, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { LoaderCircle, Radio } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
@@ -21,15 +19,7 @@ export default function EstimateReviewsPageClient({
   estimates: ReviewProjectEstimateRow[];
   items: ProjectEstimateItemRow[];
 }) {
-  const router = useRouter();
   const state = useEstimateReviewsPage({ estimates, items });
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  useEffect(() => {
-    if (!isRefreshing) return;
-    const timeout = window.setTimeout(() => setIsRefreshing(false), 600);
-    return () => window.clearTimeout(timeout);
-  }, [isRefreshing]);
 
   return (
     <div className="p-6">
@@ -38,22 +28,14 @@ export default function EstimateReviewsPageClient({
         title="Estimate Reviews"
         description="Review engineer-submitted project estimates before bidding and push approved totals into Budget Tracker as new projects."
         actions={
-          <button
-            type="button"
-            onClick={() => {
-              setIsRefreshing(true);
-              router.refresh();
-            }}
-            disabled={isRefreshing}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
-            Sync
-          </button>
+          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+            <Radio size={14} className={state.refreshing ? "animate-pulse" : ""} />
+            Live data
+          </div>
         }
       />
 
-      {isRefreshing ? (
+      {state.loading && state.sortedEstimates.length === 0 ? (
         <EstimateReviewsSectionSkeleton />
       ) : (
         <EstimateReviewsTable
@@ -76,15 +58,15 @@ export default function EstimateReviewsPageClient({
                   type="button"
                   onClick={() => state.setRejectEstimateId(state.activeEstimate!.id)}
                   disabled={state.isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-rose-200 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-amber-200 px-4 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {state.isPending && state.pendingActionType === "reject" ? (
                     <>
                       <LoaderCircle size={15} className="mr-2 animate-spin" />
-                      Rejecting...
+                      Returning...
                     </>
                   ) : (
-                    "Reject Estimate"
+                    "Return Estimate"
                   )}
                 </button>
                 <button
@@ -113,7 +95,7 @@ export default function EstimateReviewsPageClient({
           <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
             <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
-                Reject Estimate
+                Return Estimate
               </p>
               <h2 className="mt-2 text-lg font-semibold">
                 Send this estimate back to the engineer
@@ -125,7 +107,7 @@ export default function EstimateReviewsPageClient({
                 value={state.rejectionReason}
                 onChange={(event) => state.setRejectionReason(event.target.value)}
                 rows={5}
-                placeholder="Add an optional rejection reason for the engineer."
+                placeholder="Add an optional return note for the engineer."
                 className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
               />
               <div className="flex justify-end gap-2">
@@ -144,15 +126,15 @@ export default function EstimateReviewsPageClient({
                   type="button"
                   onClick={state.handleConfirmReject}
                   disabled={state.isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#5b7d63] px-4 text-sm font-semibold text-white transition hover:bg-[#4d6b54] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {state.isPending ? (
                     <>
                       <LoaderCircle size={15} className="mr-2 animate-spin" />
-                      Rejecting...
+                      Returning...
                     </>
                   ) : (
-                    "Confirm Reject"
+                    "Confirm Return"
                   )}
                 </button>
               </div>

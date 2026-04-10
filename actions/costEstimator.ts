@@ -66,6 +66,52 @@ interface EngineerEstimateNotificationRow {
   updated_at: string;
 }
 
+async function loadEstimateReviewsData(database: any) {
+  const { data: estimateData, error: estimateError } = await database
+    .from("project_estimates")
+    .select(
+      "*, requester_profile:profiles!project_estimates_requested_by_fkey(full_name, username)",
+    )
+    .neq("status", "draft")
+    .order("updated_at", { ascending: false });
+
+  if (estimateError) {
+    throw new Error(`Failed to load estimate reviews. ${estimateError.message}`);
+  }
+
+  const estimates =
+    (estimateData ?? []) as Array<
+      Database["public"]["Tables"]["project_estimates"]["Row"] & {
+        requester_profile: Pick<
+          Database["public"]["Tables"]["profiles"]["Row"],
+          "full_name" | "username"
+        > | null;
+      }
+    >;
+  const estimateIds = estimates.map((estimate) => estimate.id);
+
+  let items: Database["public"]["Tables"]["project_estimate_items"]["Row"][] = [];
+
+  if (estimateIds.length > 0) {
+    const { data: itemData, error: itemError } = await database
+      .from("project_estimate_items")
+      .select("*")
+      .in("estimate_id", estimateIds)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (itemError) {
+      throw new Error(`Failed to load estimate review items. ${itemError.message}`);
+    }
+
+    items =
+      (itemData ??
+        []) as Database["public"]["Tables"]["project_estimate_items"]["Row"][];
+  }
+
+  return { estimates, items };
+}
+
 function normalizeText(value: string | undefined) {
   return (value ?? "").trim();
 }
@@ -750,6 +796,13 @@ export async function getEngineerEstimateNotificationsAction() {
   return {
     estimates: (data ?? []) as EngineerEstimateNotificationRow[],
   };
+}
+
+export async function getEstimateReviewsDataAction() {
+  await requireRole(APP_ROLES.CEO);
+  const database = createSupabaseAdminClient() as any;
+
+  return loadEstimateReviewsData(database);
 }
 
 export async function approveProjectEstimateAction(estimateId: string) {

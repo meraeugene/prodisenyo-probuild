@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock3,
   Eye,
+  LoaderCircle,
   MoreHorizontal,
   Trash2,
   XCircle,
@@ -33,11 +34,16 @@ export default function PayrollReportsArchiveSection({
   openMenu,
   openMenuReport,
   deleteConfirmReport,
+  rejectConfirmReport,
+  rejectionReason,
   onToggleMenu,
   onViewReport,
   onApproveReport,
   onRejectReport,
   onAskDelete,
+  onCloseRejectConfirm,
+  onRejectionReasonChange,
+  onConfirmReject,
   onCloseDeleteConfirm,
   onDeleteReport,
 }: {
@@ -51,11 +57,16 @@ export default function PayrollReportsArchiveSection({
   openMenu: ReportActionsMenuState | null;
   openMenuReport: PayrollRunRow | null;
   deleteConfirmReport: PayrollRunRow | null;
+  rejectConfirmReport: PayrollRunRow | null;
+  rejectionReason: string;
   onToggleMenu: (report: PayrollRunRow, rect: DOMRect) => void;
   onViewReport: (report: PayrollRunRow) => void;
   onApproveReport: (report: PayrollRunRow) => void;
   onRejectReport: (report: PayrollRunRow) => void;
   onAskDelete: (report: PayrollRunRow) => void;
+  onCloseRejectConfirm: () => void;
+  onRejectionReasonChange: (value: string) => void;
+  onConfirmReject: () => void;
   onCloseDeleteConfirm: () => void;
   onDeleteReport: (report: PayrollRunRow) => void;
 }) {
@@ -211,7 +222,7 @@ export default function PayrollReportsArchiveSection({
                     {pendingDecisionRunId === openMenuReport.id &&
                     pendingDecisionAction === "reject"
                       ? "Updating..."
-                      : "Reject Payroll"}
+                      : "Return Payroll"}
                   </button>
                 </>
               ) : null}
@@ -279,9 +290,84 @@ export default function PayrollReportsArchiveSection({
                       disabled={deletingRunId === deleteConfirmReport.id}
                       className="inline-flex h-9 items-center rounded-lg bg-rose-600 px-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {deletingRunId === deleteConfirmReport.id
-                        ? "Deleting..."
-                        : "Delete Payroll"}
+                      {deletingRunId === deleteConfirmReport.id ? (
+                        <>
+                          <LoaderCircle size={15} className="mr-2 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Delete Payroll"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {rejectConfirmReport
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+              onMouseDown={(event) => {
+                if (
+                  event.target === event.currentTarget &&
+                  pendingDecisionRunId !== rejectConfirmReport.id
+                ) {
+                  onCloseRejectConfirm();
+                }
+              }}
+            >
+              <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
+                    Return Payroll
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold">
+                    Send this payroll report back to HR
+                  </h2>
+                </div>
+
+                <div className="space-y-4 px-5 py-5">
+                  <p className="text-sm text-apple-steel">
+                    Add an optional return note for{" "}
+                    <span className="font-semibold text-apple-charcoal">
+                      {formatPayrollReportPeriodLabel(rejectConfirmReport)}
+                    </span>
+                    .
+                  </p>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(event) => onRejectionReasonChange(event.target.value)}
+                    rows={5}
+                    placeholder="Add an optional return note for HR."
+                    className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={onCloseRejectConfirm}
+                      disabled={pendingDecisionRunId === rejectConfirmReport.id}
+                      className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onConfirmReject}
+                      disabled={pendingDecisionRunId === rejectConfirmReport.id}
+                      className="inline-flex h-10 items-center justify-center rounded-xl bg-[#5b7d63] px-4 text-sm font-semibold text-white transition hover:bg-[#4d6b54] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {pendingDecisionRunId === rejectConfirmReport.id &&
+                      pendingDecisionAction === "reject" ? (
+                        <>
+                          <LoaderCircle size={15} className="mr-2 animate-spin" />
+                          Returning...
+                        </>
+                      )
+                        : "Confirm Return"}
                     </button>
                   </div>
                 </div>

@@ -265,7 +265,9 @@ export default function PayrollSection({
                 <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-2xs font-semibold text-sky-700">
                   {currentPayrollRunStatus === "submitted"
                     ? "PENDING REVIEW"
-                    : currentPayrollRunStatus.toUpperCase()}
+                    : currentPayrollRunStatus === "rejected"
+                      ? "RETURNED"
+                      : currentPayrollRunStatus.toUpperCase()}
                 </span>
               )}
             </div>

@@ -1,6 +1,7 @@
 "use server";
 
 import type { PayrollRunStatus } from "@/types/database";
+import type { Database } from "@/types/database";
 import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import type {
   PayrollOvertimeEntry,
@@ -17,6 +18,7 @@ import {
   buildEmployeeBranchRateKey,
   normalizeEmployeeNameKey,
 } from "@/features/payroll/utils/payrollMappers";
+import { attachOvertimeRejectionReason } from "@/features/payroll/utils/overtimeRequestNotes";
 
 interface SavePayrollRunInput {
   attendanceImportId: string | null;
@@ -97,6 +99,182 @@ function buildDateRange(start: string | null, end: string | null): string[] {
     guard += 1;
   }
   return dates;
+}
+
+async function loadPayrollReportsData(database: any) {
+  const { data, error } = await database
+    .from("payroll_runs")
+    .select(
+      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at",
+    )
+    .neq("status", "rejected")
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load payroll reports. ${error.message}`);
+  }
+
+  return {
+    reports:
+      (data ?? []) as Array<
+        Pick<
+          Database["public"]["Tables"]["payroll_runs"]["Row"],
+          | "id"
+          | "attendance_import_id"
+          | "site_name"
+          | "period_label"
+          | "period_start"
+          | "period_end"
+          | "status"
+          | "net_total"
+          | "created_at"
+          | "submitted_at"
+        >
+      >,
+  };
+}
+
+async function loadPayrollReportDetails(database: any, payrollRunId: string) {
+  const runId = payrollRunId.trim();
+
+  if (!runId) {
+    throw new Error("Payroll report ID is required.");
+  }
+
+  const { data: report, error: reportError } = await database
+    .from("payroll_runs")
+    .select(
+      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at",
+    )
+    .eq("id", runId)
+    .single();
+
+  if (reportError || !report) {
+    throw new Error("Payroll report not found.");
+  }
+
+  const [itemsResult, initialLogsResult, totalsResult] = await Promise.all([
+    database
+      .from("payroll_run_items")
+      .select(
+        "id, employee_name, role_code, site_name, days_worked, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay",
+      )
+      .eq("payroll_run_id", runId)
+      .order("employee_name", { ascending: true }),
+    report.attendance_import_id
+      ? database
+          .from("attendance_records")
+          .select(
+            "id, employee_name, log_date, log_time, log_type, log_source, site_name",
+          )
+          .eq("import_id", report.attendance_import_id)
+          .order("log_date", { ascending: true })
+          .order("log_time", { ascending: true })
+      : Promise.resolve({ data: [], error: null }),
+    database
+      .from("payroll_run_daily_totals")
+      .select(
+        "id, payroll_run_item_id, employee_name, role_code, site_name, payout_date, hours_worked, total_pay",
+      )
+      .eq("payroll_run_id", runId)
+      .order("payout_date", { ascending: true }),
+  ]);
+
+  let attendanceLogsData =
+    (initialLogsResult.data ??
+      []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
+  let attendanceLogsError = initialLogsResult.error;
+
+  if (
+    !attendanceLogsError &&
+    attendanceLogsData.length === 0 &&
+    report.period_start &&
+    report.period_end
+  ) {
+    const fallbackSites = splitSiteNames(report.site_name).filter(
+      (site) => site.length > 0,
+    );
+    let fallbackQuery = database
+      .from("attendance_records")
+      .select(
+        "id, employee_name, log_date, log_time, log_type, log_source, site_name",
+      )
+      .gte("log_date", report.period_start)
+      .lte("log_date", report.period_end)
+      .order("log_date", { ascending: true })
+      .order("log_time", { ascending: true });
+
+    if (fallbackSites.length === 1) {
+      fallbackQuery = fallbackQuery.eq("site_name", fallbackSites[0]);
+    } else if (fallbackSites.length > 1) {
+      fallbackQuery = fallbackQuery.in("site_name", fallbackSites);
+    }
+
+    const fallbackLogsResult = await fallbackQuery;
+    if (fallbackLogsResult.error) {
+      attendanceLogsError = fallbackLogsResult.error;
+    } else {
+      attendanceLogsData =
+        (fallbackLogsResult.data ??
+          []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
+    }
+  }
+
+  if (itemsResult.error || attendanceLogsError || totalsResult.error) {
+    throw new Error(
+      itemsResult.error?.message ||
+        attendanceLogsError?.message ||
+        totalsResult.error?.message ||
+        "Unable to load payroll report details.",
+    );
+  }
+
+  return {
+    report: report as Pick<
+      Database["public"]["Tables"]["payroll_runs"]["Row"],
+      | "id"
+      | "attendance_import_id"
+      | "site_name"
+      | "period_label"
+      | "period_start"
+      | "period_end"
+      | "status"
+      | "net_total"
+      | "created_at"
+      | "submitted_at"
+    >,
+    details: {
+      loading: false,
+      error: null,
+      payrollItems:
+        (itemsResult.data ??
+          []) as Database["public"]["Tables"]["payroll_run_items"]["Row"][],
+      attendanceLogs: attendanceLogsData,
+      dailyTotals:
+        (totalsResult.data ??
+          []) as Database["public"]["Tables"]["payroll_run_daily_totals"]["Row"][],
+    },
+  };
+}
+
+async function loadPendingOvertimeApprovals(database: any) {
+  const { data, error } = await database
+    .from("payroll_adjustments")
+    .select(
+      "id, status, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, period_start, period_end, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
+    )
+    .eq("adjustment_type", "overtime")
+    .in("status", ["pending", "approved", "rejected"])
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Unable to load pending overtime approvals. ${error.message}`);
+  }
+
+  return {
+    requests: (data ?? []) as Array<Record<string, unknown>>,
+  };
 }
 
 function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
@@ -208,6 +386,37 @@ interface RequestOvertimeApprovalInput {
   siteName: string;
   attendancePeriod: string;
   overtimeEntries: PayrollOvertimeEntry[];
+}
+
+interface PayrollManagerReportNotificationRow {
+  id: string;
+  attendance_import_id: string | null;
+  site_name: string;
+  period_label: string;
+  status: PayrollRunStatus;
+  rejection_reason: string | null;
+  rejected_at: string | null;
+  updated_at: string;
+}
+
+interface RejectPayrollReportInput {
+  payrollRunId: string;
+  rejectionReason?: string;
+}
+
+interface RejectOvertimeAdjustmentInput {
+  adjustmentId: string;
+  rejectionReason?: string;
+}
+
+interface PayrollManagerOvertimeNotificationRow {
+  id: string;
+  employee_name: string | null;
+  site_name: string | null;
+  period_label: string | null;
+  status: "pending" | "approved" | "rejected";
+  notes: string | null;
+  updated_at: string;
 }
 
 export async function requestOvertimeApprovalAction(
@@ -1196,13 +1405,67 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
   return { adjustmentId, runId, status: "approved" as const };
 }
 
-export async function rejectOvertimeAdjustmentAction(adjustmentId: string) {
+export async function getPendingOvertimeApprovalsAction() {
+  await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+
+  return loadPendingOvertimeApprovals(database);
+}
+
+export async function getPayrollManagerReportNotificationsAction() {
+  const { user } = await requireRole(["payroll_manager", "ceo"]);
+  const database = createSupabaseAdminClient() as any;
+
+  const { data, error } = await database
+    .from("payroll_runs")
+    .select(
+      "id, attendance_import_id, site_name, period_label, status, rejection_reason, rejected_at, updated_at",
+    )
+    .eq("submitted_by", user.id)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load payroll report notifications. ${error.message}`);
+  }
+
+  return {
+    reports: (data ?? []) as PayrollManagerReportNotificationRow[],
+  };
+}
+
+export async function getPayrollManagerOvertimeNotificationsAction() {
+  const { user } = await requireRole(["payroll_manager", "ceo"]);
+  const database = createSupabaseAdminClient() as any;
+
+  const { data, error } = await database
+    .from("payroll_adjustments")
+    .select("id, employee_name, site_name, period_label, status, notes, updated_at")
+    .eq("adjustment_type", "overtime")
+    .eq("requested_by", user.id)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load overtime notifications. ${error.message}`);
+  }
+
+  return {
+    requests: (data ?? []) as PayrollManagerOvertimeNotificationRow[],
+  };
+}
+
+export async function rejectOvertimeAdjustmentAction(
+  input: string | RejectOvertimeAdjustmentInput,
+) {
   const { user } = await requireRole("ceo");
   const database = createSupabaseAdminClient() as any;
+  const adjustmentId =
+    typeof input === "string" ? input : input.adjustmentId;
+  const rejectionReason =
+    typeof input === "string" ? null : input.rejectionReason?.trim() || null;
 
   const { data: adjustment, error: adjustmentError } = await database
     .from("payroll_adjustments")
-    .select("id, payroll_run_id, adjustment_type, status")
+    .select("id, payroll_run_id, adjustment_type, status, notes")
     .eq("id", adjustmentId)
     .single();
 
@@ -1219,6 +1482,7 @@ export async function rejectOvertimeAdjustmentAction(adjustmentId: string) {
     .update({
       status: "rejected",
       approved_by: user.id,
+      notes: attachOvertimeRejectionReason(adjustment.notes, rejectionReason),
     })
     .eq("id", adjustmentId)
     .eq("status", "pending");
@@ -1294,10 +1558,27 @@ export async function approvePayrollReportAction(payrollRunId: string) {
   };
 }
 
-export async function rejectPayrollReportAction(payrollRunId: string) {
+export async function getPayrollReportsDataAction() {
+  await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+
+  return loadPayrollReportsData(database);
+}
+
+export async function getPayrollReportDetailsAction(payrollRunId: string) {
+  await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+
+  return loadPayrollReportDetails(database, payrollRunId);
+}
+
+export async function rejectPayrollReportAction(input: string | RejectPayrollReportInput) {
   const { user } = await requireRole("ceo");
   const database = createSupabaseAdminClient() as any;
-  const runId = payrollRunId.trim();
+  const runId =
+    typeof input === "string" ? input.trim() : input.payrollRunId.trim();
+  const rejectionReason =
+    typeof input === "string" ? null : input.rejectionReason?.trim() || null;
 
   if (!runId) {
     throw new Error("Payroll report ID is required.");
@@ -1325,6 +1606,7 @@ export async function rejectPayrollReportAction(payrollRunId: string) {
       approved_by: null,
       approved_at: null,
       rejected_at: rejectedAt,
+      rejection_reason: rejectionReason,
     })
     .eq("id", runId)
     .eq("status", "submitted");
@@ -1343,6 +1625,7 @@ export async function rejectPayrollReportAction(payrollRunId: string) {
       site_name: payrollRun.site_name,
       period_label: payrollRun.period_label,
       rejected_at: rejectedAt,
+      rejection_reason: rejectionReason,
     },
   });
 

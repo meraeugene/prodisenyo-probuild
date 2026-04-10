@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { toast } from "sonner";
 import {
   approveProjectEstimateAction,
   deleteReviewedProjectEstimateAction,
+  getEstimateReviewsDataAction,
   rejectProjectEstimateAction,
 } from "@/actions/costEstimator";
 import type {
@@ -37,10 +39,6 @@ export function useEstimateReviewsPage({
   estimates: initialEstimates,
   items: initialItems,
 }: UseEstimateReviewsPageOptions) {
-  const [estimates, setEstimates] = useState(initialEstimates);
-  const [itemsByEstimateId, setItemsByEstimateId] = useState(
-    buildEstimateItemsMap(initialItems),
-  );
   const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
   const [deleteEstimateId, setDeleteEstimateId] = useState<string | null>(null);
   const [rejectEstimateId, setRejectEstimateId] = useState<string | null>(null);
@@ -50,14 +48,23 @@ export function useEstimateReviewsPage({
     "approve" | "reject" | null
   >(null);
   const [isPending, setIsPending] = useState(false);
-
-  useEffect(() => {
-    setEstimates(initialEstimates);
-  }, [initialEstimates]);
-
-  useEffect(() => {
-    setItemsByEstimateId(buildEstimateItemsMap(initialItems));
-  }, [initialItems]);
+  const { data, isLoading, isValidating, mutate } = useSWR(
+    "estimate-reviews",
+    getEstimateReviewsDataAction,
+    {
+      fallbackData: {
+        estimates: initialEstimates,
+        items: initialItems,
+      },
+      refreshInterval: 15000,
+      revalidateOnFocus: true,
+    },
+  );
+  const estimates = data?.estimates ?? initialEstimates;
+  const itemsByEstimateId = useMemo(
+    () => buildEstimateItemsMap(data?.items ?? initialItems),
+    [data?.items, initialItems],
+  );
 
   const sortedEstimates = useMemo(
     () => sortReviewEstimates(estimates),
@@ -74,8 +81,15 @@ export function useEstimateReviewsPage({
   );
 
   function applyEstimateUpdate(estimate: ReviewProjectEstimateRow) {
-    setEstimates((current) =>
-      current.map((entry) => (entry.id === estimate.id ? estimate : entry)),
+    void mutate(
+      (current) => ({
+        estimates:
+          current?.estimates.map((entry) =>
+            entry.id === estimate.id ? estimate : entry,
+          ) ?? [],
+        items: current?.items ?? [],
+      }),
+      false,
     );
   }
 
@@ -88,13 +102,15 @@ export function useEstimateReviewsPage({
         setPendingActionId(deleteEstimateId);
         setPendingActionType(null);
         await deleteReviewedProjectEstimateAction(deleteEstimateId);
-        setEstimates((current) =>
-          current.filter((entry) => entry.id !== deleteEstimateId),
+        await mutate(
+          (current) => ({
+            estimates:
+              current?.estimates.filter((entry) => entry.id !== deleteEstimateId) ?? [],
+            items:
+              current?.items.filter((entry) => entry.estimate_id !== deleteEstimateId) ?? [],
+          }),
+          false,
         );
-        setItemsByEstimateId((current) => {
-          const { [deleteEstimateId]: _removed, ...rest } = current;
-          return rest;
-        });
         if (activeEstimateId === deleteEstimateId) {
           setActiveEstimateId(null);
         }
@@ -119,6 +135,7 @@ export function useEstimateReviewsPage({
         setPendingActionType("approve");
         const result = await approveProjectEstimateAction(estimateId);
         applyEstimateUpdate(result.estimate);
+        void mutate();
         toast.success("Estimate approved and linked to Budget Tracker.");
       } catch (error) {
         toast.error(
@@ -145,12 +162,13 @@ export function useEstimateReviewsPage({
           rejectionReason,
         });
         applyEstimateUpdate(result.estimate);
+        void mutate();
         setRejectEstimateId(null);
         setRejectionReason("");
-        toast.success("Estimate rejected.");
+        toast.success("Estimate returned to the engineer.");
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to reject estimate.",
+          error instanceof Error ? error.message : "Failed to return estimate.",
         );
       } finally {
         setIsPending(false);
@@ -175,6 +193,8 @@ export function useEstimateReviewsPage({
     pendingActionId,
     pendingActionType,
     isPending,
+    loading: isLoading,
+    refreshing: isValidating,
     handleConfirmDelete,
     handleApproveEstimate,
     handleConfirmReject,

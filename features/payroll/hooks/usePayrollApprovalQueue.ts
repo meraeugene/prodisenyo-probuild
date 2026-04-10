@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import useSWR from "swr";
 import { toast } from "sonner";
 import {
   approveOvertimeAdjustmentAction,
+  getPendingOvertimeApprovalsAction,
   rejectOvertimeAdjustmentAction,
 } from "@/actions/payroll";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -22,17 +24,13 @@ interface UsePayrollApprovalQueueOptions {
   role: AppRole | null;
   roleLoading?: boolean;
   onRequestResolved?: (runId: string | null) => void;
-  refreshToken?: number;
 }
 
 export function usePayrollApprovalQueue({
   role,
   roleLoading = false,
   onRequestResolved,
-  refreshToken = 0,
 }: UsePayrollApprovalQueueOptions) {
-  const [pendingRequests, setPendingRequests] = useState<PendingOvertimeRequest[]>([]);
-  const [loading, setLoading] = useState(true);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [pendingActionType, setPendingActionType] = useState<
     "approve" | "reject" | null
@@ -46,62 +44,49 @@ export function usePayrollApprovalQueue({
     useState<Record<string, string | null>>({});
   const [activeLogsRequestId, setActiveLogsRequestId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPendingRequests() {
-      if (roleLoading) {
-        setLoading(true);
-        return;
-      }
-
-      if (role !== "ceo") {
-        setPendingRequests([]);
-        setEmployeeLogsByRequestId({});
-        setEmployeeLogsLoadingByRequestId({});
-        setEmployeeLogsErrorByRequestId({});
-        setActiveLogsRequestId(null);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const supabase = createSupabaseBrowserClient();
-      const { data, error } = await supabase
-        .from("payroll_adjustments")
-        .select(
-          "id, status, payroll_run_id, attendance_import_id, employee_name, role_code, site_name, period_label, period_start, period_end, quantity, amount, notes, created_at, effective_date, payroll_runs(site_name, period_label), payroll_run_items(employee_name, site_name)",
-        )
-        .eq("adjustment_type", "overtime")
-        .in("status", ["pending", "approved", "rejected"])
-        .order("created_at", { ascending: false });
-
-      if (cancelled) return;
-
-      if (error) {
-        toast.error("Unable to load pending overtime approvals.");
-        setPendingRequests([]);
-        setLoading(false);
-        return;
-      }
-
-      setPendingRequests((data ?? []) as PendingOvertimeRequest[]);
-      setLoading(false);
-    }
-
-    void loadPendingRequests();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [role, roleLoading, refreshToken]);
-
+  const previousPendingCountRef = useRef<number | null>(null);
+  const canPlayNotificationSoundRef = useRef(false);
+  const approvalsState = useSWR(
+    !roleLoading && role === "ceo" ? "pending-overtime-approvals" : null,
+    getPendingOvertimeApprovalsAction,
+    {
+      refreshInterval: 15000,
+      revalidateOnFocus: true,
+    },
+  );
+  const pendingRequests = ((approvalsState.data?.requests ?? []) as unknown) as PendingOvertimeRequest[];
+  const loading = roleLoading || approvalsState.isLoading;
   const hasRequests = useMemo(() => pendingRequests.length > 0, [pendingRequests.length]);
   const pendingCount = useMemo(
     () => pendingRequests.filter((request) => request.status === "pending").length,
     [pendingRequests],
   );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      canPlayNotificationSoundRef.current = true;
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const previousPendingCount = previousPendingCountRef.current;
+
+    if (
+      previousPendingCount !== null &&
+      pendingCount > previousPendingCount &&
+      canPlayNotificationSoundRef.current
+    ) {
+      const audio = new Audio("/sounds/overtime-approval.mp3");
+      audio.volume = 0.9;
+      void audio.play().catch(() => undefined);
+    }
+
+    previousPendingCountRef.current = pendingCount;
+  }, [pendingCount]);
 
   async function loadEmployeeLogsForRequest(
     request: PendingOvertimeRequest,
@@ -180,7 +165,11 @@ export function usePayrollApprovalQueue({
     setActiveLogsRequestId(request.id);
   }
 
-  function handleAction(adjustmentId: string, action: "approve" | "reject") {
+  function handleAction(
+    adjustmentId: string,
+    action: "approve" | "reject",
+    rejectionReason?: string,
+  ) {
     setPendingActionId(adjustmentId);
     setPendingActionType(action);
     startTransition(async () => {
@@ -188,7 +177,10 @@ export function usePayrollApprovalQueue({
         const result =
           action === "approve"
             ? await approveOvertimeAdjustmentAction(adjustmentId)
-            : await rejectOvertimeAdjustmentAction(adjustmentId);
+            : await rejectOvertimeAdjustmentAction({
+                adjustmentId,
+                rejectionReason,
+              });
 
         toast.success(
           action === "approve"
@@ -196,16 +188,21 @@ export function usePayrollApprovalQueue({
             : "Overtime request rejected.",
         );
         onRequestResolved?.(result.runId);
-        setPendingRequests((prev) =>
-          prev.map((request) =>
-            request.id === adjustmentId
-              ? {
-                  ...request,
-                  status: action === "approve" ? "approved" : "rejected",
-                }
-              : request,
-          ),
+        await approvalsState.mutate(
+          (current) => ({
+            requests:
+              (current?.requests as PendingOvertimeRequest[] | undefined)?.map((request) =>
+                request.id === adjustmentId
+                  ? {
+                      ...request,
+                      status: action === "approve" ? "approved" : "rejected",
+                    }
+                  : request,
+              ) ?? [],
+          }),
+          false,
         );
+        void approvalsState.mutate();
         window.dispatchEvent(new Event("payroll:pending-count-changed"));
         setEmployeeLogsByRequestId((prev) => {
           const next = { ...prev };
@@ -275,6 +272,7 @@ export function usePayrollApprovalQueue({
     pendingActionId,
     pendingActionType,
     employeeLogsLoadingByRequestId,
+    refreshing: approvalsState.isValidating,
     openRequestLogs,
     handleAction,
     activeLogsModalState,

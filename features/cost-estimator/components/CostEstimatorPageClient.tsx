@@ -31,6 +31,7 @@ export default function CostEstimatorPageClient({
   );
   const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [showSaveDraftFirstConfirm, setShowSaveDraftFirstConfirm] = useState(false);
   const state = useCostEstimatorPage({
     estimates,
     items,
@@ -40,6 +41,11 @@ export default function CostEstimatorPageClient({
   const isUiLocked = state.pendingEstimateAction || isSavingChanges;
 
   function handleRequestNewProject() {
+    if (state.selectedEstimate && state.hasUnsavedEstimateChanges) {
+      setShowSaveDraftFirstConfirm(true);
+      return;
+    }
+
     state.handleOpenNewProjectSetup();
   }
 
@@ -80,9 +86,13 @@ export default function CostEstimatorPageClient({
         selectedEstimate={state.selectedEstimate}
         uiLocked={isUiLocked}
         pendingDeleteEstimate={state.pendingDeleteEstimate}
+        pendingSaveEstimate={Boolean(
+          state.pendingEstimateAction && state.pendingEstimateIntent === "save"
+        )}
         saveState={state.saveState}
         saveMessage={state.saveMessage}
         onSelectEstimate={state.handleSelectEstimate}
+        onSaveDraft={() => state.handleSaveEstimate()}
         onNewProject={handleRequestNewProject}
         onDeleteProject={handleRequestDeleteProject}
       />
@@ -228,6 +238,20 @@ export default function CostEstimatorPageClient({
           state.handleDeleteEstimate();
         }}
         onCancel={() => setShowDeleteProjectConfirm(false)}
+      />
+
+      <CostEstimatorConfirmModal
+        open={showSaveDraftFirstConfirm}
+        title="Save draft first?"
+        description="This project has unsaved changes. Save the draft first before creating a new project so nothing gets lost."
+        confirmLabel="Save draft first"
+        confirmTone="primary"
+        pending={isUiLocked}
+        onConfirm={() => {
+          setShowSaveDraftFirstConfirm(false);
+          state.handleSaveEstimate(() => state.handleOpenNewProjectSetup());
+        }}
+        onCancel={() => setShowSaveDraftFirstConfirm(false)}
       />
 
       <CostEstimatorConfirmModal

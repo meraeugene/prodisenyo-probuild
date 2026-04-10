@@ -276,6 +276,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
     (sum, entry) => sum + entry.hours,
     0,
   );
+  const formatOvertimeEntryNote = (entry: PayrollOvertimeEntry) => {
+    const parsed = parseOvertimeRequestNotes(entry.notes);
+    if (entry.status === "rejected" && parsed.rejectionReason) {
+      return `Return note: ${parsed.rejectionReason}`;
+    }
+
+    return parsed.displayNotes;
+  };
   const paidLeavePay = paidLeaveEntries.reduce(
     (sum, entry) => sum + entry.pay,
     0,
@@ -768,20 +776,20 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             entry.status === "approved"
                               ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                               : entry.status === "rejected"
-                                ? "border border-red-200 bg-red-50 text-red-700"
+                                ? "border border-[#cfe3d3] bg-[#eef7f0] text-[#2d6a4f]"
                                 : "border border-amber-200 bg-amber-50 text-amber-700"
                           }`}
                         >
                           {entry.status === "approved"
                             ? "Approved"
                             : entry.status === "rejected"
-                              ? "Rejected"
+                              ? "Returned"
                               : "Pending"}
                         </span>
 
-                        {entry.notes && (
+                        {formatOvertimeEntryNote(entry) && (
                           <span className="text-xs text-gray-500 truncate">
-                            {entry.notes}
+                            {formatOvertimeEntryNote(entry)}
                           </span>
                         )}
 
@@ -1047,7 +1055,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                     value: `${formatPayrollNumber(approvedOvertimeHours)} hrs`,
                   },
                   {
-                    label: "Rejected Overtime",
+                    label: "Returned Overtime",
                     value: `${formatPayrollNumber(rejectedOvertimeHours)} hrs`,
                   },
                   {
@@ -1153,9 +1161,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-apple-charcoal">
-                    + Rejected Overtime
+                    + Returned Overtime
                   </span>
-                  <span className="font-mono font-semibold text-red-700 text-right">
+                  <span className="font-mono font-semibold text-[#2d6a4f] text-right">
                     {formatPeso(rejectedOvertimePay)}
                   </span>
                 </div>
@@ -1164,8 +1172,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   approves it.
                 </div>
                 {rejectedOvertimeEntries.length > 0 && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                    Rejected overtime stays excluded from total pay until HR
+                  <div className="rounded-xl border border-[#cfe3d3] bg-[#eef7f0] px-3 py-2 text-xs font-semibold text-[#2d6a4f]">
+                    Returned overtime stays excluded from total pay until HR
                     submits a new request.
                   </div>
                 )}
@@ -1492,36 +1500,35 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <div className="invisible"></div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={payroll.closePayrollEditModal}
-                  disabled={isSavingChanges}
-                  className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void handleSaveChanges();
-                  }}
-                  disabled={isSavingChanges}
-                  className="inline-flex px-4 h-10 items-center gap-2 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSavingChanges ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className="sticky bottom-0 z-10 border-t border-apple-mist bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={payroll.closePayrollEditModal}
+              disabled={isSavingChanges}
+              className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleSaveChanges();
+              }}
+              disabled={isSavingChanges}
+              className="inline-flex px-4 h-10 items-center gap-2 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSavingChanges ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
           </div>
         </div>
       </div>

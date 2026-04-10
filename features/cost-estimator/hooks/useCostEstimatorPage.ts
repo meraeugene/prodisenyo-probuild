@@ -150,7 +150,7 @@ export function useCostEstimatorPage({
   const [saveState, setSaveState] = useState<"saved" | "dirty" | "saving" | "error">(
     "saved",
   );
-  const [saveMessage, setSaveMessage] = useState("All changes saved");
+  const [saveMessage, setSaveMessage] = useState("Draft saved");
   const [setupFormErrors, setSetupFormErrors] = useState<SetupFormErrors>({});
   const [itemModalErrors, setItemModalErrors] = useState<ItemModalErrors>({
     materialRows: {},
@@ -170,12 +170,6 @@ export function useCostEstimatorPage({
     rejectionReason: string | null;
   } | null>(null);
   const pendingExternalSyncRef = useRef(false);
-  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autosaveRevisionRef = useRef(0);
-  const latestAutosaveRef = useRef<{
-    estimateId: string;
-    revision: number;
-  } | null>(null);
   const knownRejectionTimesRef = useRef<Record<string, string>>({});
   const canPlayNotificationSoundRef = useRef(false);
 
@@ -186,14 +180,6 @@ export function useCostEstimatorPage({
   useEffect(() => {
     setItemsByEstimateId(initialItemsMap);
   }, [initialItemsMap]);
-
-  useEffect(() => {
-    return () => {
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -350,75 +336,21 @@ export function useCostEstimatorPage({
   }, [estimateForm, persistedSelectedEstimateForm, selectedEstimate]);
 
   useEffect(() => {
-    if (
-      projectSetupOpen ||
-      itemModalOpen ||
-      !selectedEstimate ||
-      selectedEstimate.status !== "draft"
-    ) {
+    if (!selectedEstimate || selectedEstimate.status !== "draft") {
       setSaveState("saved");
-      setSaveMessage("All changes saved");
+      setSaveMessage("Draft saved");
       return;
     }
 
-    if (!hasUnsavedEstimateChanges) {
-      setSaveState("saved");
-      setSaveMessage("All changes saved");
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
+    if (hasUnsavedEstimateChanges) {
+      setSaveState("dirty");
+      setSaveMessage("Unsaved changes");
       return;
     }
 
-    setSaveState("dirty");
-    setSaveMessage("Saving changes...");
-
-    if (autosaveTimeoutRef.current) {
-      clearTimeout(autosaveTimeoutRef.current);
-    }
-
-    const nextRevision = autosaveRevisionRef.current + 1;
-    autosaveRevisionRef.current = nextRevision;
-    latestAutosaveRef.current = {
-      estimateId: selectedEstimate.id,
-      revision: nextRevision,
-    };
-
-    autosaveTimeoutRef.current = setTimeout(() => {
-      setSaveState("saving");
-      setSaveMessage("Saving changes...");
-
-      startEstimateTransition(async () => {
-        try {
-          const saved = await persistDraft(false);
-          if (
-            latestAutosaveRef.current?.estimateId === saved.estimate.id &&
-            latestAutosaveRef.current?.revision === nextRevision
-          ) {
-            setSaveState("saved");
-            setSaveMessage("All changes saved");
-          }
-        } catch (error) {
-          if (
-            latestAutosaveRef.current?.estimateId === selectedEstimate.id &&
-            latestAutosaveRef.current?.revision === nextRevision
-          ) {
-            setSaveState("error");
-            setSaveMessage("Unable to save changes");
-          }
-          toast.error(
-            error instanceof Error ? error.message : "Failed to save estimate.",
-          );
-        }
-      });
-    }, 900);
-  }, [
-    estimateForm,
-    hasUnsavedEstimateChanges,
-    itemModalOpen,
-    projectSetupOpen,
-    selectedEstimate,
-  ]);
+    setSaveState("saved");
+    setSaveMessage("Draft saved");
+  }, [hasUnsavedEstimateChanges, selectedEstimate]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -574,67 +506,10 @@ export function useCostEstimatorPage({
       return;
     }
 
-    if (autosaveTimeoutRef.current) {
-      clearTimeout(autosaveTimeoutRef.current);
-    }
-
-    setPendingEstimateIntent("save");
-    setSaveState("saving");
-    setSaveMessage("Saving changes...");
-
-    startEstimateTransition(async () => {
-      try {
-        await persistDraft(false);
-        selectEstimateLocally(estimateId);
-        setSaveState("saved");
-        setSaveMessage("All changes saved");
-      } catch (error) {
-        setSaveState("error");
-        setSaveMessage("Unable to save changes");
-        toast.error(
-          error instanceof Error ? error.message : "Failed to save estimate.",
-        );
-      } finally {
-        setPendingEstimateIntent(null);
-      }
-    });
+    toast.error("Save your draft before switching projects.");
   }
 
   function handleOpenNewProjectSetup() {
-    if (selectedEstimate && hasUnsavedEstimateChanges) {
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
-
-      setPendingEstimateIntent("save");
-      setSaveState("saving");
-      setSaveMessage("Saving changes...");
-
-      startEstimateTransition(async () => {
-        try {
-          await persistDraft(false);
-          setSelectedEstimateId(null);
-          setEstimateForm({
-            ...EMPTY_ESTIMATE_FORM,
-            draftedDate: new Date().toISOString(),
-          });
-          setProjectSetupOpen(true);
-          setItemModalOpen(false);
-          setSaveState("saved");
-          setSaveMessage("All changes saved");
-        } catch (error) {
-          setSaveState("error");
-          setSaveMessage("Unable to save changes");
-          toast.error(
-            error instanceof Error ? error.message : "Failed to save estimate.",
-          );
-        } finally {
-          setPendingEstimateIntent(null);
-        }
-      });
-      return;
-    }
-
     setSelectedEstimateId(null);
     setEstimateForm({
       ...EMPTY_ESTIMATE_FORM,
@@ -728,7 +603,7 @@ export function useCostEstimatorPage({
     return submitted;
   }
 
-  function handleSaveEstimate() {
+  function handleSaveEstimate(onSuccess?: () => void) {
     if (projectSetupOpen) {
       const nextErrors = validateSetupForm(estimateForm);
       if (Object.keys(nextErrors).length > 0) {
@@ -738,14 +613,19 @@ export function useCostEstimatorPage({
     }
 
     setPendingEstimateIntent("save");
+    setSaveState("saving");
+    setSaveMessage("Saving draft...");
     startEstimateTransition(async () => {
       try {
         await persistDraft(false);
         setSetupFormErrors({});
         setSaveState("saved");
-        setSaveMessage("All changes saved");
-        toast.success("Project estimate created.");
+        setSaveMessage("Draft saved");
+        toast.success(projectSetupOpen ? "Project estimate created." : "Draft saved.");
+        onSuccess?.();
       } catch (error) {
+        setSaveState("error");
+        setSaveMessage("Unable to save draft");
         toast.error(
           error instanceof Error ? error.message : "Failed to save estimate.",
         );
@@ -759,17 +639,16 @@ export function useCostEstimatorPage({
     setPendingEstimateIntent("submit");
     startEstimateTransition(async () => {
       try {
-        if (autosaveTimeoutRef.current) {
-          clearTimeout(autosaveTimeoutRef.current);
-        }
         if (hasUnsavedEstimateChanges) {
           setSaveState("saving");
-          setSaveMessage("Saving changes...");
+          setSaveMessage("Saving draft...");
         }
         await persistDraft(true);
         setSaveState("saved");
-        setSaveMessage("All changes saved");
+        setSaveMessage("Draft saved");
       } catch (error) {
+        setSaveState("error");
+        setSaveMessage("Unable to submit estimate");
         toast.error(
           error instanceof Error ? error.message : "Failed to submit estimate.",
         );
@@ -842,8 +721,8 @@ export function useCostEstimatorPage({
           current?.estimateId === selectedEstimate.id ? null : current,
         );
         setSaveState("saved");
-        setSaveMessage("All changes saved");
-        toast.success("Rejected estimate reopened for editing.");
+        setSaveMessage("Draft saved");
+        toast.success("Returned estimate reopened for editing.");
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to reopen estimate.",

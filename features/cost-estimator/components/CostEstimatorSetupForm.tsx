@@ -212,7 +212,7 @@ export default function CostEstimatorSetupForm({
 
           <button
             type="button"
-            onClick={onSubmit}
+            onClick={() => onSubmit()}
             disabled={pending}
             className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#1f6a37] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >

@@ -114,6 +114,28 @@ body {
   }
 }
 
+@keyframes loader-block {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 16px 32px rgba(31, 106, 55, 0.1);
+  }
+
+  30% {
+    transform: translateY(-18px) scale(1.04);
+    box-shadow: 0 26px 38px rgba(31, 106, 55, 0.16);
+  }
+
+  60% {
+    transform: translateY(4px) scale(0.98);
+    box-shadow: 0 12px 22px rgba(31, 106, 55, 0.08);
+  }
+}
+
+.loader-block {
+  animation: loader-block 1.6s ease-in-out infinite;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

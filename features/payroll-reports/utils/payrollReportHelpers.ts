@@ -28,14 +28,14 @@ export function getPayrollReportStatusBadgeClass(status: PayrollRunStatus): stri
   if (status === "submitted" || status === "draft") {
     return "bg-amber-50 text-amber-700 border-amber-200";
   }
-  return "bg-rose-50 text-rose-700 border-rose-200";
+  return "bg-[#eef7f0] text-[#2d6a4f] border-[#cfe3d3]";
 }
 
 export function getPayrollReportStatusLabel(status: PayrollRunStatus): string {
   if (status === "submitted") return "Pending";
   if (status === "approved") return "Approved";
   if (status === "draft") return "Draft";
-  return "Rejected";
+  return "Returned";
 }
 
 export function normalizePayrollReportKey(value: string): string {
