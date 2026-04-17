@@ -14,11 +14,13 @@ import type { ReviewProjectEstimateRow } from "@/features/cost-estimator/types";
 export default function EstimateReviewsTable({
   estimates,
   pendingReviewsCount,
+  loading,
   onOpenReport,
   onDeleteEstimate,
 }: {
   estimates: ReviewProjectEstimateRow[];
   pendingReviewsCount: number;
+  loading: boolean;
   onOpenReport: (estimateId: string) => void;
   onDeleteEstimate: (estimateId: string) => void;
 }) {
@@ -131,7 +133,9 @@ export default function EstimateReviewsTable({
                     {formatProjectTypeLabel(estimate.project_type)}
                   </td>
                   <td className="px-3 py-3 text-apple-smoke">
-                    {formatEstimateDateTime(estimate.submitted_at ?? estimate.created_at)}
+                    {formatEstimateDateTime(
+                      estimate.submitted_at ?? estimate.created_at,
+                    )}
                   </td>
                   <td className="px-3 py-3 text-apple-smoke">
                     {estimate.requester_profile?.full_name?.trim() ||
@@ -148,7 +152,10 @@ export default function EstimateReviewsTable({
                     <button
                       type="button"
                       onClick={(event) =>
-                        handleOpenMenu(estimate.id, event.currentTarget.getBoundingClientRect())
+                        handleOpenMenu(
+                          estimate.id,
+                          event.currentTarget.getBoundingClientRect(),
+                        )
                       }
                       data-estimate-actions-root
                       className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"
@@ -161,8 +168,13 @@ export default function EstimateReviewsTable({
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="px-3 py-5 text-center text-sm text-apple-steel">
-                  No submitted estimates are waiting for review.
+                <td
+                  colSpan={7}
+                  className="px-3 py-5 text-center text-sm text-apple-steel"
+                >
+                  {loading
+                    ? "Loading submitted estimates..."
+                    : "No submitted estimates are waiting for review."}
                 </td>
               </tr>
             )}

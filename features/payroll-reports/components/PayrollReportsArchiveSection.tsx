@@ -93,7 +93,9 @@ export default function PayrollReportsArchiveSection({
 
         {reports.length === 0 ? (
           <p className="text-sm text-apple-steel">
-            No payroll reports are waiting for review.
+            {loading
+              ? "Loading payroll reports..."
+              : "No payroll reports are waiting for review."}
           </p>
         ) : (
           <div className="overflow-x-auto overflow-y-visible rounded-xl border border-apple-mist">
@@ -292,7 +294,10 @@ export default function PayrollReportsArchiveSection({
                     >
                       {deletingRunId === deleteConfirmReport.id ? (
                         <>
-                          <LoaderCircle size={15} className="mr-2 animate-spin" />
+                          <LoaderCircle
+                            size={15}
+                            className="mr-2 animate-spin"
+                          />
                           Deleting...
                         </>
                       ) : (
@@ -340,7 +345,9 @@ export default function PayrollReportsArchiveSection({
                   </p>
                   <textarea
                     value={rejectionReason}
-                    onChange={(event) => onRejectionReasonChange(event.target.value)}
+                    onChange={(event) =>
+                      onRejectionReasonChange(event.target.value)
+                    }
                     rows={5}
                     placeholder="Add an optional return note for HR."
                     className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
@@ -363,11 +370,15 @@ export default function PayrollReportsArchiveSection({
                       {pendingDecisionRunId === rejectConfirmReport.id &&
                       pendingDecisionAction === "reject" ? (
                         <>
-                          <LoaderCircle size={15} className="mr-2 animate-spin" />
+                          <LoaderCircle
+                            size={15}
+                            className="mr-2 animate-spin"
+                          />
                           Returning...
                         </>
-                      )
-                        : "Confirm Return"}
+                      ) : (
+                        "Confirm Return"
+                      )}
                     </button>
                   </div>
                 </div>

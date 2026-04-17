@@ -2,6 +2,7 @@
 
 import {
   CheckCircle2,
+  LayoutList,
   FolderPlus,
   LoaderCircle,
   Save,
@@ -19,6 +20,7 @@ export default function CostEstimatorHeader({
   pendingSaveEstimate,
   saveState,
   saveMessage,
+  onOpenProjects,
   onSelectEstimate,
   onSaveDraft,
   onNewProject,
@@ -31,6 +33,7 @@ export default function CostEstimatorHeader({
   pendingSaveEstimate: boolean;
   saveState: "saved" | "dirty" | "saving" | "error";
   saveMessage: string;
+  onOpenProjects: () => void;
   onSelectEstimate: (estimateId: string) => void;
   onSaveDraft: () => void;
   onNewProject: () => void;
@@ -47,6 +50,18 @@ export default function CostEstimatorHeader({
     <header className="sticky top-0 z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="flex min-h-[48px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap items-center gap-3">
+          {estimates.length > 0 ? (
+            <button
+              type="button"
+              onClick={onOpenProjects}
+              disabled={uiLocked}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-apple-mist bg-white px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LayoutList size={16} />
+              All projects
+            </button>
+          ) : null}
+
           {selectedEstimate ? (
             <select
               value={selectedEstimate.id}
@@ -75,7 +90,7 @@ export default function CostEstimatorHeader({
                   ? "border-rose-200 bg-rose-50 text-rose-700"
                   : saveState === "dirty"
                     ? "border-sky-200 bg-sky-50 text-sky-700"
-                : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
             )}
           >
             {saveState === "saving" ? (
@@ -97,7 +112,7 @@ export default function CostEstimatorHeader({
               type="button"
               onClick={onSaveDraft}
               disabled={uiLocked || saveState !== "dirty"}
-              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingSaveEstimate ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />

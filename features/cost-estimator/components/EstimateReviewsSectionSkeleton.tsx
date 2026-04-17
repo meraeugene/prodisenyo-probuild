@@ -1,34 +1,24 @@
 "use client";
 
-import { Clock3 } from "lucide-react";
-
 function SkeletonBlock({ className }: { className: string }) {
   return (
-    <div
-      className={`animate-pulse rounded-2xl bg-[#dff0e6] ${className}`}
-    />
+    <div className={`animate-pulse rounded-2xl bg-[#dff0e6] ${className}`} />
   );
 }
 
 export default function EstimateReviewsSectionSkeleton() {
   return (
     <section className="mt-4 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-            Review Queue
-          </p>
-          <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-            Submitted And Reviewed Estimates
-          </h2>
-          <p className="mt-2 text-sm text-apple-steel">
-            Review engineer-submitted estimates before final approval.
-          </p>
+      <div
+        className="flex items-start justify-between gap-3"
+        aria-hidden="true"
+      >
+        <div className="space-y-2">
+          <SkeletonBlock className="h-3 w-24" />
+          <SkeletonBlock className="h-7 w-72 max-w-full" />
+          <SkeletonBlock className="h-4 w-[26rem] max-w-full" />
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-          <Clock3 size={12} />
-          0 pending
-        </span>
+        <SkeletonBlock className="h-7 w-24 rounded-full" />
       </div>
 
       <div

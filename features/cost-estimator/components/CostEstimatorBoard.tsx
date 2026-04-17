@@ -94,7 +94,7 @@ export default function CostEstimatorBoard({
             type="button"
             onClick={onAddCost}
             disabled={!estimate || disabled}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Plus size={16} />
             Add item

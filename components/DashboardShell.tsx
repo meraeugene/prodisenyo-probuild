@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Building2,
   Calculator,
+  ClipboardList,
   ChevronsLeft,
   ChevronsRight,
   ChevronRight,
@@ -77,6 +78,11 @@ const CEO_ADMIN_ITEMS = [
 
 const ENGINEER_NAV_ITEMS = [
   { href: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
+  {
+    href: "/request-material",
+    label: "Request Material",
+    icon: ClipboardList,
+  },
 ] as const;
 
 type ProfileCardData = Pick<
@@ -387,11 +393,7 @@ export default function DashboardShell({
               {!collapsed ? (
                 <div className="px-3 pb-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    {isCeo
-                      ? "General"
-                      : isEngineer
-                        ? "Estimator"
-                        : "Attendance"}
+                    {isCeo ? "General" : isEngineer ? "Workflow" : "Attendance"}
                   </p>
                 </div>
               ) : null}

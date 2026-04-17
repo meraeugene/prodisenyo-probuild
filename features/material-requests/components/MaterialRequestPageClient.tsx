@@ -1,0 +1,345 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import { ClipboardPlus, LoaderCircle, Send } from "lucide-react";
+import { toast } from "sonner";
+import DashboardPageHero from "@/components/DashboardPageHero";
+import { createMaterialRequestAction } from "@/actions/materialRequests";
+import type {
+  CreateMaterialRequestInput,
+  MaterialRequestPriority,
+  MaterialRequestRecord,
+} from "@/features/material-requests/types";
+
+const PRIORITY_OPTIONS: Array<{
+  value: MaterialRequestPriority;
+  label: string;
+}> = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" },
+];
+
+const EMPTY_FORM: CreateMaterialRequestInput = {
+  projectName: "",
+  materialName: "",
+  quantity: 1,
+  unit: "pcs",
+  neededBy: "",
+  site: "",
+  priority: "medium",
+  notes: "",
+};
+
+function priorityBadgeClass(priority: MaterialRequestPriority) {
+  if (priority === "urgent") return "border-rose-200 bg-rose-50 text-rose-700";
+  if (priority === "high") return "border-amber-200 bg-amber-50 text-amber-700";
+  if (priority === "medium") return "border-sky-200 bg-sky-50 text-sky-700";
+  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+export default function MaterialRequestPageClient({
+  initialRequests,
+}: {
+  initialRequests: MaterialRequestRecord[];
+}) {
+  const [form, setForm] = useState<CreateMaterialRequestInput>(EMPTY_FORM);
+  const [requests, setRequests] =
+    useState<MaterialRequestRecord[]>(initialRequests);
+  const [isPending, startTransition] = useTransition();
+
+  const totalPending = requests.length;
+
+  const sortedRequests = useMemo(
+    () =>
+      [...requests].sort(
+        (left, right) =>
+          new Date(right.createdAt).getTime() -
+          new Date(left.createdAt).getTime(),
+      ),
+    [requests],
+  );
+
+  function updateField<K extends keyof CreateMaterialRequestInput>(
+    key: K,
+    value: CreateMaterialRequestInput[K],
+  ) {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function handleSubmit() {
+    startTransition(async () => {
+      try {
+        const created = await createMaterialRequestAction(form);
+        setRequests((current) => [created, ...current]);
+        setForm({
+          ...EMPTY_FORM,
+          neededBy: form.neededBy,
+          projectName: form.projectName,
+        });
+        toast.success("Material request submitted.");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to submit request.",
+        );
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-4 p-6">
+      <DashboardPageHero
+        eyebrow="Engineer Workflow"
+        title="Request Materials"
+        description="Submit material requests with quantity and urgency so procurement can process site needs faster."
+        actions={
+          <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+            <ClipboardPlus size={14} />
+            {totalPending} pending
+          </span>
+        }
+      />
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+            New Request
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+            Material Request Form
+          </h2>
+
+          <div className="mt-4 grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-apple-charcoal">
+                Project Name
+              </span>
+              <input
+                value={form.projectName}
+                onChange={(event) =>
+                  updateField("projectName", event.target.value)
+                }
+                placeholder="Dream Home Renovation"
+                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-apple-charcoal">
+                Material Name
+              </span>
+              <input
+                value={form.materialName}
+                onChange={(event) =>
+                  updateField("materialName", event.target.value)
+                }
+                placeholder="2x3 steel tubing"
+                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+              />
+            </label>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-apple-charcoal">
+                  Quantity
+                </span>
+                <input
+                  type="number"
+                  min={0.01}
+                  step={0.01}
+                  value={form.quantity}
+                  onChange={(event) =>
+                    updateField("quantity", Number(event.target.value || 0))
+                  }
+                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-apple-charcoal">
+                  Unit
+                </span>
+                <input
+                  value={form.unit}
+                  onChange={(event) => updateField("unit", event.target.value)}
+                  placeholder="pcs"
+                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-apple-charcoal">
+                  Needed By
+                </span>
+                <input
+                  type="date"
+                  value={form.neededBy}
+                  onChange={(event) =>
+                    updateField("neededBy", event.target.value)
+                  }
+                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-apple-charcoal">
+                  Priority
+                </span>
+                <select
+                  value={form.priority}
+                  onChange={(event) =>
+                    updateField(
+                      "priority",
+                      event.target.value as MaterialRequestPriority,
+                    )
+                  }
+                  className="h-11 rounded-xl border border-apple-mist bg-white px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                >
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-apple-charcoal">
+                Site (Optional)
+              </span>
+              <input
+                value={form.site ?? ""}
+                onChange={(event) => updateField("site", event.target.value)}
+                placeholder="Site A - Main Building"
+                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-apple-charcoal">
+                Notes (Optional)
+              </span>
+              <textarea
+                rows={4}
+                value={form.notes ?? ""}
+                onChange={(event) => updateField("notes", event.target.value)}
+                placeholder="Include specs, brand preference, or usage details."
+                className="rounded-xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isPending}
+              className="inline-flex h-11 w-fit items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? (
+                <>
+                  <LoaderCircle size={16} className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send size={15} />
+                  Submit request
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+            Request Queue
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+            Recent Material Requests
+          </h2>
+
+          {sortedRequests.length === 0 ? (
+            <div className="mt-4 rounded-[12px] border border-dashed border-apple-mist px-4 py-6 text-sm text-apple-steel">
+              No requests submitted yet.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {sortedRequests.map((request) => (
+                <article
+                  key={request.id}
+                  className="rounded-[14px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                        {request.projectName}
+                      </p>
+                      <h3 className="mt-2 text-base font-semibold text-apple-charcoal">
+                        {request.materialName}
+                      </h3>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] ${priorityBadgeClass(request.priority)}`}
+                    >
+                      {request.priority}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 text-sm text-apple-smoke md:grid-cols-2">
+                    <p>
+                      Quantity:{" "}
+                      <span className="font-semibold text-apple-charcoal">
+                        {request.quantity}
+                      </span>{" "}
+                      {request.unit}
+                    </p>
+                    <p>
+                      Needed by:{" "}
+                      <span className="font-semibold text-apple-charcoal">
+                        {formatDate(request.neededBy)}
+                      </span>
+                    </p>
+                    <p>
+                      Site:{" "}
+                      <span className="font-semibold text-apple-charcoal">
+                        {request.site ?? "-"}
+                      </span>
+                    </p>
+                    <p>
+                      Requested:{" "}
+                      <span className="font-semibold text-apple-charcoal">
+                        {formatDate(request.createdAt)}
+                      </span>
+                    </p>
+                  </div>
+
+                  {request.notes ? (
+                    <p className="mt-3 rounded-xl border border-apple-mist bg-white px-3 py-2 text-sm text-apple-steel">
+                      {request.notes}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

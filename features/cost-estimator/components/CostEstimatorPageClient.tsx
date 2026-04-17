@@ -6,6 +6,7 @@ import CostEstimatorBoard from "@/features/cost-estimator/components/CostEstimat
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import CostEstimatorHeader from "@/features/cost-estimator/components/CostEstimatorHeader";
 import CostEstimatorItemModal from "@/features/cost-estimator/components/CostEstimatorItemModal";
+import CostEstimatorProjectsOverview from "@/features/cost-estimator/components/CostEstimatorProjectsOverview";
 import CostEstimatorSetupForm from "@/features/cost-estimator/components/CostEstimatorSetupForm";
 import CostEstimatorSummaryPanel from "@/features/cost-estimator/components/CostEstimatorSummaryPanel";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
@@ -26,12 +27,20 @@ export default function CostEstimatorPageClient({
   items: ProjectEstimateItemRow[];
   catalogItems: CostCatalogItemRow[];
 }) {
-  const [pendingDeleteItemIndices, setPendingDeleteItemIndices] = useState<number[] | null>(
-    null,
-  );
-  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
+  const [pendingDeleteItemIndices, setPendingDeleteItemIndices] = useState<
+    number[] | null
+  >(null);
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] =
+    useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  const [showSaveDraftFirstConfirm, setShowSaveDraftFirstConfirm] = useState(false);
+  const [showSaveDraftFirstConfirm, setShowSaveDraftFirstConfirm] =
+    useState(false);
+  const [showProjectOverview, setShowProjectOverview] = useState(
+    estimates.length > 0,
+  );
+  const [saveDraftNextAction, setSaveDraftNextAction] = useState<
+    "new-project" | "overview" | null
+  >(null);
   const state = useCostEstimatorPage({
     estimates,
     items,
@@ -42,11 +51,27 @@ export default function CostEstimatorPageClient({
 
   function handleRequestNewProject() {
     if (state.selectedEstimate && state.hasUnsavedEstimateChanges) {
+      setSaveDraftNextAction("new-project");
       setShowSaveDraftFirstConfirm(true);
       return;
     }
 
     state.handleOpenNewProjectSetup();
+  }
+
+  function handleOpenProject(estimateId: string) {
+    state.handleSelectEstimate(estimateId);
+    setShowProjectOverview(false);
+  }
+
+  function handleRequestOpenOverview() {
+    if (state.selectedEstimate && state.hasUnsavedEstimateChanges) {
+      setSaveDraftNextAction("overview");
+      setShowSaveDraftFirstConfirm(true);
+      return;
+    }
+
+    setShowProjectOverview(true);
   }
 
   function handleConfirmDeleteItem() {
@@ -79,6 +104,26 @@ export default function CostEstimatorPageClient({
     );
   }
 
+  if (showProjectOverview && state.sortedEstimates.length > 0) {
+    return (
+      <>
+        <CostEstimatorProjectsOverview
+          estimates={state.sortedEstimates}
+          pending={isUiLocked}
+          onOpenProject={handleOpenProject}
+          onCreateProject={handleRequestNewProject}
+        />
+
+        <EstimateRejectedAlertModal
+          open={state.rejectionAlert !== null}
+          projectName={state.rejectionAlert?.projectName ?? ""}
+          rejectionReason={state.rejectionAlert?.rejectionReason ?? null}
+          onClose={state.handleCloseRejectionAlert}
+        />
+      </>
+    );
+  }
+
   return (
     <div>
       <CostEstimatorHeader
@@ -87,10 +132,11 @@ export default function CostEstimatorPageClient({
         uiLocked={isUiLocked}
         pendingDeleteEstimate={state.pendingDeleteEstimate}
         pendingSaveEstimate={Boolean(
-          state.pendingEstimateAction && state.pendingEstimateIntent === "save"
+          state.pendingEstimateAction && state.pendingEstimateIntent === "save",
         )}
         saveState={state.saveState}
         saveMessage={state.saveMessage}
+        onOpenProjects={handleRequestOpenOverview}
         onSelectEstimate={state.handleSelectEstimate}
         onSaveDraft={() => state.handleSaveEstimate()}
         onNewProject={handleRequestNewProject}
@@ -106,7 +152,8 @@ export default function CostEstimatorPageClient({
                   {state.selectedEstimate?.project_name}
                 </h2>
                 <p className="mt-2 text-sm text-apple-steel">
-                  Build the full estimate breakdown here before sending it to the CEO.
+                  Build the full estimate breakdown here before sending it to
+                  the CEO.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -183,8 +230,8 @@ export default function CostEstimatorPageClient({
         computedTotal={state.currentLineTotal}
         editing={Boolean(
           !state.itemModalReadOnly &&
-            state.editingItemIndices &&
-            state.editingItemIndices.length > 0,
+          state.editingItemIndices &&
+          state.editingItemIndices.length > 0,
         )}
         readOnly={state.itemModalReadOnly}
         pending={state.pendingEstimateAction}
@@ -243,15 +290,31 @@ export default function CostEstimatorPageClient({
       <CostEstimatorConfirmModal
         open={showSaveDraftFirstConfirm}
         title="Save draft first?"
-        description="This project has unsaved changes. Save the draft first before creating a new project so nothing gets lost."
+        description={
+          saveDraftNextAction === "overview"
+            ? "This project has unsaved changes. Save the draft first before returning to Overall Projects."
+            : "This project has unsaved changes. Save the draft first before creating a new project so nothing gets lost."
+        }
         confirmLabel="Save draft first"
         confirmTone="primary"
         pending={isUiLocked}
         onConfirm={() => {
           setShowSaveDraftFirstConfirm(false);
-          state.handleSaveEstimate(() => state.handleOpenNewProjectSetup());
+          const nextAction = saveDraftNextAction;
+          setSaveDraftNextAction(null);
+          state.handleSaveEstimate(() => {
+            if (nextAction === "overview") {
+              setShowProjectOverview(true);
+              return;
+            }
+
+            state.handleOpenNewProjectSetup();
+          });
         }}
-        onCancel={() => setShowSaveDraftFirstConfirm(false)}
+        onCancel={() => {
+          setShowSaveDraftFirstConfirm(false);
+          setSaveDraftNextAction(null);
+        }}
       />
 
       <CostEstimatorConfirmModal

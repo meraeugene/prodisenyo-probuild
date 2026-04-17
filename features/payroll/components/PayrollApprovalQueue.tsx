@@ -4,7 +4,6 @@ import { Clock3, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import PayrollApprovalEmployeeLogsModal from "@/features/payroll/components/PayrollApprovalEmployeeLogsModal";
 import PayrollApprovalQueueCard from "@/features/payroll/components/PayrollApprovalQueueCard";
-import PayrollApprovalQueueSkeleton from "@/features/payroll/components/PayrollApprovalQueueSkeleton";
 import { usePayrollApprovalQueue } from "@/features/payroll/hooks/usePayrollApprovalQueue";
 import type { PendingOvertimeRequest } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 import type { AppRole } from "@/types/database";
@@ -75,7 +74,9 @@ export default function PayrollApprovalQueue({
 
       <div className="mt-4">
         {state.loading ? (
-          <PayrollApprovalQueueSkeleton />
+          <p className="text-sm text-apple-steel">
+            Loading overtime requests...
+          </p>
         ) : !state.hasRequests ? (
           <p className="text-sm text-apple-steel">
             No overtime requests are waiting for approval.
@@ -89,9 +90,13 @@ export default function PayrollApprovalQueue({
                 isPending={state.isPending}
                 pendingActionId={state.pendingActionId}
                 pendingActionType={state.pendingActionType}
-                logsLoading={Boolean(state.employeeLogsLoadingByRequestId[request.id])}
+                logsLoading={Boolean(
+                  state.employeeLogsLoadingByRequestId[request.id],
+                )}
                 onOpenLogs={state.openRequestLogs}
-                onApprove={(adjustmentId) => state.handleAction(adjustmentId, "approve")}
+                onApprove={(adjustmentId) =>
+                  state.handleAction(adjustmentId, "approve")
+                }
                 onReject={(requestToReject) => {
                   setRejectConfirmRequest(requestToReject);
                   setRejectionReason("");

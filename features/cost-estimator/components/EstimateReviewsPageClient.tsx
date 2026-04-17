@@ -4,7 +4,6 @@ import { LoaderCircle, Radio } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
-import EstimateReviewsSectionSkeleton from "@/features/cost-estimator/components/EstimateReviewsSectionSkeleton";
 import EstimateReviewsTable from "@/features/cost-estimator/components/EstimateReviewsTable";
 import { useEstimateReviewsPage } from "@/features/cost-estimator/hooks/useEstimateReviewsPage";
 import type {
@@ -29,22 +28,22 @@ export default function EstimateReviewsPageClient({
         description="Review engineer-submitted project estimates before bidding and push approved totals into Budget Tracker as new projects."
         actions={
           <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
-            <Radio size={14} className={state.refreshing ? "animate-pulse" : ""} />
+            <Radio
+              size={14}
+              className={state.refreshing ? "animate-pulse" : ""}
+            />
             Live data
           </div>
         }
       />
 
-      {state.loading && state.sortedEstimates.length === 0 ? (
-        <EstimateReviewsSectionSkeleton />
-      ) : (
-        <EstimateReviewsTable
-          estimates={state.sortedEstimates}
-          pendingReviewsCount={state.pendingReviewsCount}
-          onOpenReport={state.setActiveEstimateId}
-          onDeleteEstimate={state.setDeleteEstimateId}
-        />
-      )}
+      <EstimateReviewsTable
+        estimates={state.sortedEstimates}
+        pendingReviewsCount={state.pendingReviewsCount}
+        loading={state.loading}
+        onOpenReport={state.setActiveEstimateId}
+        onDeleteEstimate={state.setDeleteEstimateId}
+      />
 
       {state.activeEstimate ? (
         <EstimateReportModal
@@ -56,7 +55,9 @@ export default function EstimateReviewsPageClient({
               <div className="flex flex-wrap justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => state.setRejectEstimateId(state.activeEstimate!.id)}
+                  onClick={() =>
+                    state.setRejectEstimateId(state.activeEstimate!.id)
+                  }
                   disabled={state.isPending}
                   className="inline-flex h-10 items-center justify-center rounded-xl border border-amber-200 px-4 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -71,7 +72,9 @@ export default function EstimateReviewsPageClient({
                 </button>
                 <button
                   type="button"
-                  onClick={() => state.handleApproveEstimate(state.activeEstimate!.id)}
+                  onClick={() =>
+                    state.handleApproveEstimate(state.activeEstimate!.id)
+                  }
                   disabled={state.isPending}
                   className="inline-flex h-10 items-center justify-center rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -105,7 +108,9 @@ export default function EstimateReviewsPageClient({
             <div className="space-y-4 px-5 py-5">
               <textarea
                 value={state.rejectionReason}
-                onChange={(event) => state.setRejectionReason(event.target.value)}
+                onChange={(event) =>
+                  state.setRejectionReason(event.target.value)
+                }
                 rows={5}
                 placeholder="Add an optional return note for the engineer."
                 className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
