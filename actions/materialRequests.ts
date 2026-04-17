@@ -83,7 +83,7 @@ export async function createMaterialRequestAction(
     notes: normalizeOptionalText(input.notes),
   };
 
-  const database = createSupabaseAdminClient();
+  const database = createSupabaseAdminClient() as any;
   const requestId = randomUUID();
 
   const { data, error } = await database

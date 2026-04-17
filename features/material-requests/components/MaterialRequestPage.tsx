@@ -4,6 +4,13 @@ import MaterialRequestPageClient from "@/features/material-requests/components/M
 import { parseMaterialRequestPayload } from "@/features/material-requests/utils/materialRequestMappers";
 import type { MaterialRequestRecord } from "@/features/material-requests/types";
 
+interface MaterialRequestAuditRow {
+  id: string;
+  entity_id: string;
+  payload: unknown;
+  created_at: string;
+}
+
 export default async function MaterialRequestPage() {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
   const supabase = await createSupabaseServerClient();
@@ -17,7 +24,9 @@ export default async function MaterialRequestPage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const initialRequests: MaterialRequestRecord[] = (data ?? [])
+  const initialRequests: MaterialRequestRecord[] = (
+    (data ?? []) as MaterialRequestAuditRow[]
+  )
     .map((row) =>
       parseMaterialRequestPayload({
         id: row.id,

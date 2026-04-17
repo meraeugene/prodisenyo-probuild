@@ -12,7 +12,7 @@ function isPriority(value: unknown): value is MaterialRequestPriority {
   );
 }
 
-function isFinitePositiveNumber(value: unknown) {
+function isFinitePositiveNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
