@@ -1,0 +1,40 @@
+function SkeletonBlock({ className }: { className: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(232,242,236,0.95),rgba(244,249,246,1),rgba(232,242,236,0.95))] bg-[length:200%_100%] ${className}`}
+    />
+  );
+}
+
+export default function Loading() {
+  return (
+    <div className="space-y-4 p-6">
+      <section className="rounded-[14px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-3">
+            <SkeletonBlock className="h-3 w-24 bg-white/20" />
+            <SkeletonBlock className="h-10 w-80 max-w-full bg-white/20" />
+            <SkeletonBlock className="h-4 w-[40rem] max-w-full bg-white/15" />
+          </div>
+          <SkeletonBlock className="h-10 w-32 rounded-xl bg-white/20" />
+        </div>
+      </section>
+
+      <section className="rounded-[16px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <SkeletonBlock className="h-6 w-56" />
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <SkeletonBlock
+              key={`request-overtime-field-${index}`}
+              className="h-10 w-full"
+            />
+          ))}
+          <SkeletonBlock className="h-20 w-full md:col-span-2" />
+          <div className="md:col-span-2 flex justify-end">
+            <SkeletonBlock className="h-10 w-36" />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

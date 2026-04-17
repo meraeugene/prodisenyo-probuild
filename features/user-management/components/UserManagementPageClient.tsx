@@ -22,6 +22,7 @@ type FormErrors = Partial<
 const ROLE_OPTIONS: Array<{ value: AppRole; label: string }> = [
   { value: "payroll_manager", label: "Payroll Manager" },
   { value: "engineer", label: "Engineer" },
+  { value: "employee", label: "Employee" },
   { value: "ceo", label: "CEO" },
 ];
 
@@ -37,6 +38,7 @@ const EMPTY_FORM = {
 function formatRoleLabel(role: AppRole) {
   if (role === "ceo") return "CEO";
   if (role === "payroll_manager") return "Payroll Manager";
+  if (role === "employee") return "Employee";
   return "Engineer";
 }
 
@@ -61,9 +63,10 @@ export default function UserManagementPageClient({
 
   const sortedUsers = useMemo(
     () =>
-      [...users].sort((left, right) =>
-        left.full_name?.localeCompare(right.full_name ?? "") ||
-        left.username.localeCompare(right.username),
+      [...users].sort(
+        (left, right) =>
+          left.full_name?.localeCompare(right.full_name ?? "") ||
+          left.username.localeCompare(right.username),
       ),
     [users],
   );
@@ -107,7 +110,9 @@ export default function UserManagementPageClient({
 
     if (!form.username.trim()) {
       nextErrors.username = "Username is required.";
-    } else if (!/^[a-z0-9._-]{3,30}$/.test(form.username.trim().toLowerCase())) {
+    } else if (
+      !/^[a-z0-9._-]{3,30}$/.test(form.username.trim().toLowerCase())
+    ) {
       nextErrors.username =
         "Username must be 3-30 characters and use only letters, numbers, dot, dash, or underscore.";
     }
@@ -252,7 +257,7 @@ export default function UserManagementPageClient({
       <DashboardPageHero
         eyebrow="Admin"
         title="User Management"
-        description="Create, update, and manage user accounts for payroll managers, engineers, and CEO users."
+        description="Create, update, and manage user accounts for payroll managers, engineers, employees, and CEO users."
       />
 
       <section className="grid gap-4 2xl:grid-cols-[420px_minmax(0,1fr)]">
@@ -284,7 +289,9 @@ export default function UserManagementPageClient({
               </label>
               <input
                 value={form.fullName}
-                onChange={(event) => updateField("fullName", event.target.value)}
+                onChange={(event) =>
+                  updateField("fullName", event.target.value)
+                }
                 placeholder="e.g. Maria Santos"
                 className={cn(
                   "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
@@ -302,7 +309,9 @@ export default function UserManagementPageClient({
               </label>
               <input
                 value={form.username}
-                onChange={(event) => updateField("username", event.target.value)}
+                onChange={(event) =>
+                  updateField("username", event.target.value)
+                }
                 placeholder="e.g. maria.santos"
                 className={cn(
                   "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
@@ -338,7 +347,9 @@ export default function UserManagementPageClient({
               </label>
               <select
                 value={form.role}
-                onChange={(event) => updateField("role", event.target.value as AppRole)}
+                onChange={(event) =>
+                  updateField("role", event.target.value as AppRole)
+                }
                 className={cn(
                   "mt-2 w-full rounded-[12px] border bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
                   errors.role ? "border-rose-300" : "border-apple-mist",
@@ -363,7 +374,9 @@ export default function UserManagementPageClient({
                 <input
                   type="password"
                   value={form.password}
-                  onChange={(event) => updateField("password", event.target.value)}
+                  onChange={(event) =>
+                    updateField("password", event.target.value)
+                  }
                   placeholder="Minimum 8 characters"
                   className={cn(
                     "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
@@ -371,7 +384,9 @@ export default function UserManagementPageClient({
                   )}
                 />
                 {errors.password ? (
-                  <p className="mt-2 text-sm text-rose-600">{errors.password}</p>
+                  <p className="mt-2 text-sm text-rose-600">
+                    {errors.password}
+                  </p>
                 ) : null}
               </div>
             ) : (
@@ -379,7 +394,9 @@ export default function UserManagementPageClient({
                 <input
                   type="checkbox"
                   checked={form.isActive}
-                  onChange={(event) => updateField("isActive", event.target.checked)}
+                  onChange={(event) =>
+                    updateField("isActive", event.target.checked)
+                  }
                   disabled={editingUserId === currentUserId}
                 />
                 <span className="text-sm font-medium text-apple-charcoal">
@@ -463,8 +480,12 @@ export default function UserManagementPageClient({
                           </p>
                         ) : null}
                       </td>
-                      <td className="px-3 py-3 text-apple-smoke">{user.username}</td>
-                      <td className="px-3 py-3 text-apple-smoke">{user.email}</td>
+                      <td className="px-3 py-3 text-apple-smoke">
+                        {user.username}
+                      </td>
+                      <td className="px-3 py-3 text-apple-smoke">
+                        {user.email}
+                      </td>
                       <td className="px-3 py-3 text-apple-smoke">
                         {formatRoleLabel(user.role)}
                       </td>
@@ -484,7 +505,10 @@ export default function UserManagementPageClient({
                         <button
                           type="button"
                           onClick={(event) =>
-                            handleOpenMenu(user.id, event.currentTarget.getBoundingClientRect())
+                            handleOpenMenu(
+                              user.id,
+                              event.currentTarget.getBoundingClientRect(),
+                            )
                           }
                           data-user-actions-root
                           className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"

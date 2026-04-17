@@ -35,6 +35,7 @@ import type { Database } from "@/types/database";
 
 const PRIMARY_NAV_ITEMS = [
   { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
+  { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ];
 
 const CEO_GENERAL_ITEMS = [
@@ -78,11 +79,16 @@ const CEO_ADMIN_ITEMS = [
 
 const ENGINEER_NAV_ITEMS = [
   { href: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
+  { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
   {
     href: "/request-material",
     label: "Request Material",
     icon: ClipboardList,
   },
+] as const;
+
+const EMPLOYEE_NAV_ITEMS = [
+  { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ] as const;
 
 type ProfileCardData = Pick<
@@ -94,6 +100,7 @@ function formatRoleLabel(role: ProfileCardData["role"] | null): string {
   if (role === "ceo") return "Chief Executive Officer";
   if (role === "payroll_manager") return "Payroll Manager";
   if (role === "engineer") return "Engineer";
+  if (role === "employee") return "Employee";
   return "Signed-in user";
 }
 
@@ -177,10 +184,12 @@ export default function DashboardShell({
   const isWorkflowRoute =
     pathname === "/review-attendance" || pathname === "/generate-payroll";
   const isCeo = profile?.role === "ceo";
+  const isPayrollManager = profile?.role === "payroll_manager";
   const isEngineer = profile?.role === "engineer";
+  const isEmployee = profile?.role === "employee";
   const canSeeWorkflowNav =
     isCeo ||
-    (!isEngineer &&
+    (isPayrollManager &&
       !workspaceReset &&
       (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
   const [pendingOvertimeCount, setPendingOvertimeCount] = useState(0);
@@ -235,7 +244,11 @@ export default function DashboardShell({
 
     async function loadPendingOvertimeCount() {
       const [
-        { count: overtimeCount, error: overtimeError },
+        {
+          count: pendingPayrollOvertimeCount,
+          error: pendingPayrollOvertimeError,
+        },
+        { count: pendingRequestFormCount, error: pendingRequestFormError },
         { count: payrollReportCount, error: payrollReportError },
         { count: estimateReviewCount, error: estimateReviewError },
       ] = await Promise.all([
@@ -243,6 +256,10 @@ export default function DashboardShell({
           .from("payroll_adjustments")
           .select("id", { count: "exact", head: true })
           .eq("adjustment_type", "overtime")
+          .eq("status", "pending"),
+        supabase
+          .from("overtime_requests")
+          .select("id", { count: "exact", head: true })
           .eq("status", "pending"),
         supabase
           .from("payroll_runs")
@@ -256,14 +273,16 @@ export default function DashboardShell({
 
       if (
         cancelled ||
-        overtimeError ||
+        pendingPayrollOvertimeError ||
+        pendingRequestFormError ||
         payrollReportError ||
         estimateReviewError
       ) {
         return;
       }
 
-      const nextCount = overtimeCount ?? 0;
+      const nextCount =
+        (pendingPayrollOvertimeCount ?? 0) + (pendingRequestFormCount ?? 0);
       const previousCount = previousPendingCountRef.current;
       const nextEstimateCount = estimateReviewCount ?? 0;
       const previousEstimateCount = previousEstimateReviewCountRef.current;
@@ -393,7 +412,11 @@ export default function DashboardShell({
               {!collapsed ? (
                 <div className="px-3 pb-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    {isCeo ? "General" : isEngineer ? "Workflow" : "Attendance"}
+                    {isCeo
+                      ? "General"
+                      : isEngineer || isEmployee
+                        ? "Workflow"
+                        : "Attendance"}
                   </p>
                 </div>
               ) : null}
@@ -402,7 +425,9 @@ export default function DashboardShell({
                 ? CEO_GENERAL_ITEMS
                 : isEngineer
                   ? ENGINEER_NAV_ITEMS
-                  : PRIMARY_NAV_ITEMS
+                  : isEmployee
+                    ? EMPLOYEE_NAV_ITEMS
+                    : PRIMARY_NAV_ITEMS
               ).map((item) =>
                 renderSidebarLink({
                   item,
@@ -505,7 +530,7 @@ export default function DashboardShell({
                 ) : null}
               </AnimatePresence>
 
-              {!collapsed && !isEngineer ? (
+              {!collapsed && isPayrollManager ? (
                 <div className="px-3 pb-1 pt-1">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
                     Budget
@@ -513,7 +538,7 @@ export default function DashboardShell({
                 </div>
               ) : null}
 
-              {!isEngineer &&
+              {isPayrollManager &&
                 BUDGET_NAV_ITEMS.map((item) => {
                   return renderSidebarLink({
                     item,

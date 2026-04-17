@@ -32,6 +32,16 @@ const EMPTY_FORM: CreateMaterialRequestInput = {
   notes: "",
 };
 
+type MaterialFormErrors = Partial<
+  Record<keyof CreateMaterialRequestInput, string>
+>;
+
+function inputClass(hasError: boolean) {
+  return `h-11 rounded-xl border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
+    hasError ? "border-rose-300 " : "border-apple-mist bg-white"
+  }`;
+}
+
 function priorityBadgeClass(priority: MaterialRequestPriority) {
   if (priority === "urgent") return "border-rose-200 bg-rose-50 text-rose-700";
   if (priority === "high") return "border-amber-200 bg-amber-50 text-amber-700";
@@ -57,6 +67,7 @@ export default function MaterialRequestPageClient({
   const [form, setForm] = useState<CreateMaterialRequestInput>(EMPTY_FORM);
   const [requests, setRequests] =
     useState<MaterialRequestRecord[]>(initialRequests);
+  const [formErrors, setFormErrors] = useState<MaterialFormErrors>({});
   const [isPending, startTransition] = useTransition();
 
   const totalPending = requests.length;
@@ -79,9 +90,68 @@ export default function MaterialRequestPageClient({
       ...current,
       [key]: value,
     }));
+
+    setFormErrors((current) => ({
+      ...current,
+      [key]: undefined,
+    }));
   }
 
-  function handleSubmit() {
+  function validateForm() {
+    const errors: MaterialFormErrors = {};
+    const projectName = (form.projectName ?? "").trim();
+    const materialName = (form.materialName ?? "").trim();
+    const unit = (form.unit ?? "").trim();
+    const neededBy = (form.neededBy ?? "").trim();
+    const quantity = Number(form.quantity ?? 0);
+    const notes = (form.notes ?? "").trim();
+
+    if (!projectName) {
+      errors.projectName = "Project name is required.";
+    }
+
+    if (!materialName) {
+      errors.materialName = "Material name is required.";
+    }
+
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      errors.quantity = "Quantity must be greater than zero.";
+    }
+
+    if (!unit) {
+      errors.unit = "Unit is required.";
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(neededBy)) {
+      errors.neededBy = "Needed-by date is required.";
+    }
+
+    if (!form.priority) {
+      errors.priority = "Priority is required.";
+    }
+
+    if (notes.length > 500) {
+      errors.notes = "Notes must be 500 characters or less.";
+    }
+
+    return {
+      errors,
+      hasErrors: Object.keys(errors).length > 0,
+    };
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const validation = validateForm();
+    if (validation.hasErrors) {
+      setFormErrors(validation.errors);
+      toast.error("Please fix the highlighted fields first.");
+      return;
+    }
+
+    setFormErrors({});
+
     startTransition(async () => {
       try {
         const created = await createMaterialRequestAction(form);
@@ -123,7 +193,7 @@ export default function MaterialRequestPageClient({
             Material Request Form
           </h2>
 
-          <div className="mt-4 grid gap-4">
+          <form className="mt-4 grid gap-4" onSubmit={handleSubmit}>
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-apple-charcoal">
                 Project Name
@@ -134,8 +204,13 @@ export default function MaterialRequestPageClient({
                   updateField("projectName", event.target.value)
                 }
                 placeholder="Dream Home Renovation"
-                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className={inputClass(Boolean(formErrors.projectName))}
               />
+              {formErrors.projectName ? (
+                <p className="text-xs font-medium text-rose-600">
+                  {formErrors.projectName}
+                </p>
+              ) : null}
             </label>
 
             <label className="grid gap-2">
@@ -148,8 +223,13 @@ export default function MaterialRequestPageClient({
                   updateField("materialName", event.target.value)
                 }
                 placeholder="2x3 steel tubing"
-                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className={inputClass(Boolean(formErrors.materialName))}
               />
+              {formErrors.materialName ? (
+                <p className="text-xs font-medium text-rose-600">
+                  {formErrors.materialName}
+                </p>
+              ) : null}
             </label>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -165,8 +245,13 @@ export default function MaterialRequestPageClient({
                   onChange={(event) =>
                     updateField("quantity", Number(event.target.value || 0))
                   }
-                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  className={inputClass(Boolean(formErrors.quantity))}
                 />
+                {formErrors.quantity ? (
+                  <p className="text-xs font-medium text-rose-600">
+                    {formErrors.quantity}
+                  </p>
+                ) : null}
               </label>
 
               <label className="grid gap-2">
@@ -177,8 +262,13 @@ export default function MaterialRequestPageClient({
                   value={form.unit}
                   onChange={(event) => updateField("unit", event.target.value)}
                   placeholder="pcs"
-                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  className={inputClass(Boolean(formErrors.unit))}
                 />
+                {formErrors.unit ? (
+                  <p className="text-xs font-medium text-rose-600">
+                    {formErrors.unit}
+                  </p>
+                ) : null}
               </label>
             </div>
 
@@ -193,8 +283,13 @@ export default function MaterialRequestPageClient({
                   onChange={(event) =>
                     updateField("neededBy", event.target.value)
                   }
-                  className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  className={inputClass(Boolean(formErrors.neededBy))}
                 />
+                {formErrors.neededBy ? (
+                  <p className="text-xs font-medium text-rose-600">
+                    {formErrors.neededBy}
+                  </p>
+                ) : null}
               </label>
 
               <label className="grid gap-2">
@@ -209,7 +304,7 @@ export default function MaterialRequestPageClient({
                       event.target.value as MaterialRequestPriority,
                     )
                   }
-                  className="h-11 rounded-xl border border-apple-mist bg-white px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  className={inputClass(Boolean(formErrors.priority))}
                 >
                   {PRIORITY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -217,6 +312,11 @@ export default function MaterialRequestPageClient({
                     </option>
                   ))}
                 </select>
+                {formErrors.priority ? (
+                  <p className="text-xs font-medium text-rose-600">
+                    {formErrors.priority}
+                  </p>
+                ) : null}
               </label>
             </div>
 
@@ -241,13 +341,21 @@ export default function MaterialRequestPageClient({
                 value={form.notes ?? ""}
                 onChange={(event) => updateField("notes", event.target.value)}
                 placeholder="Include specs, brand preference, or usage details."
-                className="rounded-xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className={`rounded-xl border px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
+                  formErrors.notes
+                    ? "border-rose-300 bg-rose-50/40"
+                    : "border-apple-mist bg-white"
+                }`}
               />
+              {formErrors.notes ? (
+                <p className="text-xs font-medium text-rose-600">
+                  {formErrors.notes}
+                </p>
+              ) : null}
             </label>
 
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={isPending}
               className="inline-flex h-11 w-fit items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -263,10 +371,10 @@ export default function MaterialRequestPageClient({
                 </>
               )}
             </button>
-          </div>
+          </form>
         </div>
 
-        <div className="rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <div className="rounded-[18px] h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             Request Queue
           </p>

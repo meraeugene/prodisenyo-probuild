@@ -9,6 +9,7 @@ truncate table public.cost_catalog_items restart identity cascade;
 truncate table public.budget_items restart identity cascade;
 truncate table public.budget_projects restart identity cascade;
 truncate table public.audit_logs restart identity cascade;
+truncate table public.overtime_requests restart identity cascade;
 truncate table public.payroll_adjustments restart identity cascade;
 truncate table public.payroll_run_items restart identity cascade;
 truncate table public.payroll_runs restart identity cascade;

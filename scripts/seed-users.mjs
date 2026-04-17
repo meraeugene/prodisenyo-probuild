@@ -40,7 +40,12 @@ async function loadEnvFiles() {
       const content = await fs.readFile(filePath, "utf8");
       parseEnvLines(content);
     } catch (error) {
-      if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "ENOENT"
+      ) {
         continue;
       }
       throw error;
@@ -69,7 +74,9 @@ async function readSeedUsers() {
   }
 
   return parsed.map((entry, index) => {
-    const username = String(entry.username ?? "").trim().toLowerCase();
+    const username = String(entry.username ?? "")
+      .trim()
+      .toLowerCase();
     const password = String(entry.password ?? "");
     const fullName = String(entry.full_name ?? "").trim() || null;
     const role = String(entry.role ?? "").trim();
@@ -80,9 +87,14 @@ async function readSeedUsers() {
     if (!password) {
       throw new Error(`User ${username} is missing password.`);
     }
-    if (role !== "ceo" && role !== "payroll_manager" && role !== "engineer") {
+    if (
+      role !== "ceo" &&
+      role !== "payroll_manager" &&
+      role !== "engineer" &&
+      role !== "employee"
+    ) {
       throw new Error(
-        `User ${username} has invalid role "${role}". Expected "ceo", "payroll_manager", or "engineer".`,
+        `User ${username} has invalid role "${role}". Expected "ceo", "payroll_manager", "engineer", or "employee".`,
       );
     }
 

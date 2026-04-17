@@ -8,7 +8,7 @@ begin
     join pg_namespace n on n.oid = t.typnamespace
     where t.typname = 'app_role' and n.nspname = 'public'
   ) then
-    create type public.app_role as enum ('ceo', 'payroll_manager', 'engineer');
+    create type public.app_role as enum ('ceo', 'payroll_manager', 'engineer', 'employee');
   end if;
 end
 $$;
@@ -16,6 +16,7 @@ $$;
 alter type public.app_role add value if not exists 'ceo';
 alter type public.app_role add value if not exists 'payroll_manager';
 alter type public.app_role add value if not exists 'engineer';
+alter type public.app_role add value if not exists 'employee';
 
 do $$
 begin
@@ -256,6 +257,26 @@ create table if not exists public.payroll_adjustments (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.overtime_requests (
+  id uuid primary key default gen_random_uuid(),
+  requester_role public.app_role not null,
+  requested_by uuid not null references public.profiles(id) on delete restrict,
+  approved_by uuid references public.profiles(id) on delete set null,
+  employee_name text not null,
+  site_name text not null,
+  period_label text,
+  request_date date not null,
+  overtime_hours numeric(10,2) not null default 0,
+  amount numeric(14,2) not null default 0,
+  reason text,
+  status public.adjustment_status not null default 'pending',
+  approved_at timestamptz,
+  rejected_at timestamptz,
+  rejection_reason text,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
 alter table public.payroll_adjustments alter column payroll_run_id drop not null;
 alter table public.payroll_adjustments add column if not exists attendance_import_id uuid references public.attendance_imports(id) on delete cascade;
 alter table public.payroll_adjustments add column if not exists employee_name text;
@@ -292,6 +313,9 @@ create index if not exists payroll_adjustments_payroll_run_id_idx on public.payr
 create index if not exists payroll_adjustments_status_idx on public.payroll_adjustments(status);
 create index if not exists payroll_adjustments_attendance_import_id_idx on public.payroll_adjustments(attendance_import_id);
 create index if not exists payroll_adjustments_lookup_idx on public.payroll_adjustments(adjustment_type, status, employee_name_key, role_code, site_name_key, period_label);
+create index if not exists overtime_requests_status_idx on public.overtime_requests(status);
+create index if not exists overtime_requests_requested_by_idx on public.overtime_requests(requested_by);
+create index if not exists overtime_requests_request_date_idx on public.overtime_requests(request_date);
 
 drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at before update on public.profiles for each row execute function public.set_updated_at();
@@ -311,6 +335,9 @@ create trigger payroll_runs_set_updated_at before update on public.payroll_runs 
 drop trigger if exists payroll_adjustments_set_updated_at on public.payroll_adjustments;
 create trigger payroll_adjustments_set_updated_at before update on public.payroll_adjustments for each row execute function public.set_updated_at();
 
+drop trigger if exists overtime_requests_set_updated_at on public.overtime_requests;
+create trigger overtime_requests_set_updated_at before update on public.overtime_requests for each row execute function public.set_updated_at();
+
 alter table public.profiles enable row level security;
 alter table public.sites enable row level security;
 alter table public.employees enable row level security;
@@ -322,6 +349,7 @@ alter table public.payroll_runs enable row level security;
 alter table public.payroll_run_items enable row level security;
 alter table public.payroll_run_daily_totals enable row level security;
 alter table public.payroll_adjustments enable row level security;
+alter table public.overtime_requests enable row level security;
 alter table public.audit_logs enable row level security;
 
 create or replace function public.current_app_role()
@@ -381,6 +409,21 @@ as $$
   )
 $$;
 
+create or replace function public.is_employee()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists(
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role::text = 'employee'
+  )
+$$;
+
 drop policy if exists "profiles select own or ceo" on public.profiles;
 drop policy if exists "profiles update own or ceo" on public.profiles;
 drop policy if exists "sites readable by authenticated users" on public.sites;
@@ -410,6 +453,9 @@ drop policy if exists "payroll run daily totals updated by payroll managers and 
 drop policy if exists "payroll adjustments readable by authenticated users" on public.payroll_adjustments;
 drop policy if exists "payroll adjustments inserted by payroll managers and ceo" on public.payroll_adjustments;
 drop policy if exists "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments;
+drop policy if exists "overtime requests readable by authenticated users" on public.overtime_requests;
+drop policy if exists "overtime requests inserted by payroll engineer employee" on public.overtime_requests;
+drop policy if exists "overtime requests updated by ceo" on public.overtime_requests;
 drop policy if exists "audit logs readable by ceo" on public.audit_logs;
 drop policy if exists "audit logs inserted by payroll managers and ceo" on public.audit_logs;
 drop policy if exists "profile avatars are publicly readable" on storage.objects;
@@ -445,6 +491,9 @@ create policy "payroll run daily totals updated by payroll managers and ceo" on 
 create policy "payroll adjustments readable by authenticated users" on public.payroll_adjustments for select using (auth.role() = 'authenticated');
 create policy "payroll adjustments inserted by payroll managers and ceo" on public.payroll_adjustments for insert with check (public.is_ceo() or public.is_payroll_manager());
 create policy "payroll adjustments updated by payroll managers and ceo" on public.payroll_adjustments for update using (public.is_ceo() or public.is_payroll_manager()) with check (public.is_ceo() or public.is_payroll_manager());
+create policy "overtime requests readable by authenticated users" on public.overtime_requests for select using (auth.role() = 'authenticated');
+create policy "overtime requests inserted by payroll engineer employee" on public.overtime_requests for insert with check (public.is_payroll_manager() or public.is_engineer() or public.is_employee());
+create policy "overtime requests updated by ceo" on public.overtime_requests for update using (public.is_ceo()) with check (public.is_ceo());
 create policy "audit logs readable by ceo" on public.audit_logs for select using (public.is_ceo());
 create policy "audit logs inserted by payroll managers and ceo" on public.audit_logs for insert with check (public.is_ceo() or public.is_payroll_manager());
 create policy "profile avatars are publicly readable" on storage.objects for select using (bucket_id = 'profile-avatars');

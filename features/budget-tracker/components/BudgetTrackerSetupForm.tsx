@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import ButtonLoader from "@/features/budget-tracker/components/ButtonLoader";
 import {
@@ -6,6 +7,29 @@ import {
   type BudgetProjectRow,
 } from "@/features/budget-tracker/types";
 import type { BudgetProjectType } from "@/types/database";
+
+type SetupFormErrors = {
+  name?: string;
+  projectType?: string;
+  startingBudget?: string;
+};
+
+function parseBudgetValue(value: string) {
+  const parsed = Number((value ?? "").replace(/,/g, ""));
+  if (!Number.isFinite(parsed)) return 0;
+  return parsed;
+}
+
+function fieldClass(hasError: boolean, withPrefix = false) {
+  const base = withPrefix
+    ? "w-full rounded-[10px] px-9 py-3 text-sm outline-none"
+    : "mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none";
+  return `${base} transition focus:border-[#1f6a37] ${
+    hasError
+      ? "border border-rose-300 bg-rose-50/40"
+      : "border border-apple-mist bg-[rgb(var(--apple-snow))]"
+  }`;
+}
 
 export default function BudgetTrackerSetupForm({
   projects,
@@ -32,6 +56,44 @@ export default function BudgetTrackerSetupForm({
   ) => void;
   onProjectBudgetChange: (value: string) => void;
 }) {
+  const [fieldErrors, setFieldErrors] = useState<SetupFormErrors>({});
+
+  function validateForm() {
+    const errors: SetupFormErrors = {};
+    const projectName = projectForm.name.trim();
+    const projectType = projectForm.projectType;
+    const startingBudget = parseBudgetValue(projectBudgetInput);
+
+    if (!projectName) {
+      errors.name = "Project name is required.";
+    }
+
+    if (!projectType) {
+      errors.projectType = "Project type is required.";
+    }
+
+    if (!Number.isFinite(startingBudget) || startingBudget <= 0) {
+      errors.startingBudget = "Starting budget must be greater than zero.";
+    }
+
+    return {
+      errors,
+      hasErrors: Object.keys(errors).length > 0,
+    };
+  }
+
+  function handleValidatedSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const validation = validateForm();
+    if (validation.hasErrors) {
+      setFieldErrors(validation.errors);
+      return;
+    }
+
+    setFieldErrors({});
+    onSubmit(event);
+  }
+
   return (
     <section className="flex min-h-[calc(100vh-3rem)] w-full items-center justify-center">
       <div className="w-full max-w-lg">
@@ -52,37 +114,52 @@ export default function BudgetTrackerSetupForm({
           </h2>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleValidatedSubmit} className="mt-8 space-y-6">
           <div>
             <label className="text-sm font-semibold text-apple-charcoal">
               Project name <span className="text-rose-500">*</span>
             </label>
             <input
               value={projectForm.name}
-              onChange={(event) =>
+              onChange={(event) => {
                 onProjectFormChange((current) => ({
                   ...current,
                   name: event.target.value,
-                }))
-              }
+                }));
+                setFieldErrors((current) => ({
+                  ...current,
+                  name: undefined,
+                }));
+              }}
               placeholder="e.g. Dream Home, Kitchen Renovation"
-              className="mt-2 w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+              className={fieldClass(Boolean(fieldErrors.name))}
             />
+            {fieldErrors.name ? (
+              <p className="mt-2 text-sm text-rose-600">{fieldErrors.name}</p>
+            ) : null}
           </div>
 
           <div>
             <label className="text-sm font-semibold text-apple-charcoal">
-              Project type
+              Project type <span className="text-rose-500">*</span>
             </label>
             <select
               value={projectForm.projectType}
-              onChange={(event) =>
+              onChange={(event) => {
                 onProjectFormChange((current) => ({
                   ...current,
                   projectType: event.target.value as BudgetProjectType | "",
-                }))
-              }
-              className="mt-2 w-full rounded-[10px] border border-apple-mist bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                }));
+                setFieldErrors((current) => ({
+                  ...current,
+                  projectType: undefined,
+                }));
+              }}
+              className={`mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none transition focus:border-[#1f6a37] ${
+                fieldErrors.projectType
+                  ? "border border-rose-300 bg-rose-50/40"
+                  : "border border-apple-mist bg-white"
+              }`}
             >
               <option value="">Select a type</option>
               {BUDGET_PROJECT_TYPE_OPTIONS.map((option) => (
@@ -91,6 +168,11 @@ export default function BudgetTrackerSetupForm({
                 </option>
               ))}
             </select>
+            {fieldErrors.projectType ? (
+              <p className="mt-2 text-sm text-rose-600">
+                {fieldErrors.projectType}
+              </p>
+            ) : null}
           </div>
 
           <div>
@@ -106,7 +188,7 @@ export default function BudgetTrackerSetupForm({
 
           <div>
             <label className="text-sm font-semibold text-apple-charcoal">
-              Starting budget
+              Starting budget <span className="text-rose-500">*</span>
             </label>
             <div className="relative mt-2">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-apple-steel">
@@ -114,12 +196,26 @@ export default function BudgetTrackerSetupForm({
               </span>
               <input
                 value={projectBudgetInput}
-                onChange={(event) => onProjectBudgetChange(event.target.value)}
+                onChange={(event) => {
+                  onProjectBudgetChange(event.target.value);
+                  setFieldErrors((current) => ({
+                    ...current,
+                    startingBudget: undefined,
+                  }));
+                }}
                 placeholder="2,500,000"
                 inputMode="decimal"
-                className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                className={fieldClass(
+                  Boolean(fieldErrors.startingBudget),
+                  true,
+                )}
               />
             </div>
+            {fieldErrors.startingBudget ? (
+              <p className="mt-2 text-sm text-rose-600">
+                {fieldErrors.startingBudget}
+              </p>
+            ) : null}
           </div>
 
           {projectError ? (

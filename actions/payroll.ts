@@ -19,6 +19,22 @@ import {
   normalizeEmployeeNameKey,
 } from "@/features/payroll/utils/payrollMappers";
 import { attachOvertimeRejectionReason } from "@/features/payroll/utils/overtimeRequestNotes";
+import type { OvertimeRequestRecord } from "@/features/overtime-requests/types";
+
+interface SubmitOvertimeRequestInput {
+  employeeName: string;
+  siteName: string;
+  periodLabel?: string | null;
+  requestDate: string;
+  overtimeHours: number;
+  amount: number;
+  reason?: string | null;
+}
+
+interface RejectOvertimeRequestFormInput {
+  requestId: string;
+  rejectionReason?: string | null;
+}
 
 interface SavePayrollRunInput {
   attendanceImportId: string | null;
@@ -41,7 +57,10 @@ function createPayrollSaveError(
   return new Error(`[${code}] ${message}${suffix}`);
 }
 
-function parsePeriodRange(label: string): { start: string | null; end: string | null } {
+function parsePeriodRange(label: string): {
+  start: string | null;
+  end: string | null;
+} {
   const match = label.match(/(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})/);
   if (!match) return { start: null, end: null };
 
@@ -85,7 +104,10 @@ function buildDateRange(start: string | null, end: string | null): string[] {
   if (!start || !end) return [];
   const startDate = new Date(`${start}T00:00:00`);
   const endDate = new Date(`${end}T00:00:00`);
-  if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime())) {
+  if (
+    !Number.isFinite(startDate.getTime()) ||
+    !Number.isFinite(endDate.getTime())
+  ) {
     return [];
   }
   if (endDate.getTime() < startDate.getTime()) return [];
@@ -116,22 +138,21 @@ async function loadPayrollReportsData(database: any) {
   }
 
   return {
-    reports:
-      (data ?? []) as Array<
-        Pick<
-          Database["public"]["Tables"]["payroll_runs"]["Row"],
-          | "id"
-          | "attendance_import_id"
-          | "site_name"
-          | "period_label"
-          | "period_start"
-          | "period_end"
-          | "status"
-          | "net_total"
-          | "created_at"
-          | "submitted_at"
-        >
-      >,
+    reports: (data ?? []) as Array<
+      Pick<
+        Database["public"]["Tables"]["payroll_runs"]["Row"],
+        | "id"
+        | "attendance_import_id"
+        | "site_name"
+        | "period_label"
+        | "period_start"
+        | "period_end"
+        | "status"
+        | "net_total"
+        | "created_at"
+        | "submitted_at"
+      >
+    >,
   };
 }
 
@@ -181,9 +202,8 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
       .order("payout_date", { ascending: true }),
   ]);
 
-  let attendanceLogsData =
-    (initialLogsResult.data ??
-      []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
+  let attendanceLogsData = (initialLogsResult.data ??
+    []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
   let attendanceLogsError = initialLogsResult.error;
 
   if (
@@ -215,9 +235,8 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
     if (fallbackLogsResult.error) {
       attendanceLogsError = fallbackLogsResult.error;
     } else {
-      attendanceLogsData =
-        (fallbackLogsResult.data ??
-          []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
+      attendanceLogsData = (fallbackLogsResult.data ??
+        []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
     }
   }
 
@@ -247,13 +266,11 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
     details: {
       loading: false,
       error: null,
-      payrollItems:
-        (itemsResult.data ??
-          []) as Database["public"]["Tables"]["payroll_run_items"]["Row"][],
+      payrollItems: (itemsResult.data ??
+        []) as Database["public"]["Tables"]["payroll_run_items"]["Row"][],
       attendanceLogs: attendanceLogsData,
-      dailyTotals:
-        (totalsResult.data ??
-          []) as Database["public"]["Tables"]["payroll_run_daily_totals"]["Row"][],
+      dailyTotals: (totalsResult.data ??
+        []) as Database["public"]["Tables"]["payroll_run_daily_totals"]["Row"][],
     },
   };
 }
@@ -269,7 +286,9 @@ async function loadPendingOvertimeApprovals(database: any) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(`Unable to load pending overtime approvals. ${error.message}`);
+    throw new Error(
+      `Unable to load pending overtime approvals. ${error.message}`,
+    );
   }
 
   return {
@@ -280,7 +299,7 @@ async function loadPendingOvertimeApprovals(database: any) {
 function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
   const cashAdvance = round2(
     Number.isFinite(override?.cashAdvanceTotal)
-      ? override?.cashAdvanceTotal ?? 0
+      ? (override?.cashAdvanceTotal ?? 0)
       : (override?.cashAdvanceEntries ?? []).reduce(
           (sum, entry) => sum + entry.amount,
           0,
@@ -288,18 +307,27 @@ function computeRowAdjustmentTotals(override: PayrollRowOverride | undefined) {
   );
   const overtimePay = round2(
     Number.isFinite(override?.overtimeEntriesPayTotal)
-      ? override?.overtimeEntriesPayTotal ?? 0
-      : (override?.overtimeEntries ?? []).reduce((sum, entry) => sum + entry.pay, 0),
+      ? (override?.overtimeEntriesPayTotal ?? 0)
+      : (override?.overtimeEntries ?? []).reduce(
+          (sum, entry) => sum + entry.pay,
+          0,
+        ),
   );
   const overtimeHours = round2(
     Number.isFinite(override?.overtimeEntriesHoursTotal)
-      ? override?.overtimeEntriesHoursTotal ?? 0
-      : (override?.overtimeEntries ?? []).reduce((sum, entry) => sum + entry.hours, 0),
+      ? (override?.overtimeEntriesHoursTotal ?? 0)
+      : (override?.overtimeEntries ?? []).reduce(
+          (sum, entry) => sum + entry.hours,
+          0,
+        ),
   );
   const leavePay = round2(
     Number.isFinite(override?.paidLeaveEntriesPayTotal)
-      ? override?.paidLeaveEntriesPayTotal ?? 0
-      : (override?.paidLeaveEntries ?? []).reduce((sum, entry) => sum + entry.pay, 0),
+      ? (override?.paidLeaveEntriesPayTotal ?? 0)
+      : (override?.paidLeaveEntries ?? []).reduce(
+          (sum, entry) => sum + entry.pay,
+          0,
+        ),
   );
 
   return {
@@ -433,7 +461,9 @@ export async function requestOvertimeApprovalAction(
   const nextEntries = input.overtimeEntries
     .map((entry) => ({
       hours:
-        Number.isFinite(entry.hours) && entry.hours > 0 ? round2(entry.hours) : 0,
+        Number.isFinite(entry.hours) && entry.hours > 0
+          ? round2(entry.hours)
+          : 0,
       pay: Number.isFinite(entry.pay) && entry.pay > 0 ? round2(entry.pay) : 0,
       notes: entry.notes?.trim() ?? "",
     }))
@@ -498,13 +528,15 @@ export async function requestOvertimeApprovalAction(
   }
 
   return {
-    entries: ((data ?? []) as Array<{
-      id: string;
-      quantity: number;
-      amount: number;
-      notes: string | null;
-      status: "pending" | "approved" | "rejected";
-    }>).map((entry) => ({
+    entries: (
+      (data ?? []) as Array<{
+        id: string;
+        quantity: number;
+        amount: number;
+        notes: string | null;
+        status: "pending" | "approved" | "rejected";
+      }>
+    ).map((entry) => ({
       id: entry.id,
       requestId: entry.id,
       hours: round2(entry.quantity ?? 0),
@@ -521,11 +553,15 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   const periodRange = parsePeriodRange(input.attendancePeriod);
 
   if (input.payrollRows.length === 0) {
-    throw createPayrollSaveError("PAYROLL_SAVE_NO_ROWS", "No payroll rows to save.", {
-      attendanceImportId: input.attendanceImportId,
-      payrollRunId: input.payrollRunId,
-      attendancePeriod: input.attendancePeriod,
-    });
+    throw createPayrollSaveError(
+      "PAYROLL_SAVE_NO_ROWS",
+      "No payroll rows to save.",
+      {
+        attendanceImportId: input.attendanceImportId,
+        payrollRunId: input.payrollRunId,
+        attendancePeriod: input.attendancePeriod,
+      },
+    );
   }
 
   if (!input.attendancePeriod.trim()) {
@@ -658,10 +694,16 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       const hoursBySite = new Map<string, number>();
 
       input.payrollAttendanceInputs.forEach((record) => {
-        if (normalizeEmployeeNameKey(record.name) !== normalizeEmployeeNameKey(snapshot.row.worker)) {
+        if (
+          normalizeEmployeeNameKey(record.name) !==
+          normalizeEmployeeNameKey(snapshot.row.worker)
+        ) {
           return;
         }
-        if ((record.role ?? "").trim().toUpperCase() !== snapshot.row.role.trim().toUpperCase()) {
+        if (
+          (record.role ?? "").trim().toUpperCase() !==
+          snapshot.row.role.trim().toUpperCase()
+        ) {
           return;
         }
 
@@ -670,7 +712,10 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
           return;
         }
 
-        hoursBySite.set(siteName, round2((hoursBySite.get(siteName) ?? 0) + (record.hours ?? 0)));
+        hoursBySite.set(
+          siteName,
+          round2((hoursBySite.get(siteName) ?? 0) + (record.hours ?? 0)),
+        );
       });
 
       const allocationEntries =
@@ -680,7 +725,11 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
               hoursWorked,
               dailyRatePerDay:
                 input.employeeBranchRates[
-                  buildEmployeeBranchRateKey(snapshot.row.worker, snapshot.row.role, site)
+                  buildEmployeeBranchRateKey(
+                    snapshot.row.worker,
+                    snapshot.row.role,
+                    site,
+                  )
                 ] ?? snapshot.ratePerDay,
             }))
           : [
@@ -791,10 +840,12 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       );
     }
 
-    const matchedExistingRun = ((existingRuns ?? []) as Array<{
-      id: string;
-      created_at: string;
-    }>).find(Boolean);
+    const matchedExistingRun = (
+      (existingRuns ?? []) as Array<{
+        id: string;
+        created_at: string;
+      }>
+    ).find(Boolean);
 
     if (matchedExistingRun) {
       runId = matchedExistingRun.id;
@@ -991,12 +1042,14 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   }
 
   const itemIdByKey = new Map<string, string>(
-    ((insertedItems ?? []) as Array<{
-      id: string;
-      employee_name: string;
-      role_code: string;
-      site_name: string;
-    }>).map((item) => [
+    (
+      (insertedItems ?? []) as Array<{
+        id: string;
+        employee_name: string;
+        role_code: string;
+        site_name: string;
+      }>
+    ).map((item) => [
       `${item.role_code}|||${item.employee_name}|||${item.site_name}`.toLowerCase(),
       item.id,
     ]),
@@ -1005,20 +1058,24 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   const dailyTotalsPayload: Array<Record<string, unknown>> = [];
 
   for (const snapshot of normalizedRowSnapshots) {
-    const rowKey = `${snapshot.row.role}|||${snapshot.row.worker}|||${snapshot.row.site}`.toLowerCase();
+    const rowKey =
+      `${snapshot.row.role}|||${snapshot.row.worker}|||${snapshot.row.site}`.toLowerCase();
     const payrollRunItemId = itemIdByKey.get(rowKey) ?? null;
     if (!payrollRunItemId) continue;
 
     const normalizedSites = new Set(
       splitSiteNames(snapshot.row.site).map((site) => normalizeSiteName(site)),
     );
-    const normalizedEmployeeName = normalizeEmployeeNameKey(snapshot.row.worker);
+    const normalizedEmployeeName = normalizeEmployeeNameKey(
+      snapshot.row.worker,
+    );
     const normalizedRoleCode = snapshot.row.role.trim().toUpperCase();
     const strictDailyHoursByDate = new Map<string, number>();
     const fallbackDailyHoursByDate = new Map<string, number>();
 
     input.payrollAttendanceInputs.forEach((record) => {
-      if (normalizeEmployeeNameKey(record.name) !== normalizedEmployeeName) return;
+      if (normalizeEmployeeNameKey(record.name) !== normalizedEmployeeName)
+        return;
 
       const siteName = normalizeSiteName(record.site);
       if (normalizedSites.size > 0 && !normalizedSites.has(siteName)) return;
@@ -1100,7 +1157,8 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   }> = [];
 
   for (const snapshot of normalizedRowSnapshots) {
-    const rowKey = `${snapshot.row.role}|||${snapshot.row.worker}|||${snapshot.row.site}`.toLowerCase();
+    const rowKey =
+      `${snapshot.row.role}|||${snapshot.row.worker}|||${snapshot.row.site}`.toLowerCase();
     const payrollRunItemId = itemIdByKey.get(rowKey) ?? null;
 
     if (snapshot.approvedOvertimeAdjustmentIds.length > 0) {
@@ -1120,10 +1178,9 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         approved_by: user.id,
         effective_date: periodRange.end,
         quantity: Number(
-          (
-            snapshot.ratePerDay > 0
-              ? snapshot.holidayPay / snapshot.ratePerDay
-              : 1
+          (snapshot.ratePerDay > 0
+            ? snapshot.holidayPay / snapshot.ratePerDay
+            : 1
           ).toFixed(2),
         ),
         amount: snapshot.holidayPay,
@@ -1232,7 +1289,10 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
     throw new Error("Failed to load overtime request.");
   }
 
-  if (adjustment.adjustment_type !== "overtime" || adjustment.status !== "pending") {
+  if (
+    adjustment.adjustment_type !== "overtime" ||
+    adjustment.status !== "pending"
+  ) {
     throw new Error("This overtime request can no longer be updated.");
   }
 
@@ -1248,11 +1308,17 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
       .limit(1);
 
     if (adjustment.site_name) {
-      matchedRunQuery = matchedRunQuery.eq("site_name", normalizeSiteName(adjustment.site_name));
+      matchedRunQuery = matchedRunQuery.eq(
+        "site_name",
+        normalizeSiteName(adjustment.site_name),
+      );
     }
 
     matchedRunQuery = adjustment.attendance_import_id
-      ? matchedRunQuery.eq("attendance_import_id", adjustment.attendance_import_id)
+      ? matchedRunQuery.eq(
+          "attendance_import_id",
+          adjustment.attendance_import_id,
+        )
       : matchedRunQuery;
 
     const { data: matchedRun } = await matchedRunQuery.maybeSingle();
@@ -1303,9 +1369,15 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
         const overtimePay = round2(
           (item.overtime_pay ?? 0) + (adjustment.amount ?? 0),
         );
-        const totalPay = round2((item.total_pay ?? 0) + (adjustment.amount ?? 0));
-        const grossTotal = round2((run.gross_total ?? 0) + (adjustment.amount ?? 0));
-        const netTotal = round2((run.net_total ?? 0) + (adjustment.amount ?? 0));
+        const totalPay = round2(
+          (item.total_pay ?? 0) + (adjustment.amount ?? 0),
+        );
+        const grossTotal = round2(
+          (run.gross_total ?? 0) + (adjustment.amount ?? 0),
+        );
+        const netTotal = round2(
+          (run.net_total ?? 0) + (adjustment.amount ?? 0),
+        );
 
         const { error: updateItemError } = await database
           .from("payroll_run_items")
@@ -1346,9 +1418,7 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
         }
 
         const payoutDate =
-          adjustment.effective_date ??
-          run.period_end ??
-          toIsoDate(new Date());
+          adjustment.effective_date ?? run.period_end ?? toIsoDate(new Date());
 
         const { data: existingDailyTotal, error: existingDailyTotalError } =
           await database
@@ -1412,6 +1482,191 @@ export async function getPendingOvertimeApprovalsAction() {
   return loadPendingOvertimeApprovals(database);
 }
 
+export async function getOvertimeRequestsApprovalDataAction() {
+  await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+
+  const { data, error } = await database
+    .from("overtime_requests")
+    .select(
+      "id, requester_role, requested_by, approved_by, employee_name, site_name, period_label, request_date, overtime_hours, amount, reason, status, approved_at, rejected_at, rejection_reason, created_at, updated_at",
+    )
+    .in("status", ["pending", "approved", "rejected"])
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load overtime request forms. ${error.message}`);
+  }
+
+  return {
+    requests: (data ?? []) as OvertimeRequestRecord[],
+  };
+}
+
+export async function getMyOvertimeRequestsAction() {
+  const { user } = await requireRole([
+    "payroll_manager",
+    "engineer",
+    "employee",
+  ]);
+  const database = createSupabaseAdminClient() as any;
+
+  const { data, error } = await database
+    .from("overtime_requests")
+    .select(
+      "id, requester_role, requested_by, approved_by, employee_name, site_name, period_label, request_date, overtime_hours, amount, reason, status, approved_at, rejected_at, rejection_reason, created_at, updated_at",
+    )
+    .eq("requested_by", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to load your overtime requests. ${error.message}`);
+  }
+
+  return {
+    requests: (data ?? []) as OvertimeRequestRecord[],
+  };
+}
+
+export async function submitOvertimeRequestAction(
+  input: SubmitOvertimeRequestInput,
+) {
+  const { user, profile } = await requireRole([
+    "payroll_manager",
+    "engineer",
+    "employee",
+  ]);
+  const database = createSupabaseAdminClient() as any;
+
+  const employeeName = (input.employeeName ?? "").trim();
+  const siteName = (input.siteName ?? "").trim();
+  const periodLabel = (input.periodLabel ?? "").trim() || null;
+  const requestDate = (input.requestDate ?? "").trim();
+  const overtimeHours = round2(Number(input.overtimeHours ?? 0));
+  const amount = round2(Number(input.amount ?? 0));
+  const reason = (input.reason ?? "").trim() || null;
+
+  if (!employeeName) {
+    throw new Error("Employee name is required.");
+  }
+
+  if (!siteName) {
+    throw new Error("Site name is required.");
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(requestDate)) {
+    throw new Error("Request date is required.");
+  }
+
+  if (!Number.isFinite(overtimeHours) || overtimeHours <= 0) {
+    throw new Error("Overtime hours must be greater than zero.");
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Amount must be greater than zero.");
+  }
+
+  const { data, error } = await database
+    .from("overtime_requests")
+    .insert({
+      requester_role: profile.role,
+      requested_by: user.id,
+      employee_name: employeeName,
+      site_name: siteName,
+      period_label: periodLabel,
+      request_date: requestDate,
+      overtime_hours: overtimeHours,
+      amount,
+      reason,
+      status: "pending",
+    })
+    .select(
+      "id, requester_role, requested_by, approved_by, employee_name, site_name, period_label, request_date, overtime_hours, amount, reason, status, approved_at, rejected_at, rejection_reason, created_at, updated_at",
+    )
+    .single();
+
+  if (error || !data) {
+    throw new Error(
+      `Failed to submit overtime request. ${error?.message ?? ""}`,
+    );
+  }
+
+  return {
+    request: data as OvertimeRequestRecord,
+  };
+}
+
+export async function approveOvertimeRequestFormAction(requestId: string) {
+  const { user } = await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+  const id = requestId.trim();
+
+  if (!id) {
+    throw new Error("Overtime request ID is required.");
+  }
+
+  const approvedAt = new Date().toISOString();
+  const { error } = await database
+    .from("overtime_requests")
+    .update({
+      status: "approved",
+      approved_by: user.id,
+      approved_at: approvedAt,
+      rejected_at: null,
+      rejection_reason: null,
+    })
+    .eq("id", id)
+    .eq("status", "pending");
+
+  if (error) {
+    throw new Error(
+      `Failed to approve overtime request form. ${error.message}`,
+    );
+  }
+
+  return {
+    requestId: id,
+    approvedAt,
+    status: "approved" as const,
+  };
+}
+
+export async function rejectOvertimeRequestFormAction(
+  input: RejectOvertimeRequestFormInput,
+) {
+  const { user } = await requireRole("ceo");
+  const database = createSupabaseAdminClient() as any;
+  const id = (input.requestId ?? "").trim();
+  const rejectionReason = (input.rejectionReason ?? "").trim() || null;
+
+  if (!id) {
+    throw new Error("Overtime request ID is required.");
+  }
+
+  const rejectedAt = new Date().toISOString();
+  const { error } = await database
+    .from("overtime_requests")
+    .update({
+      status: "rejected",
+      approved_by: user.id,
+      rejected_at: rejectedAt,
+      rejection_reason: rejectionReason,
+    })
+    .eq("id", id)
+    .eq("status", "pending");
+
+  if (error) {
+    throw new Error(`Failed to reject overtime request form. ${error.message}`);
+  }
+
+  return {
+    requestId: id,
+    rejectedAt,
+    rejectionReason,
+    status: "rejected" as const,
+  };
+}
+
 export async function getPayrollManagerReportNotificationsAction() {
   const { user } = await requireRole(["payroll_manager", "ceo"]);
   const database = createSupabaseAdminClient() as any;
@@ -1425,7 +1680,9 @@ export async function getPayrollManagerReportNotificationsAction() {
     .order("updated_at", { ascending: false });
 
   if (error) {
-    throw new Error(`Failed to load payroll report notifications. ${error.message}`);
+    throw new Error(
+      `Failed to load payroll report notifications. ${error.message}`,
+    );
   }
 
   return {
@@ -1439,7 +1696,9 @@ export async function getPayrollManagerOvertimeNotificationsAction() {
 
   const { data, error } = await database
     .from("payroll_adjustments")
-    .select("id, employee_name, site_name, period_label, status, notes, updated_at")
+    .select(
+      "id, employee_name, site_name, period_label, status, notes, updated_at",
+    )
     .eq("adjustment_type", "overtime")
     .eq("requested_by", user.id)
     .order("updated_at", { ascending: false });
@@ -1458,8 +1717,7 @@ export async function rejectOvertimeAdjustmentAction(
 ) {
   const { user } = await requireRole("ceo");
   const database = createSupabaseAdminClient() as any;
-  const adjustmentId =
-    typeof input === "string" ? input : input.adjustmentId;
+  const adjustmentId = typeof input === "string" ? input : input.adjustmentId;
   const rejectionReason =
     typeof input === "string" ? null : input.rejectionReason?.trim() || null;
 
@@ -1473,7 +1731,10 @@ export async function rejectOvertimeAdjustmentAction(
     throw new Error("Failed to load overtime request.");
   }
 
-  if (adjustment.adjustment_type !== "overtime" || adjustment.status !== "pending") {
+  if (
+    adjustment.adjustment_type !== "overtime" ||
+    adjustment.status !== "pending"
+  ) {
     throw new Error("This overtime request can no longer be updated.");
   }
 
@@ -1572,7 +1833,9 @@ export async function getPayrollReportDetailsAction(payrollRunId: string) {
   return loadPayrollReportDetails(database, payrollRunId);
 }
 
-export async function rejectPayrollReportAction(input: string | RejectPayrollReportInput) {
+export async function rejectPayrollReportAction(
+  input: string | RejectPayrollReportInput,
+) {
   const { user } = await requireRole("ceo");
   const database = createSupabaseAdminClient() as any;
   const runId =

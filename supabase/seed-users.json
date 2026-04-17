@@ -28,5 +28,11 @@
     "password": "ChangeMe123!",
     "full_name": "Project Engineer 2",
     "role": "engineer"
+  },
+  {
+    "username": "employee",
+    "password": "ChangeMe123!",
+    "full_name": "Site Employee",
+    "role": "employee"
   }
 ]

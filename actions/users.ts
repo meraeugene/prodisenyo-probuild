@@ -35,7 +35,14 @@ function normalizeEmail(value: string | undefined) {
 }
 
 function validateRole(role: AppRole) {
-  if (![APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER, APP_ROLES.ENGINEER].includes(role)) {
+  if (
+    ![
+      APP_ROLES.CEO,
+      APP_ROLES.PAYROLL_MANAGER,
+      APP_ROLES.ENGINEER,
+      APP_ROLES.EMPLOYEE,
+    ].includes(role)
+  ) {
     throw new Error("Role is required.");
   }
 }
@@ -60,7 +67,9 @@ function validateUserFields(input: {
   }
 
   if (!/^[a-z0-9._-]{3,30}$/.test(username)) {
-    throw new Error("Username must be 3-30 characters and use only letters, numbers, dot, dash, or underscore.");
+    throw new Error(
+      "Username must be 3-30 characters and use only letters, numbers, dot, dash, or underscore.",
+    );
   }
 
   if (!email) {
@@ -93,16 +102,8 @@ export async function createAppUserAction(input: CreateAppUserInput) {
   }
 
   const [{ data: usernameMatch }, { data: emailMatch }] = await Promise.all([
-    admin
-      .from("profiles")
-      .select("id")
-      .eq("username", username)
-      .maybeSingle(),
-    admin
-      .from("profiles")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle(),
+    admin.from("profiles").select("id").eq("username", username).maybeSingle(),
+    admin.from("profiles").select("id").eq("email", email).maybeSingle(),
   ]);
 
   if (usernameMatch) {
@@ -140,7 +141,9 @@ export async function createAppUserAction(input: CreateAppUserInput) {
 
   const { error: profileError } = await (
     admin.from("profiles") as unknown as {
-      insert: (values: ProfileInsert) => Promise<{ error: { message: string } | null }>;
+      insert: (
+        values: ProfileInsert,
+      ) => Promise<{ error: { message: string } | null }>;
     }
   ).insert(profilePayload);
 
@@ -235,16 +238,12 @@ export async function updateAppUserAction(input: UpdateAppUserInput) {
 
   const { data, error } = await (
     admin.from("profiles") as unknown as {
-      update: (
-        values: ProfileUpdate,
-      ) => {
+      update: (values: ProfileUpdate) => {
         eq: (
           column: string,
           value: string,
         ) => {
-          select: (
-            columns: string,
-          ) => {
+          select: (columns: string) => {
             single: () => Promise<{
               data: ProfileRow | null;
               error: { message: string } | null;
@@ -260,7 +259,9 @@ export async function updateAppUserAction(input: UpdateAppUserInput) {
     .single();
 
   if (error || !data) {
-    throw new Error(`Failed to update user profile. ${error?.message ?? "Unknown error."}`);
+    throw new Error(
+      `Failed to update user profile. ${error?.message ?? "Unknown error."}`,
+    );
   }
 
   revalidatePath("/add-user");
@@ -284,7 +285,8 @@ export async function deleteAppUserAction(targetUserId: string) {
     throw new Error("You cannot delete your own account.");
   }
 
-  const { error: authError } = await admin.auth.admin.deleteUser(normalizedUserId);
+  const { error: authError } =
+    await admin.auth.admin.deleteUser(normalizedUserId);
 
   if (authError) {
     throw new Error(authError.message || "Failed to delete user account.");

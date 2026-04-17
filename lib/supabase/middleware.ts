@@ -21,6 +21,7 @@ const PROTECTED_PREFIXES = [
   "/payroll-analytics",
   "/payroll-reports",
   "/add-user",
+  "/request-overtime",
   "/settings",
 ] as const;
 
@@ -45,7 +46,14 @@ const CEO_ALLOWED_PREFIXES = [
 const CEO_ONLY_PREFIXES = ["/overtime-approvals", "/payroll-reports"] as const;
 const PAYROLL_MANAGER_REDIRECT_PATH = "/upload-attendance";
 const ENGINEER_REDIRECT_PATH = "/cost-estimator";
-const ENGINEER_ALLOWED_PREFIXES = ["/cost-estimator", "/settings"] as const;
+const EMPLOYEE_REDIRECT_PATH = "/request-overtime";
+const ENGINEER_ALLOWED_PREFIXES = [
+  "/cost-estimator",
+  "/request-material",
+  "/request-overtime",
+  "/settings",
+] as const;
+const EMPLOYEE_ALLOWED_PREFIXES = ["/request-overtime", "/settings"] as const;
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some(
@@ -73,6 +81,12 @@ function isCeoOnlyPath(pathname: string) {
 
 function isAllowedEngineerPath(pathname: string) {
   return ENGINEER_ALLOWED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+function isAllowedEmployeePath(pathname: string) {
+  return EMPLOYEE_ALLOWED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
@@ -128,27 +142,41 @@ export async function updateSession(request: NextRequest) {
           ? PAYROLL_MANAGER_REDIRECT_PATH
           : currentRole === "engineer"
             ? ENGINEER_REDIRECT_PATH
-          : "/dashboard";
+            : currentRole === "employee"
+              ? EMPLOYEE_REDIRECT_PATH
+              : "/dashboard";
       redirectUrl.searchParams.delete("next");
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (!profileError && currentRole === "payroll_manager" && pathname === "/dashboard") {
+    if (
+      !profileError &&
+      currentRole === "payroll_manager" &&
+      pathname === "/dashboard"
+    ) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = PAYROLL_MANAGER_REDIRECT_PATH;
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (!profileError && currentRole === "payroll_manager" && isCeoOnlyPath(pathname)) {
+    if (
+      !profileError &&
+      currentRole === "payroll_manager" &&
+      isCeoOnlyPath(pathname)
+    ) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = PAYROLL_MANAGER_REDIRECT_PATH;
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (!profileError && currentRole === "payroll_manager" && requiresHrSubmission(pathname)) {
+    if (
+      !profileError &&
+      currentRole === "payroll_manager" &&
+      requiresHrSubmission(pathname)
+    ) {
       const workspaceReset =
         request.cookies.get("prodisenyo-workspace-reset")?.value === "true";
 
@@ -182,9 +210,24 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    if (!profileError && currentRole === "engineer" && !isAllowedEngineerPath(pathname)) {
+    if (
+      !profileError &&
+      currentRole === "engineer" &&
+      !isAllowedEngineerPath(pathname)
+    ) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = ENGINEER_REDIRECT_PATH;
+      redirectUrl.searchParams.delete("required");
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (
+      !profileError &&
+      currentRole === "employee" &&
+      !isAllowedEmployeePath(pathname)
+    ) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = EMPLOYEE_REDIRECT_PATH;
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }

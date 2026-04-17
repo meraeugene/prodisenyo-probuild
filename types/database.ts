@@ -6,12 +6,8 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type AppRole = "ceo" | "payroll_manager" | "engineer";
-export type PayrollRunStatus =
-  | "draft"
-  | "submitted"
-  | "approved"
-  | "rejected";
+export type AppRole = "ceo" | "payroll_manager" | "engineer" | "employee";
+export type PayrollRunStatus = "draft" | "submitted" | "approved" | "rejected";
 export type AdjustmentStatus = "pending" | "approved" | "rejected";
 export type EstimateStatus = "draft" | "submitted" | "approved" | "rejected";
 export type AdjustmentType =
@@ -473,6 +469,63 @@ export interface Database {
           quantity?: number;
           amount?: number;
           notes?: string | null;
+          updated_at?: string;
+        };
+      };
+      overtime_requests: {
+        Row: {
+          id: string;
+          requester_role: AppRole;
+          requested_by: string;
+          approved_by: string | null;
+          employee_name: string;
+          site_name: string;
+          period_label: string | null;
+          request_date: string;
+          overtime_hours: number;
+          amount: number;
+          reason: string | null;
+          status: AdjustmentStatus;
+          approved_at: string | null;
+          rejected_at: string | null;
+          rejection_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          requester_role: AppRole;
+          requested_by: string;
+          approved_by?: string | null;
+          employee_name: string;
+          site_name: string;
+          period_label?: string | null;
+          request_date: string;
+          overtime_hours?: number;
+          amount?: number;
+          reason?: string | null;
+          status?: AdjustmentStatus;
+          approved_at?: string | null;
+          rejected_at?: string | null;
+          rejection_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          requester_role?: AppRole;
+          requested_by?: string;
+          approved_by?: string | null;
+          employee_name?: string;
+          site_name?: string;
+          period_label?: string | null;
+          request_date?: string;
+          overtime_hours?: number;
+          amount?: number;
+          reason?: string | null;
+          status?: AdjustmentStatus;
+          approved_at?: string | null;
+          rejected_at?: string | null;
+          rejection_reason?: string | null;
           updated_at?: string;
         };
       };
