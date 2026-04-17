@@ -1,4 +1,11 @@
-import { CheckCircle2, FolderPlus, LoaderCircle, Plus, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  FolderPlus,
+  LayoutList,
+  LoaderCircle,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import type { BudgetProjectRow } from "@/features/budget-tracker/types";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +16,7 @@ export default function BudgetTrackerHeader({
   isPending,
   saveState,
   saveMessage,
+  onOpenProjects,
   onSelectProject,
   onNewProject,
   onAddCost,
@@ -20,17 +28,28 @@ export default function BudgetTrackerHeader({
   isPending: boolean;
   saveState: "saved" | "dirty" | "saving" | "error";
   saveMessage: string;
+  onOpenProjects: () => void;
   onSelectProject: (projectId: string) => void;
   onNewProject: () => void;
   onAddCost: () => void;
   onDeleteProject: () => void;
 }) {
   return (
-    <header
-      className="sticky top-0 z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85"
-    >
+    <header className="sticky top-0 z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="flex min-h-[48px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap items-center gap-3">
+          {projects.length > 0 ? (
+            <button
+              type="button"
+              onClick={onOpenProjects}
+              disabled={isPending}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-apple-mist bg-white px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LayoutList size={16} />
+              All projects
+            </button>
+          ) : null}
+
           {selectedProject ? (
             <select
               value={selectedProject.id}

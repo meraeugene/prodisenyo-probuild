@@ -40,7 +40,6 @@ export default function EstimateReviewsPageClient({
       <EstimateReviewsTable
         estimates={state.sortedEstimates}
         pendingReviewsCount={state.pendingReviewsCount}
-        loading={state.loading}
         onOpenReport={state.setActiveEstimateId}
         onDeleteEstimate={state.setDeleteEstimateId}
       />

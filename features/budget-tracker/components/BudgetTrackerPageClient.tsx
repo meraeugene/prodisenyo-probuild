@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import BudgetTrackerBoard from "@/features/budget-tracker/components/BudgetTrackerBoard";
 import BudgetTrackerDeleteProjectModal from "@/features/budget-tracker/components/BudgetTrackerDeleteProjectModal";
 import BudgetTrackerHeader from "@/features/budget-tracker/components/BudgetTrackerHeader";
 import BudgetTrackerItemModal from "@/features/budget-tracker/components/BudgetTrackerItemModal";
+import BudgetTrackerProjectsOverview from "@/features/budget-tracker/components/BudgetTrackerProjectsOverview";
 import BudgetTrackerSetupForm from "@/features/budget-tracker/components/BudgetTrackerSetupForm";
 import BudgetTrackerSummaryPanel from "@/features/budget-tracker/components/BudgetTrackerSummaryPanel";
 import { useBudgetTrackerPage } from "@/features/budget-tracker/hooks/useBudgetTrackerPage";
@@ -24,10 +26,40 @@ export default function BudgetTrackerPageClient({
   loadError: string | null;
 }) {
   const state = useBudgetTrackerPage({ projects, items, schemaReady });
+  const [showProjectOverview, setShowProjectOverview] = useState(
+    projects.length > 0 && schemaReady,
+  );
+
+  function handleOpenProject(projectId: string) {
+    state.setSelectedProjectId(projectId);
+    setShowProjectOverview(false);
+  }
+
+  function handleCreateProject() {
+    state.resetProjectForm();
+    state.setProjectSetupOpen(true);
+    setShowProjectOverview(false);
+  }
+
+  const showOverview =
+    schemaReady &&
+    showProjectOverview &&
+    state.localProjects.length > 0 &&
+    !state.projectSetupOpen;
 
   return (
     <div>
-      {!state.projectSetupOpen ? (
+      {showOverview ? (
+        <BudgetTrackerProjectsOverview
+          projects={state.localProjects}
+          items={state.localItems}
+          pending={state.isPending}
+          onOpenProject={handleOpenProject}
+          onCreateProject={handleCreateProject}
+        />
+      ) : null}
+
+      {!state.projectSetupOpen && !showOverview ? (
         <BudgetTrackerHeader
           projects={state.localProjects}
           selectedProject={state.selectedProject}
@@ -35,11 +67,9 @@ export default function BudgetTrackerPageClient({
           isPending={state.isPending}
           saveState={state.saveState}
           saveMessage={state.saveMessage}
+          onOpenProjects={() => setShowProjectOverview(true)}
           onSelectProject={state.setSelectedProjectId}
-          onNewProject={() => {
-            state.resetProjectForm();
-            state.setProjectSetupOpen(true);
-          }}
+          onNewProject={handleCreateProject}
           onAddCost={() => state.openNewItemModal()}
           onDeleteProject={() => state.setDeleteProjectModalOpen(true)}
         />
@@ -81,7 +111,7 @@ export default function BudgetTrackerPageClient({
         />
       ) : null}
 
-      {state.selectedProject && !state.projectSetupOpen ? (
+      {state.selectedProject && !state.projectSetupOpen && !showOverview ? (
         <section className="grid min-h-[calc(100vh-69px)]  xl:grid-cols-[minmax(0,1fr)_350px]">
           <BudgetTrackerBoard
             groups={state.groups}

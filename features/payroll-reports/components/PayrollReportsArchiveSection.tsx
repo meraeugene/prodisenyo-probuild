@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 
 export default function PayrollReportsArchiveSection({
   reports,
-  loading,
   refreshing,
   pendingReportsCount,
   deletingRunId,
@@ -48,7 +47,6 @@ export default function PayrollReportsArchiveSection({
   onDeleteReport,
 }: {
   reports: PayrollRunRow[];
-  loading: boolean;
   refreshing: boolean;
   pendingReportsCount: number;
   deletingRunId: string | null;
@@ -93,9 +91,7 @@ export default function PayrollReportsArchiveSection({
 
         {reports.length === 0 ? (
           <p className="text-sm text-apple-steel">
-            {loading
-              ? "Loading payroll reports..."
-              : "No payroll reports are waiting for review."}
+            No payroll reports are waiting for review.
           </p>
         ) : (
           <div className="overflow-x-auto overflow-y-visible rounded-xl border border-apple-mist">

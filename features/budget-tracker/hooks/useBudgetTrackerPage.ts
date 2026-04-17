@@ -1,6 +1,10 @@
 "use client";
 
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core";
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
   useEffect,
@@ -91,7 +95,9 @@ export function useBudgetTrackerPage({
   const [pendingAction, setPendingAction] = useState<
     "project" | "item" | "delete-project" | "delete-item" | null
   >(null);
-  const [saveState, setSaveState] = useState<"saved" | "dirty" | "saving" | "error">("saved");
+  const [saveState, setSaveState] = useState<
+    "saved" | "dirty" | "saving" | "error"
+  >("saved");
   const [saveMessage, setSaveMessage] = useState("All changes saved");
   const pendingReorderRef = useRef<{
     projectId: string;
@@ -246,7 +252,9 @@ export function useBudgetTrackerPage({
             setSaveMessage("Unable to sync changes");
           }
           toast.error(
-            error instanceof Error ? error.message : "Failed to save item order.",
+            error instanceof Error
+              ? error.message
+              : "Failed to save item order.",
           );
         }
       });
@@ -468,7 +476,9 @@ export function useBudgetTrackerPage({
     overId: string | null,
     nextStatus: BudgetItemStatus,
   ) {
-    const movingItem = currentSelectedItems.find((entry) => entry.id === activeId);
+    const movingItem = currentSelectedItems.find(
+      (entry) => entry.id === activeId,
+    );
     if (!movingItem) return null;
 
     const currentStatusItems = currentSelectedItems.filter(
@@ -479,7 +489,9 @@ export function useBudgetTrackerPage({
     );
 
     if (movingItem.status === nextStatus) {
-      const oldIndex = currentStatusItems.findIndex((entry) => entry.id === activeId);
+      const oldIndex = currentStatusItems.findIndex(
+        (entry) => entry.id === activeId,
+      );
       const targetIndex = overId
         ? currentStatusItems.findIndex((entry) => entry.id === overId)
         : currentStatusItems.length - 1;
@@ -497,7 +509,9 @@ export function useBudgetTrackerPage({
       const reorderedIds = reorderedWithinStatus.map((entry) => entry.id);
       const merged = currentSelectedItems.map((entry) => {
         if (entry.status !== nextStatus) return entry;
-        const nextEntry = reorderedWithinStatus.find((item) => item.id === entry.id);
+        const nextEntry = reorderedWithinStatus.find(
+          (item) => item.id === entry.id,
+        );
         return nextEntry ?? entry;
       });
 
@@ -505,8 +519,12 @@ export function useBudgetTrackerPage({
         .sort((a, b) => {
           if (a.status !== b.status) {
             return (
-              BUDGET_ITEM_STATUS_OPTIONS.findIndex((status) => status.value === a.status) -
-              BUDGET_ITEM_STATUS_OPTIONS.findIndex((status) => status.value === b.status)
+              BUDGET_ITEM_STATUS_OPTIONS.findIndex(
+                (status) => status.value === a.status,
+              ) -
+              BUDGET_ITEM_STATUS_OPTIONS.findIndex(
+                (status) => status.value === b.status,
+              )
             );
           }
 
@@ -518,7 +536,9 @@ export function useBudgetTrackerPage({
         }));
     }
 
-    const remainingItems = currentSelectedItems.filter((entry) => entry.id !== activeId);
+    const remainingItems = currentSelectedItems.filter(
+      (entry) => entry.id !== activeId,
+    );
     const grouped = Object.fromEntries(
       BUDGET_ITEM_STATUS_OPTIONS.map((statusOption) => [
         statusOption.value,
@@ -548,10 +568,19 @@ export function useBudgetTrackerPage({
     }));
   }
 
-  function applyReorder(activeId: string, overId: string | null, nextStatus: BudgetItemStatus) {
+  function applyReorder(
+    activeId: string,
+    overId: string | null,
+    nextStatus: BudgetItemStatus,
+  ) {
     if (!selectedProject) return;
 
-    const nextProjectItems = reorderProjectItems(selectedItems, activeId, overId, nextStatus);
+    const nextProjectItems = reorderProjectItems(
+      selectedItems,
+      activeId,
+      overId,
+      nextStatus,
+    );
     if (!nextProjectItems) return;
 
     const previousItems = localItems;
@@ -562,7 +591,11 @@ export function useBudgetTrackerPage({
       ...nextProjectItems,
     ]);
     reorderRevisionRef.current += 1;
-    queueReorderSave(selectedProject.id, nextProjectItems, reorderRevisionRef.current);
+    queueReorderSave(
+      selectedProject.id,
+      nextProjectItems,
+      reorderRevisionRef.current,
+    );
 
     return previousItems;
   }
@@ -575,7 +608,9 @@ export function useBudgetTrackerPage({
     const activeId = String(event.active.id);
     const overId = event.over ? String(event.over.id) : null;
     const overStatus =
-      (event.over?.data.current?.sortable?.containerId as BudgetItemStatus | undefined) ??
+      (event.over?.data.current?.sortable?.containerId as
+        | BudgetItemStatus
+        | undefined) ??
       (event.over?.data.current?.status as BudgetItemStatus | undefined);
 
     if (!overStatus) return;
@@ -585,7 +620,9 @@ export function useBudgetTrackerPage({
 
   function handleDragEnd(event: DragEndEvent) {
     const overStatus =
-      (event.over?.data.current?.sortable?.containerId as BudgetItemStatus | undefined) ??
+      (event.over?.data.current?.sortable?.containerId as
+        | BudgetItemStatus
+        | undefined) ??
       (event.over?.data.current?.status as BudgetItemStatus | undefined) ??
       null;
 
@@ -601,6 +638,7 @@ export function useBudgetTrackerPage({
   return {
     isPending,
     localProjects,
+    localItems,
     selectedProject,
     selectedItems,
     groups,

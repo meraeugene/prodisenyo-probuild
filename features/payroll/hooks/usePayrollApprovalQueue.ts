@@ -23,12 +23,14 @@ import type { AppRole } from "@/types/database";
 interface UsePayrollApprovalQueueOptions {
   role: AppRole | null;
   roleLoading?: boolean;
+  initialRequests?: PendingOvertimeRequest[];
   onRequestResolved?: (runId: string | null) => void;
 }
 
 export function usePayrollApprovalQueue({
   role,
   roleLoading = false,
+  initialRequests = [],
   onRequestResolved,
 }: UsePayrollApprovalQueueOptions) {
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
@@ -42,7 +44,9 @@ export function usePayrollApprovalQueue({
     useState<Record<string, boolean>>({});
   const [employeeLogsErrorByRequestId, setEmployeeLogsErrorByRequestId] =
     useState<Record<string, string | null>>({});
-  const [activeLogsRequestId, setActiveLogsRequestId] = useState<string | null>(null);
+  const [activeLogsRequestId, setActiveLogsRequestId] = useState<string | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const previousPendingCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
@@ -50,15 +54,22 @@ export function usePayrollApprovalQueue({
     !roleLoading && role === "ceo" ? "pending-overtime-approvals" : null,
     getPendingOvertimeApprovalsAction,
     {
+      fallbackData: {
+        requests: initialRequests as unknown as Record<string, unknown>[],
+      },
       refreshInterval: 15000,
       revalidateOnFocus: true,
     },
   );
-  const pendingRequests = ((approvalsState.data?.requests ?? []) as unknown) as PendingOvertimeRequest[];
-  const loading = roleLoading || approvalsState.isLoading;
-  const hasRequests = useMemo(() => pendingRequests.length > 0, [pendingRequests.length]);
+  const pendingRequests = (approvalsState.data?.requests ??
+    []) as unknown as PendingOvertimeRequest[];
+  const hasRequests = useMemo(
+    () => pendingRequests.length > 0,
+    [pendingRequests.length],
+  );
   const pendingCount = useMemo(
-    () => pendingRequests.filter((request) => request.status === "pending").length,
+    () =>
+      pendingRequests.filter((request) => request.status === "pending").length,
     [pendingRequests],
   );
 
@@ -96,21 +107,34 @@ export function usePayrollApprovalQueue({
     const parsedNotes = parseOvertimeRequestNotes(request.notes);
     if (parsedNotes.editedLogs.length > 0) {
       setEmployeeLogsByRequestId((prev) => ({ ...prev, [request.id]: [] }));
-      setEmployeeLogsErrorByRequestId((prev) => ({ ...prev, [request.id]: null }));
-      setEmployeeLogsLoadingByRequestId((prev) => ({ ...prev, [request.id]: false }));
+      setEmployeeLogsErrorByRequestId((prev) => ({
+        ...prev,
+        [request.id]: null,
+      }));
+      setEmployeeLogsLoadingByRequestId((prev) => ({
+        ...prev,
+        [request.id]: false,
+      }));
       return;
     }
 
     if (!request.attendance_import_id || !request.employee_name) {
       setEmployeeLogsErrorByRequestId((prev) => ({
         ...prev,
-        [request.id]: "No linked attendance import was found for this overtime request.",
+        [request.id]:
+          "No linked attendance import was found for this overtime request.",
       }));
       return;
     }
 
-    setEmployeeLogsLoadingByRequestId((prev) => ({ ...prev, [request.id]: true }));
-    setEmployeeLogsErrorByRequestId((prev) => ({ ...prev, [request.id]: null }));
+    setEmployeeLogsLoadingByRequestId((prev) => ({
+      ...prev,
+      [request.id]: true,
+    }));
+    setEmployeeLogsErrorByRequestId((prev) => ({
+      ...prev,
+      [request.id]: null,
+    }));
 
     const supabase = createSupabaseBrowserClient();
     const { start, end } = resolveRequestPeriod(request);
@@ -139,7 +163,10 @@ export function usePayrollApprovalQueue({
         ...prev,
         [request.id]: "Unable to load employee attendance logs.",
       }));
-      setEmployeeLogsLoadingByRequestId((prev) => ({ ...prev, [request.id]: false }));
+      setEmployeeLogsLoadingByRequestId((prev) => ({
+        ...prev,
+        [request.id]: false,
+      }));
       return;
     }
 
@@ -147,7 +174,10 @@ export function usePayrollApprovalQueue({
       ...prev,
       [request.id]: (data ?? []) as AttendanceLogRow[],
     }));
-    setEmployeeLogsLoadingByRequestId((prev) => ({ ...prev, [request.id]: false }));
+    setEmployeeLogsLoadingByRequestId((prev) => ({
+      ...prev,
+      [request.id]: false,
+    }));
   }
 
   async function openRequestLogs(request: PendingOvertimeRequest) {
@@ -191,13 +221,14 @@ export function usePayrollApprovalQueue({
         await approvalsState.mutate(
           (current) => ({
             requests:
-              (current?.requests as PendingOvertimeRequest[] | undefined)?.map((request) =>
-                request.id === adjustmentId
-                  ? {
-                      ...request,
-                      status: action === "approve" ? "approved" : "rejected",
-                    }
-                  : request,
+              (current?.requests as PendingOvertimeRequest[] | undefined)?.map(
+                (request) =>
+                  request.id === adjustmentId
+                    ? {
+                        ...request,
+                        status: action === "approve" ? "approved" : "rejected",
+                      }
+                    : request,
               ) ?? [],
           }),
           false,
@@ -235,13 +266,17 @@ export function usePayrollApprovalQueue({
   const activeLogsModalState = useMemo((): EmployeeLogsModalState | null => {
     if (!activeLogsRequestId) return null;
 
-    const request = pendingRequests.find((entry) => entry.id === activeLogsRequestId);
+    const request = pendingRequests.find(
+      (entry) => entry.id === activeLogsRequestId,
+    );
     if (!request) return null;
 
     const run = getRelationValue(request.payroll_runs);
-    const siteLabel = run?.site_name?.trim() || request.site_name?.trim() || "Unknown Site";
+    const siteLabel =
+      run?.site_name?.trim() || request.site_name?.trim() || "Unknown Site";
     const employeeLabel = request.employee_name ?? "Unknown Employee";
-    const periodLabel = run?.period_label ?? request.period_label ?? "Unknown Period";
+    const periodLabel =
+      run?.period_label ?? request.period_label ?? "Unknown Period";
 
     return {
       requestId: request.id,
@@ -264,7 +299,6 @@ export function usePayrollApprovalQueue({
   ]);
 
   return {
-    loading,
     hasRequests,
     pendingCount,
     pendingRequests,

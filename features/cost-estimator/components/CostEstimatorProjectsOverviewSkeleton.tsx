@@ -44,6 +44,8 @@ export default function CostEstimatorProjectsOverviewSkeleton() {
               </div>
 
               <div className="mt-4 space-y-2">
+                <SkeletonBlock className="h-4 w-40" />
+                <SkeletonBlock className="h-4 w-44" />
                 <SkeletonBlock className="h-4 w-36" />
                 <SkeletonBlock className="h-4 w-44" />
               </div>

@@ -14,13 +14,11 @@ import type { ReviewProjectEstimateRow } from "@/features/cost-estimator/types";
 export default function EstimateReviewsTable({
   estimates,
   pendingReviewsCount,
-  loading,
   onOpenReport,
   onDeleteEstimate,
 }: {
   estimates: ReviewProjectEstimateRow[];
   pendingReviewsCount: number;
-  loading: boolean;
   onOpenReport: (estimateId: string) => void;
   onDeleteEstimate: (estimateId: string) => void;
 }) {
@@ -172,9 +170,7 @@ export default function EstimateReviewsTable({
                   colSpan={7}
                   className="px-3 py-5 text-center text-sm text-apple-steel"
                 >
-                  {loading
-                    ? "Loading submitted estimates..."
-                    : "No submitted estimates are waiting for review."}
+                  No submitted estimates are waiting for review.
                 </td>
               </tr>
             )}

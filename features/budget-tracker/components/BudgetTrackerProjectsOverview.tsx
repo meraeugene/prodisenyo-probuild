@@ -2,15 +2,12 @@
 
 import { FolderOpen, PlusCircle } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
-import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import {
-  formatBudgetMoney,
-  formatProjectTypeLabel,
-} from "@/features/cost-estimator/utils/costEstimatorFormatters";
-import type {
-  ProjectEstimateItemRow,
-  ProjectEstimateRow,
-} from "@/features/cost-estimator/types";
+  BUDGET_PROJECT_TYPE_OPTIONS,
+  type BudgetItemRow,
+  type BudgetProjectRow,
+} from "@/features/budget-tracker/types";
+import { formatBudgetMoney } from "@/features/budget-tracker/utils/budgetTrackerFormatters";
 
 function formatUpdatedAt(value: string) {
   return new Intl.DateTimeFormat("en-PH", {
@@ -22,25 +19,32 @@ function formatUpdatedAt(value: string) {
   }).format(new Date(value));
 }
 
-export default function CostEstimatorProjectsOverview({
-  estimates,
-  itemsByEstimateId,
+function getProjectTypeLabel(value: BudgetProjectRow["project_type"]) {
+  return (
+    BUDGET_PROJECT_TYPE_OPTIONS.find((option) => option.value === value)
+      ?.label ?? value
+  );
+}
+
+export default function BudgetTrackerProjectsOverview({
+  projects,
+  items,
   pending,
   onOpenProject,
   onCreateProject,
 }: {
-  estimates: ProjectEstimateRow[];
-  itemsByEstimateId: Record<string, ProjectEstimateItemRow[]>;
+  projects: BudgetProjectRow[];
+  items: BudgetItemRow[];
   pending: boolean;
-  onOpenProject: (estimateId: string) => void;
+  onOpenProject: (projectId: string) => void;
   onCreateProject: () => void;
 }) {
   return (
     <div className="space-y-4 p-6">
       <DashboardPageHero
-        eyebrow="Cost Estimation Workflow"
+        eyebrow="Budget Workflow"
         title="Overall Projects"
-        description="Select a project to open its estimate board, or create a new one for another client request."
+        description="Select a project to open its budget board, or create a new one for another client request."
         actions={
           <button
             type="button"
@@ -61,75 +65,77 @@ export default function CostEstimatorProjectsOverview({
               Project Queue
             </p>
             <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-              Your Estimates
+              Budget Projects
             </h2>
           </div>
           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-            {estimates.length} project{estimates.length === 1 ? "" : "s"}
+            {projects.length} project{projects.length === 1 ? "" : "s"}
           </span>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {estimates.map((estimate) => {
-            const estimateItems = itemsByEstimateId[estimate.id] ?? [];
-            const totalQuantity = estimateItems.reduce(
-              (sum, item) => sum + (item.quantity ?? 0),
+          {projects.map((project) => {
+            const projectItems = items.filter(
+              (item) => item.project_id === project.id,
+            );
+            const spent = projectItems.reduce(
+              (sum, item) => sum + (item.actual_spent ?? 0),
               0,
             );
-            const totalItemCost = estimateItems.reduce(
-              (sum, item) => sum + (item.line_total ?? 0),
-              0,
-            );
+            const remaining = (project.starting_budget ?? 0) - spent;
 
             return (
               <article
-                key={estimate.id}
+                key={project.id}
                 className="rounded-[14px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                      {formatProjectTypeLabel(estimate.project_type)}
+                      {getProjectTypeLabel(project.project_type)}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-apple-charcoal">
-                      {estimate.project_name}
+                      {project.name}
                     </h3>
                   </div>
-                  <EstimateStatusBadge status={estimate.status} />
+                  <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-700">
+                    Draft
+                  </span>
                 </div>
 
                 <div className="mt-4 space-y-2 text-sm text-apple-smoke">
                   <p>
-                    Total estimate:{" "}
-                    <span className="font-semibold text-green-700">
-                      {formatBudgetMoney(estimate.estimate_total)}
-                    </span>
-                  </p>
-
-                  <p>
-                    Total quantity:{" "}
+                    Budget:{" "}
                     <span className="font-semibold text-sky-700">
-                      {totalQuantity.toLocaleString("en-PH")}
+                      {formatBudgetMoney(
+                        project.starting_budget ?? 0,
+                        project.currency_code,
+                      )}
                     </span>
                   </p>
                   <p>
-                    Total item cost:{" "}
-                    <span className="font-semibold text-amber-700">
-                      {formatBudgetMoney(totalItemCost)}
+                    Spent:{" "}
+                    <span className="font-semibold text-rose-700">
+                      {formatBudgetMoney(spent, project.currency_code)}
                     </span>
                   </p>
-
+                  <p>
+                    Remaining:{" "}
+                    <span className="font-semibold text-emerald-700">
+                      {formatBudgetMoney(remaining, project.currency_code)}
+                    </span>
+                  </p>
                   <p>
                     Updated:{" "}
                     <span className="font-semibold text-apple-charcoal">
-                      {formatUpdatedAt(estimate.updated_at)}
+                      {formatUpdatedAt(project.updated_at)}
                     </span>
                   </p>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => onOpenProject(estimate.id)}
+                  onClick={() => onOpenProject(project.id)}
                   disabled={pending}
                   className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
                 >

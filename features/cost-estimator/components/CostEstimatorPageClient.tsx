@@ -109,6 +109,7 @@ export default function CostEstimatorPageClient({
       <>
         <CostEstimatorProjectsOverview
           estimates={state.sortedEstimates}
+          itemsByEstimateId={state.itemsByEstimateId}
           pending={isUiLocked}
           onOpenProject={handleOpenProject}
           onCreateProject={handleRequestNewProject}

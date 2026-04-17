@@ -15,20 +15,32 @@ import type {
   ReportDetailsState,
 } from "@/features/payroll-reports/types";
 
-export function usePayrollReportsPage() {
+interface UsePayrollReportsPageOptions {
+  initialReports: PayrollRunRow[];
+}
+
+export function usePayrollReportsPage({
+  initialReports,
+}: UsePayrollReportsPageOptions) {
   const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
-  const [pendingDecisionRunId, setPendingDecisionRunId] = useState<string | null>(null);
-  const [pendingDecisionAction, setPendingDecisionAction] =
-    useState<"approve" | "reject" | null>(null);
+  const [pendingDecisionRunId, setPendingDecisionRunId] = useState<
+    string | null
+  >(null);
+  const [pendingDecisionAction, setPendingDecisionAction] = useState<
+    "approve" | "reject" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<ReportActionsMenuState | null>(null);
-  const [deleteConfirmReport, setDeleteConfirmReport] = useState<PayrollRunRow | null>(null);
-  const [rejectConfirmReport, setRejectConfirmReport] = useState<PayrollRunRow | null>(null);
+  const [deleteConfirmReport, setDeleteConfirmReport] =
+    useState<PayrollRunRow | null>(null);
+  const [rejectConfirmReport, setRejectConfirmReport] =
+    useState<PayrollRunRow | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
   const previousPendingReportsCountRef = useRef<number | null>(null);
   const canPlayNotificationSoundRef = useRef(false);
   const reportsState = useSWR("payroll-reports", getPayrollReportsDataAction, {
+    fallbackData: { reports: initialReports },
     refreshInterval: 15000,
     revalidateOnFocus: true,
   });
@@ -171,11 +183,15 @@ export function usePayrollReportsPage() {
       await reportsState.mutate(
         (current) => ({
           reports:
-            current?.reports.filter((row) => row.id !== rejectConfirmReport.id) ?? [],
+            current?.reports.filter(
+              (row) => row.id !== rejectConfirmReport.id,
+            ) ?? [],
         }),
         false,
       );
-      setActiveReportId((prev) => (prev === rejectConfirmReport.id ? null : prev));
+      setActiveReportId((prev) =>
+        prev === rejectConfirmReport.id ? null : prev,
+      );
       setRejectConfirmReport(null);
       setRejectionReason("");
     } catch (rejectError) {
@@ -237,19 +253,19 @@ export function usePayrollReportsPage() {
         dailyTotals: [],
       }
     : activeReport
-      ? activeDetailsState.data?.details ?? {
-          loading: activeDetailsState.isLoading || activeDetailsState.isValidating,
+      ? (activeDetailsState.data?.details ?? {
+          loading:
+            activeDetailsState.isLoading || activeDetailsState.isValidating,
           error: null,
           payrollItems: [],
           attendanceLogs: [],
           dailyTotals: [],
-        }
+        })
       : null;
 
   return {
     reports,
     sortedReports,
-    loading: reportsState.isLoading,
     refreshing: reportsState.isValidating,
     deletingRunId,
     pendingDecisionRunId,

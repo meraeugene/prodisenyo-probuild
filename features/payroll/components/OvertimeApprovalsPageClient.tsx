@@ -3,8 +3,13 @@
 import { Radio } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollApprovalQueue from "@/features/payroll/components/PayrollApprovalQueue";
+import type { PendingOvertimeRequest } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 
-export default function OvertimeApprovalsPageClient() {
+export default function OvertimeApprovalsPageClient({
+  initialRequests,
+}: {
+  initialRequests: PendingOvertimeRequest[];
+}) {
   return (
     <div className="space-y-4 p-6">
       <DashboardPageHero
@@ -19,7 +24,7 @@ export default function OvertimeApprovalsPageClient() {
         }
       />
 
-      <PayrollApprovalQueue role="ceo" />
+      <PayrollApprovalQueue role="ceo" initialRequests={initialRequests} />
     </div>
   );
 }

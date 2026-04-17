@@ -11,12 +11,14 @@ import type { AppRole } from "@/types/database";
 interface PayrollApprovalQueueProps {
   role: AppRole | null;
   roleLoading?: boolean;
+  initialRequests?: PendingOvertimeRequest[];
   onRequestResolved?: (runId: string | null) => void;
 }
 
 export default function PayrollApprovalQueue({
   role,
   roleLoading = false,
+  initialRequests = [],
   onRequestResolved,
 }: PayrollApprovalQueueProps) {
   const [rejectConfirmRequest, setRejectConfirmRequest] =
@@ -28,10 +30,9 @@ export default function PayrollApprovalQueue({
   const state = usePayrollApprovalQueue({
     role,
     roleLoading,
+    initialRequests,
     onRequestResolved,
   });
-
-  if (!roleLoading && role !== "ceo") return null;
 
   useEffect(() => {
     if (
@@ -50,6 +51,8 @@ export default function PayrollApprovalQueue({
     state.pendingActionId,
     state.pendingActionType,
   ]);
+
+  if (!roleLoading && role !== "ceo") return null;
 
   return (
     <section className="rounded-[14px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
@@ -73,11 +76,7 @@ export default function PayrollApprovalQueue({
       </div>
 
       <div className="mt-4">
-        {state.loading ? (
-          <p className="text-sm text-apple-steel">
-            Loading overtime requests...
-          </p>
-        ) : !state.hasRequests ? (
+        {!state.hasRequests ? (
           <p className="text-sm text-apple-steel">
             No overtime requests are waiting for approval.
           </p>

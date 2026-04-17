@@ -5,9 +5,14 @@ import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollReportModal from "@/features/payroll-reports/components/PayrollReportModal";
 import PayrollReportsArchiveSection from "@/features/payroll-reports/components/PayrollReportsArchiveSection";
 import { usePayrollReportsPage } from "@/features/payroll-reports/hooks/usePayrollReportsPage";
+import type { PayrollRunRow } from "@/features/payroll-reports/types";
 
-export default function PayrollReportsPageClient() {
-  const state = usePayrollReportsPage();
+export default function PayrollReportsPageClient({
+  initialData,
+}: {
+  initialData: { reports: PayrollRunRow[] };
+}) {
+  const state = usePayrollReportsPage({ initialReports: initialData.reports });
 
   return (
     <div className="p-6">
@@ -28,7 +33,6 @@ export default function PayrollReportsPageClient() {
 
       <PayrollReportsArchiveSection
         reports={state.sortedReports}
-        loading={state.loading}
         refreshing={state.refreshing}
         pendingReportsCount={state.pendingReportsCount}
         deletingRunId={state.deletingRunId}
