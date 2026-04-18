@@ -742,7 +742,7 @@ export default function DashboardShell({
                 <Building2 className="h-4 w-4" strokeWidth={1.5} />
               </div>
               <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
-                Prodisenyo PayTrack
+                Prodisenyo ProBuild
               </p>
             </div>
             <button

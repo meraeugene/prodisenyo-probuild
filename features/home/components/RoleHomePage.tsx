@@ -190,32 +190,32 @@ function getDateLabel() {
 function getRoleHints(role: AppRole) {
   if (role === "ceo") {
     return [
-      "Oversee approvals, reports, and company-wide operations from your dashboard.",
-      "Review pending overtime and payroll submissions from one place.",
-      "Track budgets, estimates, and key workflow health for every team.",
+      "Review approvals and reports with a quick daily check.",
+      "Track budgets and estimate health across active projects.",
+      "Keep company workflows moving without bottlenecks.",
     ];
   }
 
   if (role === "payroll_manager") {
     return [
-      "You are set to process attendance and payroll workflow today.",
-      "Upload attendance, validate records, and keep payroll timelines on track.",
-      "Review requests quickly to avoid payroll delays for your teams.",
+      "Process attendance and payroll tasks for today.",
+      "Validate records before each payroll run.",
+      "Review incoming requests early to avoid delays.",
     ];
   }
 
   if (role === "engineer") {
     return [
-      "Focus on estimates and material requests to keep projects moving.",
-      "Use budget tracker to monitor spending before costs run over plan.",
-      "Submit overtime and material requests early to avoid site delays.",
+      "Focus on estimates and material planning today.",
+      "Track spending before project costs rise too fast.",
+      "Submit requests early to keep work on plan.",
     ];
   }
 
   return [
-    "Check overtime and account settings to stay updated for your shift.",
-    "Monitor your budget tracker and requests so work stays on schedule.",
-    "Keep your profile updated for smoother payroll and approvals.",
+    "Check overtime and settings for your shift.",
+    "Track requests and budget updates in one place.",
+    "Keep your profile information updated regularly.",
   ];
 }
 
@@ -264,7 +264,7 @@ export default function RoleHomePage({
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700/80">
               Prody
             </p>
-            <p className="mt-1 min-h-[3.75rem] text-xs leading-5 text-apple-steel sm:min-h-[3.25rem] sm:text-sm">
+            <p className="mt-1 min-h-[2.5rem] text-xs leading-5 text-apple-steel sm:min-h-[3.25rem] sm:text-sm">
               <RoleHintTypewriter messages={roleHints} />
             </p>
           </div>

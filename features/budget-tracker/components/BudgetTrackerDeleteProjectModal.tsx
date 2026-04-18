@@ -23,7 +23,7 @@ export default function BudgetTrackerDeleteProjectModal({
   return createPortal(
     <div className="fixed inset-0 z-[160] bg-black/40">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="absolute left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[14px] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
+      <div className="absolute left-1/2 top-1/2 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[14px] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] sm:w-full">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-700">
