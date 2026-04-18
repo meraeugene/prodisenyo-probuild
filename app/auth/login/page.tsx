@@ -29,9 +29,6 @@ export default async function LoginPage({
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(174,220,188,0.34),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(56,140,82,0.18),transparent_28%),linear-gradient(180deg,#f4fbf6_0%,#ffffff_46%,#f2faf5_100%)]">
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.32),transparent_32%,rgba(174,220,188,0.08)_100%)]" />
-      <div className="absolute left-[-80px] top-20 h-64 w-64 rounded-full bg-apple-mist/50 blur-3xl" />
-      <div className="absolute bottom-[-40px] right-[-40px] h-72 w-72 rounded-full bg-emerald-100/60 blur-3xl" />
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-stretch px-0 py-0 sm:items-center sm:px-8 sm:py-10 lg:px-10">
         <div className="grid w-full gap-0 sm:gap-6 lg:grid-cols-[0.82fr_1fr] lg:items-stretch">
           <section className="order-1 relative overflow-hidden rounded-none bg-[linear-gradient(135deg,#112e1a_0%,#1c4728_42%,#245f34_100%)] p-7 text-white shadow-[0_24px_64px_rgba(17,46,26,0.22)] sm:rounded-[32px] sm:p-8 lg:order-1">
