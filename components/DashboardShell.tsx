@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
@@ -42,6 +42,15 @@ const PRIMARY_NAV_ITEMS = [
   { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
   { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ];
+
+const PAYROLL_MANAGER_GENERAL_ITEMS = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
+] as const;
+
+const PAYROLL_MANAGER_REQUEST_ITEMS = [
+  { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
+] as const;
 
 const CEO_GENERAL_ITEMS = [
   { href: "/home", label: "Home", icon: House },
@@ -479,11 +488,13 @@ export default function DashboardShell({
             <nav className="space-y-3">
               {(isCeo
                 ? CEO_GENERAL_ITEMS
-                : isEngineer
-                  ? ENGINEER_GENERAL_ITEMS
-                  : isEmployee
-                    ? EMPLOYEE_NAV_ITEMS
-                    : PRIMARY_NAV_ITEMS
+                : isPayrollManager
+                  ? PAYROLL_MANAGER_GENERAL_ITEMS
+                  : isEngineer
+                    ? ENGINEER_GENERAL_ITEMS
+                    : isEmployee
+                      ? EMPLOYEE_NAV_ITEMS
+                      : PRIMARY_NAV_ITEMS
               ).map((item) =>
                 renderSidebarLink({
                   item,
@@ -548,72 +559,52 @@ export default function DashboardShell({
                 </>
               ) : null}
 
-              <AnimatePresence initial={false}>
-                {!isCeo && canSeeWorkflowNav ? (
-                  <motion.div
-                    key="general-workflow-nav"
-                    initial={{ opacity: 0, y: -10, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: -8, height: 0 }}
-                    transition={{ duration: 0.28, ease: "easeOut" }}
-                    className="space-y-3 overflow-hidden"
-                  >
-                    {GENERAL_WORKFLOW_ITEMS.map((item, index) => {
-                      const active = pathname === item.href;
-                      return (
-                        <motion.div
-                          key={item.href}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -8 }}
-                          transition={{
-                            duration: 0.22,
-                            delay: index * 0.04,
-                            ease: "easeOut",
-                          }}
-                        >
-                          <Link
-                            href={item.href}
-                            title={collapsed ? item.label : undefined}
-                            onClick={() => setOpen(false)}
-                            className={cn(
-                              "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                              collapsed && "justify-center px-2.5",
-                              active
-                                ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                                : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
-                                active
-                                  ? "bg-[#1f6a37] text-white"
-                                  : "text-apple-smoke group-hover:text-apple-charcoal",
-                              )}
-                            >
-                              <item.icon size={15} />
-                            </div>
-                            {!collapsed ? (
-                              <span className="font-medium">{item.label}</span>
-                            ) : null}
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-
-              {isPayrollManager &&
-                BUDGET_NAV_ITEMS.map((item) => {
-                  return renderSidebarLink({
-                    item,
-                    pathname,
+              {isPayrollManager ? (
+                <>
+                  {renderSidebarSectionLabel({
+                    label: "Requests",
                     collapsed,
-                    onNavigate: () => setOpen(false),
-                  });
-                })}
+                  })}
+                  {PAYROLL_MANAGER_REQUEST_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                    }),
+                  )}
+
+                  {canSeeWorkflowNav ? (
+                    <>
+                      {renderSidebarSectionLabel({
+                        label: "Payroll",
+                        collapsed,
+                      })}
+                      {GENERAL_WORKFLOW_ITEMS.map((item) =>
+                        renderSidebarLink({
+                          item,
+                          pathname,
+                          collapsed,
+                          onNavigate: () => setOpen(false),
+                        }),
+                      )}
+                    </>
+                  ) : null}
+
+                  {renderSidebarSectionLabel({
+                    label: "Planning",
+                    collapsed,
+                  })}
+                  {BUDGET_NAV_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                    }),
+                  )}
+                </>
+              ) : null}
 
               {isCeo ? (
                 <>
