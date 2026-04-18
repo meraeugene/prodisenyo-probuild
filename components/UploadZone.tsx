@@ -291,13 +291,6 @@ export default function UploadZone({
           )}
         </button>
       </div>
-
-      <p className="text-xs leading-relaxed text-apple-silver">
-        Your files are processed entirely in the browser.{" "}
-        <span className="font-medium text-apple-steel">
-          No data is uploaded to any server.
-        </span>
-      </p>
     </div>
   );
 }

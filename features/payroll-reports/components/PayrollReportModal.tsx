@@ -24,6 +24,7 @@ import {
   PayrollReportStatCard,
 } from "@/features/payroll-reports/components/PayrollReportUiBits";
 import {
+  PAYROLL_REPORT_SITE_COLORS,
   buildPayrollReportDailyTrend,
   buildPayrollReportSiteDistribution,
   buildPayrollReportSiteSummaries,
@@ -53,6 +54,7 @@ export default function PayrollReportModal({
   const [search, setSearch] = useState("");
   const [siteFilter, setSiteFilter] = useState("all");
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -66,6 +68,17 @@ export default function PayrollReportModal({
       window.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const updateIsMobile = () => setIsMobile(media.matches);
+    updateIsMobile();
+
+    media.addEventListener("change", updateIsMobile);
+    return () => {
+      media.removeEventListener("change", updateIsMobile);
+    };
+  }, []);
 
   const payrollItems = details?.payrollItems ?? [];
   const attendanceLogs = details?.attendanceLogs ?? [];
@@ -132,22 +145,22 @@ export default function PayrollReportModal({
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm"
+        className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-0 backdrop-blur-sm sm:p-3"
         onMouseDown={(event) => {
           if (event.target === event.currentTarget) onClose();
         }}
       >
-        <div className="flex max-h-[95vh] w-full max-w-[min(1520px,96vw)] flex-col overflow-hidden rounded-[28px] bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
+        <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:max-h-[95vh] sm:h-auto sm:max-w-[min(1520px,96vw)] sm:rounded-[28px]">
           <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1 pr-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                   View Reports
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+                <h2 className="mt-2 text-lg font-semibold tracking-[-0.03em] leading-tight sm:text-xl md:text-2xl">
                   {formatPayrollReportPeriodLabel(report)}
                 </h2>
-                <p className="mt-2 text-sm text-white/80">
+                <p className="mt-2 truncate text-xs whitespace-nowrap text-white/80 sm:text-sm">
                   {report.site_name} | {report.status} | Submitted{" "}
                   {formatPayrollReportDateTime(
                     report.submitted_at ?? report.created_at,
@@ -157,7 +170,7 @@ export default function PayrollReportModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-full border border-white/25 bg-white/10 p-0 text-white transition hover:bg-white/20"
                 aria-label="Close payroll report modal"
               >
                 <X size={17} />
@@ -229,12 +242,12 @@ export default function PayrollReportModal({
                         report.
                       </p>
                     </div>
-                    <div className="h-[320px] px-3 py-4">
+                    <div className="h-[320px] px-1 py-4 sm:px-3">
                       {dailyTrend.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
                             data={dailyTrend}
-                            margin={{ top: 14, right: 16, left: 18, bottom: 0 }}
+                            margin={{ top: 14, right: 10, left: 2, bottom: 0 }}
                           >
                             <defs>
                               <linearGradient
@@ -317,7 +330,7 @@ export default function PayrollReportModal({
                           Site Payroll Breakdown
                         </p>
                       </div>
-                      <div className="h-[320px] rounded-[12px] bg-[rgb(var(--apple-snow))] p-4">
+                      <div className="h-[320px] rounded-[12px] bg-[rgb(var(--apple-snow))] p-2 sm:p-4">
                         {siteSummaries.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
@@ -340,6 +353,7 @@ export default function PayrollReportModal({
                                 axisLine={false}
                                 tickLine={false}
                                 interval={0}
+                                tickFormatter={isMobile ? () => "" : undefined}
                                 tick={{
                                   fill: "rgb(var(--theme-chart-axis))",
                                   fontSize: 11,
@@ -381,14 +395,10 @@ export default function PayrollReportModal({
                                     <Cell
                                       key={`${entry.siteName}-${index}`}
                                       fill={
-                                        [
-                                          "rgb(var(--theme-chart-1))",
-                                          "rgb(var(--theme-chart-2))",
-                                          "rgb(var(--theme-chart-3))",
-                                          "rgb(var(--theme-chart-4))",
-                                          "rgb(var(--theme-chart-5))",
-                                          "rgb(var(--theme-chart-1))",
-                                        ][index % 6]
+                                        PAYROLL_REPORT_SITE_COLORS[
+                                          index %
+                                            PAYROLL_REPORT_SITE_COLORS.length
+                                        ]
                                       }
                                     />
                                   ))}
@@ -564,35 +574,35 @@ export default function PayrollReportModal({
                         {filteredPayrollItems.length > 0 ? (
                           filteredPayrollItems.map((item) => (
                             <tr key={item.id}>
-                              <td className="px-3 py-2 font-medium text-apple-charcoal">
+                              <td className="px-3 py-2 font-medium whitespace-nowrap text-apple-charcoal">
                                 {item.employee_name}
                               </td>
-                              <td className="px-3 py-2 text-apple-smoke">
+                              <td className="px-3 py-2 whitespace-nowrap text-apple-smoke">
                                 {item.role_code}
                               </td>
-                              <td className="px-3 py-2 text-apple-smoke">
+                              <td className="px-3 py-2 whitespace-nowrap text-apple-smoke">
                                 {item.site_name}
                               </td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">
+                              <td className="px-3 py-2 text-right whitespace-nowrap text-apple-smoke">
                                 {item.days_worked.toLocaleString("en-PH")}
                               </td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">
+                              <td className="px-3 py-2 text-right whitespace-nowrap text-apple-smoke">
                                 {item.hours_worked.toLocaleString("en-PH", {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
                               </td>
-                              <td className="px-3 py-2 text-right text-apple-smoke">
+                              <td className="px-3 py-2 text-right whitespace-nowrap text-apple-smoke">
                                 {formatPayrollReportPeso(item.rate_per_day)}
                               </td>
-                              <td className="px-3 py-2 text-right font-semibold text-apple-charcoal">
+                              <td className="px-3 py-2 text-right font-semibold whitespace-nowrap text-apple-charcoal">
                                 {formatPayrollReportPeso(item.total_pay)}
                               </td>
                               <td className="px-3 py-2 text-center">
                                 <button
                                   type="button"
                                   onClick={() => setActiveItemId(item.id)}
-                                  className="rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-[#18532b]"
+                                  className="rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white transition hover:bg-[#18532b]"
                                 >
                                   View Logs
                                 </button>

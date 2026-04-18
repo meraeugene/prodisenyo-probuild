@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LoaderCircle, Send } from "lucide-react";
 import CostEstimatorBoard from "@/features/cost-estimator/components/CostEstimatorBoard";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
+import CostEstimatorDeleteProjectModal from "@/features/cost-estimator/components/CostEstimatorDeleteProjectModal";
 import CostEstimatorHeader from "@/features/cost-estimator/components/CostEstimatorHeader";
 import CostEstimatorItemModal from "@/features/cost-estimator/components/CostEstimatorItemModal";
 import CostEstimatorProjectsOverview from "@/features/cost-estimator/components/CostEstimatorProjectsOverview";
@@ -274,18 +275,15 @@ export default function CostEstimatorPageClient({
         onCancel={() => setPendingDeleteItemIndices(null)}
       />
 
-      <CostEstimatorConfirmModal
+      <CostEstimatorDeleteProjectModal
         open={showDeleteProjectConfirm}
-        title="Delete project?"
-        description="This will permanently remove the current draft project and its item costs."
-        confirmLabel="Delete project"
-        confirmTone="danger"
+        selectedEstimate={state.selectedEstimate}
         pending={isUiLocked}
-        onConfirm={() => {
+        onDelete={() => {
           setShowDeleteProjectConfirm(false);
           state.handleDeleteEstimate();
         }}
-        onCancel={() => setShowDeleteProjectConfirm(false)}
+        onClose={() => setShowDeleteProjectConfirm(false)}
       />
 
       <CostEstimatorConfirmModal

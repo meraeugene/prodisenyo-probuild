@@ -882,7 +882,12 @@ export default function CostEstimatorItemModal({
           )}
         </div>
 
-        <div className="sticky bottom-0 z-20 border-t border-apple-mist bg-white px-4 py-3">
+        <div
+          className="z-20 shrink-0 border-t border-apple-mist bg-white px-4 pt-3 sm:py-3"
+          style={{
+            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
+          }}
+        >
           <div className="flex flex-col justify-end gap-3 sm:flex-row">
             <button
               type="button"

@@ -1,6 +1,12 @@
 import type { DailyLogRow } from "@/types";
-import { extractSiteName, formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
-import { buildEditingPayrollLogs, computeBasePay } from "@/features/payroll/utils/payrollSelectors";
+import {
+  extractSiteName,
+  formatPayrollNumber,
+} from "@/features/payroll/utils/payrollFormatters";
+import {
+  buildEditingPayrollLogs,
+  computeBasePay,
+} from "@/features/payroll/utils/payrollSelectors";
 import { normalizeEmployeeNameKey } from "@/features/payroll/utils/payrollMappers";
 import type {
   AttendanceLogRow,
@@ -21,7 +27,9 @@ export function roundPayrollReportValue(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-export function getPayrollReportStatusBadgeClass(status: PayrollRunStatus): string {
+export function getPayrollReportStatusBadgeClass(
+  status: PayrollRunStatus,
+): string {
   if (status === "approved") {
     return "bg-emerald-50 text-emerald-700 border-emerald-200";
   }
@@ -127,12 +135,16 @@ function pairHours(inTime: string | null, outTime: string | null): number {
   return diff / 60;
 }
 
-export function buildPayrollReportDailyRows(logs: AttendanceLogRow[]): DailyLogRow[] {
+export function buildPayrollReportDailyRows(
+  logs: AttendanceLogRow[],
+): DailyLogRow[] {
   const map = new Map<string, DailyLogRow>();
 
   for (const log of logs) {
     const site =
-      extractSiteName(log.site_name ?? "") || log.site_name?.trim() || "Unknown Site";
+      extractSiteName(log.site_name ?? "") ||
+      log.site_name?.trim() ||
+      "Unknown Site";
     const employee = log.employee_name?.trim() || "Unknown Employee";
     const employeeKey = normalizeEmployeeNameKey(employee);
     const key = `${employeeKey}|||${log.log_date}|||${site.toLowerCase()}`;
@@ -224,11 +236,15 @@ export function buildPayrollReportDailyRows(logs: AttendanceLogRow[]): DailyLogR
 export function buildPayrollReportSiteSummaries(
   payrollItems: PayrollRunItemRow[],
 ): ReportSiteSummary[] {
-  const siteMap = new Map<string, { employeeIds: Set<string>; payroll: number; hours: number }>();
+  const siteMap = new Map<
+    string,
+    { employeeIds: Set<string>; payroll: number; hours: number }
+  >();
 
   for (const item of payrollItems) {
     const siteNames = splitPayrollReportSiteNames(item.site_name);
-    const normalizedSiteNames = siteNames.length > 0 ? siteNames : ["Unknown Site"];
+    const normalizedSiteNames =
+      siteNames.length > 0 ? siteNames : ["Unknown Site"];
     const payrollShare = item.total_pay / normalizedSiteNames.length;
     const hoursShare = item.hours_worked / normalizedSiteNames.length;
 
@@ -239,7 +255,9 @@ export function buildPayrollReportSiteSummaries(
         hours: 0,
       };
       existing.employeeIds.add(item.id);
-      existing.payroll = roundPayrollReportValue(existing.payroll + payrollShare);
+      existing.payroll = roundPayrollReportValue(
+        existing.payroll + payrollShare,
+      );
       existing.hours = roundPayrollReportValue(existing.hours + hoursShare);
       siteMap.set(siteName, existing);
     }
@@ -258,16 +276,24 @@ export function buildPayrollReportSiteSummaries(
 export function buildPayrollReportDailyTrend(
   dailyTotals: PayrollRunDailyTotalRow[],
 ): ReportTrendPoint[] {
-  const dateMap = new Map<string, { paid: number; hours: number; employeeIds: Set<string> }>();
+  const dateMap = new Map<
+    string,
+    { paid: number; hours: number; employeeIds: Set<string> }
+  >();
   for (const row of dailyTotals) {
     const existing = dateMap.get(row.payout_date) ?? {
       paid: 0,
       hours: 0,
       employeeIds: new Set<string>(),
     };
-    existing.paid = roundPayrollReportValue(existing.paid + (row.total_pay ?? 0));
-    existing.hours = roundPayrollReportValue(existing.hours + (row.hours_worked ?? 0));
-    if (row.payroll_run_item_id) existing.employeeIds.add(row.payroll_run_item_id);
+    existing.paid = roundPayrollReportValue(
+      existing.paid + (row.total_pay ?? 0),
+    );
+    existing.hours = roundPayrollReportValue(
+      existing.hours + (row.hours_worked ?? 0),
+    );
+    if (row.payroll_run_item_id)
+      existing.employeeIds.add(row.payroll_run_item_id);
     dateMap.set(row.payout_date, existing);
   }
   return Array.from(dateMap.entries())
@@ -284,13 +310,22 @@ export function buildPayrollReportDailyTrend(
 export function buildPayrollReportSiteDistribution(
   payrollItems: PayrollRunItemRow[],
 ): ReportCompositionDatum[] {
-  const colors = ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80"];
+  const colors = PAYROLL_REPORT_SITE_COLORS;
   return buildPayrollReportSiteSummaries(payrollItems).map((item, index) => ({
     name: item.siteName,
     value: item.payroll,
     color: colors[index % colors.length],
   }));
 }
+
+export const PAYROLL_REPORT_SITE_COLORS = [
+  "#2563eb",
+  "#06b6d4",
+  "#8b5cf6",
+  "#f59e0b",
+  "#ef4444",
+  "#10b981",
+];
 
 export function buildEmployeeAttendanceModalData(
   report: PayrollRunRow,
@@ -336,8 +371,11 @@ export function buildEmployeeAttendanceModalData(
     dailyRows,
     scopedDailyTotals,
     attendanceDays: dailyRows.filter((row) => row.hours > 0).length,
-    inLogs: dailyRows.filter((row) => row.time1In || row.time2In || row.otIn).length,
-    outLogs: dailyRows.filter((row) => row.time1Out || row.time2Out || row.otOut).length,
+    inLogs: dailyRows.filter((row) => row.time1In || row.time2In || row.otIn)
+      .length,
+    outLogs: dailyRows.filter(
+      (row) => row.time1Out || row.time2Out || row.otOut,
+    ).length,
     otLogs: dailyRows.filter((row) => row.otIn || row.otOut).length,
   };
 }

@@ -37,7 +37,7 @@ type MaterialFormErrors = Partial<
 >;
 
 function inputClass(hasError: boolean) {
-  return `h-11 rounded-xl border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
+  return `h-11 rounded-xl w-full border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
     hasError
       ? "border-rose-400 ring-1 ring-rose-200"
       : "border-apple-mist bg-white"

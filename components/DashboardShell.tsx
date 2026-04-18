@@ -420,7 +420,7 @@ export default function DashboardShell({
 
         <aside
           className={cn(
-            "fixed left-0 top-0 z-50 flex h-screen flex-col overflow-visible border-r border-apple-mist bg-white transition-transform duration-300 lg:translate-x-0",
+            "fixed left-0 top-0 z-50 flex h-[100dvh] flex-col overflow-hidden border-r border-apple-mist bg-white transition-transform duration-300 lg:h-screen lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
           style={{ width: sidebarWidth }}
@@ -469,7 +469,13 @@ export default function DashboardShell({
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-4 pb-3 pt-5">
+          <div
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pt-5"
+            style={{
+              WebkitOverflowScrolling: "touch",
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
+            }}
+          >
             <nav className="space-y-3">
               {(isCeo
                 ? CEO_GENERAL_ITEMS

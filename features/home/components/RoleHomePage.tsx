@@ -236,7 +236,7 @@ export default function RoleHomePage({
 
   return (
     <main className="space-y-6 p-0 sm:p-6">
-      <section className="relative overflow-visible rounded-none bg-[linear-gradient(140deg,#114023,#1f6a37,#2e8b57)] px-4 pb-3 pt-5 text-white shadow-[0_16px_34px_rgba(22,101,52,0.2)] sm:rounded-[18px] sm:px-6 sm:pb-4 sm:pt-6">
+      <section className="relative overflow-visible rounded-none bg-[linear-gradient(140deg,#114023,#1f6a37,#2e8b57)] p-4 text-white shadow-[0_16px_34px_rgba(22,101,52,0.2)] sm:rounded-[18px] sm:px-6 sm:pb-4 sm:pt-6">
         <div className="pointer-events-none absolute -bottom-16 -left-[118px] w-full  ">
           <Image
             src="/login-robot.png"
