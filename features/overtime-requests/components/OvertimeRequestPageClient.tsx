@@ -58,7 +58,9 @@ type OvertimeFormErrors = {
 
 function baseInputClass(hasError: boolean) {
   return `h-10 w-full rounded-xl border px-3 outline-none transition focus:border-emerald-400 ${
-    hasError ? "border-rose-300 " : "border-apple-mist bg-white"
+    hasError
+      ? "border-rose-400  ring-1 ring-rose-200"
+      : "border-apple-mist bg-white"
   }`;
 }
 
@@ -134,7 +136,6 @@ export default function OvertimeRequestPageClient({
     const validation = validateForm();
     if (validation.hasErrors) {
       setFormErrors(validation.errors);
-      toast.error("Please fix the highlighted fields first.");
       return;
     }
 
@@ -178,7 +179,6 @@ export default function OvertimeRequestPageClient({
 
     if (validation.hasErrors) {
       setFormErrors(validation.errors);
-      toast.error("Please fix the highlighted fields first.");
       return;
     }
 

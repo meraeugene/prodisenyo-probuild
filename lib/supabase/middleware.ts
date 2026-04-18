@@ -3,6 +3,8 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 import { getSupabaseBrowserEnv } from "@/lib/env";
 
+const SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS = 60 * 60 * 24 * 365;
+
 type CookieMutation = {
   name: string;
   value: string;
@@ -15,13 +17,16 @@ const PROTECTED_PREFIXES = [
   "/budget-tracker",
   "/cost-estimator",
   "/estimate-reviews",
+  "/overtime-approvals",
   "/review-attendance",
   "/generate-payroll",
   "/attendance-analytics",
   "/payroll-analytics",
   "/payroll-reports",
   "/add-user",
+  "/request-material",
   "/request-overtime",
+  "/reset-data",
   "/settings",
 ] as const;
 
@@ -40,6 +45,7 @@ const CEO_ALLOWED_PREFIXES = [
   "/payroll-analytics",
   "/payroll-reports",
   "/add-user",
+  "/reset-data",
   "/settings",
 ] as const;
 
@@ -100,6 +106,12 @@ export async function updateSession(request: NextRequest) {
 
   const { url, anonKey } = getSupabaseBrowserEnv();
   const supabase = createServerClient<Database>(url, anonKey, {
+    cookieOptions: {
+      lifetime: SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    },
     cookies: {
       getAll() {
         return request.cookies.getAll();

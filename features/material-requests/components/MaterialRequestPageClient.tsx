@@ -38,7 +38,9 @@ type MaterialFormErrors = Partial<
 
 function inputClass(hasError: boolean) {
   return `h-11 rounded-xl border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
-    hasError ? "border-rose-300 " : "border-apple-mist bg-white"
+    hasError
+      ? "border-rose-400 bg-rose-50/60 ring-1 ring-rose-200"
+      : "border-apple-mist bg-white"
   }`;
 }
 
@@ -146,7 +148,6 @@ export default function MaterialRequestPageClient({
     const validation = validateForm();
     if (validation.hasErrors) {
       setFormErrors(validation.errors);
-      toast.error("Please fix the highlighted fields first.");
       return;
     }
 

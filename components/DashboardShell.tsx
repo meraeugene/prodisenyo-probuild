@@ -19,6 +19,7 @@ import {
   Users,
   Receipt,
   Settings,
+  Trash2,
   Upload,
   UserPlus,
   UserRoundSearch,
@@ -75,6 +76,7 @@ const BUDGET_NAV_ITEMS = [
 
 const CEO_ADMIN_ITEMS = [
   { href: "/add-user", label: "User Management", icon: Users },
+  { href: "/reset-data", label: "Reset Data", icon: Trash2 },
 ] as const;
 
 const ENGINEER_NAV_ITEMS = [

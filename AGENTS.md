@@ -106,6 +106,13 @@ features/<feature-name>/
 - `lib/*`: app-wide infrastructure and cross-domain helpers.
 - `types/*`: app-wide shared types.
 
+## Route Protection Rule
+
+- Whenever you create a new page for a specific role, always update route protection in middleware in the same change.
+- Add the new route to `proxy.ts` matcher so middleware runs on that path.
+- Update `lib/supabase/middleware.ts` role and protection lists (`PROTECTED_PREFIXES` and applicable role allowlists/redirect checks).
+- Keep page-level `requireRole(...)` checks as defense in depth for privileged routes.
+
 ## Preferred Workflow For New Code
 
 - When adding a new feature:

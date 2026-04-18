@@ -3,10 +3,16 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 import { getSupabaseBrowserEnv, getSupabaseServerEnv } from "@/lib/env";
 
+const SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS = 60 * 60 * 24 * 365;
+
 type CookieMutation = {
   name: string;
   value: string;
-  options?: Parameters<(typeof cookies extends (...args: never[]) => Promise<infer T> ? T : never)["set"]>[2];
+  options?: Parameters<
+    (typeof cookies extends (...args: never[]) => Promise<infer T>
+      ? T
+      : never)["set"]
+  >[2];
 };
 
 export async function createSupabaseServerClient() {
@@ -14,6 +20,12 @@ export async function createSupabaseServerClient() {
   const { url, anonKey } = getSupabaseBrowserEnv();
 
   return createServerClient<Database>(url, anonKey, {
+    cookieOptions: {
+      lifetime: SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();
