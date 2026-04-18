@@ -15,13 +15,13 @@ export default function OvertimeApprovalsPageClient({
   initialOvertimeRequests: OvertimeRequestRecord[];
 }) {
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="CEO Review"
         title="Overtime Approvals"
         description="Review overtime requests submitted from saved HR payroll runs and keep approval history tied to the correct pay period."
         actions={
-          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+          <div className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
             <Radio size={14} className="animate-pulse" />
             Live data
           </div>

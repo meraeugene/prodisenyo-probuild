@@ -55,7 +55,7 @@ export default function PayrollApprovalQueue({
   if (!roleLoading && role !== "ceo") return null;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[14px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+    <section className="flex h-full min-h-0 flex-col rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-2xs font-semibold uppercase tracking-widest text-apple-steel">
@@ -69,7 +69,7 @@ export default function PayrollApprovalQueue({
             history.
           </p>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+        <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
           <Clock3 size={14} />
           {state.pendingCount} pending
         </span>

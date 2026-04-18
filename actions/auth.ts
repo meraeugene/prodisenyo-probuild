@@ -7,6 +7,7 @@ import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { DEFAULT_AUTH_REDIRECT, APP_ROLES, getRoleHomePath } from "@/lib/auth";
+import type { AppRole } from "@/types/database";
 
 type ProfileLookupRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
@@ -17,11 +18,74 @@ export interface AuthActionState {
   error: string | null;
 }
 
+function isSafeInternalPath(pathname: string) {
+  return pathname.startsWith("/") && !pathname.startsWith("//");
+}
+
+function hasAllowedPrefix(pathname: string, prefixes: readonly string[]) {
+  return prefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+function isRoleAllowedNextPath(role: AppRole, pathname: string) {
+  if (!isSafeInternalPath(pathname)) return false;
+
+  if (role === APP_ROLES.CEO) {
+    return hasAllowedPrefix(pathname, [
+      "/dashboard",
+      "/budget-tracker",
+      "/estimate-reviews",
+      "/overtime-approvals",
+      "/attendance-analytics",
+      "/payroll-analytics",
+      "/payroll-reports",
+      "/add-user",
+      "/reset-data",
+      "/settings",
+    ]);
+  }
+
+  if (role === APP_ROLES.PAYROLL_MANAGER) {
+    return hasAllowedPrefix(pathname, [
+      "/home",
+      "/upload-attendance",
+      "/budget-tracker",
+      "/review-attendance",
+      "/generate-payroll",
+      "/attendance-analytics",
+      "/payroll-analytics",
+      "/request-overtime",
+      "/settings",
+    ]);
+  }
+
+  if (role === APP_ROLES.ENGINEER) {
+    return hasAllowedPrefix(pathname, [
+      "/home",
+      "/budget-tracker",
+      "/cost-estimator",
+      "/request-material",
+      "/request-overtime",
+      "/settings",
+    ]);
+  }
+
+  return hasAllowedPrefix(pathname, [
+    "/home",
+    "/budget-tracker",
+    "/request-overtime",
+    "/settings",
+  ]);
+}
+
 export async function signInAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const username = String(formData.get("username") ?? "").trim().toLowerCase();
+  const username = String(formData.get("username") ?? "")
+    .trim()
+    .toLowerCase();
   const password = String(formData.get("password") ?? "");
   const nextPath = String(formData.get("next") ?? "").trim();
 
@@ -72,9 +136,11 @@ export async function signInAction(
   const nonCeoRequestedDashboard =
     profile.role !== APP_ROLES.CEO &&
     (nextPath === "/dashboard" || nextPath.startsWith("/dashboard/"));
-  const redirectPath = nonCeoRequestedDashboard
-    ? roleHomePath
-    : nextPath || roleHomePath;
+
+  const redirectPath =
+    nonCeoRequestedDashboard || !isRoleAllowedNextPath(profile.role, nextPath)
+      ? roleHomePath
+      : nextPath;
 
   redirect(redirectPath || DEFAULT_AUTH_REDIRECT);
 }

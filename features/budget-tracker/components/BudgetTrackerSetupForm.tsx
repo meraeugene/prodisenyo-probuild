@@ -26,7 +26,7 @@ function fieldClass(hasError: boolean, withPrefix = false) {
     : "mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none";
   return `${base} transition focus:border-[#1f6a37] ${
     hasError
-      ? "border border-rose-300 bg-rose-50/40"
+      ? "border border-rose-300 "
       : "border border-apple-mist bg-[rgb(var(--apple-snow))]"
   }`;
 }
@@ -95,8 +95,8 @@ export default function BudgetTrackerSetupForm({
   }
 
   return (
-    <section className="flex min-h-[calc(100vh-3rem)] w-full items-center justify-center">
-      <div className="w-full max-w-lg">
+    <section className="flex min-h-[calc(100vh-3rem)] w-full items-start justify-center pt-6 sm:items-center sm:pt-0">
+      <div className="w-full max-w-lg px-4 sm:px-0">
         {projects.length > 0 ? (
           <button
             type="button"
@@ -108,13 +108,16 @@ export default function BudgetTrackerSetupForm({
           </button>
         ) : null}
 
-        <div className="mt-6">
+        <div className="mt-5 sm:mt-6">
           <h2 className="text-3xl font-semibold tracking-[-0.03em] text-apple-charcoal">
             Set up your project
           </h2>
         </div>
 
-        <form onSubmit={handleValidatedSubmit} className="mt-8 space-y-6">
+        <form
+          onSubmit={handleValidatedSubmit}
+          className="mt-6 space-y-5 sm:mt-8 sm:space-y-6"
+        >
           <div>
             <label className="text-sm font-semibold text-apple-charcoal">
               Project name <span className="text-rose-500">*</span>
@@ -157,7 +160,7 @@ export default function BudgetTrackerSetupForm({
               }}
               className={`mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none transition focus:border-[#1f6a37] ${
                 fieldErrors.projectType
-                  ? "border border-rose-300 bg-rose-50/40"
+                  ? "border border-rose-300 "
                   : "border border-apple-mist bg-white"
               }`}
             >

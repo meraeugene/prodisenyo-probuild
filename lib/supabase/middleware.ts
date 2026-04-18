@@ -12,6 +12,7 @@ type CookieMutation = {
 };
 
 const PROTECTED_PREFIXES = [
+  "/home",
   "/dashboard",
   "/upload-attendance",
   "/budget-tracker",
@@ -37,6 +38,7 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 ] as const;
 
 const CEO_ALLOWED_PREFIXES = [
+  "/home",
   "/dashboard",
   "/budget-tracker",
   "/estimate-reviews",
@@ -50,16 +52,24 @@ const CEO_ALLOWED_PREFIXES = [
 ] as const;
 
 const CEO_ONLY_PREFIXES = ["/overtime-approvals", "/payroll-reports"] as const;
-const PAYROLL_MANAGER_REDIRECT_PATH = "/upload-attendance";
-const ENGINEER_REDIRECT_PATH = "/cost-estimator";
-const EMPLOYEE_REDIRECT_PATH = "/request-overtime";
+const CEO_REDIRECT_PATH = "/home";
+const PAYROLL_MANAGER_REDIRECT_PATH = "/home";
+const ENGINEER_REDIRECT_PATH = "/home";
+const EMPLOYEE_REDIRECT_PATH = "/home";
 const ENGINEER_ALLOWED_PREFIXES = [
+  "/home",
+  "/budget-tracker",
   "/cost-estimator",
   "/request-material",
   "/request-overtime",
   "/settings",
 ] as const;
-const EMPLOYEE_ALLOWED_PREFIXES = ["/request-overtime", "/settings"] as const;
+const EMPLOYEE_ALLOWED_PREFIXES = [
+  "/home",
+  "/budget-tracker",
+  "/request-overtime",
+  "/settings",
+] as const;
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some(
@@ -150,13 +160,15 @@ export async function updateSession(request: NextRequest) {
     if (!profileError && pathname === "/auth/login") {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname =
-        currentRole === "payroll_manager"
-          ? PAYROLL_MANAGER_REDIRECT_PATH
-          : currentRole === "engineer"
-            ? ENGINEER_REDIRECT_PATH
-            : currentRole === "employee"
-              ? EMPLOYEE_REDIRECT_PATH
-              : "/dashboard";
+        currentRole === "ceo"
+          ? CEO_REDIRECT_PATH
+          : currentRole === "payroll_manager"
+            ? PAYROLL_MANAGER_REDIRECT_PATH
+            : currentRole === "engineer"
+              ? ENGINEER_REDIRECT_PATH
+              : currentRole === "employee"
+                ? EMPLOYEE_REDIRECT_PATH
+                : "/dashboard";
       redirectUrl.searchParams.delete("next");
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
@@ -217,7 +229,7 @@ export async function updateSession(request: NextRequest) {
 
     if (!profileError && currentRole === "ceo" && !isAllowedCeoPath(pathname)) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/dashboard";
+      redirectUrl.pathname = CEO_REDIRECT_PATH;
       redirectUrl.searchParams.delete("required");
       return NextResponse.redirect(redirectUrl);
     }

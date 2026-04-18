@@ -27,9 +27,9 @@ export default async function LoginPage({
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.32),transparent_32%,rgba(174,220,188,0.08)_100%)]" />
       <div className="absolute left-[-80px] top-20 h-64 w-64 rounded-full bg-apple-mist/50 blur-3xl" />
       <div className="absolute bottom-[-40px] right-[-40px] h-72 w-72 rounded-full bg-emerald-100/60 blur-3xl" />
-      <div className="relative mx-auto flex min-h-screen max-w-7xl items-center px-5 py-10 sm:px-8 lg:px-10">
-        <div className="grid w-full gap-6 lg:grid-cols-[0.82fr_1fr] lg:items-stretch">
-          <section className="relative overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#112e1a_0%,#1c4728_42%,#245f34_100%)] p-7 text-white shadow-[0_24px_64px_rgba(17,46,26,0.22)] sm:p-8">
+      <div className="relative mx-auto flex min-h-screen max-w-7xl items-stretch px-0 py-0 sm:items-center sm:px-8 sm:py-10 lg:px-10">
+        <div className="grid w-full gap-0 sm:gap-6 lg:grid-cols-[0.82fr_1fr] lg:items-stretch">
+          <section className="order-2 relative overflow-hidden rounded-none bg-[linear-gradient(135deg,#112e1a_0%,#1c4728_42%,#245f34_100%)] p-7 text-white shadow-[0_24px_64px_rgba(17,46,26,0.22)] sm:rounded-[32px] sm:p-8 lg:order-1">
             <div className="absolute right-[-60px] top-[-80px] h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute bottom-[-70px] left-[-30px] h-52 w-52 rounded-full bg-[rgb(var(--theme-chart-5))]/15 blur-2xl" />
 
@@ -105,8 +105,8 @@ export default async function LoginPage({
             </div>
           </section>
 
-          <section className="flex lg:items-stretch lg:pl-4">
-            <div className="flex w-full flex-col rounded-[30px] border border-apple-mist bg-white/92 p-6 shadow-[0_24px_60px_rgba(24,83,43,0.10)] backdrop-blur-xl sm:p-8 lg:h-full lg:max-w-[560px]">
+          <section className="order-1 flex lg:order-2 lg:items-stretch lg:pl-4">
+            <div className="flex w-full flex-col rounded-none border border-apple-mist bg-white/92 p-6 shadow-[0_24px_60px_rgba(24,83,43,0.10)] backdrop-blur-xl sm:rounded-[30px] sm:p-8 lg:h-full lg:max-w-[560px]">
               <div className="mb-8 ">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">

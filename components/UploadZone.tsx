@@ -271,7 +271,7 @@ export default function UploadZone({
           onClick={handleProcess}
           disabled={!hasFiles || loading}
           className={`
-            flex items-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold
+            flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold sm:w-auto
             transition-all duration-200
             ${
               hasFiles && !loading

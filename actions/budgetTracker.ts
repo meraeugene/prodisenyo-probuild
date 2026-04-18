@@ -75,7 +75,12 @@ async function assertBudgetProjectExists(projectId: string) {
 export async function createBudgetProjectAction(
   input: CreateBudgetProjectInput,
 ) {
-  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  const { user } = await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
   const name = normalizeText(input.name);
   const database = createSupabaseAdminClient() as any;
 
@@ -110,7 +115,12 @@ export async function createBudgetProjectAction(
 }
 
 export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
-  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  const { user } = await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
   const database = createSupabaseAdminClient() as any;
   const projectId = normalizeText(input.projectId);
   const name = normalizeText(input.name);
@@ -187,7 +197,12 @@ export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
 }
 
 export async function deleteBudgetItemAction(itemId: string) {
-  await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(itemId);
 
@@ -195,7 +210,10 @@ export async function deleteBudgetItemAction(itemId: string) {
     throw new Error("Budget item is required.");
   }
 
-  const { error } = await database.from("budget_items").delete().eq("id", normalizedId);
+  const { error } = await database
+    .from("budget_items")
+    .delete()
+    .eq("id", normalizedId);
 
   if (error) {
     throw new Error(`Failed to delete budget item. ${error.message}`);
@@ -205,7 +223,12 @@ export async function deleteBudgetItemAction(itemId: string) {
 }
 
 export async function deleteBudgetProjectAction(projectId: string) {
-  await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(projectId);
 
@@ -226,7 +249,12 @@ export async function deleteBudgetProjectAction(projectId: string) {
 }
 
 export async function reorderBudgetItemsAction(input: ReorderBudgetItemsInput) {
-  const { user } = await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  const { user } = await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
   const database = createSupabaseAdminClient() as any;
   const projectId = normalizeText(input.projectId);
 
@@ -261,7 +289,9 @@ export async function reorderBudgetItemsAction(input: ReorderBudgetItemsInput) {
   );
 
   const results = await Promise.all(updates);
-  const failed = results.find((result: { error?: { message?: string } }) => result.error);
+  const failed = results.find(
+    (result: { error?: { message?: string } }) => result.error,
+  );
 
   if (failed?.error) {
     throw new Error(`Failed to reorder budget items. ${failed.error.message}`);

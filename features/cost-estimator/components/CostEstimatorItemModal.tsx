@@ -176,17 +176,21 @@ export default function CostEstimatorItemModal({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-0 backdrop-blur-sm sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative flex h-[min(94vh,750px)] w-full max-w-[1280px] flex-col overflow-hidden rounded-[28px] border border-apple-mist bg-[#f8fbf8] shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
-        <div className="flex items-start justify-between border-b border-apple-mist bg-white px-6 py-4">
+      <div className="relative flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#f8fbf8] shadow-none sm:h-[min(94vh,750px)] sm:max-w-[1280px] sm:rounded-[28px] sm:border sm:border-apple-mist sm:shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
+        <div className="sticky top-0 z-20 flex items-start justify-between border-b border-apple-mist bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
               Engineer Cost
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
-              {editing ? "Edit Item Cost" : "Add Item Cost"}
+              {isReadOnly
+                ? "View Item Cost"
+                : editing
+                  ? "Edit Item Cost"
+                  : "Add Item Cost"}
             </h2>
           </div>
           <button
@@ -201,12 +205,12 @@ export default function CostEstimatorItemModal({
         <div
           className={
             isReadOnly
-              ? "grid h-full min-h-0 flex-1"
-              : "grid h-full min-h-0 flex-1 xl:grid-cols-[320px_minmax(0,1fr)_380px]"
+              ? "grid min-h-0 flex-1 overflow-y-auto"
+              : "grid min-h-0 flex-1 overflow-y-auto xl:h-full xl:grid-cols-[320px_minmax(0,1fr)_380px]"
           }
         >
           {isReadOnly ? null : (
-            <section className="flex h-full min-h-0 flex-col border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-6 py-5 xl:border-b-0 xl:border-r">
+            <section className="flex flex-col border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4 sm:px-6 sm:py-5 xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                 Cost details
               </p>
@@ -225,7 +229,9 @@ export default function CostEstimatorItemModal({
                 }`}
               />
               {errors.displayName ? (
-                <p className="mt-2 text-sm text-rose-600">{errors.displayName}</p>
+                <p className="mt-2 text-sm text-rose-600">
+                  {errors.displayName}
+                </p>
               ) : null}
 
               <div className="mt-5 flex flex-wrap gap-2">
@@ -260,8 +266,8 @@ export default function CostEstimatorItemModal({
           <section
             className={
               isReadOnly
-                ? "flex h-full min-h-0 flex-col bg-white px-4 py-4"
-                : "flex h-full min-h-0 flex-col border-b border-apple-mist bg-white xl:border-b-0 xl:border-r"
+                ? "flex flex-col bg-white px-4 py-4 xl:min-h-0 xl:h-full"
+                : "flex flex-col border-b border-apple-mist bg-white xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r"
             }
           >
             {isReadOnly ? (
@@ -269,95 +275,131 @@ export default function CostEstimatorItemModal({
                 {(() => {
                   const totalQuantity = form.materials.reduce(
                     (sum, material) =>
-                      sum + parseBudgetNumberInput(material.quantityInput || "0"),
+                      sum +
+                      parseBudgetNumberInput(material.quantityInput || "0"),
                     0,
                   );
 
                   return (
                     <>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                    Item materials
-                  </p>
-                  <div className="mt-3 grid gap-4 rounded-[16px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4 md:grid-cols-2">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                        Description
-                      </p>
-                      <p className="mt-2 text-base font-semibold text-apple-charcoal">
-                        {form.displayName || "Item description"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                        Notes
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-apple-steel">
-                        {form.notes || "No notes added for this item."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 min-h-0 flex-1 overflow-auto rounded-[16px] border border-apple-mist">
-                  <div className="grid grid-cols-[minmax(180px,1.4fr)_90px_90px_120px] gap-2 border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel">
-                    <span>Description</span>
-                    <span>Unit</span>
-                    <span>Qty</span>
-                    <span>Unit cost</span>
-                  </div>
-
-                  <div className="divide-y divide-apple-mist">
-                    {form.materials.map((material) => {
-                      const quantityValue = parseBudgetNumberInput(
-                        material.quantityInput || "0",
-                      );
-                      const unitCostValue = parseBudgetNumberInput(
-                        material.unitCostInput || "0",
-                      );
-
-                      return (
-                        <div
-                          key={material.id}
-                          className="grid grid-cols-[minmax(180px,1.4fr)_90px_90px_120px] gap-2 px-3 py-2.5 text-sm text-apple-charcoal"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold">
-                              {material.materialName ||
-                                material.searchInput ||
-                                "Material"}
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                          Item materials
+                        </p>
+                        <div className="mt-3 grid gap-4 rounded-[16px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4 md:grid-cols-2">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                              Description
+                            </p>
+                            <p className="mt-2 text-base font-semibold text-apple-charcoal">
+                              {form.displayName || "Item description"}
                             </p>
                           </div>
-                          <span>{material.unitType || "-"}</span>
-                          <span>{quantityValue || 0}</span>
-                          <span>{formatBudgetMoney(unitCostValue)}</span>
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                              Notes
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-apple-steel">
+                              {form.notes || "No notes added for this item."}
+                            </p>
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                      </div>
 
-                <div className="mt-4 grid gap-3 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3 sm:grid-cols-2">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
-                      Total quantity
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-emerald-900">
-                      {totalQuantity.toLocaleString("en-PH", {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                  <div className="sm:text-right">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
-                      Total estimate
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-emerald-900">
-                      {formatBudgetMoney(computedTotal)}
-                    </p>
-                  </div>
-                </div>
+                      <div className="mt-5 min-h-0 flex-1 rounded-[16px] border border-apple-mist">
+                        <div className="hidden grid-cols-[minmax(180px,1.4fr)_90px_90px_120px] gap-2 border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel sm:grid">
+                          <span>Description</span>
+                          <span>Unit</span>
+                          <span>Qty</span>
+                          <span>Unit cost</span>
+                        </div>
+
+                        <div className="divide-y divide-apple-mist">
+                          {form.materials.map((material) => {
+                            const quantityValue = parseBudgetNumberInput(
+                              material.quantityInput || "0",
+                            );
+                            const unitCostValue = parseBudgetNumberInput(
+                              material.unitCostInput || "0",
+                            );
+
+                            return (
+                              <div key={material.id}>
+                                <div className="hidden grid-cols-[minmax(180px,1.4fr)_90px_90px_120px] gap-2 px-3 py-2.5 text-sm text-apple-charcoal sm:grid">
+                                  <div className="min-w-0">
+                                    <p className="truncate font-semibold">
+                                      {material.materialName ||
+                                        material.searchInput ||
+                                        "Material"}
+                                    </p>
+                                  </div>
+                                  <span>{material.unitType || "-"}</span>
+                                  <span>{quantityValue || 0}</span>
+                                  <span>
+                                    {formatBudgetMoney(unitCostValue)}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-2 px-3 py-3 text-sm sm:hidden">
+                                  <p className="break-words font-semibold text-apple-charcoal">
+                                    {material.materialName ||
+                                      material.searchInput ||
+                                      "Material"}
+                                  </p>
+                                  <div className="grid grid-cols-3 gap-2 text-xs">
+                                    <div>
+                                      <p className="font-semibold uppercase tracking-[0.14em] text-apple-steel">
+                                        Unit
+                                      </p>
+                                      <p className="mt-1 text-sm text-apple-charcoal">
+                                        {material.unitType || "-"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold uppercase tracking-[0.14em] text-apple-steel">
+                                        Qty
+                                      </p>
+                                      <p className="mt-1 text-sm text-apple-charcoal">
+                                        {quantityValue || 0}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold uppercase tracking-[0.14em] text-apple-steel">
+                                        Unit cost
+                                      </p>
+                                      <p className="mt-1 text-sm text-apple-charcoal">
+                                        {formatBudgetMoney(unitCostValue)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                            Total quantity
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-emerald-900">
+                            {totalQuantity.toLocaleString("en-PH", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
+                        <div className="sm:text-right">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                            Total estimate
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-emerald-900">
+                            {formatBudgetMoney(computedTotal)}
+                          </p>
+                        </div>
+                      </div>
                     </>
                   );
                 })()}
@@ -379,11 +421,12 @@ export default function CostEstimatorItemModal({
                 const materialTotal =
                   parseBudgetNumberInput(materialRow.unitCostInput || "0") *
                   parseBudgetNumberInput(materialRow.quantityInput || "0");
-                const savingThisMaterial = pendingMaterialRowId === materialRow.id;
+                const savingThisMaterial =
+                  pendingMaterialRowId === materialRow.id;
                 const rowErrors = errors.materialRows[materialRow.id] ?? {};
 
                 return (
-                  <div className="flex h-full min-h-0 w-full flex-col   bg-white p-4 shadow-">
+                  <div className="flex w-full flex-col bg-white p-4 xl:h-full xl:min-h-0">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                         Material {materialNumber}
@@ -395,7 +438,7 @@ export default function CostEstimatorItemModal({
                       </h3>
                     </div>
 
-                    <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4">
+                    <div className="mt-4 flex flex-col gap-4 xl:min-h-0 xl:flex-1">
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
                           Material Name <span className="text-rose-500">*</span>
@@ -439,7 +482,9 @@ export default function CostEstimatorItemModal({
                             placeholder="Search existing material or type a new one"
                             disabled={isReadOnly}
                             className={`w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 pr-10 text-sm outline-none focus:border-[#1f6a37] ${
-                              rowErrors.searchInput ? "border-rose-300" : "border-apple-mist"
+                              rowErrors.searchInput
+                                ? "border-rose-300"
+                                : "border-apple-mist"
                             }`}
                           />
                           {materialRow.searchInput ? (
@@ -494,7 +539,9 @@ export default function CostEstimatorItemModal({
                           ) : null}
                         </div>
                         {rowErrors.searchInput ? (
-                          <p className="mt-2 text-sm text-rose-600">{rowErrors.searchInput}</p>
+                          <p className="mt-2 text-sm text-rose-600">
+                            {rowErrors.searchInput}
+                          </p>
                         ) : null}
                       </div>
 
@@ -529,7 +576,9 @@ export default function CostEstimatorItemModal({
                             placeholder="Select or type a unit"
                             disabled={isReadOnly}
                             className={`w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 pr-10 text-sm outline-none transition focus:border-[#1f6a37] ${
-                              rowErrors.unitType ? "border-rose-300" : "border-apple-mist"
+                              rowErrors.unitType
+                                ? "border-rose-300"
+                                : "border-apple-mist"
                             }`}
                           />
                           <button
@@ -538,7 +587,9 @@ export default function CostEstimatorItemModal({
                             onMouseDown={(event) => {
                               event.preventDefault();
                               setOpenUnitMenuId((current) =>
-                                current === materialRow.id ? null : materialRow.id,
+                                current === materialRow.id
+                                  ? null
+                                  : materialRow.id,
                               );
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-apple-steel"
@@ -554,10 +605,11 @@ export default function CostEstimatorItemModal({
                                     ? true
                                     : unit.unitType
                                         .toLowerCase()
-                                        .includes(materialRow.unitType.toLowerCase()),
+                                        .includes(
+                                          materialRow.unitType.toLowerCase(),
+                                        ),
                                 )
-                                .map(
-                                (unit) => (
+                                .map((unit) => (
                                   <button
                                     key={unit.optionId}
                                     type="button"
@@ -575,13 +627,14 @@ export default function CostEstimatorItemModal({
                                       {unit.unitType}
                                     </span>
                                   </button>
-                                ),
-                              )}
+                                ))}
                             </div>
                           ) : null}
                         </div>
                         {rowErrors.unitType ? (
-                          <p className="mt-2 text-sm text-rose-600">{rowErrors.unitType}</p>
+                          <p className="mt-2 text-sm text-rose-600">
+                            {rowErrors.unitType}
+                          </p>
                         ) : null}
                       </div>
 
@@ -596,7 +649,9 @@ export default function CostEstimatorItemModal({
                             </span>
                             <input
                               value={formatBudgetNumberForInput(
-                                parseBudgetNumberInput(materialRow.unitCostInput),
+                                parseBudgetNumberInput(
+                                  materialRow.unitCostInput,
+                                ),
                               )}
                               onChange={(event) =>
                                 onMaterialRowFieldChange(
@@ -630,16 +685,20 @@ export default function CostEstimatorItemModal({
                             inputMode="decimal"
                             disabled={isReadOnly}
                             className={`w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37] ${
-                              rowErrors.quantityInput ? "border-rose-300" : "border-apple-mist"
+                              rowErrors.quantityInput
+                                ? "border-rose-300"
+                                : "border-apple-mist"
                             }`}
                           />
                           {rowErrors.quantityInput ? (
-                            <p className="mt-2 text-sm text-rose-600">{rowErrors.quantityInput}</p>
+                            <p className="mt-2 text-sm text-rose-600">
+                              {rowErrors.quantityInput}
+                            </p>
                           ) : null}
                         </div>
                       </div>
 
-                      <div className="mt-auto flex items-center justify-between gap-3 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3">
+                      <div className="mt-1 flex items-center justify-between gap-3 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3 xl:mt-auto">
                         <div>
                           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
                             Material total
@@ -667,7 +726,10 @@ export default function CostEstimatorItemModal({
                           >
                             {savingThisMaterial ? (
                               <>
-                                <LoaderCircle size={15} className="animate-spin" />
+                                <LoaderCircle
+                                  size={15}
+                                  className="animate-spin"
+                                />
                                 Saving...
                               </>
                             ) : editingMaterialSnapshots[materialRow.id] ? (
@@ -692,8 +754,8 @@ export default function CostEstimatorItemModal({
           </section>
 
           {isReadOnly ? null : (
-            <aside className="flex h-full min-h-0 flex-col bg-emerald-50">
-              <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
+            <aside className="flex flex-col bg-emerald-50 xl:min-h-0 xl:h-full">
+              <div className="flex flex-1 flex-col px-4 py-4 xl:min-h-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
                   Total estimate
                 </p>
@@ -704,7 +766,7 @@ export default function CostEstimatorItemModal({
                   Total materials: {receiptMaterials.length}
                 </p>
 
-                <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-emerald-200/70 pt-4 pr-4">
+                <div className="mt-4 border-t border-emerald-200/70 pt-4 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-4">
                   {receiptMaterials.length === 0 ? (
                     <p className="text-sm text-emerald-900/75">
                       No saved materials yet.
@@ -820,7 +882,7 @@ export default function CostEstimatorItemModal({
           )}
         </div>
 
-        <div className="border-t border-apple-mist bg-white px-4 py-3">
+        <div className="sticky bottom-0 z-20 border-t border-apple-mist bg-white px-4 py-3">
           <div className="flex flex-col justify-end gap-3 sm:flex-row">
             <button
               type="button"
@@ -846,7 +908,6 @@ export default function CostEstimatorItemModal({
                       ? "Save"
                       : "Save"}
                 </button>
-
               </>
             ) : null}
           </div>

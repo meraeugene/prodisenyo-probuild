@@ -1,13 +1,7 @@
 "use client";
 
 import type { ChangeEvent, RefObject } from "react";
-import {
-  ImagePlus,
-  LoaderCircle,
-  Mail,
-  Save,
-  UserRound,
-} from "lucide-react";
+import { ImagePlus, LoaderCircle, Mail, Save, UserRound } from "lucide-react";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { roleLabel } from "@/features/settings/utils/settingsHelpers";
 import type { EditableProfile } from "@/features/settings/hooks/useSettingsPage";
@@ -48,7 +42,7 @@ export default function SettingsProfileSection({
   onSaveProfile,
 }: SettingsProfileSectionProps) {
   return (
-    <div className="flex h-full flex-col rounded-[18px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+    <div className="flex h-full flex-col rounded-none border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:rounded-[18px]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-apple-charcoal">

@@ -1,5 +1,5 @@
 import { APP_ROLES, requireRole } from "@/lib/auth";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import type {
   BudgetItemRow,
   BudgetProjectRow,
@@ -7,9 +7,14 @@ import type {
 import BudgetTrackerPageClient from "@/features/budget-tracker/components/BudgetTrackerPageClient";
 
 export default async function BudgetTrackerPage() {
-  await requireRole([APP_ROLES.CEO, APP_ROLES.PAYROLL_MANAGER]);
+  await requireRole([
+    APP_ROLES.CEO,
+    APP_ROLES.PAYROLL_MANAGER,
+    APP_ROLES.ENGINEER,
+    APP_ROLES.EMPLOYEE,
+  ]);
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient() as any;
   let projects: BudgetProjectRow[] = [];
   let items: BudgetItemRow[] = [];
   let schemaReady = true;

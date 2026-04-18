@@ -13,6 +13,7 @@ import {
   ChevronsRight,
   ChevronRight,
   Clock3,
+  House,
   LayoutDashboard,
   LineChart,
   Menu,
@@ -35,12 +36,15 @@ import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
 const PRIMARY_NAV_ITEMS = [
+  { href: "/home", label: "Home", icon: House },
   { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
   { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ];
 
 const CEO_GENERAL_ITEMS = [
+  { href: "/home", label: "Home", icon: House },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
 ] as const;
 
 const CEO_REVIEW_ITEMS = [
@@ -79,8 +83,14 @@ const CEO_ADMIN_ITEMS = [
   { href: "/reset-data", label: "Reset Data", icon: Trash2 },
 ] as const;
 
-const ENGINEER_NAV_ITEMS = [
+const ENGINEER_GENERAL_ITEMS = [{ href: "/home", label: "Home", icon: House }];
+
+const ENGINEER_PLANNING_ITEMS = [
+  { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
   { href: "/cost-estimator", label: "Cost Estimator", icon: Calculator },
+] as const;
+
+const ENGINEER_REQUEST_ITEMS = [
   { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
   {
     href: "/request-material",
@@ -90,6 +100,8 @@ const ENGINEER_NAV_ITEMS = [
 ] as const;
 
 const EMPLOYEE_NAV_ITEMS = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
   { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ] as const;
 
@@ -163,6 +175,25 @@ function renderSidebarLink(params: {
   );
 }
 
+function renderSidebarSectionLabel(params: {
+  label: string;
+  collapsed: boolean;
+}) {
+  const { label, collapsed } = params;
+
+  if (collapsed) {
+    return null;
+  }
+
+  return (
+    <div className="px-3 pb-1 pt-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+        {label}
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardShell({
   children,
   profile,
@@ -210,11 +241,19 @@ export default function DashboardShell({
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname === "/budget-tracker" || pathname === "/cost-estimator") {
+    const isDesktop =
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches;
+
+    if (
+      isDesktop &&
+      (pathname === "/budget-tracker" || pathname === "/cost-estimator")
+    ) {
       setCollapsed(true);
-    } else {
-      setCollapsed(false);
+      return;
     }
+
+    setCollapsed(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -411,22 +450,10 @@ export default function DashboardShell({
 
           <div className="flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-4 pb-3 pt-5">
             <nav className="space-y-3">
-              {!collapsed ? (
-                <div className="px-3 pb-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    {isCeo
-                      ? "General"
-                      : isEngineer || isEmployee
-                        ? "Workflow"
-                        : "Attendance"}
-                  </p>
-                </div>
-              ) : null}
-
               {(isCeo
                 ? CEO_GENERAL_ITEMS
                 : isEngineer
-                  ? ENGINEER_NAV_ITEMS
+                  ? ENGINEER_GENERAL_ITEMS
                   : isEmployee
                     ? EMPLOYEE_NAV_ITEMS
                     : PRIMARY_NAV_ITEMS
@@ -441,14 +468,10 @@ export default function DashboardShell({
 
               {isCeo ? (
                 <>
-                  {!collapsed ? (
-                    <div className="px-3 pb-1 pt-1">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                        Review
-                      </p>
-                    </div>
-                  ) : null}
-
+                  {renderSidebarSectionLabel({
+                    label: "Reviews",
+                    collapsed,
+                  })}
                   {CEO_REVIEW_ITEMS.map((item) =>
                     renderSidebarLink({
                       item,
@@ -468,6 +491,36 @@ export default function DashboardShell({
                 </>
               ) : null}
 
+              {isEngineer ? (
+                <>
+                  {renderSidebarSectionLabel({
+                    label: "Planning",
+                    collapsed,
+                  })}
+                  {ENGINEER_PLANNING_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                    }),
+                  )}
+
+                  {renderSidebarSectionLabel({
+                    label: "Requests",
+                    collapsed,
+                  })}
+                  {ENGINEER_REQUEST_ITEMS.map((item) =>
+                    renderSidebarLink({
+                      item,
+                      pathname,
+                      collapsed,
+                      onNavigate: () => setOpen(false),
+                    }),
+                  )}
+                </>
+              ) : null}
+
               <AnimatePresence initial={false}>
                 {!isCeo && canSeeWorkflowNav ? (
                   <motion.div
@@ -478,13 +531,6 @@ export default function DashboardShell({
                     transition={{ duration: 0.28, ease: "easeOut" }}
                     className="space-y-3 overflow-hidden"
                   >
-                    {!collapsed ? (
-                      <div className="px-3 pb-1 pt-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                          Payroll
-                        </p>
-                      </div>
-                    ) : null}
                     {GENERAL_WORKFLOW_ITEMS.map((item, index) => {
                       const active = pathname === item.href;
                       return (
@@ -532,14 +578,6 @@ export default function DashboardShell({
                 ) : null}
               </AnimatePresence>
 
-              {!collapsed && isPayrollManager ? (
-                <div className="px-3 pb-1 pt-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                    Budget
-                  </p>
-                </div>
-              ) : null}
-
               {isPayrollManager &&
                 BUDGET_NAV_ITEMS.map((item) => {
                   return renderSidebarLink({
@@ -552,14 +590,10 @@ export default function DashboardShell({
 
               {isCeo ? (
                 <>
-                  {!collapsed ? (
-                    <div className="px-3 pb-1 pt-1">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
-                        Admin
-                      </p>
-                    </div>
-                  ) : null}
-
+                  {renderSidebarSectionLabel({
+                    label: "Admin",
+                    collapsed,
+                  })}
                   {CEO_ADMIN_ITEMS.map((item) =>
                     renderSidebarLink({
                       item,

@@ -253,7 +253,7 @@ export default function UserManagementPageClient({
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="Admin"
         title="User Management"
@@ -261,8 +261,8 @@ export default function UserManagementPageClient({
       />
 
       <section className="grid gap-4 2xl:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="rounded-[22px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
-          <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px] sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                 {editingUserId ? "Edit User" : "Create User"}
@@ -275,7 +275,7 @@ export default function UserManagementPageClient({
               <button
                 type="button"
                 onClick={resetForm}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40"
+                className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 sm:w-auto"
               >
                 Cancel edit
               </button>
@@ -410,7 +410,7 @@ export default function UserManagementPageClient({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isPending}
-                className="inline-flex h-11 items-center gap-2 rounded-[12px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 <UserPlus size={16} />
                 {isPending
@@ -425,7 +425,7 @@ export default function UserManagementPageClient({
           </div>
         </div>
 
-        <section className="rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <section className="min-w-0 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px]">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -440,8 +440,8 @@ export default function UserManagementPageClient({
             </span>
           </div>
 
-          <div className="overflow-hidden rounded-[18px] border border-apple-mist">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto overflow-y-visible rounded-[18px] border border-apple-mist">
+            <table className="min-w-[900px] w-full text-sm">
               <thead>
                 <tr className="bg-[rgb(var(--apple-snow))]">
                   <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">

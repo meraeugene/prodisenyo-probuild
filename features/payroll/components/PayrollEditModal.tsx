@@ -433,8 +433,8 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
-      <div className="flex max-h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-apple-mist bg-white shadow-apple-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-0 sm:p-4">
+      <div className="flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden rounded-none border border-apple-mist bg-white shadow-apple-xs sm:h-auto sm:max-h-[88vh] sm:rounded-lg">
         <div className="sticky top-0 z-10 border-b border-apple-mist bg-white px-5 py-4 sm:px-7 flex items-start justify-between gap-3">
           <div>
             <p className="text-2xs font-semibold  uppercase tracking-widest">
@@ -449,7 +449,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
               <span className="text-apple-silver">&middot;</span>
 
               {/* Role */}
-              <span className="px-2.5 py-1 rounded-full bg-emerald-700 text-xs font-medium text-white">
+              <span className="rounded-full bg-sky-700 px-2.5 py-1 text-xs font-medium text-white">
                 {ROLE_CODE_TO_NAME[editingPayrollRow.role as RoleCode] ??
                   "Unknown Role"}
               </span>
@@ -471,9 +471,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
           <button
             type="button"
             onClick={payroll.closePayrollEditModal}
-            className="w-8 h-8 rounded-full  text-white bg-emerald-800 hover:bg-emerald-900  transition flex items-center justify-center"
+            className="flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl bg-emerald-100 text-emerald-800 transition hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:h-8 sm:w-8 sm:rounded-full"
           >
-            <X size={16} />
+            <X size={18} className="sm:h-4 sm:w-4" />
           </button>
         </div>
 
@@ -485,9 +485,9 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                   Adjustments
                 </p>
               </div>
-              <div className="p-5 space-y-4 max-w-[720px]">
+              <div className="max-w-[720px] space-y-4 p-4 sm:p-5">
                 {/* ─── BUTTONS (SAME WIDTH) ─── */}
-                <div className="flex gap-2 w-full">
+                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
                   {[
                     { key: "cashAdvance", label: "Cash Advance" },
                     { key: "overtime", label: "Overtime" },
@@ -504,7 +504,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                             prev === btn.key ? null : (btn.key as any),
                           )
                         }
-                        className={`flex-1 h-10 rounded-xl border text-sm font-semibold transition ${
+                        className={`h-10 w-full rounded-xl border px-4 text-sm font-semibold transition ${
                           active
                             ? "bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800"
                             : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
@@ -557,17 +557,17 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                       <button
                         type="button"
                         onClick={() => setActiveAdjustmentForm(null)}
-                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                        className="h-9 w-full rounded-lg px-4 text-sm text-gray-500 hover:bg-gray-100 sm:w-auto"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm  font-semibold hover:bg-emerald-800"
+                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto"
                       >
                         Add Cash Advance
                       </button>
@@ -648,14 +648,14 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       </p>
                     ) : null}
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                       <button
                         type="button"
                         onClick={() => {
                           setOvertimeValidationMessage(null);
                           setActiveAdjustmentForm(null);
                         }}
-                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                        className="h-9 w-full rounded-lg px-4 text-sm text-gray-500 hover:bg-gray-100 sm:w-auto"
                       >
                         Cancel
                       </button>
@@ -665,7 +665,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                           parseNonNegativeValue(overtimeHoursInput) <= 0 ||
                           parseNonNegativeValue(overtimePayInput) <= 0
                         }
-                        className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                       >
                         Add Overtime
                       </button>
@@ -714,15 +714,15 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                       <button
                         type="button"
                         onClick={() => setActiveAdjustmentForm(null)}
-                        className="h-9 px-4 rounded-lg text-sm text-gray-500 hover:bg-gray-100"
+                        className="h-9 w-full rounded-lg px-4 text-sm text-gray-500 hover:bg-gray-100 sm:w-auto"
                       >
                         Cancel
                       </button>
-                      <button className="h-9 px-4 rounded-lg bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800">
+                      <button className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto">
                         Add Paid Leave
                       </button>
                     </div>
@@ -1499,16 +1499,15 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
-        <div className="sticky bottom-0 z-10 border-t border-apple-mist bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
-          <div className="flex items-center justify-end gap-2">
+        <div className="sticky bottom-0 z-10 border-t border-apple-mist bg-white/95 px-4 py-4 backdrop-blur sm:px-7">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
             <button
               type="button"
               onClick={payroll.closePayrollEditModal}
               disabled={isSavingChanges}
-              className="px-4 h-10 rounded-2xl border border-apple-silver text-sm font-semibold text-apple-ash hover:border-apple-charcoal transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 w-full rounded-xl border border-apple-silver px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               Cancel
             </button>
@@ -1518,7 +1517,7 @@ export default function PayrollEditModal({ payroll }: PayrollEditModalProps) {
                 void handleSaveChanges();
               }}
               disabled={isSavingChanges}
-              className="inline-flex px-4 h-10 items-center gap-2 rounded-2xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isSavingChanges ? (
                 <>

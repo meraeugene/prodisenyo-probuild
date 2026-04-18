@@ -153,7 +153,9 @@ export default function PayrollPage() {
         }
 
         const latestFreshRejection = response.reports
-          .filter((report) => report.status === "rejected" && report.rejected_at)
+          .filter(
+            (report) => report.status === "rejected" && report.rejected_at,
+          )
           .sort(
             (left, right) =>
               new Date(right.rejected_at as string).getTime() -
@@ -163,7 +165,8 @@ export default function PayrollPage() {
             const known = knownRejectionTimesRef.current[report.id];
             return (
               !known ||
-              new Date(report.rejected_at as string).getTime() > new Date(known).getTime()
+              new Date(report.rejected_at as string).getTime() >
+                new Date(known).getTime()
             );
           });
 
@@ -197,7 +200,8 @@ export default function PayrollPage() {
           .filter((request) => request.status === "rejected")
           .sort(
             (left, right) =>
-              new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+              new Date(right.updated_at).getTime() -
+              new Date(left.updated_at).getTime(),
           )
           .find((request) => {
             const known = knownOvertimeRejectionTimesRef.current[request.id];
@@ -208,7 +212,8 @@ export default function PayrollPage() {
           });
 
         overtimeResponse.requests.forEach((request) => {
-          knownOvertimeRejectionTimesRef.current[request.id] = request.updated_at;
+          knownOvertimeRejectionTimesRef.current[request.id] =
+            request.updated_at;
         });
 
         window.sessionStorage.setItem(
@@ -217,10 +222,13 @@ export default function PayrollPage() {
         );
 
         if (latestFreshOvertimeRejection) {
-          const parsedNotes = parseOvertimeRequestNotes(latestFreshOvertimeRejection.notes);
+          const parsedNotes = parseOvertimeRequestNotes(
+            latestFreshOvertimeRejection.notes,
+          );
           setOvertimeRejectionAlert({
             requestId: latestFreshOvertimeRejection.id,
-            employeeName: latestFreshOvertimeRejection.employee_name ?? "Unknown Employee",
+            employeeName:
+              latestFreshOvertimeRejection.employee_name ?? "Unknown Employee",
             siteName: latestFreshOvertimeRejection.site_name ?? "",
             periodLabel: latestFreshOvertimeRejection.period_label ?? "",
             rejectionReason: parsedNotes.rejectionReason,
@@ -340,7 +348,7 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-0 sm:p-4">
       <DashboardPageHero
         eyebrow="Payroll"
         title="Generate Payroll"

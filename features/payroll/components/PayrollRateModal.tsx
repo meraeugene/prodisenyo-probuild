@@ -101,7 +101,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               dailyRate: nextDailyRate,
             };
           })
-          .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+          .filter((entry): entry is NonNullable<typeof entry> =>
+            Boolean(entry),
+          );
 
         if (changedEntries.length === 0) {
           toast.info("No branch rate changes to save.");
@@ -122,7 +124,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
         const description =
           extraCount > 0
             ? `${changedSummaries.slice(1, 3).join(" | ")}${
-                extraCount > 2 ? ` | +${extraCount - 2} more change${extraCount - 2 === 1 ? "" : "s"}` : ""
+                extraCount > 2
+                  ? ` | +${extraCount - 2} more change${extraCount - 2 === 1 ? "" : "s"}`
+                  : ""
               }`
             : "Branch-specific employee rate updated.";
 
@@ -140,14 +144,17 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-apple-xs sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-0 sm:p-4 backdrop-blur-sm">
+      <div className="flex h-[100dvh] w-full max-w-5xl flex-col overflow-hidden rounded-none border border-apple-mist bg-white p-4 shadow-apple-xs sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:p-6">
         <div>
           <h3 className="text-lg font-bold text-apple-charcoal">
             Edit Employee Rates Per Branch
           </h3>
           <p className="text-sm text-apple-smoke">
-            The standard daily rate is 500 for all employees. You can override it here per employee and branch, and those saved rates will be reused the next time payroll is generated for the same employee at the same site.
+            The standard daily rate is 500 for all employees. You can override
+            it here per employee and branch, and those saved rates will be
+            reused the next time payroll is generated for the same employee at
+            the same site.
           </p>
         </div>
 
@@ -194,13 +201,14 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           </div>
 
           <p className="text-xs text-apple-steel">
-            Showing {filteredRows.length} of {editableRows.length} branch rate row
+            Showing {filteredRows.length} of {editableRows.length} branch rate
+            row
             {editableRows.length === 1 ? "" : "s"}
           </p>
         </div>
 
-        <div className="mt-4 max-h-[56vh] overflow-y-auto rounded-2xl border border-apple-mist">
-          <table className="min-w-full text-sm">
+        <div className="mt-4 min-h-0 flex-1 overflow-auto rounded-2xl border border-apple-mist">
+          <table className="min-w-[760px] text-sm sm:min-w-full">
             <thead className="sticky top-0 z-10 bg-apple-snow/95 backdrop-blur-sm">
               <tr className="border-b border-apple-mist">
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-apple-steel">
@@ -220,11 +228,16 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
             <tbody>
               {filteredRows.length > 0 ? (
                 filteredRows.map((row) => (
-                  <tr key={row.key} className="border-b border-apple-mist/70 last:border-0">
+                  <tr
+                    key={row.key}
+                    className="border-b border-apple-mist/70 last:border-0"
+                  >
                     <td className="px-4 py-3 font-medium text-apple-charcoal">
                       <div className="flex items-center gap-2">
                         <span>{row.worker}</span>
-                        {(branchCountByEmployee.get(row.worker.trim().toLowerCase()) ?? 0) > 1 ? (
+                        {(branchCountByEmployee.get(
+                          row.worker.trim().toLowerCase(),
+                        ) ?? 0) > 1 ? (
                           <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                             Multi-branch
                           </span>
@@ -232,7 +245,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-apple-ash">{row.role}</td>
-                    <td className="px-4 py-3 text-apple-ash">{row.siteLabel}</td>
+                    <td className="px-4 py-3 text-apple-ash">
+                      {row.siteLabel}
+                    </td>
                     <td className="px-4 py-3">
                       <input
                         type="number"
@@ -246,7 +261,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                           payroll.setPayrollRateDraft((prev) => ({
                             ...prev,
                             [row.key]:
-                              Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
+                              Number.isFinite(parsed) && parsed >= 0
+                                ? parsed
+                                : 0,
                           }));
                         }}
                         className="h-10 w-full rounded-2xl border border-apple-silver bg-white px-3 text-right text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
@@ -254,7 +271,8 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                       <p className="mt-1 text-right text-[11px] text-apple-steel">
                         Hourly:{" "}
                         {formatPayrollNumber(
-                          (payroll.payrollRateDraft[row.key] ?? row.fallbackRate) / 8,
+                          (payroll.payrollRateDraft[row.key] ??
+                            row.fallbackRate) / 8,
                         )}
                       </p>
                     </td>
@@ -276,32 +294,33 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-apple-steel">
-            Showing {filteredRows.length} row{filteredRows.length === 1 ? "" : "s"} in alphabetical order
+            Showing {filteredRows.length} row
+            {filteredRows.length === 1 ? "" : "s"} in alphabetical order
           </p>
 
-          <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={payroll.closePayrollRateModal}
-            className="h-10 rounded-2xl border border-apple-silver px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isPending}
-            className="inline-flex h-10 items-center gap-2 rounded-2xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isPending ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Branch Rates"
-            )}
-          </button>
+          <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={payroll.closePayrollRateModal}
+              className="h-10 w-full rounded-xl border border-apple-silver px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal sm:w-auto"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending}
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Branch Rates"
+              )}
+            </button>
           </div>
         </div>
       </div>

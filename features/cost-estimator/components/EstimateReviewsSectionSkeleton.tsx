@@ -8,7 +8,7 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export default function EstimateReviewsSectionSkeleton() {
   return (
-    <section className="mt-4 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
       <div
         className="flex items-start justify-between gap-3"
         aria-hidden="true"

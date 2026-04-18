@@ -15,13 +15,13 @@ export default function PayrollReportsPageClient({
   const state = usePayrollReportsPage({ initialReports: initialData.reports });
 
   return (
-    <div className="p-6">
+    <div className="p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="Payroll Reports"
         title="Payroll Report Review"
         description="Pending payroll reports stay here for CEO review. Only approved payroll reports flow into the CEO dashboard totals."
         actions={
-          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+          <div className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
             <Radio
               size={14}
               className={state.refreshing ? "animate-pulse" : ""}
@@ -81,7 +81,7 @@ export default function PayrollReportsPageClient({
       />
 
       {state.error ? (
-        <section className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+        <section className="rounded-none border border-red-100 bg-red-50 p-0 text-sm text-red-700 sm:rounded-[14px] sm:p-4">
           {state.error}
         </section>
       ) : null}

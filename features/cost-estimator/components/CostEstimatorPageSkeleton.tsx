@@ -75,7 +75,7 @@ export default function CostEstimatorPageSkeleton() {
           </div>
         </div>
 
-        <aside className="min-h-full border-l border-apple-mist bg-white px-5 py-6">
+        <aside className="min-h-full border-t border-apple-mist bg-white px-5 py-6 xl:border-t-0 xl:border-l">
           <div className="flex items-start justify-between gap-3">
             <SkeletonBlock className="h-9 w-36" />
             <SkeletonBlock className="h-8 w-20 rounded-full" />

@@ -36,7 +36,7 @@ export default function CostEstimatorProjectsOverview({
   onCreateProject: () => void;
 }) {
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="Cost Estimation Workflow"
         title="Overall Projects"
@@ -46,7 +46,7 @@ export default function CostEstimatorProjectsOverview({
             type="button"
             onClick={onCreateProject}
             disabled={pending}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:mt-0"
           >
             <PlusCircle size={14} />
             New project
@@ -54,7 +54,7 @@ export default function CostEstimatorProjectsOverview({
         }
       />
 
-      <section className="rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+      <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">

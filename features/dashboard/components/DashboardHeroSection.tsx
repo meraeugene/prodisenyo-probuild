@@ -24,8 +24,9 @@ export default function DashboardHeroSection({
             Overall Approved Payroll
           </p>
           <div className="mt-3 flex items-center gap-3">
-            <h1 className="text-[40px] font-semibold tracking-[-0.03em]">
-              {PESO_SIGN} {formatPayrollNumber(totalPayroll)}
+            <h1 className="whitespace-nowrap text-[32px] font-semibold tracking-[-0.03em] sm:text-[40px]">
+              {PESO_SIGN}
+              {formatPayrollNumber(totalPayroll)}
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[rgb(var(--theme-chart-5))]">
               Synced <ArrowUp size={12} />
@@ -44,10 +45,7 @@ export default function DashboardHeroSection({
           disabled={isRefreshing || isTrendLoading}
           className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[rgb(var(--theme-chart-5))] px-4 text-sm font-semibold text-[rgb(var(--apple-black))] transition hover:bg-[rgb(var(--apple-silver))] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/10 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <RefreshCw
-            size={16}
-            className={isRefreshing ? "animate-spin" : ""}
-          />
+          <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
           Sync
         </button>
       </div>

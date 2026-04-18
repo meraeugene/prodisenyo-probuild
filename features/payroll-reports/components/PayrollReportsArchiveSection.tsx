@@ -70,7 +70,7 @@ export default function PayrollReportsArchiveSection({
 }) {
   return (
     <>
-      <section className="mt-4 rounded-[16px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px]">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -83,7 +83,7 @@ export default function PayrollReportsArchiveSection({
               Review submitted payroll reports before they move forward.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+          <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={12} />
             {pendingReportsCount.toLocaleString("en-PH")} pending
           </span>

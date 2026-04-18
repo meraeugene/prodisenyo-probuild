@@ -69,7 +69,7 @@ export default function EstimateReviewsTable({
   }
 
   return (
-    <section className="mt-4 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -82,14 +82,14 @@ export default function EstimateReviewsTable({
             Review engineer-submitted estimates before final approval.
           </p>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+        <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
           <Clock3 size={12} />
           {pendingReviewsCount} pending
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-[18px] border border-apple-mist">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto overflow-y-visible rounded-[18px] border border-apple-mist">
+        <table className="min-w-[920px] w-full text-sm">
           <thead>
             <tr className="bg-[rgb(var(--apple-snow))]">
               <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">

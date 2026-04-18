@@ -33,7 +33,8 @@ export default function CostEstimatorSummaryPanel({
       ? {
           wrapperClassName: "border-emerald-100 bg-emerald-50",
           textClassName: "text-emerald-900",
-          message: "Add your first cost item to start building the estimate breakdown.",
+          message:
+            "Add your first cost item to start building the estimate breakdown.",
         }
       : budgetState === "under"
         ? {
@@ -56,7 +57,7 @@ export default function CostEstimatorSummaryPanel({
             };
 
   return (
-    <aside className="min-h-full border-l border-apple-mist bg-white px-5 py-6">
+    <aside className="min-h-full border-t border-apple-mist bg-white px-5 py-6 xl:border-t-0 xl:border-l">
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
           Summary

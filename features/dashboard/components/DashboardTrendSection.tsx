@@ -154,7 +154,12 @@ export default function DashboardTrendSection({
                 strokeWidth={3}
                 fill="url(#ceoDashboardTrendFill)"
                 dot={{ r: 0 }}
-                activeDot={{ r: 5, fill: "#16a34a", stroke: "white", strokeWidth: 2 }}
+                activeDot={{
+                  r: 5,
+                  fill: "#16a34a",
+                  stroke: "white",
+                  strokeWidth: 2,
+                }}
               />
             </AreaChart>
           </ResponsiveContainer>

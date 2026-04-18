@@ -17,10 +17,7 @@ import {
 } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
-import {
-  ROLE_CODE_TO_NAME,
-  type RoleCode,
-} from "@/lib/payrollConfig";
+import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import {
   exportAllPayslipsToPdf,
   exportEmployeePayslipToPdf,
@@ -40,9 +37,7 @@ import {
   formatPayrollNumber,
   toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
-import {
-  buildEmployeeBranchRateKey,
-} from "@/features/payroll/utils/payrollMappers";
+import { buildEmployeeBranchRateKey } from "@/features/payroll/utils/payrollMappers";
 import {
   buildGroupedEmployeeCompensation,
   buildGroupedEmployeeMetrics,
@@ -91,6 +86,7 @@ export default function PayrollSection({
   savePending,
 }: PayrollSectionProps) {
   const [showPaidHolidayModal, setShowPaidHolidayModal] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<{
@@ -178,6 +174,20 @@ export default function PayrollSection({
     [groupedPayrollRows, payrollPeriodLabel, payroll],
   );
 
+  const activeMobileFilterCount = useMemo(() => {
+    let count = 0;
+    if (payroll.payrollSiteFilter !== "ALL") count += 1;
+    if (payroll.payrollRoleFilter !== "ALL") count += 1;
+    if (payroll.payrollNameFilter.trim()) count += 1;
+    if (payroll.payrollSort !== "name-asc") count += 1;
+    return count;
+  }, [
+    payroll.payrollSiteFilter,
+    payroll.payrollRoleFilter,
+    payroll.payrollNameFilter,
+    payroll.payrollSort,
+  ]);
+
   function handleExportAllPayslips() {
     if (groupedPayslipRecords.length === 0) return;
     void exportAllPayslipsToPdf(groupedPayslipRecords);
@@ -249,7 +259,7 @@ export default function PayrollSection({
       className="animate-fade-up mt-4"
       style={{ animationFillMode: "both", animationDelay: "80ms" }}
     >
-      <div className="rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <div className="rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
         <div className="flex flex-col gap-4 border-b border-apple-mist px-4 pb-4 pt-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:pb-5 sm:pt-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -275,8 +285,8 @@ export default function PayrollSection({
               Generate Payroll
             </h2>
             <p className="text-sm text-apple-smoke mt-1">
-              Generate a preview after reviewing attendance logs, then submit the
-              payroll record for CEO review.
+              Generate a preview after reviewing attendance logs, then submit
+              the payroll record for CEO review.
             </p>
             {/* {payroll.payrollSaveNotice && (
               <p className="mt-2 text-xs font-semibold text-green-700">
@@ -329,13 +339,13 @@ export default function PayrollSection({
                 Attendance Logs
               </button>
 
-              <div className="ml-auto flex gap-2">
+              <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:ml-auto sm:w-auto sm:flex-nowrap sm:overflow-visible sm:pb-0">
                 {canSavePayroll && (
                   <button
                     type="button"
                     onClick={onSavePayroll}
                     disabled={savePending}
-                    className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#1f6a37] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] bg-[#1f6a37] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
                   >
                     {savePending ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -348,7 +358,7 @@ export default function PayrollSection({
                 <button
                   type="button"
                   onClick={payroll.openPayrollRateModal}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel sm:min-h-0"
                 >
                   <SlidersHorizontal size={14} />
                   Edit Branch Rates
@@ -356,7 +366,7 @@ export default function PayrollSection({
                 <button
                   type="button"
                   onClick={() => setShowPaidHolidayModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
                 >
                   <CalendarDays size={14} />
                   Paid Holidays
@@ -365,7 +375,7 @@ export default function PayrollSection({
                   type="button"
                   onClick={handleExportAllPayslips}
                   disabled={groupedPayslipRecords.length === 0}
-                  className="inline-flex items-center gap-1.5 rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-apple-mist px-3.5 py-2 text-xs font-semibold text-apple-ash transition hover:border-apple-steel disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
                 >
                   <FileSpreadsheet size={14} />
                   Export Payslips PDF
@@ -374,10 +384,51 @@ export default function PayrollSection({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="relative w-full sm:hidden">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
+                  size={16}
+                />
+
+                <input
+                  type="text"
+                  value={payroll.payrollNameFilter}
+                  onChange={(e) => payroll.setPayrollNameFilter(e.target.value)}
+                  placeholder="Search employee"
+                  id="searchPayrollEmployeeMobile"
+                  className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white pl-9 pr-9 text-sm text-[#334951] placeholder:text-[#9babaf] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                />
+
+                {payroll.payrollNameFilter && (
+                  <button
+                    type="button"
+                    onClick={() => payroll.setPayrollNameFilter("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-apple-steel"
+                    aria-label="Clear payroll search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(true)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[#d9e2e6] bg-white px-4 text-sm font-semibold text-[#41565f] transition-all hover:border-[#0f6f74]/35 sm:hidden"
+              >
+                <SlidersHorizontal size={15} />
+                Filters
+                {activeMobileFilterCount > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1f6a37] px-1.5 text-[11px] font-semibold text-white">
+                    {activeMobileFilterCount}
+                  </span>
+                ) : null}
+              </button>
+
               <select
                 value={payroll.payrollSiteFilter}
                 onChange={(e) => payroll.setPayrollSiteFilter(e.target.value)}
-                className="h-11 cursor-pointer w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="hidden h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10 sm:block"
               >
                 <option value="ALL">All files/sites</option>
                 {availableSites.map((siteOption) => (
@@ -394,7 +445,7 @@ export default function PayrollSection({
                     e.target.value as RoleCode | "ALL",
                   )
                 }
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] cursor-pointer hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="hidden h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10 sm:block"
               >
                 <option value="ALL">All Roles</option>
 
@@ -405,7 +456,7 @@ export default function PayrollSection({
                 ))}
               </select>
 
-              <div className="relative w-full">
+              <div className="relative hidden w-full sm:block">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
                   size={16}
@@ -437,7 +488,7 @@ export default function PayrollSection({
                 onChange={(e) =>
                   payroll.setPayrollSort(e.target.value as Step2Sort)
                 }
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] cursor-pointer bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                className="hidden h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10 sm:block"
               >
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
@@ -446,7 +497,7 @@ export default function PayrollSection({
               <button
                 type="button"
                 onClick={payroll.clearPayrollFilters}
-                className="h-11 w-full rounded-[12px] border border-[#d9e2e6] text-sm font-semibold text-[#41565f] transition-all hover:border-[#0f6f74]/35"
+                className="hidden h-11 w-full rounded-[12px] border border-[#d9e2e6] text-sm font-semibold text-[#41565f] transition-all hover:border-[#0f6f74]/35 sm:block"
               >
                 Clear Filters
               </button>
@@ -454,13 +505,13 @@ export default function PayrollSection({
 
             {payroll.payrollTab === "payroll" ? (
               <>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:flex sm:gap-2">
                   {payrollPeriodLabel && (
-                    <div className="inline-flex items-center rounded-[10px] border border-[#d9e2e6] bg-[#f9fbfc] px-3 py-1.5 text-sm font-semibold text-[#22353b]">
+                    <div className="inline-flex w-full items-center rounded-[10px] border border-[#d9e2e6] bg-[#f9fbfc] px-3 py-1.5 text-sm font-semibold text-[#22353b] sm:w-auto sm:whitespace-nowrap">
                       Payroll Period: {payrollPeriodLabel}
                     </div>
                   )}
-                  <div className="inline-flex items-center rounded-[10px] border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800">
+                  <div className="inline-flex w-full items-center rounded-[10px] border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800 sm:w-auto sm:whitespace-nowrap">
                     Paid Holidays: {payroll.payableHolidayDays} day
                     {payroll.payableHolidayDays === 1 ? "" : "s"}
                   </div>
@@ -821,6 +872,98 @@ ${
         onLoadPhilippineHolidays={payroll.loadPhilippinePaidHolidays}
         onClearHolidays={payroll.clearPaidHolidays}
       />
+      {isMounted && showMobileFilters
+        ? createPortal(
+            <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 sm:hidden">
+              <button
+                type="button"
+                className="absolute inset-0 bg-black/45"
+                aria-label="Close mobile filters"
+                onClick={() => setShowMobileFilters(false)}
+              />
+
+              <div className="relative w-full max-w-sm rounded-2xl border border-apple-mist bg-white p-4 shadow-[0_20px_48px_rgba(15,23,42,0.22)]">
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-apple-steel">
+                    Filters
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileFilters(false)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-apple-mist text-apple-ash"
+                    aria-label="Close filters panel"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <select
+                    value={payroll.payrollSiteFilter}
+                    onChange={(e) =>
+                      payroll.setPayrollSiteFilter(e.target.value)
+                    }
+                    className="h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                  >
+                    <option value="ALL">Site</option>
+                    {availableSites.map((siteOption) => (
+                      <option key={siteOption} value={siteOption}>
+                        {siteOption}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={payroll.payrollRoleFilter}
+                    onChange={(e) =>
+                      payroll.setPayrollRoleFilter(
+                        e.target.value as RoleCode | "ALL",
+                      )
+                    }
+                    className="h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                  >
+                    <option value="ALL">Role</option>
+
+                    {payroll.roleCodes.map((role) => (
+                      <option key={role} value={role}>
+                        {role} - {ROLE_CODE_TO_NAME[role]}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={payroll.payrollSort}
+                    onChange={(e) =>
+                      payroll.setPayrollSort(e.target.value as Step2Sort)
+                    }
+                    className="h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                  >
+                    <option value="name-asc">Sort: A-Z</option>
+                    <option value="name-desc">Sort: Z-A</option>
+                  </select>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => payroll.clearPayrollFilters()}
+                    className="inline-flex h-10 flex-1 items-center justify-center rounded-[12px] border border-[#d9e2e6] text-sm font-semibold text-[#41565f]"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileFilters(false)}
+                    className="inline-flex h-10 flex-1 items-center justify-center rounded-[12px] bg-[#1f6a37] text-sm font-semibold text-white"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
       {isMounted && openActionMenuId && actionMenuPosition
         ? createPortal(
             <div
@@ -847,8 +990,10 @@ ${
                   );
                   if (!representativeRow) return;
 
-                  const compensation =
-                    buildGroupedEmployeeCompensation(selectedEmployee, payroll);
+                  const compensation = buildGroupedEmployeeCompensation(
+                    selectedEmployee,
+                    payroll,
+                  );
                   const metrics = buildGroupedEmployeeMetrics(
                     selectedEmployee,
                     payroll,

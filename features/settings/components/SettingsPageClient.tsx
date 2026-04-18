@@ -11,7 +11,7 @@ export default function SettingsPageClient() {
 
   return (
     <>
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-0 sm:p-6">
         <DashboardPageHero
           eyebrow="Account"
           title="Settings"

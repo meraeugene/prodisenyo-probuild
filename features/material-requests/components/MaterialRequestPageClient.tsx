@@ -172,13 +172,13 @@ export default function MaterialRequestPageClient({
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="Engineer Workflow"
         title="Request Materials"
         description="Submit material requests with quantity and urgency so procurement can process site needs faster."
         actions={
-          <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+          <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
             <ClipboardPlus size={14} />
             {totalPending} pending
           </span>
@@ -186,7 +186,7 @@ export default function MaterialRequestPageClient({
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             New Request
           </p>
@@ -375,7 +375,7 @@ export default function MaterialRequestPageClient({
           </form>
         </div>
 
-        <div className="rounded-[18px] h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <div className="rounded-none h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             Request Queue
           </p>
@@ -384,7 +384,7 @@ export default function MaterialRequestPageClient({
           </h2>
 
           {sortedRequests.length === 0 ? (
-            <div className="mt-4 rounded-[12px] border border-dashed border-apple-mist px-4 py-6 text-sm text-apple-steel">
+            <div className="mt-4 rounded-none border border-dashed border-apple-mist px-4 py-6 text-sm text-apple-steel sm:rounded-[12px]">
               No requests submitted yet.
             </div>
           ) : (
@@ -392,7 +392,7 @@ export default function MaterialRequestPageClient({
               {sortedRequests.map((request) => (
                 <article
                   key={request.id}
-                  className="rounded-[14px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4"
+                  className="rounded-none border border-apple-mist bg-[rgb(var(--apple-snow))] p-4 sm:rounded-[14px]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>

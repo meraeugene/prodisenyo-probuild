@@ -187,7 +187,7 @@ export default function OvertimeRequestPageClient({
   }
 
   return (
-    <div className="p-6 xl:flex xl:h-screen xl:flex-col xl:overflow-hidden">
+    <div className="p-0 sm:p-6 xl:flex xl:h-screen xl:flex-col xl:overflow-hidden">
       <DashboardPageHero
         eyebrow="Overtime Workflow"
         title="Request Overtime"
@@ -195,7 +195,7 @@ export default function OvertimeRequestPageClient({
       />
 
       <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[1.08fr_0.92fr] xl:items-stretch">
-        <section className="rounded-[16px] border border-apple-mist h-fit bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <section className="rounded-none border border-apple-mist h-fit bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px]">
           <h2 className="text-lg font-semibold text-apple-charcoal">
             Overtime Request Form
           </h2>
@@ -383,7 +383,7 @@ export default function OvertimeRequestPageClient({
           </form>
         </section>
 
-        <section className="rounded-[16px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+        <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-apple-charcoal">
               Your Overtime Requests
@@ -403,7 +403,7 @@ export default function OvertimeRequestPageClient({
               {sortedRequests.map((request) => (
                 <article
                   key={request.id}
-                  className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-[0_6px_16px_rgba(15,23,42,0.07)]"
+                  className="overflow-hidden rounded-none border border-apple-mist bg-white shadow-[0_6px_16px_rgba(15,23,42,0.07)] sm:rounded-2xl"
                 >
                   <div className="space-y-4 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">

@@ -8,15 +8,15 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export default function Loading() {
   return (
-    <div className="space-y-4 p-6">
-      <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
+    <div className="space-y-4 p-0 sm:p-6">
+      <section className="rounded-none bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:rounded-[16px] sm:p-6">
         <SkeletonBlock className="h-3 w-20 bg-white/20" />
         <SkeletonBlock className="mt-4 h-10 w-72 max-w-full bg-white/20" />
         <SkeletonBlock className="mt-3 h-4 w-[30rem] max-w-full bg-white/15" />
       </section>
 
       <section className="grid gap-4 2xl:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="rounded-[22px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <div className="rounded-none border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px]">
           <SkeletonBlock className="h-6 w-40" />
           <div className="mt-5 space-y-4">
             <SkeletonBlock className="h-10 w-full rounded-xl" />
@@ -27,7 +27,7 @@ export default function Loading() {
           </div>
         </div>
 
-        <div className="rounded-[22px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+        <div className="rounded-none border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px]">
           <div className="flex items-center justify-between gap-4">
             <SkeletonBlock className="h-6 w-44" />
             <SkeletonBlock className="h-9 w-28 rounded-full" />

@@ -36,7 +36,7 @@ export default function DashboardAnalyticsSection({
   return (
     <section className="mb-5">
       <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-5 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[15px] font-semibold text-apple-charcoal">
               Analytics Overview
@@ -46,14 +46,14 @@ export default function DashboardAnalyticsSection({
             </p>
           </div>
           {periodOptions.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex w-full flex-col items-start gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-steel">
                 Payroll Period
               </p>
               <select
                 value={selectedPeriodKey ?? ""}
                 onChange={(event) => onSelectPeriod(event.target.value || null)}
-                className="h-10 min-w-[300px] rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37]"
+                className="h-10 w-full min-w-0 rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37] md:min-w-[300px] md:w-auto"
               >
                 {periodOptions.map((option) => (
                   <option key={option.key} value={option.key}>
@@ -76,7 +76,7 @@ export default function DashboardAnalyticsSection({
               </p>
             </div>
 
-            <div className="h-[260px]">
+            <div className="h-[240px] sm:h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={workforceByBranch}
@@ -92,17 +92,25 @@ export default function DashboardAnalyticsSection({
                     dataKey="shortBranch"
                     axisLine={false}
                     tickLine={false}
-                    interval={0}
-                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                    interval="preserveStartEnd"
+                    tick={{
+                      fill: "rgb(var(--theme-chart-axis))",
+                      fontSize: 10,
+                    }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "rgb(var(--theme-chart-axis))", fontSize: 11 }}
+                    tick={{
+                      fill: "rgb(var(--theme-chart-axis))",
+                      fontSize: 11,
+                    }}
                   />
                   <Tooltip
                     cursor={{ fill: "rgb(var(--theme-chart-cursor))" }}
-                    content={(props) => <ChartTooltip {...props} unit="employees" />}
+                    content={(props) => (
+                      <ChartTooltip {...props} unit="employees" />
+                    )}
                   />
                   <Bar dataKey="employees" radius={[6, 6, 6, 6]} barSize={38}>
                     {workforceByBranch.map((entry, index) => (
@@ -122,59 +130,64 @@ export default function DashboardAnalyticsSection({
               <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                 Payroll Distribution by Project
               </p>
-              <p className="mt-1 text-xs text-apple-steel">
-                Payroll Analytics
-              </p>
+              <p className="mt-1 text-xs text-apple-steel">Payroll Analytics</p>
             </div>
 
-            <div className="grid h-[260px] grid-cols-[minmax(0,1fr)_160px] gap-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={payrollDistributionData}
-                    dataKey="value"
-                    nameKey="shortName"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={48}
-                    outerRadius={76}
-                    paddingAngle={2}
-                    stroke="none"
-                  >
-                    {payrollDistributionData.map((entry, index) => (
-                      <Cell
-                        key={`overview-payroll-distribution-${entry.name}-${index}`}
-                        fill={entry.fill}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const item = payload[0]?.payload as
-                        | { shortName?: string; name?: string; value?: number }
-                        | undefined;
-                      return (
-                        <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
-                          <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
-                            Branch
-                          </p>
-                          <p className="max-w-[160px] truncate text-xs font-semibold text-apple-smoke">
-                            {item?.shortName ?? item?.name ?? "Unknown"}
-                          </p>
-                          <div className="mt-1 flex items-baseline gap-1">
-                            <span className="text-lg font-bold">
-                              {PESO_SIGN} {formatPayrollNumber(item?.value ?? 0)}
-                            </span>
+            <div className="grid gap-4 md:h-[260px] md:grid-cols-[minmax(0,1fr)_160px]">
+              <div className="h-[220px] md:h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={payrollDistributionData}
+                      dataKey="value"
+                      nameKey="shortName"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={76}
+                      paddingAngle={2}
+                      stroke="none"
+                    >
+                      {payrollDistributionData.map((entry, index) => (
+                        <Cell
+                          key={`overview-payroll-distribution-${entry.name}-${index}`}
+                          fill={entry.fill}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const item = payload[0]?.payload as
+                          | {
+                              shortName?: string;
+                              name?: string;
+                              value?: number;
+                            }
+                          | undefined;
+                        return (
+                          <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
+                            <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
+                              Branch
+                            </p>
+                            <p className="max-w-[160px] truncate text-xs font-semibold text-apple-smoke">
+                              {item?.shortName ?? item?.name ?? "Unknown"}
+                            </p>
+                            <div className="mt-1 flex items-baseline gap-1">
+                              <span className="text-lg font-bold">
+                                {PESO_SIGN}{" "}
+                                {formatPayrollNumber(item?.value ?? 0)}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                        );
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
 
-              <div className="space-y-3 overflow-y-auto pr-1">
+              <div className="space-y-3 md:overflow-y-auto md:pr-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-apple-silver">
                   Branch
                 </p>

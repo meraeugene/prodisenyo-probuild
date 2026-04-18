@@ -21,13 +21,13 @@ export default function EstimateReviewsPageClient({
   const state = useEstimateReviewsPage({ estimates, items });
 
   return (
-    <div className="p-6">
+    <div className="p-0 sm:p-6">
       <DashboardPageHero
         eyebrow="CEO Review"
         title="Estimate Reviews"
         description="Review engineer-submitted project estimates before bidding and push approved totals into Budget Tracker as new projects."
         actions={
-          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+          <div className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
             <Radio
               size={14}
               className={state.refreshing ? "animate-pulse" : ""}

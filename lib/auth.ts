@@ -15,9 +15,10 @@ export const APP_ROLES = {
 export const DEFAULT_AUTH_REDIRECT = "/dashboard";
 
 export function getRoleHomePath(role: AppRole | null | undefined) {
-  if (role === APP_ROLES.PAYROLL_MANAGER) return "/upload-attendance";
-  if (role === APP_ROLES.ENGINEER) return "/cost-estimator";
-  if (role === APP_ROLES.EMPLOYEE) return "/request-overtime";
+  if (role === APP_ROLES.CEO) return "/home";
+  if (role === APP_ROLES.PAYROLL_MANAGER) return "/home";
+  if (role === APP_ROLES.ENGINEER) return "/home";
+  if (role === APP_ROLES.EMPLOYEE) return "/home";
   return "/dashboard";
 }
 

@@ -53,7 +53,7 @@ export default function AttendanceReviewSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <div className="overflow-hidden rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
         <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
@@ -206,8 +206,8 @@ export default function AttendanceReviewSection({
 
           {records.length > 0 ? (
             step2View === "daily" ? (
-              <div className="w-full overflow-hidden rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-                <table className="w-full text-sm table-auto">
+              <div className="w-full overflow-x-auto overflow-y-visible rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)] [-webkit-overflow-scrolling:touch]">
+                <table className="min-w-[1100px] w-full text-sm table-auto">
                   <thead>
                     <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                       {[

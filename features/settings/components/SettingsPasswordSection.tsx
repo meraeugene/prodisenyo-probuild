@@ -28,7 +28,7 @@ export default function SettingsPasswordSection({
   onChangePassword,
 }: SettingsPasswordSectionProps) {
   return (
-    <section className="flex h-full flex-col rounded-[18px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+    <section className="flex h-full flex-col rounded-none border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:rounded-[18px]">
       <div>
         <h2 className="text-lg font-semibold text-apple-charcoal">
           Reset Password
@@ -57,7 +57,9 @@ export default function SettingsPasswordSection({
                 type="button"
                 onClick={onToggleNewPassword}
                 className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-apple-steel transition hover:bg-[#f3f7f4] hover:text-[#1f6a37]"
-                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                aria-label={
+                  showNewPassword ? "Hide new password" : "Show new password"
+                }
               >
                 {showNewPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -77,7 +79,9 @@ export default function SettingsPasswordSection({
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(event) => onConfirmPasswordChange(event.target.value)}
+                onChange={(event) =>
+                  onConfirmPasswordChange(event.target.value)
+                }
                 placeholder="Re-enter your password"
                 className="w-full bg-transparent text-sm text-apple-charcoal outline-none placeholder:text-apple-silver"
               />
