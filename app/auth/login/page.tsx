@@ -143,8 +143,7 @@ export default async function LoginPage({
                   </div>
 
                   <p className="mt-6 text-center text-xs text-apple-steel">
-                    Need an account? Contact your payroll administrator for
-                    access.
+                    Need an account? Contact your administrator.
                   </p>
                 </div>
               </div>

@@ -151,9 +151,20 @@ const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
 };
 
 function getGreetingMessage(hour: number) {
-  if (hour < 12) return "Good morny";
+  if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afty";
   return "Good evee";
+}
+
+function getPhilippineHour() {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      hour12: false,
+      hourCycle: "h23",
+      timeZone: "Asia/Manila",
+    }).format(new Date()),
+  );
 }
 
 function getFirstName(fullName: string | null, username: string) {
@@ -170,6 +181,7 @@ function getDateLabel() {
     weekday: "long",
     month: "long",
     day: "numeric",
+    timeZone: "Asia/Manila",
   })
     .format(new Date())
     .toUpperCase();
@@ -217,7 +229,7 @@ export default function RoleHomePage({
   username: string;
 }) {
   const firstName = getFirstName(fullName, username);
-  const greeting = getGreetingMessage(new Date().getHours());
+  const greeting = getGreetingMessage(getPhilippineHour());
   const dateLabel = getDateLabel();
   const roleHints = getRoleHints(role);
   const featureCards = ROLE_FEATURES[role];
@@ -252,7 +264,7 @@ export default function RoleHomePage({
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700/80">
               Prody
             </p>
-            <p className="mt-1 text-xs leading-5 text-apple-steel sm:text-sm">
+            <p className="mt-1 min-h-[3.75rem] text-xs leading-5 text-apple-steel sm:min-h-[3.25rem] sm:text-sm">
               <RoleHintTypewriter messages={roleHints} />
             </p>
           </div>

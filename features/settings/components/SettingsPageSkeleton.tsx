@@ -8,15 +8,15 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export default function SettingsPageSkeleton() {
   return (
-    <div className="space-y-4 p-6">
-      <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
+    <div className="space-y-4 overflow-x-hidden p-0 sm:p-6">
+      <section className="rounded-none bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:rounded-[16px] sm:p-6">
         <SkeletonBlock className="h-3 w-24 bg-white/20" />
         <SkeletonBlock className="mt-4 h-10 w-56 max-w-full bg-white/20" />
-        <SkeletonBlock className="mt-3 h-4 w-[30rem] max-w-full bg-white/15" />
+        <SkeletonBlock className="mt-3 h-4 w-full max-w-[30rem] bg-white/15" />
       </section>
 
       <section className="grid items-stretch gap-4 2xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-        <div className="rounded-[18px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <div className="rounded-none border border-[#e7ecef] bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:rounded-[18px] sm:p-5">
           <div className="space-y-2">
             <SkeletonBlock className="h-6 w-32" />
             <SkeletonBlock className="h-4 w-64" />
@@ -41,7 +41,7 @@ export default function SettingsPageSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-[18px] border border-[#e7ecef] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+        <div className="rounded-none border border-[#e7ecef] bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:rounded-[18px] sm:p-5">
           <div className="space-y-2">
             <SkeletonBlock className="h-6 w-36" />
             <SkeletonBlock className="h-4 w-60" />

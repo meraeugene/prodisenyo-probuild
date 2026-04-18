@@ -35,6 +35,8 @@ import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
+const NO_SCROLL_CLASS = "overflow-hidden";
+
 const PRIMARY_NAV_ITEMS = [
   { href: "/home", label: "Home", icon: House },
   { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
@@ -234,8 +236,27 @@ export default function DashboardShell({
   const canPlayNotificationSoundRef = useRef(false);
 
   useEffect(() => {
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
+    const isMobile =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1023px)").matches;
+
+    if (open && isMobile) {
+      document.body.classList.add(NO_SCROLL_CLASS);
+      document.documentElement.classList.add(NO_SCROLL_CLASS);
+    } else {
+      document.body.classList.remove(NO_SCROLL_CLASS);
+      document.documentElement.classList.remove(NO_SCROLL_CLASS);
+    }
+
+    return () => {
+      document.body.classList.remove(NO_SCROLL_CLASS);
+      document.documentElement.classList.remove(NO_SCROLL_CLASS);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    document.body.classList.remove(NO_SCROLL_CLASS);
+    document.documentElement.classList.remove(NO_SCROLL_CLASS);
     setOpen(false);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
@@ -440,7 +461,7 @@ export default function DashboardShell({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
                 aria-label="Close navigation"
               >
                 <X size={16} />

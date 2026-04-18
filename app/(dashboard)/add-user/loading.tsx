@@ -8,11 +8,11 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export default function Loading() {
   return (
-    <div className="space-y-4 p-0 sm:p-6">
+    <div className="space-y-4 overflow-x-hidden p-0 sm:p-6">
       <section className="rounded-none bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:rounded-[16px] sm:p-6">
         <SkeletonBlock className="h-3 w-20 bg-white/20" />
         <SkeletonBlock className="mt-4 h-10 w-72 max-w-full bg-white/20" />
-        <SkeletonBlock className="mt-3 h-4 w-[30rem] max-w-full bg-white/15" />
+        <SkeletonBlock className="mt-3 h-4 w-full max-w-[30rem] bg-white/15" />
       </section>
 
       <section className="grid gap-4 2xl:grid-cols-[420px_minmax(0,1fr)]">
@@ -36,7 +36,7 @@ export default function Loading() {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="grid grid-cols-[1.4fr_1fr_1fr_auto] items-center gap-3 rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4"
+                className="grid grid-cols-1 items-center gap-3 rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4 sm:grid-cols-[1.4fr_1fr_1fr_auto]"
               >
                 <SkeletonBlock className="h-4 w-36 rounded-full" />
                 <SkeletonBlock className="h-4 w-24 rounded-full" />
