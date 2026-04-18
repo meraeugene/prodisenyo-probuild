@@ -128,23 +128,23 @@ export default function OvertimeRequestApprovalQueue({
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-[14px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div>
+        <div className="flex items-center justify-between gap-4">
           <p className="text-2xs font-semibold uppercase tracking-widest text-apple-steel">
             CEO Approval Queue
           </p>
-          <h2 className="mt-1 text-xl font-bold text-apple-charcoal">
-            Overtime Request Forms
-          </h2>
-          <p className="mt-1 text-sm text-apple-smoke">
-            Review direct overtime requests submitted by payroll staff,
-            engineers, and employees.
-          </p>
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            <Clock3 size={14} />
+            {pendingCount} pending
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-          <Clock3 size={14} />
-          {pendingCount} pending
-        </span>
+        <h2 className="mt-1 text-xl font-bold text-apple-charcoal">
+          Overtime Request Forms
+        </h2>
+        <p className="mt-1 text-sm text-apple-smoke">
+          Review direct overtime requests submitted by payroll staff, engineers,
+          and employees.
+        </p>
       </div>
 
       <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">

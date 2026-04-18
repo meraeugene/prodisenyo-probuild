@@ -71,22 +71,22 @@ export default function PayrollReportsArchiveSection({
   return (
     <>
       <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px]">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
+        <div className="mb-4">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
               Report Archive
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
-              Pending And Approved Payroll Reports
-            </h2>
-            <p className="mt-2 text-sm text-apple-steel">
-              Review submitted payroll reports before they move forward.
-            </p>
+            <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+              <Clock3 size={12} />
+              {pendingReportsCount.toLocaleString("en-PH")} pending
+            </span>
           </div>
-          <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <Clock3 size={12} />
-            {pendingReportsCount.toLocaleString("en-PH")} pending
-          </span>
+          <h2 className="mt-2 text-xl font-semibold text-apple-charcoal">
+            Pending And Approved Payroll Reports
+          </h2>
+          <p className="mt-2 text-sm text-apple-steel">
+            Review submitted payroll reports before they move forward.
+          </p>
         </div>
 
         {reports.length === 0 ? (

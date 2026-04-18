@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "sonner/dist/styles.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { AppStateProvider } from "@/features/app/AppStateProvider";
+import PwaRegister from "@/features/app/components/PwaRegister";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -15,6 +16,20 @@ export const metadata: Metadata = {
   },
   description:
     "Prodisenyo ProBuild helps teams upload documents to generate payroll reports, generate accurate cost estimates, and track project budgets in real-time.",
+  applicationName: "Prodisenyo ProBuild",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Prodisenyo ProBuild",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#14532d",
 };
 
 export default function RootLayout({
@@ -27,6 +42,7 @@ export default function RootLayout({
       data-theme="prodisenyo"
     >
       <body className="min-h-screen bg-apple-snow antialiased">
+        <PwaRegister />
         <AppStateProvider>
           {children}
           <Toaster

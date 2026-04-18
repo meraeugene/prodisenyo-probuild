@@ -355,7 +355,7 @@ export default function OvertimeRequestPageClient({
               {sortedRequests.map((request) => (
                 <article
                   key={request.id}
-                  className="overflow-hidden rounded-none border border-apple-mist bg-white shadow-[0_6px_16px_rgba(15,23,42,0.07)] sm:rounded-2xl"
+                  className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-[0_6px_16px_rgba(15,23,42,0.07)]"
                 >
                   <div className="space-y-4 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">

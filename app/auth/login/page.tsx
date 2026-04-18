@@ -52,7 +52,7 @@ export default async function LoginPage({
                 </div>
 
                 <div className="max-w-xl">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[rgb(var(--theme-chart-5))]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[rgb(var(--theme-chart-5))] animate-pulse">
                     Secure Sign In
                   </p>
                   <h1 className="mt-4 max-w-sm text-4xl font-semibold tracking-[-0.05em] text-white sm:text-[44px]">
@@ -106,7 +106,7 @@ export default async function LoginPage({
                   </div>
                   <a
                     href="#login-panel"
-                    className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-emerald-200/60 bg-[linear-gradient(135deg,#97f3b2,#6fdd8d)] px-5 py-3 text-sm font-semibold text-[#0f3a1f] shadow-[0_10px_24px_rgba(93,211,132,0.30)] transition hover:brightness-105 sm:hidden"
+                    className="cta-pulse-glow inline-flex items-center justify-center gap-2 rounded-[24px] border border-emerald-200/60 bg-[linear-gradient(135deg,#97f3b2,#6fdd8d)] px-5 py-3 text-sm font-semibold text-[#0f3a1f] transition hover:brightness-105 sm:hidden"
                   >
                     <ArrowDown className="h-4 w-4" />
                     Get started

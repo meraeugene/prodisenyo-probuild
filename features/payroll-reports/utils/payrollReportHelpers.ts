@@ -319,12 +319,12 @@ export function buildPayrollReportSiteDistribution(
 }
 
 export const PAYROLL_REPORT_SITE_COLORS = [
-  "#2563eb",
-  "#06b6d4",
-  "#8b5cf6",
-  "#f59e0b",
-  "#ef4444",
-  "#10b981",
+  "#14532d",
+  "#166534",
+  "#15803d",
+  "#16a34a",
+  "#22c55e",
+  "#4ade80",
 ];
 
 export function buildEmployeeAttendanceModalData(
