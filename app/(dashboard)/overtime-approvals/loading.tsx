@@ -18,7 +18,6 @@ export default function Loading() {
             <SkeletonBlock className="h-10 w-80 max-w-full bg-white/20" />
             <SkeletonBlock className="h-4 w-full max-w-[36rem] bg-white/15" />
           </div>
-          <SkeletonBlock className="mt-3 h-10 w-28 rounded-xl bg-white/20 sm:mt-0" />
         </div>
       </section>
 

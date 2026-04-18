@@ -106,6 +106,7 @@ export default function CostEstimatorSummaryPanel({
                   src="/estimate-rejection-robot.png"
                   alt="Friendly robot assistant"
                   fill
+                  priority
                   className="object-contain"
                 />
               </div>

@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import {
-  CalendarDays,
-  Clock3,
-  LoaderCircle,
-  MapPin,
-  PhilippinePeso,
-} from "lucide-react";
+import { CalendarDays, Clock3, LoaderCircle, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import { submitOvertimeRequestAction } from "@/actions/payroll";
@@ -39,20 +33,11 @@ function getStatusLabel(status: OvertimeRequestRecord["status"]) {
   return status;
 }
 
-function formatAmountDisplay(value: string): string {
-  if (!value) return "";
-  const numValue = value.replace(/[^0-9.-]/g, "");
-  const parts = numValue.split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
-
 type OvertimeFormErrors = {
   employeeName?: string;
   siteName?: string;
   requestDate?: string;
   overtimeHours?: string;
-  amount?: string;
   reason?: string;
 };
 
@@ -79,7 +64,6 @@ export default function OvertimeRequestPageClient({
     new Date().toISOString().slice(0, 10),
   );
   const [overtimeHours, setOvertimeHours] = useState("");
-  const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [formErrors, setFormErrors] = useState<OvertimeFormErrors>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -96,7 +80,6 @@ export default function OvertimeRequestPageClient({
 
   function validateForm() {
     const errors: OvertimeFormErrors = {};
-    const parsedAmount = Number(amount || 0);
     const trimmedEmployeeName = employeeName.trim();
     const trimmedSiteName = siteName.trim();
     const trimmedOvertimeHours = overtimeHours.trim();
@@ -116,10 +99,6 @@ export default function OvertimeRequestPageClient({
 
     if (!trimmedOvertimeHours) {
       errors.overtimeHours = "Overtime hours is required.";
-    }
-
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      errors.amount = "Amount must be greater than zero.";
     }
 
     if (trimmedReason.length > 500) {
@@ -150,7 +129,7 @@ export default function OvertimeRequestPageClient({
           periodLabel: periodLabel.trim(),
           requestDate,
           overtimeHours: Number(overtimeHours || 0),
-          amount: Number(amount || 0),
+          amount: 0,
           reason: reason.trim(),
         });
 
@@ -159,7 +138,6 @@ export default function OvertimeRequestPageClient({
         setSiteName("");
         setPeriodLabel("");
         setOvertimeHours("");
-        setAmount("");
         setReason("");
         toast.success("Overtime request submitted.");
         window.dispatchEvent(new Event("payroll:pending-count-changed"));
@@ -310,32 +288,6 @@ export default function OvertimeRequestPageClient({
               ) : null}
             </label>
 
-            <label className="space-y-1 text-sm text-apple-smoke">
-              <span className="font-medium text-apple-charcoal">
-                Amount <span className="text-rose-500">*</span>
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={formatAmountDisplay(amount)}
-                onChange={(event) => {
-                  const raw = event.target.value.replace(/[^0-9.-]/g, "");
-                  setAmount(raw);
-                  setFormErrors((current) => ({
-                    ...current,
-                    amount: undefined,
-                  }));
-                }}
-                className={baseInputClass(Boolean(formErrors.amount))}
-                placeholder="1,000"
-              />
-              {formErrors.amount ? (
-                <p className="text-xs font-medium text-rose-600">
-                  {formErrors.amount}
-                </p>
-              ) : null}
-            </label>
-
             <label className="space-y-1 text-sm text-apple-smoke md:col-span-2">
               <span className="font-medium text-apple-charcoal">
                 Reason (Optional)
@@ -451,22 +403,6 @@ export default function OvertimeRequestPageClient({
                           })}
                         </span>
                       </p>
-                      <p className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5">
-                          <PhilippinePeso
-                            size={14}
-                            className="text-amber-700"
-                          />
-                          Amount
-                        </span>
-                        <span className="font-semibold text-amber-700">
-                          ₱
-                          {request.amount.toLocaleString("en-PH", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                      </p>
                     </div>
 
                     {request.period_label ? (
@@ -536,16 +472,6 @@ export default function OvertimeRequestPageClient({
                 Overtime hours:{" "}
                 <span className="font-semibold text-sky-700">
                   {Number(overtimeHours || 0).toLocaleString("en-PH", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </p>
-              <p>
-                Amount:{" "}
-                <span className="font-semibold text-amber-700">
-                  ₱
-                  {Number(amount || 0).toLocaleString("en-PH", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}

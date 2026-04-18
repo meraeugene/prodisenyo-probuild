@@ -51,7 +51,7 @@ export default function BudgetTrackerItemModal({
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <div
         className={cn(
-          "absolute right-0 top-0 flex h-screen w-full max-w-md flex-col overflow-hidden bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] transition-all duration-300 ease-out",
+          "absolute right-0 top-0 flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] transition-all duration-300 ease-out",
           itemPanelVisible
             ? "translate-x-0 opacity-100"
             : "translate-x-full opacity-0",
@@ -71,7 +71,7 @@ export default function BudgetTrackerItemModal({
         </div>
 
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5 pb-28 sm:pb-5">
             <div>
               <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
                 What is this cost for? <span className="text-rose-500">*</span>
@@ -90,11 +90,15 @@ export default function BudgetTrackerItemModal({
                 placeholder="e.g. kitchen cabinets, architect fee"
                 className={cn(
                   "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
-                  itemFieldErrors.name ? "border-rose-300" : "border-apple-mist",
+                  itemFieldErrors.name
+                    ? "border-rose-300"
+                    : "border-apple-mist",
                 )}
               />
               {itemFieldErrors.name ? (
-                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.name}</p>
+                <p className="mt-2 text-sm text-rose-600">
+                  {itemFieldErrors.name}
+                </p>
               ) : null}
             </div>
 
@@ -136,7 +140,9 @@ export default function BudgetTrackerItemModal({
                 ))}
               </div>
               {itemFieldErrors.status ? (
-                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.status}</p>
+                <p className="mt-2 text-sm text-rose-600">
+                  {itemFieldErrors.status}
+                </p>
               ) : null}
             </div>
 
@@ -154,7 +160,9 @@ export default function BudgetTrackerItemModal({
                 }
                 className={cn(
                   "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
-                  itemFieldErrors.category ? "border-rose-300" : "border-apple-mist",
+                  itemFieldErrors.category
+                    ? "border-rose-300"
+                    : "border-apple-mist",
                 )}
               >
                 {BUDGET_ITEM_CATEGORY_OPTIONS.map((option) => (
@@ -164,7 +172,9 @@ export default function BudgetTrackerItemModal({
                 ))}
               </select>
               {itemFieldErrors.category ? (
-                <p className="mt-2 text-sm text-rose-600">{itemFieldErrors.category}</p>
+                <p className="mt-2 text-sm text-rose-600">
+                  {itemFieldErrors.category}
+                </p>
               ) : null}
             </div>
 
@@ -236,7 +246,7 @@ export default function BudgetTrackerItemModal({
             ) : null}
           </div>
 
-          <div className="shrink-0 border-t border-apple-mist px-5 py-4">
+          <div className="sticky bottom-0 z-20 shrink-0 border-t border-apple-mist bg-white px-5 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:pb-4">
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"

@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, Radio } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
@@ -26,15 +26,6 @@ export default function EstimateReviewsPageClient({
         eyebrow="CEO Review"
         title="Estimate Reviews"
         description="Review engineer-submitted project estimates before bidding and push approved totals into Budget Tracker as new projects."
-        actions={
-          <div className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
-            <Radio
-              size={14}
-              className={state.refreshing ? "animate-pulse" : ""}
-            />
-            Live data
-          </div>
-        }
       />
 
       <EstimateReviewsTable
@@ -51,14 +42,14 @@ export default function EstimateReviewsPageClient({
           onClose={() => state.setActiveEstimateId(null)}
           footer={
             state.activeEstimate.status === "submitted" ? (
-              <div className="flex flex-wrap justify-end gap-2">
+              <div className="flex w-full flex-nowrap justify-end gap-2">
                 <button
                   type="button"
                   onClick={() =>
                     state.setRejectEstimateId(state.activeEstimate!.id)
                   }
                   disabled={state.isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-amber-200 px-4 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl border border-amber-200 px-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {state.isPending && state.pendingActionType === "reject" ? (
                     <>
@@ -75,7 +66,7 @@ export default function EstimateReviewsPageClient({
                     state.handleApproveEstimate(state.activeEstimate!.id)
                   }
                   disabled={state.isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl bg-[#1f6a37] px-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {state.isPending && state.pendingActionType === "approve" ? (
                     <>

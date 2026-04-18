@@ -27,7 +27,7 @@ interface SubmitOvertimeRequestInput {
   periodLabel?: string | null;
   requestDate: string;
   overtimeHours: number;
-  amount: number;
+  amount?: number;
   reason?: string | null;
 }
 
@@ -1562,8 +1562,8 @@ export async function submitOvertimeRequestAction(
     throw new Error("Overtime hours must be greater than zero.");
   }
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error("Amount must be greater than zero.");
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw new Error("Amount cannot be negative.");
   }
 
   const { data, error } = await database

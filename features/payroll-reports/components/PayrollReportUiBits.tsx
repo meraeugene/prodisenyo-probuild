@@ -142,7 +142,7 @@ export function PayrollReportStatCard({
   helper?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-emerald-500/15 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white shadow-[0_14px_28px_rgba(17,46,26,0.18)]">
+    <div className="rounded-2xl border border-emerald-500/15 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-3 text-white shadow-[0_14px_28px_rgba(17,46,26,0.18)] sm:px-4 sm:py-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
         {label}
       </p>

@@ -1,6 +1,5 @@
 "use client";
 
-import { Radio } from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollReportModal from "@/features/payroll-reports/components/PayrollReportModal";
 import PayrollReportsArchiveSection from "@/features/payroll-reports/components/PayrollReportsArchiveSection";
@@ -20,15 +19,6 @@ export default function PayrollReportsPageClient({
         eyebrow="Payroll Reports"
         title="Payroll Report Review"
         description="Pending payroll reports stay here for CEO review. Only approved payroll reports flow into the CEO dashboard totals."
-        actions={
-          <div className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
-            <Radio
-              size={14}
-              className={state.refreshing ? "animate-pulse" : ""}
-            />
-            Live data
-          </div>
-        }
       />
 
       <PayrollReportsArchiveSection

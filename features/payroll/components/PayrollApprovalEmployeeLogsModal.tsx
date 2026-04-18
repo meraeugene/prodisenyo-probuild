@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { extractSiteName, formatLogTime as formatPayrollLogTime, toWeekLabel } from "@/features/payroll/utils/payrollFormatters";
+import {
+  extractSiteName,
+  formatLogTime as formatPayrollLogTime,
+  toWeekLabel,
+} from "@/features/payroll/utils/payrollFormatters";
 import type { EmployeeLogsModalState } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 
 interface PayrollApprovalEmployeeLogsModalProps {
@@ -33,29 +37,29 @@ export default function PayrollApprovalEmployeeLogsModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm"
+      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/50 p-0 backdrop-blur-sm sm:p-3"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-[min(1180px,96vw)] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
-        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[92vh] sm:max-w-[min(1180px,96vw)] sm:rounded-[28px]">
+        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
+          <div className="relative flex items-start gap-4 pr-12">
+            <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                 Employee Logs
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+              <h2 className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em]">
                 {modalState.employeeLabel}
               </h2>
-              <p className="mt-2 text-sm text-white/80">
+              <p className="mt-2 truncate text-sm text-white/80">
                 {modalState.siteLabel} | {modalState.periodLabel}
               </p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+              className="absolute right-0 top-0 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 p-0 text-white transition hover:bg-white/20"
               aria-label="Close employee logs modal"
             >
               <X size={17} />
@@ -63,7 +67,7 @@ export default function PayrollApprovalEmployeeLogsModal({
           </div>
         </div>
 
-        <div className="min-h-0 overflow-auto px-6 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
           {modalState.loading ? (
             <div className="animate-pulse space-y-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -106,7 +110,7 @@ export default function PayrollApprovalEmployeeLogsModal({
                 </p>
               </div>
 
-              <div className="max-h-[62vh] overflow-auto">
+              <div className="overflow-x-auto sm:max-h-[62vh] sm:overflow-auto">
                 <table className="min-w-[760px] w-full text-xs">
                   <thead>
                     <tr className="border-b border-apple-mist">

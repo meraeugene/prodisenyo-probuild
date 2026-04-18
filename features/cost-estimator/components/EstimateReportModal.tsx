@@ -42,8 +42,7 @@ export default function EstimateReportModal({
           message: `${formatBudgetMoney(
             remainingBudget,
           )} still remaining before reaching the estimate target.`,
-          className:
-            "border-emerald-100 bg-emerald-50 text-emerald-900",
+          className: "border-emerald-100 bg-emerald-50 text-emerald-900",
         }
       : remainingBudget < 0
         ? {
@@ -77,26 +76,26 @@ export default function EstimateReportModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 p-0 backdrop-blur-sm sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex max-h-[96vh] w-full max-w-[1380px] flex-col overflow-hidden rounded-[28px] bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)]">
-        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-x-hidden overflow-y-hidden rounded-none bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[96vh] sm:max-w-[1380px] sm:rounded-[28px]">
+        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
                 Estimate Report
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+              <h2 className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em]">
                 {estimate.project_name}
               </h2>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
               aria-label="Close estimate report"
             >
               <X size={18} />
@@ -104,15 +103,15 @@ export default function EstimateReportModal({
           </div>
         </div>
 
-        <div className="min-h-0 overflow-y-auto px-6 py-6">
+        <div className="min-h-0 overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
           <div className="grid gap-5 xl:grid-cols-[1fr_1.08fr]">
-            <section className="rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                     Project Summary
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-apple-charcoal">
+                  <h3 className="mt-2 truncate text-lg font-semibold text-apple-charcoal">
                     {estimate.project_name}
                   </h3>
                 </div>
@@ -189,7 +188,7 @@ export default function EstimateReportModal({
               ) : null}
             </section>
 
-            <section className="rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -204,8 +203,8 @@ export default function EstimateReportModal({
                 </p>
               </div>
 
-              <div className="mt-4 overflow-hidden rounded-2xl border border-apple-mist">
-                <table className="w-full text-sm">
+              <div className="mt-4 overflow-x-auto rounded-2xl border border-apple-mist">
+                <table className="min-w-[640px] w-full text-sm">
                   <thead>
                     <tr className="bg-[rgb(var(--apple-snow))]">
                       <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
@@ -293,7 +292,7 @@ export default function EstimateReportModal({
         </div>
 
         {footer ? (
-          <div className="border-t border-apple-mist bg-white px-6 py-4">
+          <div className="border-t border-apple-mist bg-white px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:px-6 sm:py-4">
             {footer}
           </div>
         ) : null}

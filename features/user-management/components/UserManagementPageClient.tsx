@@ -528,6 +528,7 @@ export default function UserManagementPageClient({
 
       <CostEstimatorConfirmModal
         open={deleteTarget !== null}
+        eyebrow="Delete User"
         title="Delete user?"
         description={
           deleteTarget

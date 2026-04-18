@@ -236,7 +236,7 @@ export default function RoleHomePage({
 
   return (
     <main className="space-y-6 p-0 sm:p-6">
-      <section className="relative overflow-visible rounded-none bg-[linear-gradient(140deg,#114023,#1f6a37,#2e8b57)] p-4 text-white shadow-[0_16px_34px_rgba(22,101,52,0.2)] sm:rounded-[18px] sm:px-6 sm:pb-4 sm:pt-6">
+      <section className="relative overflow-visible rounded-none bg-[linear-gradient(140deg,#114023,#1f6a37,#2e8b57)] p-4 text-white shadow-[0_16px_34px_rgba(22,101,52,0.2)] sm:rounded-[18px] sm:px-6 sm:p-6">
         <div className="pointer-events-none absolute -bottom-16 -left-[118px] w-full  ">
           <Image
             src="/login-robot.png"
@@ -264,7 +264,7 @@ export default function RoleHomePage({
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700/80">
               Prody
             </p>
-            <p className="mt-1 min-h-[2.5rem] text-xs leading-5 text-apple-steel sm:min-h-[3.25rem] sm:text-sm">
+            <p className="mt-1 min-h-[2.5rem] text-xs leading-5 text-apple-steel sm:min-h-full sm:text-sm">
               <RoleHintTypewriter messages={roleHints} />
             </p>
           </div>

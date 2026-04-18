@@ -197,7 +197,7 @@ export default function MaterialRequestPageClient({
           <form className="mt-4 grid gap-4" onSubmit={handleSubmit}>
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-apple-charcoal">
-                Project Name
+                Project Name <span className="text-rose-500">*</span>
               </span>
               <input
                 value={form.projectName}
@@ -216,7 +216,7 @@ export default function MaterialRequestPageClient({
 
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-apple-charcoal">
-                Material Name
+                Material Name <span className="text-rose-500">*</span>
               </span>
               <input
                 value={form.materialName}
@@ -236,7 +236,7 @@ export default function MaterialRequestPageClient({
             <div className="grid gap-4 md:grid-cols-2">
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-apple-charcoal">
-                  Quantity
+                  Quantity <span className="text-rose-500">*</span>
                 </span>
                 <input
                   type="number"
@@ -257,7 +257,7 @@ export default function MaterialRequestPageClient({
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-apple-charcoal">
-                  Unit
+                  Unit <span className="text-rose-500">*</span>
                 </span>
                 <input
                   value={form.unit}
@@ -276,7 +276,7 @@ export default function MaterialRequestPageClient({
             <div className="grid gap-4 md:grid-cols-2">
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-apple-charcoal">
-                  Needed By
+                  Needed By <span className="text-rose-500">*</span>
                 </span>
                 <input
                   type="date"
@@ -295,7 +295,7 @@ export default function MaterialRequestPageClient({
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-apple-charcoal">
-                  Priority
+                  Priority <span className="text-rose-500">*</span>
                 </span>
                 <select
                   value={form.priority}

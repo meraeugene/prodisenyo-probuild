@@ -1,7 +1,12 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import LoginForm from "@/components/auth/LoginForm";
-import { BriefcaseBusiness, Building2, ShieldCheck } from "lucide-react";
+import {
+  ArrowDown,
+  BriefcaseBusiness,
+  Building2,
+  ShieldCheck,
+} from "lucide-react";
 import { getCurrentProfile, getRoleHomePath } from "@/lib/auth";
 
 export const metadata = {
@@ -29,7 +34,7 @@ export default async function LoginPage({
       <div className="absolute bottom-[-40px] right-[-40px] h-72 w-72 rounded-full bg-emerald-100/60 blur-3xl" />
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-stretch px-0 py-0 sm:items-center sm:px-8 sm:py-10 lg:px-10">
         <div className="grid w-full gap-0 sm:gap-6 lg:grid-cols-[0.82fr_1fr] lg:items-stretch">
-          <section className="order-2 relative overflow-hidden rounded-none bg-[linear-gradient(135deg,#112e1a_0%,#1c4728_42%,#245f34_100%)] p-7 text-white shadow-[0_24px_64px_rgba(17,46,26,0.22)] sm:rounded-[32px] sm:p-8 lg:order-1">
+          <section className="order-1 relative overflow-hidden rounded-none bg-[linear-gradient(135deg,#112e1a_0%,#1c4728_42%,#245f34_100%)] p-7 text-white shadow-[0_24px_64px_rgba(17,46,26,0.22)] sm:rounded-[32px] sm:p-8 lg:order-1">
             <div className="absolute right-[-60px] top-[-80px] h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute bottom-[-70px] left-[-30px] h-52 w-52 rounded-full bg-[rgb(var(--theme-chart-5))]/15 blur-2xl" />
 
@@ -97,15 +102,27 @@ export default async function LoginPage({
                   </div>
                 </div>
 
-                <div className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-white/10 bg-white/10 px-5 py-4 text-sm font-medium text-white backdrop-blur-md">
-                  <BriefcaseBusiness className="h-4 w-4 text-[rgb(var(--theme-chart-5))]" />
-                  Internal workspace
+                <div className="grid gap-3">
+                  <div className="sm:inline-flex hidden  items-center justify-center gap-2 rounded-[24px] border border-white/10 bg-white/10 px-5 py-4 text-sm font-medium text-white backdrop-blur-md">
+                    <BriefcaseBusiness className="h-4 w-4 text-[rgb(var(--theme-chart-5))]" />
+                    Internal Workspace{" "}
+                  </div>
+                  <a
+                    href="#login-panel"
+                    className="inline-flex items-center justify-center gap-2 rounded-[24px] border border-emerald-200/60 bg-[linear-gradient(135deg,#97f3b2,#6fdd8d)] px-5 py-3 text-sm font-semibold text-[#0f3a1f] shadow-[0_10px_24px_rgba(93,211,132,0.30)] transition hover:brightness-105 sm:hidden"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                    Get started
+                  </a>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="order-1 flex lg:order-2 lg:items-stretch lg:pl-4">
+          <section
+            id="login-panel"
+            className="order-2 flex lg:order-2 lg:items-stretch lg:pl-4"
+          >
             <div className="flex w-full flex-col rounded-none border border-apple-mist bg-white/92 p-6 shadow-[0_24px_60px_rgba(24,83,43,0.10)] backdrop-blur-xl sm:rounded-[30px] sm:p-8 lg:h-full lg:max-w-[560px]">
               <div className="mb-8 ">
                 <div>

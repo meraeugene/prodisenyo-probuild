@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, X } from "lucide-react";
 import { createPortal } from "react-dom";
 
 export default function CostEstimatorConfirmModal({
@@ -10,6 +10,7 @@ export default function CostEstimatorConfirmModal({
   confirmLabel,
   cancelLabel = "Cancel",
   confirmTone = "danger",
+  eyebrow,
   pending = false,
   onConfirm,
   onCancel,
@@ -20,6 +21,7 @@ export default function CostEstimatorConfirmModal({
   confirmLabel: string;
   cancelLabel?: string;
   confirmTone?: "danger" | "primary";
+  eyebrow?: string;
   pending?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -27,12 +29,34 @@ export default function CostEstimatorConfirmModal({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[160] bg-black/40">
       <div className="absolute inset-0" onClick={onCancel} aria-hidden="true" />
-      <div className="relative w-full max-w-md rounded-[24px] border border-apple-mist bg-white p-6 shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
-        <h3 className="text-xl font-semibold tracking-[-0.03em] text-apple-charcoal">
-          {title}
-        </h3>
+      <div className="absolute left-1/2 top-1/2 w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[14px] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.22)] sm:w-full">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            {confirmTone === "danger" ? (
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-700">
+                {eyebrow ?? "Delete Action"}
+              </p>
+            ) : null}
+            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
+              {title}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={pending}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-[10px] border transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              confirmTone === "danger"
+                ? "border-red-200 text-red-500 hover:bg-red-200/40"
+                : "border-apple-mist text-apple-steel hover:bg-apple-mist/40"
+            }`}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
         <p className="mt-3 text-sm leading-7 text-apple-steel">{description}</p>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -40,7 +64,7 @@ export default function CostEstimatorConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="inline-flex h-11 items-center justify-center rounded-[12px] border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center rounded-[10px] border border-apple-mist px-4 text-sm font-medium text-apple-charcoal transition hover:border-[#1f6a37]/35 hover:bg-[#f8fbf9] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {cancelLabel}
           </button>
@@ -48,10 +72,10 @@ export default function CostEstimatorConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={pending}
-            className={`inline-flex h-11 items-center justify-center rounded-[12px] px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`inline-flex h-11 items-center justify-center rounded-[10px] px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               confirmTone === "danger"
-                ? "bg-rose-600 hover:bg-rose-700"
-                : "bg-[#1f6a37] hover:bg-[#18552d]"
+                ? "border border-rose-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                : "bg-[#1f6a37] text-white hover:bg-[#18552d]"
             }`}
           >
             {pending ? (

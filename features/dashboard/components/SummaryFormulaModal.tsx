@@ -36,9 +36,9 @@ export default function SummaryFormulaModal({
   if (!card) return null;
 
   return (
-    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-[28px] bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)]">
-        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-0 backdrop-blur-sm sm:p-4">
+      <div className="flex h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)] sm:h-auto sm:max-h-[90dvh] sm:rounded-[28px]">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/65">
@@ -52,7 +52,7 @@ export default function SummaryFormulaModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/15"
+              className="inline-flex h-10 w-10 shrink-0 aspect-square items-center justify-center rounded-full border border-white/20 bg-white/10 p-0 text-white transition hover:bg-white/15"
               aria-label="Close payroll formula modal"
             >
               <X size={18} />
@@ -60,7 +60,7 @@ export default function SummaryFormulaModal({
           </div>
         </div>
 
-        <div className="space-y-6 px-6 py-6">
+        <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
           <div className="rounded-[22px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel">
               Current Value

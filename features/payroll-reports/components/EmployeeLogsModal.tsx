@@ -23,6 +23,32 @@ import type {
 
 const PESO_SIGN = "\u20B1";
 
+function lockBodyScroll() {
+  const body = document.body;
+  const currentCount = Number(body.dataset.modalScrollLockCount ?? "0");
+
+  if (currentCount === 0) {
+    body.dataset.modalPrevOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+  }
+
+  body.dataset.modalScrollLockCount = String(currentCount + 1);
+
+  return () => {
+    const latestCount = Number(body.dataset.modalScrollLockCount ?? "1");
+    const nextCount = Math.max(latestCount - 1, 0);
+
+    if (nextCount === 0) {
+      body.style.overflow = body.dataset.modalPrevOverflow ?? "";
+      delete body.dataset.modalPrevOverflow;
+      delete body.dataset.modalScrollLockCount;
+      return;
+    }
+
+    body.dataset.modalScrollLockCount = String(nextCount);
+  };
+}
+
 export default function EmployeeLogsModal({
   report,
   item,
@@ -35,14 +61,13 @@ export default function EmployeeLogsModal({
   onClose: () => void;
 }) {
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const unlockBodyScroll = lockBodyScroll();
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      unlockBodyScroll();
       window.removeEventListener("keydown", handler);
     };
   }, [onClose]);
@@ -55,7 +80,7 @@ export default function EmployeeLogsModal({
   return (
     <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-0 backdrop-blur-sm sm:p-4">
       <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[90vh] sm:max-w-6xl sm:rounded-2xl">
-        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
@@ -80,7 +105,7 @@ export default function EmployeeLogsModal({
           </div>
         </div>
 
-        <div className="min-h-0 space-y-5 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-5 sm:px-6 sm:py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <PayrollReportSummaryCard
               label="Days Worked"
@@ -108,7 +133,7 @@ export default function EmployeeLogsModal({
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-              <div className="border-b border-apple-mist px-4 py-3">
+              <div className="border-b border-apple-mist px-3 py-3 sm:px-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                   Payroll Analytics
                 </p>
@@ -142,12 +167,12 @@ export default function EmployeeLogsModal({
             </div>
 
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-              <div className="border-b border-apple-mist px-4 py-3">
+              <div className="border-b border-apple-mist px-3 py-3 sm:px-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                   Attendance Analytics
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 p-4">
+              <div className="grid grid-cols-2 gap-3 p-3 sm:p-4">
                 <PayrollReportSummaryChip
                   label="Logged Days"
                   value={modalData.attendanceDays}
@@ -170,7 +195,7 @@ export default function EmployeeLogsModal({
 
           <div className="space-y-4">
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-              <div className="border-b border-apple-mist px-4 py-3">
+              <div className="border-b border-apple-mist px-3 py-3 sm:px-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                   All Report Logs
                 </p>
@@ -245,7 +270,7 @@ export default function EmployeeLogsModal({
             </div>
 
             <div className="overflow-hidden rounded-xl border border-apple-mist bg-white">
-              <div className="border-b border-apple-mist px-4 py-3">
+              <div className="border-b border-apple-mist px-3 py-3 sm:px-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                   Daily Paid Totals
                 </p>
