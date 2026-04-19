@@ -733,7 +733,7 @@ export default function CostEstimatorItemModal({
                                 Saving...
                               </>
                             ) : editingMaterialSnapshots[materialRow.id] ? (
-                              "Save Changes"
+                              "Save"
                             ) : (
                               "Add Material"
                             )}

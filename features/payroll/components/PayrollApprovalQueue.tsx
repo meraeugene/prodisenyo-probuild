@@ -55,55 +55,60 @@ export default function PayrollApprovalQueue({
   if (!roleLoading && role !== "ceo") return null;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
-      <div>
+    <section className="flex h-full min-h-0 flex-col">
+      <div
+        className="rounded-none p-5 text-[#1f4f2c] sm:rounded-[14px] sm:p-6"
+        style={{ backgroundColor: "#e6faec" }}
+      >
         <div className="flex items-center justify-between gap-4">
-          <p className="text-2xs font-semibold uppercase tracking-widest text-apple-steel">
-            CEO Approval Queue
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#2d6a4f]">
+            CEO Approval Quefceue
           </p>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={14} />
             {state.pendingCount} pending
           </span>
         </div>
-        <h2 className="mt-1 text-xl font-bold text-apple-charcoal">
+        <h2 className="mt-1 text-xl font-bold text-[#1f4f2c]">
           Pending Overtime Requests
         </h2>
-        <p className="mt-1 text-sm text-apple-smoke">
+        <p className="mt-2 text-sm text-[#2d6a4f] sm:text-[15px]">
           Review overtime requests while payroll stays saved and visible in
           history.
         </p>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-hidden">
-        {!state.hasRequests ? (
-          <p className="text-sm text-apple-steel">
-            No overtime requests are waiting for approval.
-          </p>
-        ) : (
-          <div className="grid h-full min-h-0 grid-cols-1 gap-3 overflow-y-auto pr-1">
-            {state.pendingRequests.map((request) => (
-              <PayrollApprovalQueueCard
-                key={request.id}
-                request={request}
-                isPending={state.isPending}
-                pendingActionId={state.pendingActionId}
-                pendingActionType={state.pendingActionType}
-                logsLoading={Boolean(
-                  state.employeeLogsLoadingByRequestId[request.id],
-                )}
-                onOpenLogs={state.openRequestLogs}
-                onApprove={(adjustmentId) =>
-                  state.handleAction(adjustmentId, "approve")
-                }
-                onReject={(requestToReject) => {
-                  setRejectConfirmRequest(requestToReject);
-                  setRejectionReason("");
-                }}
-              />
-            ))}
-          </div>
-        )}
+      <div className="mt-4 min-h-0 flex-1  ">
+        <div className="min-h-0 h-full overflow-hidden">
+          {!state.hasRequests ? (
+            <p className="text-sm text-apple-steel">
+              No overtime requests are waiting for approval.
+            </p>
+          ) : (
+            <div className="grid h-full min-h-0 grid-cols-1 gap-3 overflow-y-auto sm:pr-2">
+              {state.pendingRequests.map((request) => (
+                <PayrollApprovalQueueCard
+                  key={request.id}
+                  request={request}
+                  isPending={state.isPending}
+                  pendingActionId={state.pendingActionId}
+                  pendingActionType={state.pendingActionType}
+                  logsLoading={Boolean(
+                    state.employeeLogsLoadingByRequestId[request.id],
+                  )}
+                  onOpenLogs={state.openRequestLogs}
+                  onApprove={(adjustmentId) =>
+                    state.handleAction(adjustmentId, "approve")
+                  }
+                  onReject={(requestToReject) => {
+                    setRejectConfirmRequest(requestToReject);
+                    setRejectionReason("");
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {state.activeLogsModalState ? (

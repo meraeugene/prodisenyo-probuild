@@ -11,17 +11,17 @@ function SkeletonBlock({ className }: { className: string }) {
 export function DashboardOverviewSkeleton() {
   return (
     <div className="space-y-5 p-6">
-      <section className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-3">
-            <SkeletonBlock className="h-3 w-40 bg-white/15" />
-            <SkeletonBlock className="h-12 w-72 bg-white/20" />
+      <section className="rounded-none bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 shadow-[0_18px_36px_rgba(22,101,52,0.18)] sm:rounded-[16px] sm:p-6">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="space-y-3 flex-1 w-full sm:w-auto">
+            <SkeletonBlock className="h-3 w-32 sm:w-40 bg-white/15" />
+            <SkeletonBlock className="h-10 w-48 sm:h-12 sm:w-72 bg-white/20" />
+            <SkeletonBlock className="h-3 w-full max-w-xs sm:max-w-sm bg-white/10" />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <SkeletonBlock className="h-10 w-28 bg-white/15" />
-            <SkeletonBlock className="h-10 w-24 bg-white/15" />
-            <SkeletonBlock className="h-10 w-20 bg-white/15" />
-            <SkeletonBlock className="h-10 w-10 bg-white/15" />
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-24 bg-white/15" />
+            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-20 bg-white/15" />
+            <SkeletonBlock className="h-9 w-10 bg-white/15" />
           </div>
         </div>
       </section>

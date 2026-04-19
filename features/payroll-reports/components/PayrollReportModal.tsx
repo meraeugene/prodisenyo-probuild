@@ -525,16 +525,20 @@ export default function PayrollReportModal({
                           submitted report.
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-[11px] font-semibold text-apple-steel">
+                      <div className="w-full sm:w-auto">
+                        <p className="text-[11px] font-semibold text-apple-steel sm:text-right">
                           {filteredPayrollItems.length.toLocaleString("en-PH")}{" "}
                           of {payrollItems.length.toLocaleString("en-PH")}{" "}
                           employees
                         </p>
-                        <p className="mt-1 text-sm font-semibold text-apple-charcoal">
-                          Total Payroll Generated:{" "}
-                          {formatPayrollReportPeso(filteredPayrollTotal)}
-                        </p>
+                        <div className="mt-1 flex items-center justify-between gap-2 sm:justify-end">
+                          <p className="text-sm font-semibold text-apple-charcoal">
+                            Total Payroll Generated:
+                          </p>
+                          <p className="text-sm font-semibold text-apple-charcoal">
+                            {formatPayrollReportPeso(filteredPayrollTotal)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">

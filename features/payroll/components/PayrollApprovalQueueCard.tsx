@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Clock3,
-  Loader2,
-  MapPin,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, MapPin, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { parseOvertimeRequestNotes } from "@/features/payroll/utils/overtimeRequestNotes";
 import {
@@ -42,13 +36,15 @@ export default function PayrollApprovalQueueCard({
   const isResolved = request.status !== "pending";
   const rejectBusy = rowBusy && pendingActionType === "reject";
   const approveBusy = rowBusy && pendingActionType === "approve";
-  const siteLabel = run?.site_name?.trim() || request.site_name?.trim() || "Unknown Site";
+  const siteLabel =
+    run?.site_name?.trim() || request.site_name?.trim() || "Unknown Site";
   const employeeLabel = request.employee_name ?? "Unknown Employee";
-  const periodLabel = run?.period_label ?? request.period_label ?? "Unknown Period";
+  const periodLabel =
+    run?.period_label ?? request.period_label ?? "Unknown Period";
   const notes = parseOvertimeRequestNotes(request.notes).displayNotes;
 
   return (
-    <div className="group flex h-full w-full max-w-full flex-col rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all">
+    <div className="group flex h-full w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all">
       <div className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">

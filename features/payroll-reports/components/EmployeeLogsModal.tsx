@@ -106,7 +106,7 @@ export default function EmployeeLogsModal({
         </div>
 
         <div className="min-h-0 space-y-4 overflow-y-auto px-4 py-4 sm:space-y-5 sm:px-6 sm:py-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <PayrollReportSummaryCard
               label="Days Worked"
               value={item.days_worked.toLocaleString("en-PH")}
