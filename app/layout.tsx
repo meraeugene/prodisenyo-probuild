@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     "Prodisenyo ProBuild helps teams upload documents to generate payroll reports, generate accurate cost estimates, and track project budgets in real-time.",
   applicationName: "Prodisenyo ProBuild",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/pwa.png",
+    apple: "/pwa.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
