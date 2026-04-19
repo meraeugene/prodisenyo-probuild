@@ -42,7 +42,8 @@ export default function EstimateReportModal({
           message: `${formatBudgetMoney(
             remainingBudget,
           )} still remaining before reaching the estimate target.`,
-          className: "border-emerald-100 bg-emerald-50 text-emerald-900",
+          className:
+            "border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] text-white",
         }
       : remainingBudget < 0
         ? {
@@ -50,12 +51,12 @@ export default function EstimateReportModal({
             message: `${formatBudgetMoney(
               Math.abs(remainingBudget),
             )} over the estimate target.`,
-            className: "border-rose-200 bg-rose-50 text-rose-900",
+            className: "border-rose-900 bg-[#7c2d12] text-white",
           }
         : {
             label: "Budget Status",
             message: "Current item costs match the estimate target.",
-            className: "border-sky-200 bg-sky-50 text-sky-900",
+            className: "border-sky-900 bg-[#0c4a6e] text-white",
           };
 
   useEffect(() => {
@@ -119,35 +120,35 @@ export default function EstimateReportModal({
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Project Type
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  <p className="mt-1 text-sm font-semibold text-white">
                     {formatProjectTypeLabel(estimate.project_type)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Total Estimate
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  <p className="mt-1 text-sm font-semibold text-white">
                     {formatBudgetMoney(estimate.estimate_total)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Submitted
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  <p className="mt-1 text-sm font-semibold text-white">
                     {formatEstimateDateTime(estimate.submitted_at)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
+                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Submitted By
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-apple-charcoal">
+                  <p className="mt-1 text-sm font-semibold text-white">
                     {estimate.requester_profile?.full_name?.trim() ||
                       estimate.requester_profile?.username ||
                       "Unknown engineer"}
@@ -262,14 +263,14 @@ export default function EstimateReportModal({
                             </td>
                           </tr>
                         ))}
-                        <tr className="bg-[#f5faf6]">
+                        <tr className="bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)]">
                           <td
                             colSpan={4}
-                            className="px-3 py-3 text-right text-sm font-semibold uppercase tracking-[0.12em] text-[#345344]"
+                            className="px-3 py-3 text-right text-sm font-semibold uppercase tracking-[0.12em] text-white"
                           >
                             Item Cost Total
                           </td>
-                          <td className="px-3 py-3 text-right text-base font-semibold text-[#2d6a4f]">
+                          <td className="px-3 py-3 text-right text-base font-semibold text-white">
                             {formatBudgetMoney(overallTotal)}
                           </td>
                         </tr>

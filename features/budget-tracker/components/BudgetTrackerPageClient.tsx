@@ -41,6 +41,7 @@ export default function BudgetTrackerPageClient({
 
   function handleOpenProject(projectId: string) {
     handleRequestSelectProject(projectId);
+    setShowProjectOverview(false);
   }
 
   function handleCreateProject() {
@@ -82,7 +83,7 @@ export default function BudgetTrackerPageClient({
     }
 
     state.setSelectedProjectId(projectId);
-    setShowProjectOverview(false);
+    // setShowProjectOverview(false); // Now handled in handleOpenProject
   }
 
   const showOverview =

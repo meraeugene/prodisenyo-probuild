@@ -8,6 +8,7 @@ import {
   LoaderCircle,
   Save,
   Trash2,
+  Info,
 } from "lucide-react";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import type { ProjectEstimateRow } from "@/features/cost-estimator/types";
@@ -110,20 +111,33 @@ export default function CostEstimatorHeader({
         </div>
 
         <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-3 xl:justify-end">
-          {!isReadOnlyEstimate && selectedEstimate ? (
-            <button
-              type="button"
-              onClick={onSaveDraft}
-              disabled={uiLocked || saveState !== "dirty"}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {pendingSaveEstimate ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save size={16} />
-              )}
-              Save draft
-            </button>
+          {selectedEstimate ? (
+            !isReadOnlyEstimate ? (
+              <button
+                type="button"
+                onClick={onSaveDraft}
+                disabled={uiLocked || saveState !== "dirty"}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {pendingSaveEstimate ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                Save draft
+              </button>
+            ) : (
+              <div className="w-full flex flex-col gap-2 sm:hidden">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 opacity-80 cursor-default"
+                >
+                  <CheckCircle2 size={18} />
+                  Submitted
+                </button>
+              </div>
+            )
           ) : null}
 
           <details className="relative sm:hidden">

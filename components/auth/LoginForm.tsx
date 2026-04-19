@@ -85,7 +85,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
           </>
         ) : (
           <>
-            Sign in to PayTrack
+            Sign in to ProBuild
             <ArrowRight className="h-4 w-4" />
           </>
         )}

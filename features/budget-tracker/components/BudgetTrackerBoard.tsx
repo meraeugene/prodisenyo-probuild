@@ -47,7 +47,6 @@ function BudgetTrackerCardContent({
   const variance =
     Math.round(((item.estimated_cost ?? 0) - (item.actual_spent ?? 0)) * 100) /
     100;
-  const notes = item.notes?.trim();
 
   return (
     <>
@@ -71,16 +70,6 @@ function BudgetTrackerCardContent({
       </div>
 
       <div className="mt-5 space-y-3 text-sm">
-        {notes ? (
-          <div className="rounded-[12px] border border-apple-mist/80 bg-white/70 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-apple-steel">
-              Notes
-            </p>
-            <p className="mt-1 max-h-20 overflow-y-auto whitespace-pre-wrap pr-1 text-[13px] leading-5 text-apple-charcoal/85">
-              {notes}
-            </p>
-          </div>
-        ) : null}
         <div className="flex items-center justify-between text-apple-smoke">
           <span>Estimated cost</span>
           <span className="font-semibold text-apple-charcoal">

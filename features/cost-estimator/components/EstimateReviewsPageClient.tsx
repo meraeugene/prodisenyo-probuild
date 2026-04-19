@@ -1,6 +1,11 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
+import {
+  LoaderCircle,
+  CornerUpLeft,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
@@ -49,7 +54,7 @@ export default function EstimateReviewsPageClient({
                     state.setRejectEstimateId(state.activeEstimate!.id)
                   }
                   disabled={state.isPending}
-                  className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-amber-200 px-4 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[180px]"
+                  className="inline-flex h-10 w-full items-center justify-center rounded-xl  px-4 text-sm font-semibold  transition  disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[180px] text-[#2d6a4f] bg-[#eef7f0] hover:bg-[#e2efe5] "
                 >
                   {state.isPending && state.pendingActionType === "reject" ? (
                     <>
@@ -57,7 +62,10 @@ export default function EstimateReviewsPageClient({
                       Returning...
                     </>
                   ) : (
-                    "Return Estimate"
+                    <>
+                      <XCircle size={17} className="mr-2" />
+                      Return Estimate
+                    </>
                   )}
                 </button>
                 <button
@@ -74,7 +82,10 @@ export default function EstimateReviewsPageClient({
                       Approving...
                     </>
                   ) : (
-                    "Approve Estimate"
+                    <>
+                      <CheckCircle2 size={17} className="mr-2" />
+                      Approve Estimate
+                    </>
                   )}
                 </button>
               </div>
