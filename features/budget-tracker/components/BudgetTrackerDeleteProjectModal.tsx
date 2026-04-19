@@ -61,7 +61,7 @@ export default function BudgetTrackerDeleteProjectModal({
             {pendingAction === "delete-project" ? (
               <ButtonLoader label="Deleting project" />
             ) : (
-              <span>Delete project</span>
+              <span>Delete Project</span>
             )}
           </button>
         </div>

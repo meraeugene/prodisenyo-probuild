@@ -63,7 +63,7 @@ export default function CostEstimatorDeleteProjectModal({
             {pending ? (
               <ButtonLoader label="Deleting project" />
             ) : (
-              <span>Delete project</span>
+              <span>Delete Project</span>
             )}
           </button>
         </div>
