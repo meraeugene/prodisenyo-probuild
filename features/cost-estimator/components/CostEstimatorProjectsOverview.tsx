@@ -114,7 +114,7 @@ export default function CostEstimatorProjectsOverview({
                   </p>
                   <p>
                     Total item cost:{" "}
-                    <span className="font-semibold text-amber-700">
+                    <span className="font-semibold text-rose-700">
                       {formatBudgetMoney(totalItemCost)}
                     </span>
                   </p>

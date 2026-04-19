@@ -176,11 +176,11 @@ export default function CostEstimatorItemModal({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-0 backdrop-blur-sm sm:p-4">
+    <div className="fixed inset-0 z-[150] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-[#f8fbf8] shadow-none sm:h-[min(94vh,750px)] sm:max-w-[1280px] sm:rounded-[28px] sm:border sm:border-apple-mist sm:shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
-        <div className="sticky top-0 z-20 flex items-start justify-between border-b border-apple-mist bg-white px-4 py-3 sm:px-6 sm:py-4">
+      <div className="relative flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-t-2xl border-0 bg-[#f8fbf8] shadow-none sm:h-[min(94vh,750px)] sm:max-w-[1280px] sm:rounded-[28px] sm:border sm:border-apple-mist sm:shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
+        <div className="sticky top-0 z-20 flex items-start justify-between border-b border-apple-mist bg-white px-4 py-3 sm:px-6 sm:py-4 rounded-t-2xl sm:rounded-t-[28px]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
               Engineer Cost
@@ -205,12 +205,12 @@ export default function CostEstimatorItemModal({
         <div
           className={
             isReadOnly
-              ? "grid min-h-0 flex-1 overflow-y-auto"
-              : "grid min-h-0 flex-1 overflow-y-auto xl:h-full xl:grid-cols-[320px_minmax(0,1fr)_380px]"
+              ? "flex flex-col min-h-0 flex-1 overflow-y-auto"
+              : "flex flex-col min-h-0 flex-1 overflow-y-auto xl:h-full xl:grid xl:grid-cols-[320px_minmax(0,1fr)_380px]"
           }
         >
           {isReadOnly ? null : (
-            <section className="flex flex-col border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-4 sm:px-6 sm:py-5 xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r">
+            <section className="flex flex-col border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-3 sm:px-6 sm:py-5 xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                 Cost details
               </p>
@@ -266,8 +266,8 @@ export default function CostEstimatorItemModal({
           <section
             className={
               isReadOnly
-                ? "flex flex-col bg-white px-4 py-4 xl:min-h-0 xl:h-full"
-                : "flex flex-col border-b border-apple-mist bg-white xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r"
+                ? "flex flex-col bg-white px-3 py-4 sm:px-4 xl:min-h-0 xl:h-full"
+                : "flex flex-col border-b border-apple-mist bg-white px-3 py-4 sm:px-4 xl:min-h-0 xl:h-full xl:border-b-0 xl:border-r"
             }
           >
             {isReadOnly ? (

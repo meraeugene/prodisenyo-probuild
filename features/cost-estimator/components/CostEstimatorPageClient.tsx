@@ -145,8 +145,8 @@ export default function CostEstimatorPageClient({
         onDeleteProject={handleRequestDeleteProject}
       />
 
-      <section className="grid min-h-[calc(100vh-69px)] xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-5 px-5 py-5">
+      <section className="flex flex-col xl:grid xl:min-h-[calc(100vh-69px)] xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-5 px-2 py-3 sm:px-5 sm:py-5">
           {state.selectedEstimate ? (
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -213,13 +213,15 @@ export default function CostEstimatorPageClient({
           />
         </div>
 
-        <CostEstimatorSummaryPanel
-          estimate={state.selectedEstimate}
-          costEstimate={state.plannedEstimateTotal}
-          currentItemTotal={state.currentEstimateTotal}
-          itemCount={state.estimateForm.items.length}
-          totalQuantity={state.totalQuantity}
-        />
+        <div className="mt-4 xl:mt-0">
+          <CostEstimatorSummaryPanel
+            estimate={state.selectedEstimate}
+            costEstimate={state.plannedEstimateTotal}
+            currentItemTotal={state.currentEstimateTotal}
+            itemCount={state.estimateForm.items.length}
+            totalQuantity={state.totalQuantity}
+          />
+        </div>
       </section>
 
       <CostEstimatorItemModal
