@@ -209,13 +209,18 @@ export default function BudgetTrackerItemModal({
                 How much you&rsquo;ve paid so far. Leave blank if you
                 haven&rsquo;t paid yet.
               </p>
-              <input
-                value={actualSpentInput}
-                onChange={(event) => onActualSpentChange(event.target.value)}
-                placeholder="Actual spent"
-                inputMode="decimal"
-                className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-apple-steel">
+                  ₱
+                </span>
+                <input
+                  value={actualSpentInput}
+                  onChange={(event) => onActualSpentChange(event.target.value)}
+                  placeholder="Actual spent"
+                  inputMode="decimal"
+                  className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                />
+              </div>
             </div>
 
             <div>
