@@ -74,7 +74,7 @@ export default function CostEstimatorConfirmModal({
             disabled={pending}
             className={`inline-flex h-11 items-center justify-center rounded-[10px] px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               confirmTone === "danger"
-                ? "border border-rose-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                ? "border-0 bg-red-600 text-white hover:bg-red-700"
                 : "bg-[#1f6a37] text-white hover:bg-[#18552d]"
             }`}
           >

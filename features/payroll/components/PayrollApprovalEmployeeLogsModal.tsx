@@ -52,7 +52,7 @@ export default function PayrollApprovalEmployeeLogsModal({
               <h2 className="mt-2 truncate text-2xl font-semibold tracking-[-0.03em]">
                 {modalState.employeeLabel}
               </h2>
-              <p className="mt-2 truncate text-sm text-white/80">
+              <p className="mt-2  text-sm text-white/80">
                 {modalState.siteLabel} | {modalState.periodLabel}
               </p>
             </div>

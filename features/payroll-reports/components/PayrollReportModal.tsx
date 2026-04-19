@@ -177,7 +177,7 @@ export default function PayrollReportModal({
       >
         <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:max-h-[95vh] sm:h-auto sm:max-w-[min(1520px,96vw)] sm:rounded-[28px]">
           <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white sm:px-6 sm:py-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between ">
               <div className="min-w-0 flex-1 pr-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                   View Reports
@@ -185,7 +185,7 @@ export default function PayrollReportModal({
                 <h2 className="mt-2 text-lg font-semibold tracking-[-0.03em] leading-tight sm:text-xl md:text-2xl">
                   {formatPayrollReportPeriodLabel(report)}
                 </h2>
-                <p className="mt-2 truncate text-xs whitespace-nowrap text-white/80 sm:text-sm">
+                <p className="mt-2 text-xs text-white/80 sm:text-sm">
                   {report.site_name} | {report.status} | Submitted{" "}
                   {formatPayrollReportDateTime(
                     report.submitted_at ?? report.created_at,
@@ -541,8 +541,8 @@ export default function PayrollReportModal({
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <div className="relative min-w-[220px]">
+                    <div className="mt-3 flex flex-col sm:flex-row items-center gap-2">
+                      <div className="relative min-w-[220px] w-full sm:w-fit">
                         <Search
                           size={14}
                           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-apple-smoke"
@@ -558,7 +558,7 @@ export default function PayrollReportModal({
                       <select
                         value={siteFilter}
                         onChange={(event) => setSiteFilter(event.target.value)}
-                        className="h-9 min-w-[180px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                        className="h-9 min-w-[180px] rounded-lg border w-full sm:w-fit border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
                       >
                         <option value="all">All Sites</option>
                         {siteOptions.map((site) => (

@@ -81,15 +81,15 @@ export default function EmployeeLogsModal({
     <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-0 backdrop-blur-sm sm:p-4">
       <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[90vh] sm:max-w-6xl sm:rounded-2xl">
         <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white sm:px-6 sm:py-5">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between ">
             <div className="min-w-0 flex-1 pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
                 Calculation Details
               </p>
-              <h2 className="mt-2 truncate text-xl font-semibold tracking-[-0.03em] whitespace-nowrap sm:text-2xl">
+              <h2 className="mt-2  text-xl font-semibold tracking-[-0.03em] sm:text-2xl">
                 {item.employee_name}
               </h2>
-              <p className="mt-2 truncate text-xs whitespace-nowrap text-white/80 sm:text-sm">
+              <p className="mt-2 text-xs text-white/80 sm:text-sm">
                 {item.role_code} | {item.site_name} |{" "}
                 {formatPayrollReportPeriodLabel(report)}
               </p>

@@ -56,7 +56,7 @@ export default function BudgetTrackerDeleteProjectModal({
             type="button"
             onClick={onDelete}
             disabled={isPending}
-            className="inline-flex items-center justify-center rounded-[10px] border border-rose-200 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-[10px] border-0 bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "delete-project" ? (
               <ButtonLoader label="Deleting project" />
