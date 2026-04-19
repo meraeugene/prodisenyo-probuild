@@ -79,7 +79,6 @@ export async function createBudgetProjectAction(
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
   const name = normalizeText(input.name);
   const database = createSupabaseAdminClient() as any;
@@ -119,7 +118,6 @@ export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
   const database = createSupabaseAdminClient() as any;
   const projectId = normalizeText(input.projectId);
@@ -201,7 +199,6 @@ export async function deleteBudgetItemAction(itemId: string) {
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(itemId);
@@ -227,7 +224,6 @@ export async function deleteBudgetProjectAction(projectId: string) {
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(projectId);
@@ -253,7 +249,6 @@ export async function reorderBudgetItemsAction(input: ReorderBudgetItemsInput) {
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
   const database = createSupabaseAdminClient() as any;
   const projectId = normalizeText(input.projectId);

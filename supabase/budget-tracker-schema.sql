@@ -156,8 +156,7 @@ create policy "budget projects readable by all app roles"
   using (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   );
 
 create policy "budget projects managed by all app roles"
@@ -166,14 +165,12 @@ create policy "budget projects managed by all app roles"
   using (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   )
   with check (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   );
 
 create policy "budget items readable by all app roles"
@@ -182,8 +179,7 @@ create policy "budget items readable by all app roles"
   using (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   );
 
 create policy "budget items managed by all app roles"
@@ -192,12 +188,10 @@ create policy "budget items managed by all app roles"
   using (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   )
   with check (
     public.is_ceo() or
     public.is_payroll_manager() or
-    public.is_engineer() or
-    public.is_employee()
+    public.is_engineer()
   );

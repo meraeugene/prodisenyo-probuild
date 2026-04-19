@@ -42,14 +42,14 @@ export default function EstimateReviewsPageClient({
           onClose={() => state.setActiveEstimateId(null)}
           footer={
             state.activeEstimate.status === "submitted" ? (
-              <div className="flex w-full flex-nowrap justify-end gap-2">
+              <div className="ml-auto flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() =>
                     state.setRejectEstimateId(state.activeEstimate!.id)
                   }
                   disabled={state.isPending}
-                  className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl border border-amber-200 px-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-amber-200 px-4 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[180px]"
                 >
                   {state.isPending && state.pendingActionType === "reject" ? (
                     <>
@@ -66,7 +66,7 @@ export default function EstimateReviewsPageClient({
                     state.handleApproveEstimate(state.activeEstimate!.id)
                   }
                   disabled={state.isPending}
-                  className="inline-flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl bg-[#1f6a37] px-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[180px]"
                 >
                   {state.isPending && state.pendingActionType === "approve" ? (
                     <>

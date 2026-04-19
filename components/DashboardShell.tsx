@@ -112,7 +112,6 @@ const ENGINEER_REQUEST_ITEMS = [
 
 const EMPLOYEE_NAV_ITEMS = [
   { href: "/home", label: "Home", icon: House },
-  { href: "/budget-tracker", label: "Budget Tracker", icon: Receipt },
   { href: "/request-overtime", label: "Request Overtime", icon: Clock3 },
 ] as const;
 

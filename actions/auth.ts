@@ -73,7 +73,6 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
 
   return hasAllowedPrefix(pathname, [
     "/home",
-    "/budget-tracker",
     "/request-overtime",
     "/settings",
   ]);

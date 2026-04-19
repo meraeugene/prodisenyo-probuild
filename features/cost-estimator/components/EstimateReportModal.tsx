@@ -203,8 +203,8 @@ export default function EstimateReportModal({
                 </p>
               </div>
 
-              <div className="mt-4 overflow-x-auto rounded-2xl border border-apple-mist">
-                <table className="min-w-[640px] w-full text-sm">
+              <div className="mt-4 overflow-x-auto rounded-2xl border border-apple-mist lg:overflow-x-hidden">
+                <table className="w-full min-w-[560px] text-sm lg:min-w-0">
                   <thead>
                     <tr className="bg-[rgb(var(--apple-snow))]">
                       <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-apple-steel">
@@ -239,7 +239,7 @@ export default function EstimateReportModal({
                                 </p>
                               ) : null}
                             </td>
-                            <td className="px-3 py-3 align-top text-apple-smoke">
+                            <td className="px-3 py-3 align-top text-apple-smoke break-words">
                               <p className="font-medium text-apple-charcoal">
                                 {item.material_name_snapshot ||
                                   item.item_name_snapshot}

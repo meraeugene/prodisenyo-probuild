@@ -133,11 +133,6 @@ const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
   ],
   employee: [
     {
-      href: "/budget-tracker",
-      title: "Budget Tracker",
-      description: "Track project budget usage and spending status.",
-    },
-    {
       href: "/request-overtime",
       title: "Request Overtime",
       description: "Send overtime requests to your approver.",
@@ -214,8 +209,8 @@ function getRoleHints(role: AppRole) {
 
   return [
     "Check overtime and settings for your shift.",
-    "Track requests and budget updates in one place.",
-    "Keep your profile information updated regularly.",
+    "Submit overtime requests early for faster approval.",
+    "Keep your profile and account settings up to date.",
   ];
 }
 

@@ -66,7 +66,6 @@ const ENGINEER_ALLOWED_PREFIXES = [
 ] as const;
 const EMPLOYEE_ALLOWED_PREFIXES = [
   "/home",
-  "/budget-tracker",
   "/request-overtime",
   "/settings",
 ] as const;

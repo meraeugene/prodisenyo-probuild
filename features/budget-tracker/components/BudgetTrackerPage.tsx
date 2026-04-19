@@ -11,7 +11,6 @@ export default async function BudgetTrackerPage() {
     APP_ROLES.CEO,
     APP_ROLES.PAYROLL_MANAGER,
     APP_ROLES.ENGINEER,
-    APP_ROLES.EMPLOYEE,
   ]);
 
   const supabase = createSupabaseAdminClient() as any;
