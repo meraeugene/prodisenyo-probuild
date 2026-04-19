@@ -131,6 +131,14 @@ export async function saveBudgetItemAction(input: SaveBudgetItemInput) {
     throw new Error("Cost name is required.");
   }
 
+  if (
+    input.estimatedCost === undefined ||
+    input.estimatedCost === null ||
+    Number.isNaN(Number(input.estimatedCost))
+  ) {
+    throw new Error("Estimated cost is required.");
+  }
+
   await assertBudgetProjectExists(projectId);
 
   const sharedPayload = {

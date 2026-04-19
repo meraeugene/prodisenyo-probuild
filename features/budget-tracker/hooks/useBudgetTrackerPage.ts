@@ -87,7 +87,7 @@ export function useBudgetTrackerPage({
   const [projectError, setProjectError] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
   const [itemFieldErrors, setItemFieldErrors] = useState<
-    Partial<Record<"name" | "status" | "category", string>>
+    Partial<Record<"name" | "status" | "category" | "estimatedCost", string>>
   >({});
   const [activeDropStatus, setActiveDropStatus] =
     useState<BudgetItemStatus | null>(null);
@@ -98,18 +98,20 @@ export function useBudgetTrackerPage({
   const [saveState, setSaveState] = useState<
     "saved" | "dirty" | "saving" | "error"
   >("saved");
-  const [saveMessage, setSaveMessage] = useState("All changes saved");
-  const pendingReorderRef = useRef<{
-    projectId: string;
-    items: Array<{
-      id: string;
-      status: BudgetItemStatus;
-      sortOrder: number;
-    }>;
-    revision: number;
-  } | null>(null);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const reorderRevisionRef = useRef(0);
+  const [saveMessage, setSaveMessage] = useState("Draft saved");
+  const pendingReordersRef = useRef<
+    Record<
+      string,
+      {
+        projectId: string;
+        items: Array<{
+          id: string;
+          status: BudgetItemStatus;
+          sortOrder: number;
+        }>;
+      }
+    >
+  >({});
 
   useEffect(() => setLocalProjects(projects), [projects]);
   useEffect(() => setLocalItems(items), [items]);
@@ -197,68 +199,58 @@ export function useBudgetTrackerPage({
       ? `You still have ${formatBudgetMoney(summary.remainingBudget, selectedProject?.currency_code ?? "PHP")} left in this project budget.`
       : `This project is over budget by ${formatBudgetMoney(Math.abs(summary.remainingBudget), selectedProject?.currency_code ?? "PHP")}.`;
 
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  function queueReorderSave(
-    nextProjectId: string,
-    nextItems: BudgetItemRow[],
-    nextRevision: number,
-  ) {
-    pendingReorderRef.current = {
+  function queueReorderSave(nextProjectId: string, nextItems: BudgetItemRow[]) {
+    pendingReordersRef.current[nextProjectId] = {
       projectId: nextProjectId,
       items: nextItems.map((entry) => ({
         id: entry.id,
         status: entry.status,
         sortOrder: entry.sort_order ?? 0,
       })),
-      revision: nextRevision,
     };
 
     setSaveState("dirty");
-    setSaveMessage("Saving changes...");
+    setSaveMessage("Unsaved changes");
+  }
 
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
+  function handleSaveDraft(onSuccess?: () => void) {
+    const pendingPayloads = Object.values(pendingReordersRef.current);
+    if (pendingPayloads.length === 0) {
+      setSaveState("saved");
+      setSaveMessage("Draft saved");
+      if (typeof onSuccess === "function") {
+        onSuccess();
+      }
+      return;
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
-      const queued = pendingReorderRef.current;
-      if (!queued) return;
+    setSaveState("saving");
+    setSaveMessage("Saving draft...");
 
-      setSaveState("saving");
-      setSaveMessage("Saving changes...");
-
-      startTransition(async () => {
-        try {
+    startTransition(async () => {
+      try {
+        for (const pending of pendingPayloads) {
           await reorderBudgetItemsAction({
-            projectId: queued.projectId,
-            items: queued.items,
+            projectId: pending.projectId,
+            items: pending.items,
           });
-
-          if (pendingReorderRef.current?.revision === queued.revision) {
-            pendingReorderRef.current = null;
-            setSaveState("saved");
-            setSaveMessage("All changes saved");
-          }
-        } catch (error) {
-          if (pendingReorderRef.current?.revision === queued.revision) {
-            setSaveState("error");
-            setSaveMessage("Unable to sync changes");
-          }
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to save item order.",
-          );
         }
-      });
-    }, 900);
+
+        pendingReordersRef.current = {};
+        setSaveState("saved");
+        setSaveMessage("Draft saved");
+        toast.success("Draft saved.");
+        if (typeof onSuccess === "function") {
+          onSuccess();
+        }
+      } catch (error) {
+        setSaveState("error");
+        setSaveMessage("Unable to save draft");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save draft.",
+        );
+      }
+    });
   }
 
   function updateFormattedProjectBudget(value: string) {
@@ -337,7 +329,9 @@ export function useBudgetTrackerPage({
   }
 
   function validateItemForm(form: BudgetItemFormInput) {
-    const errors: Partial<Record<"name" | "status" | "category", string>> = {};
+    const errors: Partial<
+      Record<"name" | "status" | "category" | "estimatedCost", string>
+    > = {};
 
     if (!form.name.trim()) {
       errors.name = "Cost name is required.";
@@ -349,6 +343,10 @@ export function useBudgetTrackerPage({
 
     if (!form.category) {
       errors.category = "Category is required.";
+    }
+
+    if (!estimatedCostInput.trim()) {
+      errors.estimatedCost = "Estimated cost is required.";
     }
 
     return errors;
@@ -590,12 +588,7 @@ export function useBudgetTrackerPage({
       ...current.filter((entry) => !changedIds.has(entry.id)),
       ...nextProjectItems,
     ]);
-    reorderRevisionRef.current += 1;
-    queueReorderSave(
-      selectedProject.id,
-      nextProjectItems,
-      reorderRevisionRef.current,
-    );
+    queueReorderSave(selectedProject.id, nextProjectItems);
 
     return previousItems;
   }
@@ -661,6 +654,8 @@ export function useBudgetTrackerPage({
     pendingAction,
     saveState,
     saveMessage,
+    hasUnsavedChanges: saveState === "dirty",
+    handleSaveDraft,
     setSelectedProjectId,
     setProjectSetupOpen,
     setDeleteProjectModalOpen,

@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   MoreHorizontal,
   Plus,
+  Save,
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
@@ -20,6 +21,7 @@ export default function BudgetTrackerHeader({
   saveMessage,
   onOpenProjects,
   onSelectProject,
+  onSaveDraft,
   onNewProject,
   onAddCost,
   onDeleteProject,
@@ -32,6 +34,7 @@ export default function BudgetTrackerHeader({
   saveMessage: string;
   onOpenProjects: () => void;
   onSelectProject: (projectId: string) => void;
+  onSaveDraft: () => void;
   onNewProject: () => void;
   onAddCost: () => void;
   onDeleteProject: () => void;
@@ -44,6 +47,7 @@ export default function BudgetTrackerHeader({
       : saveState === "error"
         ? "Save failed"
         : "Save draft";
+  const canSaveDraft = saveState === "dirty";
 
   return (
     <header className="sticky top-[69px] z-20 w-full border-b border-apple-mist bg-white/95 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:top-0">
@@ -69,20 +73,23 @@ export default function BudgetTrackerHeader({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            disabled={isPending || saveState === "saving"}
+            onClick={onSaveDraft}
+            disabled={isPending || saveState !== "dirty"}
             className={cn(
               "inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-              saveState === "saving" || saveState === "dirty"
+              saveState === "saving"
                 ? "border-amber-200 bg-amber-50 text-amber-700"
-                : saveState === "error"
-                  ? "border-rose-200 bg-rose-50 text-rose-700"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                : saveState === "dirty"
+                  ? "border-sky-200 bg-sky-50 text-sky-700"
+                  : saveState === "error"
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
             )}
           >
-            {saveState === "saving" || saveState === "dirty" ? (
+            {saveState === "saving" ? (
               <LoaderCircle className="h-4 w-4 animate-spin" />
             ) : (
-              <CheckCircle2 className="h-4 w-4" />
+              <Save className="h-4 w-4" />
             )}
             <span>{mobileSaveLabel}</span>
           </button>
@@ -195,14 +202,16 @@ export default function BudgetTrackerHeader({
           <div
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium",
-              saveState === "saving" || saveState === "dirty"
+              saveState === "saving"
                 ? "border-amber-200 bg-amber-50 text-amber-700"
-                : saveState === "error"
-                  ? "border-rose-200 bg-rose-50 text-rose-700"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                : saveState === "dirty"
+                  ? "border-sky-200 bg-sky-50 text-sky-700"
+                  : saveState === "error"
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
             )}
           >
-            {saveState === "saving" || saveState === "dirty" ? (
+            {saveState === "saving" ? (
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -218,6 +227,22 @@ export default function BudgetTrackerHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+          {selectedProject ? (
+            <button
+              type="button"
+              onClick={onSaveDraft}
+              disabled={isPending || !canSaveDraft}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saveState === "saving" ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              Save draft
+            </button>
+          ) : null}
+
           <button
             type="button"
             onClick={onNewProject}

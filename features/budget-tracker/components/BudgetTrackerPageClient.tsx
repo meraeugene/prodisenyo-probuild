@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import BudgetTrackerBoard from "@/features/budget-tracker/components/BudgetTrackerBoard";
+import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import BudgetTrackerDeleteProjectModal from "@/features/budget-tracker/components/BudgetTrackerDeleteProjectModal";
 import BudgetTrackerHeader from "@/features/budget-tracker/components/BudgetTrackerHeader";
 import BudgetTrackerItemModal from "@/features/budget-tracker/components/BudgetTrackerItemModal";
@@ -26,18 +27,61 @@ export default function BudgetTrackerPageClient({
   loadError: string | null;
 }) {
   const state = useBudgetTrackerPage({ projects, items, schemaReady });
+  const [showSaveDraftFirstConfirm, setShowSaveDraftFirstConfirm] =
+    useState(false);
+  const [saveDraftNextAction, setSaveDraftNextAction] = useState<
+    "new-project" | "overview" | "switch-project" | null
+  >(null);
+  const [pendingProjectSwitchId, setPendingProjectSwitchId] = useState<
+    string | null
+  >(null);
   const [showProjectOverview, setShowProjectOverview] = useState(
     projects.length > 0 && schemaReady,
   );
 
   function handleOpenProject(projectId: string) {
-    state.setSelectedProjectId(projectId);
-    setShowProjectOverview(false);
+    handleRequestSelectProject(projectId);
   }
 
   function handleCreateProject() {
     state.resetProjectForm();
     state.setProjectSetupOpen(true);
+    setShowProjectOverview(false);
+  }
+
+  function handleRequestCreateProject() {
+    if (state.selectedProject && state.hasUnsavedChanges) {
+      setSaveDraftNextAction("new-project");
+      setShowSaveDraftFirstConfirm(true);
+      return;
+    }
+
+    handleCreateProject();
+  }
+
+  function handleRequestOpenOverview() {
+    if (state.selectedProject && state.hasUnsavedChanges) {
+      setSaveDraftNextAction("overview");
+      setShowSaveDraftFirstConfirm(true);
+      return;
+    }
+
+    setShowProjectOverview(true);
+  }
+
+  function handleRequestSelectProject(projectId: string) {
+    if (projectId === state.selectedProject?.id) {
+      return;
+    }
+
+    if (state.selectedProject && state.hasUnsavedChanges) {
+      setPendingProjectSwitchId(projectId);
+      setSaveDraftNextAction("switch-project");
+      setShowSaveDraftFirstConfirm(true);
+      return;
+    }
+
+    state.setSelectedProjectId(projectId);
     setShowProjectOverview(false);
   }
 
@@ -55,7 +99,7 @@ export default function BudgetTrackerPageClient({
           items={state.localItems}
           pending={state.isPending}
           onOpenProject={handleOpenProject}
-          onCreateProject={handleCreateProject}
+          onCreateProject={handleRequestCreateProject}
         />
       ) : null}
 
@@ -67,9 +111,10 @@ export default function BudgetTrackerPageClient({
           isPending={state.isPending}
           saveState={state.saveState}
           saveMessage={state.saveMessage}
-          onOpenProjects={() => setShowProjectOverview(true)}
-          onSelectProject={state.setSelectedProjectId}
-          onNewProject={handleCreateProject}
+          onOpenProjects={handleRequestOpenOverview}
+          onSelectProject={handleRequestSelectProject}
+          onSaveDraft={() => state.handleSaveDraft()}
+          onNewProject={handleRequestCreateProject}
           onAddCost={() => state.openNewItemModal()}
           onDeleteProject={() => state.setDeleteProjectModalOpen(true)}
         />
@@ -157,6 +202,47 @@ export default function BudgetTrackerPageClient({
         pendingAction={state.pendingAction}
         onClose={() => state.setDeleteProjectModalOpen(false)}
         onDelete={state.removeProject}
+      />
+
+      <CostEstimatorConfirmModal
+        open={showSaveDraftFirstConfirm}
+        title="Save draft first?"
+        description={
+          saveDraftNextAction === "overview"
+            ? "This project has unsaved changes. Save the draft first before returning to All Projects."
+            : saveDraftNextAction === "switch-project"
+              ? "This project has unsaved changes. Save the draft first before switching projects so ordering changes are not lost."
+              : "This project has unsaved changes. Save the draft first before creating a new project so nothing gets lost."
+        }
+        confirmLabel="Save draft first"
+        confirmTone="primary"
+        pending={state.isPending}
+        onConfirm={() => {
+          setShowSaveDraftFirstConfirm(false);
+          const nextAction = saveDraftNextAction;
+          const nextProjectId = pendingProjectSwitchId;
+          setSaveDraftNextAction(null);
+          setPendingProjectSwitchId(null);
+          state.handleSaveDraft(() => {
+            if (nextAction === "overview") {
+              setShowProjectOverview(true);
+              return;
+            }
+
+            if (nextAction === "switch-project" && nextProjectId) {
+              state.setSelectedProjectId(nextProjectId);
+              setShowProjectOverview(false);
+              return;
+            }
+
+            handleCreateProject();
+          });
+        }}
+        onCancel={() => {
+          setShowSaveDraftFirstConfirm(false);
+          setSaveDraftNextAction(null);
+          setPendingProjectSwitchId(null);
+        }}
       />
     </div>
   );

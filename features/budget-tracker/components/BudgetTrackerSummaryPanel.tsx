@@ -18,8 +18,8 @@ export default function BudgetTrackerSummaryPanel({
   budgetHealthMessage: string;
 }) {
   return (
-    <aside className="self-stretch border-t border-apple-mist px-4 pt-4 xl:border-l xl:border-t-0 xl:border-apple-mist xl:p-4">
-      <div className="h-full max-h-[calc(100vh-110px)] overflow-y-auto pb-4">
+    <aside className="self-stretch border-t border-apple-mist px-4 pt-4  xl:border-l xl:border-t-0 xl:border-apple-mist xl:p-4">
+      <div className="h-full pb-4">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
             Summary

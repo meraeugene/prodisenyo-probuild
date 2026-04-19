@@ -47,6 +47,7 @@ function BudgetTrackerCardContent({
   const variance =
     Math.round(((item.estimated_cost ?? 0) - (item.actual_spent ?? 0)) * 100) /
     100;
+  const notes = item.notes?.trim();
 
   return (
     <>
@@ -70,6 +71,16 @@ function BudgetTrackerCardContent({
       </div>
 
       <div className="mt-5 space-y-3 text-sm">
+        {notes ? (
+          <div className="rounded-[12px] border border-apple-mist/80 bg-white/70 px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-apple-steel">
+              Notes
+            </p>
+            <p className="mt-1 max-h-20 overflow-y-auto whitespace-pre-wrap pr-1 text-[13px] leading-5 text-apple-charcoal/85">
+              {notes}
+            </p>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between text-apple-smoke">
           <span>Estimated cost</span>
           <span className="font-semibold text-apple-charcoal">
@@ -115,6 +126,8 @@ function SortableBudgetItem({
   isBoardDragging: boolean;
   onEditItem: (item: BudgetItemRow) => void;
 }) {
+  const categoryColors = getBudgetCategoryColorClasses(item.category);
+
   const {
     attributes,
     listeners,
@@ -147,11 +160,16 @@ function SortableBudgetItem({
         transition,
       }}
       className={cn(
-        "group w-full cursor-grab rounded-[12px] border border-apple-mist bg-white p-4 text-left shadow-[0_8px_20px_rgba(24,83,43,0.06)] transition-[border-color,box-shadow,background-color] duration-200 hover:border-[#1f6a37]/35 hover:bg-[#fbfefc] hover:shadow-[0_16px_36px_rgba(24,83,43,0.12)] focus-visible:border-[#1f6a37]/45 focus-visible:bg-[#fbfefc] focus-visible:shadow-[0_16px_36px_rgba(24,83,43,0.14)] focus-visible:outline-none active:cursor-grabbing",
+        "group w-full cursor-grab rounded-[12px] border border-apple-mist p-4 text-left shadow-[0_8px_20px_rgba(24,83,43,0.06)] transition-[border-color,box-shadow,background-color] duration-200 hover:shadow-[0_16px_36px_rgba(24,83,43,0.12)] focus-visible:shadow-[0_16px_36px_rgba(24,83,43,0.14)] focus-visible:outline-none active:cursor-grabbing",
+        categoryColors.cardBg,
+        categoryColors.cardHoverBorder,
         isBoardDragging &&
           "shadow-none hover:shadow-none focus-visible:shadow-none",
         (isDragging || sortableDragging) &&
-          "border-[#1f6a37]/20 bg-[#f6fbf7] opacity-55 shadow-none",
+          cn(
+            "border-[#1f6a37]/20 opacity-55 shadow-none",
+            categoryColors.cardActiveBg,
+          ),
       )}
       {...attributes}
       {...listeners}

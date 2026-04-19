@@ -32,7 +32,9 @@ export default function BudgetTrackerItemModal({
   estimatedCostInput: string;
   actualSpentInput: string;
   itemError: string | null;
-  itemFieldErrors: Partial<Record<"name" | "status" | "category", string>>;
+  itemFieldErrors: Partial<
+    Record<"name" | "status" | "category" | "estimatedCost", string>
+  >;
   isPending: boolean;
   pendingAction: "project" | "item" | "delete-project" | "delete-item" | null;
   onClose: () => void;
@@ -180,7 +182,7 @@ export default function BudgetTrackerItemModal({
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
-                Estimated cost
+                Estimated cost <span className="text-rose-500">*</span>
               </label>
               <p className="mb-2 text-sm text-apple-steel">
                 Your expected cost. You can update this anytime.
@@ -196,9 +198,19 @@ export default function BudgetTrackerItemModal({
                   }
                   placeholder="0"
                   inputMode="decimal"
-                  className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                  className={cn(
+                    "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                    itemFieldErrors.estimatedCost
+                      ? "border-rose-300"
+                      : "border-apple-mist",
+                  )}
                 />
               </div>
+              {itemFieldErrors.estimatedCost ? (
+                <p className="mt-2 text-sm text-rose-600">
+                  {itemFieldErrors.estimatedCost}
+                </p>
+              ) : null}
             </div>
 
             <div>
@@ -225,7 +237,7 @@ export default function BudgetTrackerItemModal({
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-apple-charcoal">
-                Notes
+                Notes <span className="text-apple-steel">(optional)</span>
               </label>
               <p className="mb-2 text-sm text-apple-steel">
                 Anything you want to remember.
