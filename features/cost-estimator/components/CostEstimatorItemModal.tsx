@@ -179,7 +179,7 @@ export default function CostEstimatorItemModal({
     <div className="fixed inset-0 z-[150] flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-t-2xl border-0 bg-[#f8fbf8] shadow-none sm:h-[min(94vh,750px)] sm:max-w-[1280px] sm:rounded-[28px] sm:border sm:border-apple-mist sm:shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
+      <div className="relative flex h-[100dvh] w-full max-w-none flex-col overflow-hidden sm:rounded-t-2xl border-0 bg-[#f8fbf8] shadow-none sm:h-[min(94vh,750px)] sm:max-w-[1280px] sm:rounded-[28px] sm:border sm:border-apple-mist sm:shadow-[0_28px_90px_rgba(15,23,42,0.24)]">
         <div className="sticky top-0 z-20 flex items-start justify-between border-b border-apple-mist bg-white px-4 py-3 sm:px-6 sm:py-4 rounded-t-2xl sm:rounded-t-[28px]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">

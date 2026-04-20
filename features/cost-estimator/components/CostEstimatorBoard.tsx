@@ -122,7 +122,7 @@ export default function CostEstimatorBoard({
                       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-apple-steel">
                         Item no. {index + 1}
                       </p>
-                      <div className="mt-2 flex items-center gap-2">
+                      <div className="mt-2 w-full flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-[#1f6a37]">
                           <ReceiptText size={16} />
                         </div>
