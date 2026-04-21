@@ -149,8 +149,8 @@ export default function OvertimeRequestApprovalQueue({
           Overtime Request Forms
         </h2>
         <p className="mt-2 text-sm text-[#2d6a4f] sm:text-[15px]">
-          Review direct overtime requests submitted by payroll staff, engineers,
-          and employees.
+          Review overtime requests submitted by payroll staff, engineers, and
+          employees.
         </p>
       </div>
 
