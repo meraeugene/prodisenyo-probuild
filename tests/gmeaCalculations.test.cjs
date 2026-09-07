@@ -10,10 +10,9 @@ const { normalizeMutation } = load(
 
 const id = "11111111-1111-4111-8111-111111111111";
 
-function project(contractAmount, expenses = [], withholdingTaxRate = 0) {
+function project(contractAmount, expenses = []) {
   return {
     contract_amount: contractAmount,
-    withholding_tax_rate: withholdingTaxRate,
     expenses,
     partners: [
       { id: "a", name: "Eng. Ruel Dumaguit", percentage: 50 },
@@ -27,14 +26,12 @@ function expense(amount, vatMode = "off", vatRate = 0) {
 }
 
 test("contract cost summary matches the workbook calculation", () => {
-  const summary = projectSummary(project(85000, [expense(11568.2)], 2));
+  const summary = projectSummary(project(85000, [expense(11568.2)]));
   assert.equal(summary.contract, 85000);
-  assert.equal(summary.withholding, 1700);
-  assert.equal(summary.netContract, 83300);
   assert.equal(summary.expenses, 11568.2);
-  assert.equal(summary.profit, 71731.8);
-  assert.equal(summary.partners[0].amount, 35865.9);
-  assert.equal(summary.partners[1].amount, 35865.9);
+  assert.equal(summary.profit, 73431.8);
+  assert.equal(summary.partners[0].amount, 36715.9);
+  assert.equal(summary.partners[1].amount, 36715.9);
 });
 
 test("losses remain visible and partner shares do not become negative", () => {
@@ -77,9 +74,7 @@ test("project validation keeps only the workbook project fields", () => {
       client: " ",
       location: " Corrales Ave ",
       contract_amount: 78950,
-      withholding_tax_rate: 2,
       duration: " 7 Days ",
-      status: "planning",
       description: "removed",
       start_date: "2026-01-01",
     },
@@ -89,9 +84,7 @@ test("project validation keeps only the workbook project fields", () => {
     client: "",
     location: "Corrales Ave",
     contract_amount: 78950,
-    withholding_tax_rate: 2,
     duration: "7 Days",
-    status: "planning",
   });
   assert.throws(() =>
     normalizeMutation({
@@ -101,9 +94,7 @@ test("project validation keeps only the workbook project fields", () => {
         client: "",
         location: "CDO",
         contract_amount: 0,
-        withholding_tax_rate: 0,
         duration: "7 days",
-        status: "planning",
       },
     }),
   );
@@ -121,14 +112,39 @@ test("expense identifiers stay strings and VAT is counted once", () => {
       invoice_number: "00059",
       invoice_name: "GMEA",
       amount: 112,
+      refunded_amount: 25,
       vat_mode: "inclusive",
-      vat_rate: 12,
+      vat_rate: 5,
       method: "Cash",
-      notes: "",
     },
   });
   assert.equal(result.value.invoice_number, "00059");
+  assert.equal(result.value.vat_rate, 12);
+  assert.equal(result.value.refunded_amount, 25);
   assert.equal(projectSummary(project(1000, [result.value])).expenses, 112);
+});
+
+test("contract collections keep the workbook row simple", () => {
+  const result = normalizeMutation({
+    kind: "collections",
+    value: [
+      {
+        id,
+        description: "Down payment of the contract 80%",
+        amount: 200000,
+        notes: "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
+      },
+      {
+        id: "22222222-2222-4222-8222-222222222222",
+        description: "Completion and final turn over 20%",
+        amount: 50000,
+        notes: "",
+      },
+    ],
+  });
+  assert.equal(result.value.length, 2);
+  assert.equal(result.value[0].description, "Down payment of the contract 80%");
+  assert.equal(result.value[1].description, "Completion and final turn over 20%");
 });
 
 test("partner validation requires unique rows totaling 100 percent", () => {
@@ -140,7 +156,7 @@ test("partner validation requires unique rows totaling 100 percent", () => {
   );
 });
 
-test("expense deletion is the only supported financial deletion", () => {
+test("expense and project deletion commands are supported", () => {
   assert.deepEqual(
     normalizeMutation({ kind: "delete", entity: "expense", id }),
     { kind: "delete", entity: "expense", id },
@@ -148,4 +164,10 @@ test("expense deletion is the only supported financial deletion", () => {
   assert.throws(() =>
     normalizeMutation({ kind: "delete", entity: "receipt", id }),
   );
+  assert.throws(() =>
+    normalizeMutation({ kind: "delete", entity: "collection", id }),
+  );
+  assert.deepEqual(normalizeMutation({ kind: "delete_project" }), {
+    kind: "delete_project",
+  });
 });

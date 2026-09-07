@@ -2,17 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getUnreadGmeaExpenseCountAction } from "@/actions/gmeaProjects";
 
 type NotificationCounts = {
   overtime: number;
   payrollReports: number;
   estimateReviews: number;
+  gmeaExpenses: number;
 };
 
 const EMPTY_COUNTS: NotificationCounts = {
   overtime: 0,
   payrollReports: 0,
   estimateReviews: 0,
+  gmeaExpenses: 0,
 };
 
 let activeRequest: Promise<NotificationCounts | null> | null = null;
@@ -39,23 +42,34 @@ function loadNotificationCounts() {
       .from("project_estimates")
       .select("id", { count: "exact", head: true })
       .eq("status", "submitted"),
+    getUnreadGmeaExpenseCountAction().catch(() => 0),
   ])
-    .then(([payrollOvertime, requestOvertime, payrollReports, estimates]) => {
-      if (
-        payrollOvertime.error ||
-        requestOvertime.error ||
-        payrollReports.error ||
-        estimates.error
-      ) {
-        return null;
-      }
+    .then(
+      ([
+        payrollOvertime,
+        requestOvertime,
+        payrollReports,
+        estimates,
+        gmeaExpenses,
+      ]) => {
+        if (
+          payrollOvertime.error ||
+          requestOvertime.error ||
+          payrollReports.error ||
+          estimates.error
+        ) {
+          return null;
+        }
 
-      return {
-        overtime: (payrollOvertime.count ?? 0) + (requestOvertime.count ?? 0),
-        payrollReports: payrollReports.count ?? 0,
-        estimateReviews: estimates.count ?? 0,
-      };
-    })
+        return {
+          overtime:
+            (payrollOvertime.count ?? 0) + (requestOvertime.count ?? 0),
+          payrollReports: payrollReports.count ?? 0,
+          estimateReviews: estimates.count ?? 0,
+          gmeaExpenses,
+        };
+      },
+    )
     .finally(() => {
       activeRequest = null;
     });
@@ -101,7 +115,8 @@ export function useSidebarNotificationCounts(enabled: boolean) {
         previous &&
         canPlaySound.current &&
         (nextCounts.overtime > previous.overtime ||
-          nextCounts.estimateReviews > previous.estimateReviews)
+          nextCounts.estimateReviews > previous.estimateReviews ||
+          nextCounts.gmeaExpenses > previous.gmeaExpenses)
       ) {
         const audio = new Audio("/sounds/overtime-approval.mp3");
         audio.volume = 0.9;
@@ -119,6 +134,7 @@ export function useSidebarNotificationCounts(enabled: boolean) {
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("payroll:pending-count-changed", refresh);
+    window.addEventListener("gmea:expense-viewed", refresh);
 
     return () => {
       cancelled = true;
@@ -126,6 +142,7 @@ export function useSidebarNotificationCounts(enabled: boolean) {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("payroll:pending-count-changed", refresh);
+      window.removeEventListener("gmea:expense-viewed", refresh);
     };
   }, [enabled]);
 

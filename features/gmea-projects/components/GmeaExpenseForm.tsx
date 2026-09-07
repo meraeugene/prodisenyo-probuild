@@ -37,10 +37,10 @@ export default function GmeaExpenseForm({
         invoice_number: "",
         invoice_name: "",
         amount: 0,
-        vat_mode: "off",
-        vat_rate: 0,
+        refunded_amount: 0,
+        vat_mode: "inclusive",
+        vat_rate: 12,
         method: "",
-        notes: "",
       },
   );
   const save = useGmeaMutation(project);
@@ -57,6 +57,7 @@ export default function GmeaExpenseForm({
         readOnly ? "Expense details" : expense ? "Edit expense" : "New expense"
       }
       onClose={onClose}
+      wide
       onSave={
         readOnly ? undefined : () => save({ kind: "expense", value: form })
       }
@@ -64,13 +65,6 @@ export default function GmeaExpenseForm({
       <fieldset disabled={readOnly} className="min-w-0 space-y-5">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-5">
-            <TextField
-              label="Description *"
-              required
-              maxLength={2000}
-              value={form.description}
-              onChange={(e) => update("description", e.target.value)}
-            />
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField
                 label="Expense date *"
@@ -78,6 +72,13 @@ export default function GmeaExpenseForm({
                 required
                 value={form.date}
                 onChange={(e) => update("date", e.target.value)}
+              />
+              <TextField
+                label="Description *"
+                required
+                maxLength={2000}
+                value={form.description}
+                onChange={(e) => update("description", e.target.value)}
               />
               <Field label="Category">
                 <select
@@ -96,6 +97,12 @@ export default function GmeaExpenseForm({
                 maxLength={200}
                 value={form.supplier}
                 onChange={(value) => update("supplier", value)}
+              />
+              <MoneyField
+                label="Amount (PHP) *"
+                required
+                value={form.amount}
+                onValueChange={(value) => update("amount", value)}
               />
               <SearchableSelect
                 label="Payment method *"
@@ -120,27 +127,16 @@ export default function GmeaExpenseForm({
                 onChange={(value) => update("invoice_name", value)}
               />
               <MoneyField
-                label="Amount (PHP) *"
-                required
-                value={form.amount}
-                onValueChange={(value) => update("amount", value)}
+                label="Refunded Sir Edward (PHP)"
+                value={form.refunded_amount}
+                onValueChange={(value) => update("refunded_amount", value)}
               />
             </div>
-            <Field label="Notes">
-              <textarea
-                className={inputClass}
-                rows={3}
-                maxLength={2000}
-                value={form.notes}
-                onChange={(e) => update("notes", e.target.value)}
-              />
-            </Field>
           </div>
           <aside className="h-fit space-y-4 rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4">
             <h3 className="font-semibold text-slate-900">VAT calculation</h3>
             <VatFields
               mode={form.vat_mode}
-              rate={form.vat_rate}
               onChange={(vat_mode, vat_rate) =>
                 setForm({ ...form, vat_mode, vat_rate })
               }

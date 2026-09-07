@@ -6,10 +6,7 @@ create table if not exists public.gmea_projects (
  client text not null default '',
  location text not null,
  contract_amount numeric(16,2) not null default 0,
- withholding_tax_rate numeric(7,4) not null default 0,
  duration text not null,
- status text not null default 'planning'
-  check(status in ('planning','active','on_hold','completed','archived')),
  version integer not null default 1,
  created_by uuid references public.profiles(id) on delete set null,
  updated_by uuid references public.profiles(id) on delete set null,
@@ -19,8 +16,7 @@ create table if not exists public.gmea_projects (
 );
 
 alter table public.gmea_projects
- add column if not exists contract_amount numeric(16,2),
- add column if not exists withholding_tax_rate numeric(7,4);
+ add column if not exists contract_amount numeric(16,2);
 
 -- Preserve the current accepted quotation value when upgrading the old GMEA model.
 do $$
@@ -36,31 +32,11 @@ end $$;
 
 update public.gmea_projects set contract_amount=0 where contract_amount is null;
 
--- Preserve withholding already recorded by the removed payment model.
-do $$
-begin
- if to_regclass('public.gmea_receipts') is not null then
-  execute 'update public.gmea_projects p
-   set withholding_tax_rate=case
-    when p.contract_amount>0 then round((receipts.withholding/p.contract_amount)*100,4)
-    else 0
-   end
-   from (
-    select project_id,sum(coalesce((data->>''withholding'')::numeric,0)) withholding
-    from public.gmea_receipts group by project_id
-   ) receipts
-   where receipts.project_id=p.id and p.withholding_tax_rate is null';
- end if;
-end $$;
-
-update public.gmea_projects
-set withholding_tax_rate=0
-where withholding_tax_rate is null;
 alter table public.gmea_projects
  alter column contract_amount set default 0,
  alter column contract_amount set not null,
- alter column withholding_tax_rate set default 0,
- alter column withholding_tax_rate set not null,
+ drop column if exists withholding_tax_rate,
+ drop column if exists status,
  drop column if exists description,
  drop column if exists start_date,
  drop column if exists end_date;
@@ -75,18 +51,9 @@ begin
  alter table public.gmea_projects
    add constraint gmea_contract_amount_nonnegative check(contract_amount >= 0);
  end if;
- if not exists(
-  select 1 from pg_constraint
-  where conname='gmea_withholding_tax_rate_range'
-   and conrelid='public.gmea_projects'::regclass
- ) then
-  alter table public.gmea_projects
-   add constraint gmea_withholding_tax_rate_range
-   check(withholding_tax_rate between 0 and 100);
- end if;
 end $$;
 
--- Quotations and collections are no longer part of project monitoring.
+-- Quotations and the legacy payment model are no longer used.
 drop table if exists public.gmea_quotation_items cascade;
 drop table if exists public.gmea_quotations cascade;
 drop table if exists public.gmea_milestones cascade;
@@ -98,6 +65,49 @@ create table if not exists public.gmea_expenses (
  data jsonb not null,
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.gmea_collections (
+ id uuid primary key,
+ project_id uuid not null references public.gmea_projects(id) on delete cascade,
+ data jsonb not null,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
+);
+
+create table if not exists public.gmea_expense_notifications (
+ id uuid primary key default gen_random_uuid(),
+ expense_id uuid not null references public.gmea_expenses(id) on delete cascade,
+ project_id uuid not null references public.gmea_projects(id) on delete cascade,
+ recipient_id uuid not null references public.profiles(id) on delete cascade,
+ read_at timestamptz,
+ created_at timestamptz not null default now(),
+ unique(expense_id,recipient_id)
+);
+
+-- Keep collection rows as description, amount, and notes only. When upgrading
+-- the earlier detailed form, preserve its black-cell details inside notes.
+update public.gmea_collections
+set data=jsonb_build_object(
+ 'description',coalesce(data->>'description',''),
+ 'amount',coalesce(data->'amount','0'::jsonb),
+ 'sort_order',coalesce(data->'sort_order','0'::jsonb),
+ 'notes',coalesce(
+  nullif(btrim(data->>'notes'),''),
+  concat_ws(' · ',
+   nullif(initcap(data->>'status'),''),
+   nullif(btrim(data->>'method'),''),
+   nullif(btrim(data->>'reference_number'),''),
+   nullif(btrim(data->>'date'),''),
+   nullif(initcap(replace(data->>'deposit_status','_',' ')),'')
+  )
+ )
+);
+
+update public.gmea_expenses
+set data=(data-'notes') || jsonb_build_object(
+ 'refunded_amount',coalesce((data->>'refunded_amount')::numeric,0),
+ 'vat_rate',case when coalesce(data->>'vat_mode','off')='off' then 0 else 12 end
 );
 
 create table if not exists public.gmea_partners (
@@ -117,6 +127,10 @@ create table if not exists public.gmea_expense_options (
 
 create index if not exists gmea_expenses_project_idx
  on public.gmea_expenses(project_id);
+create index if not exists gmea_collections_project_idx
+ on public.gmea_collections(project_id);
+create index if not exists gmea_expense_notifications_recipient_idx
+ on public.gmea_expense_notifications(recipient_id,read_at,created_at desc);
 create index if not exists gmea_partners_project_idx
  on public.gmea_partners(project_id);
 create unique index if not exists gmea_expense_options_unique
@@ -154,7 +168,7 @@ do $$
 declare table_name text;
 begin
  foreach table_name in array array[
-  'gmea_projects','gmea_expenses','gmea_partners','gmea_expense_options'
+  'gmea_projects','gmea_expenses','gmea_collections','gmea_partners','gmea_expense_options'
  ] loop
   execute format('alter table public.%I enable row level security',table_name);
   execute format('revoke all on public.%I from anon, authenticated',table_name);
@@ -167,5 +181,19 @@ begin
   );
  end loop;
 end $$;
+
+alter table public.gmea_expense_notifications enable row level security;
+revoke all on public.gmea_expense_notifications from anon,authenticated;
+grant select on public.gmea_expense_notifications to authenticated;
+grant all on public.gmea_expense_notifications to service_role;
+drop policy if exists gmea_expense_notification_read on public.gmea_expense_notifications;
+create policy gmea_expense_notification_read
+ on public.gmea_expense_notifications for select to authenticated
+ using(
+  recipient_id=auth.uid() and exists(
+   select 1 from public.profiles
+   where id=auth.uid() and is_active and role::text='ceo'
+  )
+ );
 
 commit;

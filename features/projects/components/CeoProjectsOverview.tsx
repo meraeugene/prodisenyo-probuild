@@ -10,7 +10,6 @@ import {
   PauseCircle,
   Plus,
   Search,
-  UserRound,
 } from "lucide-react";
 import type { ProjectRecord, ProjectStatus } from "@/features/projects/types";
 import ProjectThumbnail from "@/features/projects/components/ProjectThumbnail";
@@ -68,13 +67,13 @@ export default function CeoProjectsOverview({
     <section className="space-y-5">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-[-0.035em] text-slate-950">Projects</h1>
+          <h1 className="text-3xl font-bold tracking-[-0.035em] text-slate-950">PRODISENYO Projects</h1>
           <p className="mt-1 text-sm text-slate-500">Overview of all construction projects.</p>
         </div>
         <button
           type="button"
           onClick={onCreateProject}
-          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-emerald-800 px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(6,95,70,.2)] transition hover:bg-emerald-900"
+          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white transition hover:bg-emerald-900"
         >
           <Plus size={17} /> Create New Project
         </button>
@@ -110,28 +109,26 @@ export default function CeoProjectsOverview({
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          ["Total Projects", projects.length, FolderKanban, "All records"],
-          ["Active Projects", active, BriefcaseBusiness, "In progress"],
-          ["Pending Estimates", planning, PauseCircle, "Not operational yet"],
-          ["Completed", completed, CircleCheckBig, `${onHold} currently on hold`],
-        ].map(([label, value, Icon, helper]) => {
+          ["Total projects", projects.length, "All records", FolderKanban],
+          ["Active projects", active, "In progress", BriefcaseBusiness],
+          ["Pending estimates", planning, "Not operational yet", PauseCircle],
+          ["Completed", completed, `${onHold} currently on hold`, CircleCheckBig],
+        ].map(([label, value, helper, Icon]) => {
           const MetricIcon = Icon as typeof FolderKanban;
           return (
-            <article key={String(label)} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-800">
-                <MetricIcon size={24} />
+            <article key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-medium text-slate-500">{String(label)}</p>
+                <MetricIcon size={16} className="text-emerald-700" />
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[.08em] text-slate-500">{String(label)}</p>
-                <p className="mt-1 text-2xl font-bold text-slate-950">{String(value)}</p>
-                <p className="text-sm text-slate-500">{String(helper)}</p>
-              </div>
+              <p className="mt-2 text-2xl font-semibold text-slate-950">{String(value)}</p>
+              <p className="mt-1 text-sm text-slate-500">{String(helper)}</p>
             </article>
           );
         })}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,.04)]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="divide-y divide-slate-100">
           {filteredProjects.map((project) => {
             const status = getProjectStatusPresentation(project);
@@ -156,7 +153,6 @@ export default function CeoProjectsOverview({
                 <div>
                   <p className="text-xs text-slate-500">{project.status === "planning" ? "Estimate Engineer" : "Project Engineer"}</p>
                   <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-800">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-700"><UserRound size={14} /></span>
                     <span className="truncate">{project.status === "planning" ? project.estimateEngineer : project.engineer}</span>
                   </p>
                 </div>
@@ -168,9 +164,9 @@ export default function CeoProjectsOverview({
                   <p className="text-xs text-slate-500">Budget</p>
                   <p className="mt-1 text-sm font-bold text-slate-950">{formatProjectCurrency(project.spent)} <span className="font-normal text-slate-500">/ {formatProjectCurrency(project.budget)}</span></p>
                 </div>
-                <div className="flex items-center justify-between gap-3 md:block md:text-right">
-                  <span className={`inline-flex rounded-lg border px-3 py-1.5 text-xs font-bold ${STATUS_CLASSES[status.tone]}`}>{status.label}</span>
-                  <button type="button" onClick={() => onOpenProject(project.id)} className="mt-0 inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 md:mt-3">
+                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                  <span className={`inline-flex h-10 w-40 items-center justify-center whitespace-nowrap rounded-xl border px-3 text-xs font-bold ${STATUS_CLASSES[status.tone]}`}>{status.label}</span>
+                  <button type="button" onClick={() => onOpenProject(project.id)} className="inline-flex h-10 w-40 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">
                     {project.status === "planning" ? "Review Estimate" : "View Details"} <ArrowRight size={13} />
                   </button>
                 </div>
@@ -179,8 +175,7 @@ export default function CeoProjectsOverview({
           })}
           {!filteredProjects.length ? (
             <div className="px-6 py-16 text-center">
-              <PauseCircle className="mx-auto text-slate-300" size={30} />
-              <p className="mt-3 font-semibold text-slate-800">No matching projects</p>
+              <p className="font-semibold text-slate-800">No matching projects</p>
               <p className="mt-1 text-sm text-slate-500">Try another filter or search term.</p>
             </div>
           ) : null}

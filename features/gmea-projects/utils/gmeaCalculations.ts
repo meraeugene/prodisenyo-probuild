@@ -58,17 +58,13 @@ export function allocatePercentages(total: number, percentages: number[]) {
 
 export function projectSummary(project: GmeaProject) {
   const contract = money(project.contract_amount);
-  const withholding = money(
-    (contract * project.withholding_tax_rate) / 100,
-  );
-  const netContract = money(contract - withholding);
   const expenses = sumMoney(
     project.expenses.map(
       (expense) =>
         vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross,
     ),
   );
-  const profit = money(netContract - expenses);
+  const profit = money(contract - expenses);
   const distributable = Math.max(0, profit);
   const shares = allocatePercentages(
     distributable,
@@ -76,8 +72,6 @@ export function projectSummary(project: GmeaProject) {
   );
   return {
     contract,
-    withholding,
-    netContract,
     expenses,
     profit,
     distributable,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import CeoAttentionPanel from "@/features/ceo-dashboard/components/CeoAttentionPanel";
 import CeoBudgetSnapshot from "@/features/ceo-dashboard/components/CeoBudgetSnapshot";
 import CeoDashboardApprovalQueue from "@/features/ceo-dashboard/components/CeoDashboardApprovalQueue";
@@ -45,7 +45,6 @@ export default function CeoDashboardPage({
             href={reviewApprovalsHref}
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-700 bg-white px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
           >
-            <ClipboardCheck size={16} />
             Review approvals
             {totals.pendingApprovals > 0 ? (
               <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] text-white">{totals.pendingApprovals}</span>
@@ -60,8 +59,11 @@ export default function CeoDashboardPage({
 
       <CeoDashboardSummaryCards data={data} />
 
-      <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.72fr)_minmax(320px,.78fr)]">
+      <div className="mt-5">
         <CeoDashboardProjectsPanel projects={data.projects} />
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <CeoDashboardApprovalQueue items={approvalQueue} />
         <CeoRecentProgressPanel updates={data.progressUpdates} />
       </div>

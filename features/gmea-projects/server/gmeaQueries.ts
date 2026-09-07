@@ -23,7 +23,7 @@ function unpack(rows: DataRow[]) {
 }
 
 export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
-  await requireGmeaAccess();
+  const { user, profile } = await requireGmeaAccess();
   const db = await gmeaReader();
   const projects = await readAllGmeaRows((from, to) => {
     const query = db
@@ -39,10 +39,19 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
   for (let offset = 0; offset < projects.length; offset += 100) {
     const batch = projects.slice(offset, offset + 100);
     const ids = batch.map((project) => project.id);
-    const [expenses, partners] = await Promise.all([
+    const [expenses, collections, partners, notifications] = await Promise.all([
       readAllGmeaRows((from, to) =>
         db
           .from("gmea_expenses")
+          .select("*")
+          .in("project_id", ids)
+          .order("created_at")
+          .order("id")
+          .range(from, to),
+      ),
+      readAllGmeaRows((from, to) =>
+        db
+          .from("gmea_collections")
           .select("*")
           .in("project_id", ids)
           .order("created_at")
@@ -58,15 +67,37 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
           .order("id")
           .range(from, to),
       ),
+      profile.role === APP_ROLES.CEO
+        ? readAllGmeaRows((from, to) =>
+            db
+              .from("gmea_expense_notifications")
+              .select("*")
+              .eq("recipient_id", user.id)
+              .is("read_at", null)
+              .in("project_id", ids)
+              .order("created_at")
+              .order("id")
+              .range(from, to),
+          )
+        : Promise.resolve([]),
     ]);
+
+    const unreadExpenseIds = new Set(
+      notifications.map((notification) => notification.expense_id),
+    );
 
     output.push(
       ...(batch.map((project) => ({
         ...project,
         contract_amount: Number(project.contract_amount),
-        withholding_tax_rate: Number(project.withholding_tax_rate),
         expenses: unpack(
           expenses.filter((row) => row.project_id === project.id),
+        ).map((expense) => ({
+          ...expense,
+          is_new: unreadExpenseIds.has(String(expense.id)),
+        })),
+        collections: unpack(
+          collections.filter((row) => row.project_id === project.id),
         ),
         partners: unpack(
           partners.filter((row) => row.project_id === project.id),

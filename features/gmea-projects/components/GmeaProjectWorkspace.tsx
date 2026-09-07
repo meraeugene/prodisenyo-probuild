@@ -1,30 +1,45 @@
 ﻿"use client";
 import { useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, UserRound } from "lucide-react";
+import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
 import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaSummaryCards from "./GmeaSummaryCards";
-import GmeaProjectOverview from "./GmeaProjectOverview";
 import GmeaProjectForm from "./GmeaProjectForm";
 import GmeaExpensesSection from "./GmeaExpensesSection";
+import GmeaCollectionsSection from "./GmeaCollectionsSection";
 import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
-const tabs = ["Overview", "Expenses", "Contract Cost Summary"] as const;
+const tabs = ["Contract Collections", "Expenses", "Contract Cost Summary"] as const;
 export default function GmeaProjectWorkspace({
-  project,
-  expenseOptions,
+  project: initialProject,
+  expenseOptions: initialExpenseOptions,
   canEdit,
 }: {
   project: GmeaProject;
   expenseOptions: GmeaExpenseOptions;
   canEdit: boolean;
 }) {
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Overview"),
+  const [tab, setTab] = useState<(typeof tabs)[number]>("Contract Collections"),
     [edit, setEdit] = useState(false);
-  const save = useGmeaMutation(project),
-    financialEdit = canEdit && project.status !== "archived";
+  const { data } = useSWR(
+    ["gmea-project", initialProject.id],
+    ([, id]) => getGmeaProjectDataAction(id),
+    {
+      fallbackData: {
+        project: initialProject,
+        expenseOptions: initialExpenseOptions,
+      },
+      revalidateOnFocus: false,
+      refreshInterval: canEdit ? 0 : 30000,
+    },
+  );
+  const project = data?.project ?? initialProject;
+  const expenseOptions = data?.expenseOptions ?? initialExpenseOptions;
+  const save = useGmeaMutation(project);
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <Link
@@ -45,9 +60,10 @@ export default function GmeaProjectWorkspace({
           <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
             <MapPin size={14} />
             {project.location}
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs capitalize">
-              {project.status.replace("_", " ")}
-            </span>
+          </p>
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+            <UserRound size={14} aria-hidden="true" />
+            {project.client || "Client not set"}
           </p>
         </div>
         {canEdit && (
@@ -55,39 +71,16 @@ export default function GmeaProjectWorkspace({
             <button className={secondaryClass} onClick={() => setEdit(true)}>
               Edit project
             </button>
-            {project.status !== "archived" && (
-              <GmeaConfirmButton
-                label="Archive project"
-                description="Keep this project and its history, but stop financial edits. You can restore it by editing its status."
-                onConfirm={() =>
-                  save({
-                    kind: "project",
-                    value: { ...project, status: "archived" },
-                  })
-                }
-              />
-            )}
-            {project.status === "archived" && (
-              <GmeaConfirmButton
-                label="Restore project"
-                description="Restore this project so expenses can be edited again."
-                onConfirm={() =>
-                  save({
-                    kind: "project",
-                    value: { ...project, status: "active" },
-                  })
-                }
-              />
-            )}
+            <GmeaConfirmButton
+              label="Delete project"
+              danger
+              description="Permanently delete this project and all of its expenses and contract cost records?"
+              onConfirm={() => save({ kind: "delete_project" })}
+            />
           </div>
         )}
       </header>
       <GmeaSummaryCards project={project} />
-      {project.status === "archived" && (
-        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
-          This project is archived. Its financial history remains available.
-        </p>
-      )}
       <nav
         aria-label="Project sections"
         className="flex gap-2 overflow-x-auto border-b border-slate-200"
@@ -109,16 +102,18 @@ export default function GmeaProjectWorkspace({
         ))}
       </nav>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        {tab === "Overview" && <GmeaProjectOverview project={project} />}
         {tab === "Expenses" && (
           <GmeaExpensesSection
             project={project}
             expenseOptions={expenseOptions}
-            canEdit={financialEdit}
+            canEdit={canEdit}
           />
         )}
+        {tab === "Contract Collections" && (
+          <GmeaCollectionsSection project={project} canEdit={canEdit} />
+        )}
         {tab === "Contract Cost Summary" && (
-          <GmeaProfitSection project={project} canEdit={financialEdit} />
+          <GmeaProfitSection project={project} canEdit={canEdit} />
         )}
       </div>
       {edit && (

@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronsLeft, ChevronsRight, Menu, Settings, X } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Settings, X } from "lucide-react";
 import DashboardNavigation from "@/features/navigation/components/DashboardNavigation";
+import SidebarTooltip from "@/features/navigation/components/SidebarTooltip";
 import SignOutButton from "@/components/auth/SignOutButton";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { useAppState } from "@/features/app/AppStateProvider";
@@ -45,7 +46,7 @@ export default function DashboardShell({
   const [collapsed, setCollapsed] = useState(false);
   const { hasAttendanceData, workspaceReset } =
     useAppState();
-  const sidebarWidth = collapsed ? "80px" : "286px";
+  const sidebarWidth = collapsed ? "72px" : "264px";
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
   const isWorkflowRoute =
@@ -115,41 +116,53 @@ export default function DashboardShell({
 
         <aside
           className={cn(
-            "fixed left-0 top-0 z-50 flex h-[100dvh] flex-col overflow-hidden border-r border-apple-mist bg-white transition-transform duration-300 lg:h-screen lg:translate-x-0",
+            "fixed left-0 top-0 z-50 flex h-[100dvh] flex-col overflow-visible border-r border-apple-mist bg-white transition-transform duration-300 lg:h-screen lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           )}
-          style={{ width: sidebarWidth }}
+          style={{
+            width: sidebarWidth,
+            minWidth: sidebarWidth,
+            maxWidth: sidebarWidth,
+          }}
         >
           <div
-            className="flex shrink-0 items-center justify-between border-b border-apple-mist px-5"
+            className="relative flex shrink-0 items-center justify-between border-b border-apple-mist px-5"
             style={{ height: headerHeight }}
           >
             <div className="flex items-center gap-3">
               <BrandLogoMark />
 
               {!collapsed ? (
-                <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
+                <p className="whitespace-nowrap text-sm font-semibold tracking-[-0.03em] text-apple-charcoal">
                   Prodisenyo ProBuild
                 </p>
               ) : null}
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCollapsed((current) => !current)}
-                className="hidden h-8 w-8 items-center justify-center rounded-lg text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:flex"
-                aria-label={
-                  collapsed ? "Expand navigation" : "Collapse navigation"
-                }
-                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              <SidebarTooltip
+                active
+                label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
-                {collapsed ? (
-                  <ChevronsRight size={16} />
-                ) : (
-                  <ChevronsLeft size={16} />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setCollapsed((current) => !current)}
+                  className={cn(
+                    "hidden h-8 w-8 items-center justify-center rounded-lg text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:flex",
+                    collapsed &&
+                      "absolute -right-3 top-[18px] z-10 rounded-full border border-apple-mist bg-white shadow-sm",
+                  )}
+                  aria-label={
+                    collapsed ? "Expand navigation" : "Collapse navigation"
+                  }
+                >
+                  {collapsed ? (
+                    <PanelLeftOpen size={16} />
+                  ) : (
+                    <PanelLeftClose size={16} />
+                  )}
+                </button>
+              </SidebarTooltip>
 
               <button
                 type="button"
@@ -163,7 +176,7 @@ export default function DashboardShell({
           </div>
 
           <div
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pt-5"
+            className="sidebar-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-5"
             style={{
               WebkitOverflowScrolling: "touch",
               paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
@@ -173,23 +186,23 @@ export default function DashboardShell({
 
             <div className="mt-auto space-y-1 pt-3">
               {!collapsed ? (
-                <div className="px-3 pb-1 pt-1">
+                <div className="px-3 pb-2 pt-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
                     Account
                   </p>
                 </div>
               ) : null}
-              <Link
-                href="/settings"
-                title={collapsed ? "Settings" : undefined}
-                className={cn(
-                  "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
-                  collapsed && "justify-center px-2.5",
-                  settingsActive
-                    ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                    : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-                )}
-              >
+              <SidebarTooltip active={collapsed} label="Settings">
+                <Link
+                  href="/settings"
+                  className={cn(
+                    "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
+                    collapsed && "justify-center px-2.5",
+                    settingsActive
+                      ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                      : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                  )}
+                >
                 <div
                   className={cn(
                     "flex h-7 w-7 mr items-center justify-center rounded-full transition-colors",
@@ -203,25 +216,17 @@ export default function DashboardShell({
                 {!collapsed ? (
                   <span className="font-medium">Settings</span>
                 ) : null}
-              </Link>
+                </Link>
+              </SidebarTooltip>
 
-              <div className="pt-2">
-                <SignOutButton
-                  variant="sidebar"
-                  collapsed={collapsed}
-                  title={collapsed ? "Logout" : undefined}
-                />
-              </div>
+              <SidebarTooltip active={collapsed} label="Logout">
+                <div className="pt-2">
+                  <SignOutButton variant="sidebar" collapsed={collapsed} />
+                </div>
+              </SidebarTooltip>
 
               <div className="pt-4">
                 <div
-                  title={
-                    collapsed
-                      ? profile?.full_name?.trim() ||
-                        profile?.username ||
-                        "Signed-in user"
-                      : undefined
-                  }
                   className={cn(
                     collapsed
                       ? "flex justify-center"
@@ -273,7 +278,7 @@ export default function DashboardShell({
         <div
           className={cn(
             "min-h-screen transition-[padding] duration-300",
-            collapsed ? "lg:pl-[80px]" : "lg:pl-[286px]",
+            collapsed ? "lg:pl-[72px]" : "lg:pl-[264px]",
           )}
         >
           {/* Mobile top bar */}

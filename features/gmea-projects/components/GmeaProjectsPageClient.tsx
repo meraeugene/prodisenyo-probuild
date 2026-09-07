@@ -1,14 +1,11 @@
 ﻿"use client";
 import { useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
-import { FolderKanban, Plus, MapPin } from "lucide-react";
+import { FolderKanban, Plus, MapPin, Search, UserRound } from "lucide-react";
+import { getGmeaProjectsDataAction } from "@/actions/gmeaProjects";
 import type { GmeaProject } from "../types";
-import {
-  PROJECT_STATUSES,
-  buttonClass,
-  inputClass,
-  secondaryClass,
-} from "../utils/gmeaConstants";
+import { buttonClass, inputClass, secondaryClass } from "../utils/gmeaConstants";
 import {
   formatMoney,
   projectSummary,
@@ -25,16 +22,20 @@ export default function GmeaProjectsPageClient({
   projects: GmeaProject[];
   canEdit: boolean;
 }) {
-  const [query, setQuery] = useState(""),
-    [status, setStatus] = useState("current");
+  const { data: liveProjects = projects } = useSWR(
+    "gmea-projects:list",
+    getGmeaProjectsDataAction,
+    {
+      fallbackData: projects,
+      revalidateOnFocus: false,
+      refreshInterval: canEdit ? 0 : 30000,
+    },
+  );
+  const [query, setQuery] = useState("");
   const [create, setCreate] = useState(false),
     [details, setDetails] = useState<GmeaProject | null>(null);
-  const visible = projects.filter(
+  const visible = liveProjects.filter(
     (p) =>
-      (status === "all" ||
-        (status === "current"
-          ? p.status !== "archived"
-          : p.status === status)) &&
       [p.name, p.client, p.location]
         .join(" ")
         .toLowerCase()
@@ -68,8 +69,8 @@ export default function GmeaProjectsPageClient({
         {[
           ["Projects", String(visible.length)],
           [
-            "Net contract amount",
-            formatMoney(sumMoney(summaries.map((s) => s.netContract))),
+            "Contract amount",
+            formatMoney(sumMoney(summaries.map((s) => s.contract))),
           ],
           [
             "Total expenses",
@@ -85,35 +86,29 @@ export default function GmeaProjectsPageClient({
         ))}
       </div>
       <div className="flex flex-col gap-3 sm:flex-row">
+        <label className="relative block w-full sm:max-w-md">
+          <span className="sr-only">Search projects</span>
+          <Search
+            aria-hidden="true"
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
         <input
           aria-label="Search projects"
-          className={inputClass + " sm:max-w-md"}
+          className={inputClass + " pl-10"}
           placeholder="Search project, client, or location…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <select
-          aria-label="Filter project status"
-          className={inputClass + " sm:max-w-48"}
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          <option value="current">Current projects</option>
-          <option value="all">All statuses</option>
-          {PROJECT_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s.replace("_", " ")}
-            </option>
-          ))}
-        </select>
+        </label>
       </div>
       {!visible.length && (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center">
           <FolderKanban className="mx-auto text-slate-400" size={32} />
           <h2 className="mt-4 font-semibold">No projects found</h2>
           <p className="mt-1 text-sm text-slate-500">
-            {projects.length
-              ? "Try a different search or status."
+            {liveProjects.length
+              ? "Try a different search."
               : "Your GMEA workspace is ready for its first project."}
           </p>
         </div>
@@ -128,14 +123,17 @@ export default function GmeaProjectsPageClient({
             >
               <div className="flex items-center justify-between">
                 <FolderKanban size={22} className="text-emerald-700" />
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs capitalize text-slate-600">
-                  {p.status.replace("_", " ")}
-                </span>
+                {!canEdit && p.expenses.some((expense) => expense.is_new) && (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                    New expense
+                  </span>
+                )}
               </div>
               <h2 className="mt-4 text-lg font-semibold tracking-tight text-slate-900">
                 {p.name}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                <UserRound size={14} aria-hidden="true" />
                 {p.client || "Client not set"}
               </p>
               <p className="mt-3 flex items-center gap-1 text-xs text-slate-500">
@@ -144,9 +142,9 @@ export default function GmeaProjectsPageClient({
               </p>
               <div className="my-5 grid grid-cols-2 gap-3 border-y border-slate-100 py-4 text-sm">
                 <div>
-                  <p className="text-xs text-slate-500">Net contract</p>
+                  <p className="text-xs text-slate-500">Contract amount</p>
                   <p className="mt-1 font-semibold">
-                    {formatMoney(s.netContract)}
+                    {formatMoney(s.contract)}
                   </p>
                 </div>
                 <div>

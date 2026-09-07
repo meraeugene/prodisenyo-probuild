@@ -1,5 +1,6 @@
 ﻿import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
+import { formatProjectDuration } from "../utils/gmeaFormatters";
 export default function GmeaProjectOverview({
   project,
 }: {
@@ -9,11 +10,8 @@ export default function GmeaProjectOverview({
   const details = [
     ["Client", project.client],
     ["Project location", project.location],
-    ["Gross contract amount", formatMoney(s.contract)],
-    ["Withholding tax", formatMoney(s.withholding)],
-    ["Net contract amount", formatMoney(s.netContract)],
-    ["Project duration", project.duration],
-    ["Status", project.status.replace("_", " ")],
+    ["Contract amount", formatMoney(s.contract)],
+    ["Project duration", formatProjectDuration(project.duration)],
   ];
   return (
     <div className="space-y-5">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CeoProgressUpdate } from "@/features/ceo-dashboard/types";
 import { formatCeoDate } from "@/features/ceo-dashboard/utils/ceoDashboard";
 
@@ -9,7 +9,7 @@ export default function CeoRecentProgressPanel({
   updates: CeoProgressUpdate[];
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
         <div>
           <h2 className="font-bold text-slate-950">Recent Progress Updates</h2>
@@ -22,9 +22,6 @@ export default function CeoRecentProgressPanel({
       <div className="divide-y divide-slate-100">
         {updates.slice(0, 4).map((update) => (
           <Link key={update.id} href={"/projects/" + update.projectId} className="flex gap-3 px-5 py-4 hover:bg-slate-50/70">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
-              <TrendingUp size={16} />
-            </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <p className="truncate text-sm font-bold text-slate-950">{update.projectName}</p>

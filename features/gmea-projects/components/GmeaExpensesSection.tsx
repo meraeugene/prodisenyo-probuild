@@ -1,16 +1,18 @@
 ﻿"use client";
 import { useState } from "react";
+import { useSWRConfig } from "swr";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { Expense, GmeaExpenseOptions, GmeaProject } from "../types";
 import {
   buttonClass,
   inputClass,
-  secondaryClass,
   EXPENSE_CATEGORIES,
 } from "../utils/gmeaConstants";
 import { formatMoney, sumMoney, vatBreakdown } from "../utils/gmeaCalculations";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaExpenseForm from "./GmeaExpenseForm";
 import GmeaConfirmButton from "./GmeaConfirmButton";
+import { markGmeaExpenseViewedAction } from "@/actions/gmeaProjects";
 export default function GmeaExpensesSection({
   project,
   expenseOptions,
@@ -23,6 +25,19 @@ export default function GmeaExpensesSection({
   const [editor, setEditor] = useState<{ expense?: Expense } | null>(null),
     [category, setCategory] = useState("");
   const save = useGmeaMutation(project);
+  const { mutate } = useSWRConfig();
+  function openExpense(expense: Expense) {
+    setEditor({ expense });
+    if (!canEdit && expense.is_new) {
+      void markGmeaExpenseViewedAction(project.id, expense.id)
+        .then(async () => {
+          await mutate(["gmea-project", project.id]);
+          await mutate("gmea-projects:list");
+          window.dispatchEvent(new Event("gmea:expense-viewed"));
+        })
+        .catch(() => undefined);
+    }
+  }
   const visible = project.expenses.filter(
     (e) => !category || e.category === category,
   );
@@ -56,19 +71,27 @@ export default function GmeaExpensesSection({
           <strong>{formatMoney(sumMoney(amounts.map((a) => a.gross)))}</strong>
           <span className="ml-4 text-slate-500">Input VAT </span>
           <strong>{formatMoney(sumMoney(amounts.map((a) => a.vat)))}</strong>
+          <span className="ml-4 text-slate-500">Refunded Sir Edward </span>
+          <strong>
+            {formatMoney(
+              sumMoney(visible.map((expense) => expense.refunded_amount ?? 0)),
+            )}
+          </strong>
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1120px] text-left text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               {[
                 "Date",
                 "Description / category",
                 "Supplier / invoice",
+                "Payment method",
                 "Base",
                 "Input VAT",
                 "Total",
+                "Refunded Sir Edward",
                 "Actions",
               ].map((h) => (
                 <th className="p-3" key={h}>
@@ -85,6 +108,11 @@ export default function GmeaExpensesSection({
                   <td className="whitespace-nowrap p-3">{e.date}</td>
                   <td className="max-w-64 p-3">
                     <p className="font-medium">{e.description}</p>
+                    {e.is_new && (
+                      <span className="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                        New
+                      </span>
+                    )}
                     <p className="mt-1 text-xs text-slate-500">{e.category}</p>
                   </td>
                   <td className="p-3">
@@ -93,21 +121,29 @@ export default function GmeaExpensesSection({
                       {e.invoice_number}
                     </p>
                   </td>
+                  <td className="p-3">{e.method}</td>
                   <td className="p-3">{formatMoney(a.base)}</td>
                   <td className="p-3">{formatMoney(a.vat)}</td>
                   <td className="p-3 font-semibold">{formatMoney(a.gross)}</td>
                   <td className="p-3">
+                    {formatMoney(e.refunded_amount ?? 0)}
+                  </td>
+                  <td className="p-3">
                     <div className="flex gap-2">
                       <button
-                        className={secondaryClass}
-                        onClick={() => setEditor({ expense: e })}
+                        type="button"
+                        aria-label={canEdit ? "Edit expense" : "Details"}
+                        title={canEdit ? "Edit expense" : "View expense details"}
+                        className="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        onClick={() => openExpense(e)}
                       >
-                        {canEdit ? "Edit" : "Details"}
+                        {canEdit ? <Pencil size={17} /> : <Eye size={17} />}
                       </button>
                       {canEdit && (
                         <GmeaConfirmButton
                           label="Delete expense"
                           danger
+                          triggerIcon={<Trash2 size={17} />}
                           description="Remove this expense and recalculate the project totals?"
                           onConfirm={() =>
                             save({
@@ -125,7 +161,7 @@ export default function GmeaExpensesSection({
             })}
             {!visible.length && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-500">
+                <td colSpan={9} className="p-8 text-center text-slate-500">
                   No expenses found.
                 </td>
               </tr>

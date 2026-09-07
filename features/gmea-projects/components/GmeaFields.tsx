@@ -201,11 +201,9 @@ export function SearchableSelect({
 }
 export function VatFields({
   mode,
-  rate,
   onChange,
 }: {
   mode: VatMode;
-  rate: number;
   onChange: (mode: VatMode, rate: number) => void;
 }) {
   return (
@@ -214,30 +212,19 @@ export function VatFields({
         <select
           className={inputClass}
           value={mode}
-          onChange={(e) =>
-            onChange(
-              e.target.value as VatMode,
-              e.target.value === "off" ? 0 : rate,
-            )
-          }
+          onChange={(e) => {
+            const next = e.target.value as VatMode;
+            onChange(next, next === "off" ? 0 : 12);
+          }}
         >
           <option value="off">No VAT</option>
-          <option value="inclusive">Amount includes VAT</option>
-          <option value="exclusive">Add VAT to amount</option>
+          <option value="inclusive">12% VAT included</option>
+          <option value="exclusive">Add 12% VAT</option>
         </select>
       </Field>
-      {mode !== "off" && (
-        <TextField
-          label="VAT rate (%)"
-          type="number"
-          step="0.01"
-          min="0.01"
-          max="100"
-          required
-          value={rate || ""}
-          onChange={(e) => onChange(mode, Number(e.target.value))}
-        />
-      )}
+      <p className="text-xs font-normal text-slate-500">
+        VAT is fixed at 12% when applied.
+      </p>
     </div>
   );
 }

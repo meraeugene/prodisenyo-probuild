@@ -25,18 +25,26 @@ export type ProjectRow = {
   client: string;
   location: string;
   contract_amount: number;
-  withholding_tax_rate: number;
   duration: string;
-  status: string;
   version: number;
   created_at: string;
   updated_at: string;
+};
+type ExpenseNotificationRow = {
+  id: string;
+  expense_id: string;
+  project_id: string;
+  recipient_id: string;
+  read_at: string | null;
+  created_at: string;
 };
 type GmeaDatabase = {
   public: {
     Tables: {
       gmea_projects: Table<ProjectRow>;
       gmea_expenses: Table<DataRow>;
+      gmea_collections: Table<DataRow>;
+      gmea_expense_notifications: Table<ExpenseNotificationRow>;
       gmea_partners: Table<DataRow>;
       gmea_expense_options: Table<{
         id: string;
@@ -55,6 +63,14 @@ type GmeaDatabase = {
           p_command: Json;
         };
         Returns: string;
+      };
+      mark_gmea_expense_viewed: {
+        Args: {
+          p_actor: string;
+          p_project: string;
+          p_expense: string;
+        };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

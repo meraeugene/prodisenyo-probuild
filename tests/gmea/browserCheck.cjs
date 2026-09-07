@@ -13,6 +13,7 @@ const { normalizeMutation } = load(
   "features/gmea-projects/utils/gmeaValidation.ts",
 );
 const actor = "11111111-1111-4111-8111-111111111111";
+const ceo = "22222222-2222-4222-8222-222222222222";
 async function main() {
   const db = new PGlite();
   let browser, server;
@@ -32,11 +33,14 @@ async function main() {
     await db.query("insert into public.profiles values($1,'gmea',true)", [
       actor,
     ]);
+    await db.query("insert into public.profiles values($1,'ceo',true)", [ceo]);
     const nav =
       "const navigate=url=>{history.pushState({},'',url);window.dispatchEvent(new Event('gmea-refresh'));};";
     const bundle = await build({
       absWorkingDir: process.cwd(),
-      entryPoints: [{ in: "tests/gmea/uiHarness.tsx", out: "bundle" }],
+      entryPoints: [
+        { in: path.resolve("tests/gmea/uiHarness.tsx"), out: "bundle" },
+      ],
       bundle: true,
       write: false,
       outdir: "out",
@@ -66,7 +70,7 @@ async function main() {
                     ? "import React from 'react';" +
                       nav +
                       "export default function Link({href,children,...props}){return <a href={href} {...props} onClick={e=>{e.preventDefault();navigate(href)}}>{children}</a>;}"
-                    : "export async function saveGmeaProjectAction(projectId,version,command){const response=await fetch('/mutation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,version,command})});const result=await response.json();if(!response.ok)throw new Error(result.error);return result.id;}",
+                    : "const options={suppliers:['B.S. Electrical','Solarfy Corporation'],methods:['Cash','Cheque','Bank transfer','GCash'],invoiceNames:['GMEA MARKETING CORP.','Prodisenyo Builders Corp.']};export async function getGmeaProjectsDataAction(){return fetch('/state').then(r=>r.json())}export async function getGmeaProjectDataAction(id){const projects=await getGmeaProjectsDataAction();return {project:projects.find(p=>p.id===id)||null,expenseOptions:options}}export async function saveGmeaProjectAction(projectId,version,command){const response=await fetch('/mutation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,version,command})});const result=await response.json();if(!response.ok)throw new Error(result.error);return result.id;}export async function markGmeaExpenseViewedAction(projectId,expenseId){const response=await fetch('/view-expense',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,expenseId})});if(!response.ok)throw new Error('Unable to mark expense viewed');}",
               resolveDir: process.cwd(),
             }));
           },
@@ -86,8 +90,7 @@ async function main() {
       ).rows;
       for (const p of projects) {
         p.contract_amount = Number(p.contract_amount);
-        p.withholding_tax_rate = Number(p.withholding_tax_rate);
-        for (const field of ["expenses", "partners"]) {
+        for (const field of ["expenses", "collections", "partners"]) {
           p[field] = (
             await db.query(
               "select id,data from public.gmea_" +
@@ -101,6 +104,20 @@ async function main() {
               (left, right) =>
                 Number(left.sort_order ?? 0) - Number(right.sort_order ?? 0),
             );
+          if (field === "expenses") {
+            const unread = new Set(
+              (
+                await db.query(
+                  "select expense_id from public.gmea_expense_notifications where recipient_id=$1 and read_at is null",
+                  [ceo],
+                )
+              ).rows.map((row) => row.expense_id),
+            );
+            p[field] = p[field].map((expense) => ({
+              ...expense,
+              is_new: unread.has(expense.id),
+            }));
+          }
         }
       }
       return projects;
@@ -130,6 +147,16 @@ async function main() {
           );
           res.setHeader("Content-Type", "application/json");
           return res.end(JSON.stringify(r.rows[0]));
+        }
+        if (req.url === "/view-expense") {
+          let body = "";
+          for await (const chunk of req) body += chunk;
+          const input = JSON.parse(body);
+          await db.query(
+            "select public.mark_gmea_expense_viewed($1,$2,$3)",
+            [ceo, input.projectId, input.expenseId],
+          );
+          return res.end("{}");
         }
         res.setHeader("Content-Type", "text/html");
         res.end(
@@ -164,16 +191,13 @@ async function main() {
       .getByLabel("Project location *", { exact: true })
       .fill("Cagayan de Oro");
     await page
-      .getByLabel("Gross contract amount (PHP) *", { exact: true })
+      .getByLabel("Contract amount (PHP) *", { exact: true })
       .fill("85000");
-    await page
-      .getByLabel("Withholding tax rate (%)", { exact: true })
-      .fill("2");
     assert.equal(
       await page
-        .getByLabel("Gross contract amount (PHP) *", { exact: true })
+        .getByLabel("Contract amount (PHP) *", { exact: true })
         .inputValue(),
-      "85,000.00",
+      "85,000",
     );
     await page
       .getByLabel("Project duration *", { exact: true })
@@ -184,6 +208,39 @@ async function main() {
     await page
       .getByRole("heading", { name: "GMEA Solar Installation", exact: true })
       .waitFor();
+    await page
+      .getByRole("button", { name: "Contract Collections", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Edit schedule", exact: true })
+      .click();
+    assert.equal(await page.getByRole("dialog").locator("input").count(), 4);
+    assert.equal(await page.getByLabel("Description *").count(), 0);
+    await page
+      .getByLabel("Down payment of the contract 80%", { exact: true })
+      .fill("68000");
+    await page
+      .getByLabel("Completion and final turn over 20%", { exact: true })
+      .fill("17000");
+    await page
+      .getByLabel("Notes", { exact: true }).first()
+      .fill("Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited");
+    await page
+      .getByRole("button", { name: "Save changes", exact: true })
+      .click();
+    await page.getByRole("dialog").waitFor({ state: "detached" });
+    await page
+      .getByRole("cell", {
+        name: "Down payment of the contract 80%",
+        exact: true,
+      })
+      .waitFor();
+    assert.ok((await page.locator("body").innerText()).includes("68,000.00"));
+    assert.ok(
+      (await page.locator("body").innerText()).includes(
+        "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
+      ),
+    );
     await page.getByRole("button", { name: "Expenses", exact: true }).click();
     await page
       .getByRole("button", { name: "New expense", exact: true })
@@ -191,10 +248,18 @@ async function main() {
     await page
       .getByLabel("Description *", { exact: true })
       .fill("Materials and labor");
+    assert.equal(
+      await page.getByLabel("VAT treatment", { exact: true }).inputValue(),
+      "inclusive",
+    );
+    assert.equal(await page.getByLabel("VAT rate (%)").count(), 0);
     await page
       .getByLabel("Supplier / vendor", { exact: true })
       .fill("JIMAR CONSTRUCTION SUPPLY CO.");
     await page.getByLabel("Amount (PHP) *", { exact: true }).fill("11568.20");
+    await page
+      .getByLabel("Refunded Sir Edward (PHP)", { exact: true })
+      .fill("1175");
     await page.getByLabel("Payment method *", { exact: true }).fill("cas");
     await page.getByRole("option", { name: "Cash", exact: true }).click();
     assert.equal(
@@ -207,11 +272,6 @@ async function main() {
         .getAttribute("role"),
       "combobox",
     );
-    fs.mkdirSync("artifacts/gmea", { recursive: true });
-    await page.screenshot({
-      path: "artifacts/gmea/expense-desktop.png",
-      fullPage: true,
-    });
     await page.keyboard.press("Tab");
     assert.equal(
       await page.evaluate(
@@ -223,19 +283,21 @@ async function main() {
       .getByRole("button", { name: "Save changes", exact: true })
       .click();
     await page.getByText("Materials and labor", { exact: true }).waitFor();
+    assert.ok((await page.locator("body").innerText()).includes("Refunded Sir Edward"));
+    await page
+      .getByRole("button", { name: "Delete expense", exact: true })
+      .click();
+    await page.getByRole("heading", { name: "Delete expense?" }).waitFor();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await page
       .getByRole("button", { name: "Contract Cost Summary", exact: true })
       .click();
-    assert.ok((await page.locator("body").innerText()).includes("71,731.80"));
-    await page.screenshot({
-      path: "artifacts/gmea/contract-summary-desktop.png",
-      fullPage: true,
-    });
+    assert.ok((await page.locator("body").innerText()).includes("73,431.80"));
     await page.reload();
     await page
       .getByRole("button", { name: "Contract Cost Summary", exact: true })
       .click();
-    assert.ok((await page.locator("body").innerText()).includes("71,731.80"));
+    assert.ok((await page.locator("body").innerText()).includes("73,431.80"));
     // A stale edit must keep user input and show a recoverable error.
     await page
       .getByRole("button", { name: "Edit project", exact: true })
@@ -262,10 +324,6 @@ async function main() {
     await page
       .getByRole("button", { name: "New expense", exact: true })
       .click();
-    await page.screenshot({
-      path: "artifacts/gmea/expense-mobile.png",
-      fullPage: true,
-    });
     assert.ok(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -278,16 +336,14 @@ async function main() {
       inputBounds.x + inputBounds.width <= 390,
       "Mobile inputs stay inside the viewport",
     );
-    await page.getByLabel("Notes", { exact: true }).scrollIntoViewIfNeeded();
+    await page
+      .getByLabel("Refunded Sir Edward (PHP)", { exact: true })
+      .scrollIntoViewIfNeeded();
     assert.ok(
       await page
         .getByRole("button", { name: "Save changes", exact: true })
         .isVisible(),
     );
-    await page.screenshot({
-      path: "artifacts/gmea/expense-mobile-bottom.png",
-      fullPage: true,
-    });
     await page.keyboard.press("Escape");
     assert.equal(await page.getByRole("dialog").count(), 0);
     // CEO rendering exposes details but no mutation controls.
@@ -302,7 +358,14 @@ async function main() {
         .count(),
       0,
     );
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Delete project", exact: true })
+        .count(),
+      0,
+    );
     await page.getByRole("button", { name: "Expenses", exact: true }).click();
+    await page.getByText("New", { exact: true }).waitFor();
     assert.equal(
       await page
         .getByRole("button", { name: "New expense", exact: true })
@@ -310,6 +373,7 @@ async function main() {
       0,
     );
     await page.getByRole("button", { name: "Details", exact: true }).click();
+    await page.getByText("New", { exact: true }).waitFor({ state: "detached" });
     assert.equal(
       await page
         .getByRole("button", { name: "Save changes", exact: true })
@@ -324,7 +388,7 @@ async function main() {
     );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: workbook project fields, expense dropdowns, expense persistence, contract summary, reload, stale-save recovery, modal focus, mobile width, and CEO read-only controls.",
+      "PASS: workbook project fields, contract collections, expense dropdowns, expense persistence, contract summary, reload, stale-save recovery, modal focus, mobile width, and CEO read-only controls.",
     );
   } finally {
     if (browser) await browser.close();

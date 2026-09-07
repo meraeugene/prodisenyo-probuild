@@ -3,10 +3,6 @@
 import { useMemo, useState } from "react";
 import {
   ArrowDownUp,
-  CheckCircle2,
-  Clock3,
-  FileSpreadsheet,
-  FolderKanban,
   MapPin,
   Search,
 } from "lucide-react";
@@ -17,10 +13,10 @@ import { getProjectStatusPresentation } from "../utils/projectPresentation";
 type SortOption = "updated" | "progress_high" | "progress_low" | "name";
 
 const summaryCards = [
-  { key: "total", label: "Assigned Records", helper: "All assignments", icon: FolderKanban, tone: "emerald" },
-  { key: "planning", label: "Cost Estimates", helper: "Awaiting activation", icon: FileSpreadsheet, tone: "amber" },
-  { key: "active", label: "On Going", helper: "Operational projects", icon: Clock3, tone: "sky" },
-  { key: "completed", label: "Completed", helper: "Successfully completed", icon: CheckCircle2, tone: "emerald" },
+  { key: "total", label: "Assigned records", helper: "All assignments" },
+  { key: "planning", label: "Cost estimates", helper: "Awaiting activation" },
+  { key: "active", label: "On going", helper: "Operational projects" },
+  { key: "completed", label: "Completed", helper: "Successfully completed" },
 ] as const;
 
 function formatDate(value: string) {
@@ -108,20 +104,21 @@ export default function EngineerProjectPortfolio({
     <section className="space-y-5" aria-labelledby="engineer-projects-heading">
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Project portfolio</p>
-        <h1 id="engineer-projects-heading" className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-950">My Projects</h1>
+        <h1 id="engineer-projects-heading" className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-950">PRODISENYO Projects</h1>
         <p className="mt-1 text-sm text-slate-500">Prepare assigned estimates and manage projects after CEO activation.</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map(({ key, label, helper, icon: Icon, tone }) => (
-          <article key={key} className="flex min-h-28 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_5px_20px_rgba(15,23,42,0.04)]">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${tone === "amber" ? "bg-amber-50 text-amber-600" : tone === "sky" ? "bg-sky-50 text-sky-600" : "bg-emerald-50 text-emerald-700"}`}><Icon size={22} /></div>
-            <div><p className="text-xs font-medium text-slate-600">{label}</p><p className="mt-0.5 text-2xl font-semibold text-slate-950">{counts[key]}</p><p className="mt-0.5 text-[11px] text-slate-500">{helper}</p></div>
+        {summaryCards.map(({ key, label, helper }) => (
+          <article key={key} className="rounded-2xl border border-slate-200 bg-white p-5">
+            <p className="text-xs font-medium text-slate-500">{label}</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{counts[key]}</p>
+            <p className="mt-1 text-xs text-slate-500">{helper}</p>
           </article>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,0.04)]">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="grid gap-3 border-b border-slate-200 p-4 lg:grid-cols-[minmax(240px,1fr)_180px_220px]">
           <label className="relative"><span className="sr-only">Search projects</span><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects or locations..." className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" /></label>
           <label><span className="sr-only">Filter by status</span><select value={status} onChange={(event) => setStatus(event.target.value as "all" | ProjectStatus)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-emerald-500"><option value="all">All statuses</option><option value="planning">Pending Cost Estimate</option><option value="active">On Going</option><option value="on_hold">On Hold</option><option value="completed">Completed</option></select></label>

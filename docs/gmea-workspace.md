@@ -8,8 +8,8 @@ The example workbook is a reference only: no example projects are seeded. The GM
 Run these files in the Supabase SQL editor in this exact order:
 
 1. `supabase/gmea-01-role.sql` — adds the role. Run this separately and let it commit.
-2. `supabase/gmea-02-workspace.sql` — creates the project, expense, partner, and reusable expense-option tables. When upgrading the earlier GMEA feature, it copies the accepted quotation total into the project contract amount and removes quotation and payment tables.
-3. `supabase/gmea-03-mutations.sql` — installs the transactional, service-only project and expense mutation function.
+2. `supabase/gmea-02-workspace.sql` — creates the project, contract collection, expense, partner, and reusable option tables. When upgrading the earlier GMEA feature, it copies the accepted quotation total into the project contract amount, removes withholding tax, and removes the legacy quotation and payment tables.
+3. `supabase/gmea-03-mutations.sql` — installs the transactional, service-only project, contract collection, and expense mutation function.
 4. `supabase/gmea-04-access.sql` — excludes GMEA from the identified broadly readable payroll tables and protects GMEA profile privileges.
 
 Apply all four before making GMEA accounts available. Existing roles retain their access. These migrations may be reapplied without deleting GMEA history. They have been tested against an isolated PostgreSQL engine; they are not automatically applied to the connected Supabase database.
@@ -24,26 +24,27 @@ GMEA users share the company workspace and can create/edit projects and expenses
 
 ## Workflow
 
-1. Create a project with its project name, optional client, project location, gross contract amount, withholding tax rate, and project duration. The withheld amount and net contract amount calculate automatically.
-2. Record project expenses with their date, description, category, supplier/vendor, OR or invoice number, amount, payment method, invoice recipient, VAT treatment, and notes.
-3. Reuse saved supplier, payment-method, and invoice-recipient values from the expense dropdowns. New values are saved automatically when the expense is saved.
-4. Review the contract cost summary: gross contract amount, withholding tax, net contract amount, total project expenses, total net profit, and partner shares.
+1. Create a project with its project name, optional client, project location, contract amount, and project duration.
+2. Use **Contract Collections** for the fixed **Down payment of the contract 80%** and **Completion and final turn over 20%** rows. Their amounts are calculated when a project is created and remain editable. Each row has a blank Notes field for details such as payment status, method, reference number, date, and deposit state.
+3. Record project expenses with their date, description, category, supplier/vendor, OR or invoice number, amount, refunded amount for Sir Edward, payment method, invoice recipient, and VAT treatment.
+4. Reuse saved supplier, payment-method, and invoice-recipient values from searchable expense dropdowns. New values are saved automatically when the expense is saved.
+5. Review the contract cost summary: contract amount, total project expenses, total net profit, and partner shares.
 
-Projects can be archived and restored. Expenses are read-only while archived and require confirmation before deletion. Saving a stale project version fails with a reload message and retains entered form data.
+GMEA users can permanently delete projects. Expense deletion requires confirmation. Saving a stale project version fails with a reload message and retains entered form data.
+
+The project detail page opens on Contract Collections and shows contract amount, total expenses, net profit, and project duration above the tabs. New expenses create a persistent unread notification for each active CEO. The CEO sees a New badge on the GMEA project and expense row, hears the existing notification sound when the unread count increases, and clears the badge only by opening that expense's Details modal.
 
 ## Calculation rules
 
 - Currency: PHP. Prices and amounts use two decimal places; quantities allow four.
-- VAT is off by default. When enabled, enter a rate and select inclusive or exclusive.
+- VAT is fixed at 12% when applied.
 - Inclusive VAT: base = gross ÷ (1 + rate); VAT = gross − rounded base.
 - Exclusive VAT: VAT = rounded base × rate; gross = base + VAT.
 - Each expense contributes its gross amount once.
-- Withholding tax = rounded gross contract amount × entered withholding rate.
-- Net contract amount = gross contract amount − withholding tax.
-- Total net profit = net contract amount − gross expenses.
+- Total net profit = contract amount − gross expenses.
 - Distributable profit = maximum of total net profit and zero.
 - Partners default to Eng. Ruel Dumaguit and Sir Edward at 50% each. Shares must total 100%; the final partner receives any cent-rounding remainder.
-VAT is an entered business-record parameter; no statutory rates are assumed. Invoice numbers remain text to preserve leading zeros.
+Invoice numbers remain text to preserve leading zeros.
 
 Reimbursements, spreadsheet imports/exports, receipt file uploads, and integration with construction/payroll approvals are outside this version.
 
@@ -53,5 +54,5 @@ Reimbursements, spreadsheet imports/exports, receipt file uploads, and integrati
 - `npm run test:gmea:browser`: isolated actual-component browser workflow using a disposable local PostgreSQL database. Uses installed Edge by default; set `GMEA_TEST_BROWSER=chrome` to use Chrome. No production credentials or data are used.
 - `npm test`, `npm run lint`, `npm run build`: repository regression checks.
 
-Browser screenshots are written under `artifacts/gmea/`. The harness is only a test script, not an application route.
+The browser harness is only a test script, not an application route.
 

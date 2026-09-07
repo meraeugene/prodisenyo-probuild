@@ -27,7 +27,7 @@ export default function CeoDashboardProjectsPanel({
   projects: CeoDashboardProject[];
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
         <div>
           <h2 className="font-bold text-slate-950">Project Overview</h2>

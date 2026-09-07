@@ -73,9 +73,7 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
     client: "",
     location: "Corrales Ave, Cagayan de Oro City",
     contract_amount: 83300,
-    withholding_tax_rate: 0,
     duration: "7 Days",
-    status: "planning",
   };
 
   const projectId = await mutate(null, null, {
@@ -101,12 +99,31 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
       ).rows.length,
       2,
     );
+    const schedule = (
+      await db.query(
+        "select data from public.gmea_collections where project_id=$1 order by (data->>'sort_order')::int",
+        [projectId],
+      )
+    ).rows.map((row) => row.data);
+    assert.equal(schedule[0].description, "Down payment of the contract 80%");
+    assert.equal(Number(schedule[0].amount), 66640);
+    assert.equal(
+      schedule[1].description,
+      "Completion and final turn over 20%",
+    );
+    assert.equal(Number(schedule[1].amount), 16660);
     const columns = (
       await db.query(
         "select column_name from information_schema.columns where table_schema='public' and table_name='gmea_projects'",
       )
     ).rows.map((row) => row.column_name);
-    for (const removed of ["description", "start_date", "end_date"])
+    for (const removed of [
+      "description",
+      "start_date",
+      "end_date",
+      "status",
+      "withholding_tax_rate",
+    ])
       assert.equal(columns.includes(removed), false);
   });
 
@@ -132,10 +149,10 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
     invoice_number: "00059",
     invoice_name: "GMEA MARKETING CORP.",
     amount: 11568.2,
+    refunded_amount: 1175,
     vat_mode: "off",
     vat_rate: 0,
     method: "Cash",
-    notes: "",
   };
 
   await t.test("expenses and reusable dropdown values save atomically", async () => {
@@ -147,6 +164,8 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
       ])
     ).rows[0].data;
     assert.equal(saved.invoice_number, "00059");
+    assert.equal(Number(saved.refunded_amount), 1175);
+    assert.equal("notes" in saved, false);
     const options = (
       await db.query(
         "select field,value from public.gmea_expense_options where value in ('JIMAR CONSTRUCTION SUPPLY CO.','Cash','GMEA MARKETING CORP.')",
@@ -155,6 +174,90 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
     assert.ok(options.some((row) => row.field === "supplier"));
     assert.ok(options.some((row) => row.field === "method"));
     assert.ok(options.some((row) => row.field === "invoice_name"));
+  });
+
+  await t.test("a new expense remains unread until the CEO views its details", async () => {
+    const notification = (
+      await db.query(
+        "select * from public.gmea_expense_notifications where expense_id=$1 and recipient_id=$2",
+        [expenseId, ceo],
+      )
+    ).rows[0];
+    assert.ok(notification);
+    assert.equal(notification.read_at, null);
+    await assert.rejects(
+      db.query("select public.mark_gmea_expense_viewed($1,$2,$3)", [
+        actor,
+        projectId,
+        expenseId,
+      ]),
+      /Only an active CEO/,
+    );
+    await db.query("select public.mark_gmea_expense_viewed($1,$2,$3)", [
+      ceo,
+      projectId,
+      expenseId,
+    ]);
+    assert.ok(
+      (
+        await db.query(
+          "select read_at from public.gmea_expense_notifications where expense_id=$1 and recipient_id=$2",
+          [expenseId, ceo],
+        )
+      ).rows[0].read_at,
+    );
+  });
+
+  const collectionId = randomUUID();
+  const collections = [
+    {
+      id: collectionId,
+      description: "Down payment of the contract 80%",
+      amount: 66640,
+      notes: "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
+    },
+    {
+      id: randomUUID(),
+      description: "Completion and final turn over 20%",
+      amount: 16660,
+      notes: "",
+    },
+  ];
+
+  await t.test("simple contract collections save atomically", async () => {
+    await mutate(projectId, await version(projectId), {
+      kind: "collections",
+      value: collections,
+    });
+    const saved = (
+      await db.query("select data from public.gmea_collections where id=$1", [
+        collectionId,
+      ])
+    ).rows[0].data;
+    assert.equal(
+      saved.notes,
+      "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
+    );
+    assert.equal(Number(saved.amount), 66640);
+    for (const removed of [
+      "date",
+      "status",
+      "method",
+      "reference_number",
+      "deposit_status",
+    ])
+      assert.equal(removed in saved, false);
+    assert.equal(
+      Number(
+        (
+          await db.query(
+            "select count(*) count from public.gmea_collections where project_id=$1",
+            [projectId],
+          )
+        ).rows[0].count,
+      ),
+      2,
+    );
   });
 
   await t.test("stale and cross-project updates cannot overwrite data", async () => {
@@ -173,22 +276,28 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
     assert.equal(await version(other), 1);
   });
 
-  await t.test("archive blocks expense writes and restore enables them", async () => {
-    await mutate(projectId, await version(projectId), {
+  await t.test("GMEA can permanently delete a project and its records", async () => {
+    const disposable = await mutate(null, null, {
       kind: "project",
-      value: { ...input, status: "archived" },
+      value: { ...input, name: "Disposable" },
     });
-    await assert.rejects(
-      mutate(projectId, await version(projectId), {
-        kind: "expense",
-        value: { ...expense, id: randomUUID() },
-      }),
-      /Restore/,
+    await mutate(disposable, 1, {
+      kind: "expense",
+      value: { ...expense, id: randomUUID() },
+    });
+    await mutate(disposable, 2, { kind: "delete_project" });
+    assert.equal(
+      Number((await db.query("select count(*) count from public.gmea_projects where id=$1", [disposable])).rows[0].count),
+      0,
     );
-    await mutate(projectId, await version(projectId), {
-      kind: "project",
-      value: { ...input, status: "active" },
-    });
+    assert.equal(
+      Number((await db.query("select count(*) count from public.gmea_expenses where project_id=$1", [disposable])).rows[0].count),
+      0,
+    );
+    assert.equal(
+      Number((await db.query("select count(*) count from public.gmea_collections where project_id=$1", [disposable])).rows[0].count),
+      0,
+    );
   });
 
   await t.test("CEO, other roles, and inactive GMEA cannot write", async () => {
@@ -230,6 +339,20 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
           0,
         ),
       );
+    await asUser(ceo, async () =>
+      assert.equal(
+        (await db.query("select id from public.gmea_expense_notifications"))
+          .rows.length,
+        1,
+      ),
+    );
+    await asUser(actor, async () =>
+      assert.equal(
+        (await db.query("select id from public.gmea_expense_notifications"))
+          .rows.length,
+        0,
+      ),
+    );
   });
 
   await t.test("direct client writes and payroll reads remain blocked", async () => {
@@ -245,7 +368,25 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
     );
   });
 
-  await t.test("reapplying setup retains expense history", async () => {
+  await t.test("reapplying setup retains expense and collection history", async () => {
+    const legacyCollectionId = randomUUID();
+    await db.query(
+      `insert into public.gmea_collections(id,project_id,data)
+       values($1,$2,$3::jsonb)`,
+      [
+        legacyCollectionId,
+        projectId,
+        JSON.stringify({
+          description: "Completion and final turn over 20%",
+          amount: 16660,
+          status: "paid",
+          method: "Cheque",
+          reference_number: "2335308",
+          date: "2026-08-15",
+          deposit_status: "deposited",
+        }),
+      ],
+    );
     for (const name of [
       "gmea-02-workspace.sql",
       "gmea-03-mutations.sql",
@@ -262,6 +403,30 @@ test("GMEA expense monitoring database, transactions, and access", async (t) => 
         )
       ).rows[0].count,
       1,
+    );
+    const migrated = (
+      await db.query("select data from public.gmea_collections where id=$1", [
+        legacyCollectionId,
+      ])
+    ).rows[0].data;
+    assert.equal(
+      migrated.notes,
+      "Paid · Cheque · 2335308 · 2026-08-15 · Deposited",
+    );
+    assert.deepEqual(Object.keys(migrated).sort(), [
+      "amount",
+      "description",
+      "notes",
+      "sort_order",
+    ]);
+    assert.equal(
+      (
+        await db.query(
+          "select count(*)::int count from public.gmea_collections where project_id=$1",
+          [projectId],
+        )
+      ).rows[0].count,
+      3,
     );
   });
 });
@@ -314,17 +479,12 @@ test("old accepted quotation amount is preserved before legacy tables are remove
     ),
     78950,
   );
-  assert.equal(
-    Number(
-      (
-        await db.query(
-          "select withholding_tax_rate from public.gmea_projects where id=$1",
-          [projectId],
-        )
-      ).rows[0].withholding_tax_rate,
-    ),
-    2,
-  );
+  const columns = (
+    await db.query(
+      "select column_name from information_schema.columns where table_schema='public' and table_name='gmea_projects'",
+    )
+  ).rows.map((row) => row.column_name);
+  assert.equal(columns.includes("withholding_tax_rate"), false);
   assert.equal(
     (
       await db.query(

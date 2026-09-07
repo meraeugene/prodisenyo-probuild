@@ -3,11 +3,12 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeDollarSign,
+  BarChart3,
   Calculator,
+  ClipboardCheck,
   Clock3,
   House,
   LayoutDashboard,
-  LineChart,
   Users,
   Trash2,
   Upload,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import type { AppRole } from "@/types/database";
 import { cn } from "@/lib/utils";
+import SidebarTooltip from "./SidebarTooltip";
 const PRIMARY_NAV_ITEMS = [
   { href: "/home", label: "Home", icon: House },
   { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
@@ -40,9 +42,13 @@ const CEO_PAYROLL_ITEMS = [
   {
     href: "/payroll-analytics",
     label: "Payroll Analytics",
-    icon: LayoutDashboard,
+    icon: BarChart3,
   },
-  { href: "/payroll-approvals", label: "Payroll Approvals", icon: LineChart },
+  {
+    href: "/payroll-approvals",
+    label: "Payroll Approvals",
+    icon: ClipboardCheck,
+  },
 ] as const;
 
 const GMEA_NAV_ITEMS = [
@@ -50,7 +56,7 @@ const GMEA_NAV_ITEMS = [
 ] as const;
 const CEO_PROJECT_ITEMS = [
   ...GMEA_NAV_ITEMS,
-  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/projects", label: "PRODISENYO Projects", icon: FolderKanban },
 ] as const;
 
 const CEO_REVIEW_ITEMS = [
@@ -77,7 +83,7 @@ const CEO_ADMIN_ITEMS = [
 
 const ENGINEER_GENERAL_ITEMS = [
   { href: "/overview", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/projects", label: "PRODISENYO Projects", icon: FolderKanban },
 ] as const;
 
 const ENGINEER_PLANNING_ITEMS = [
@@ -112,13 +118,12 @@ function renderSidebarLink(params: {
   const active = pathname === item.href;
 
   return (
+    <SidebarTooltip key={item.href} active={collapsed} label={item.label}>
     <Link
-      key={item.href}
       href={item.href}
-      title={collapsed ? item.label : undefined}
       onClick={onNavigate}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg border border-apple-mist/60 px-3 py-1.5 text-sm transition-all",
+        "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
         collapsed && "justify-center px-2.5",
         active
           ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
@@ -151,6 +156,7 @@ function renderSidebarLink(params: {
         </span>
       ) : null}
     </Link>
+    </SidebarTooltip>
   );
 }
 
@@ -165,7 +171,7 @@ function renderSidebarSectionLabel(params: {
   }
 
   return (
-    <div className="px-3 pb-1 pt-2">
+    <div className="px-3 pb-2 pt-5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
         {label}
       </p>
@@ -190,6 +196,7 @@ export default function DashboardNavigation({
     overtime: number;
     payrollReports: number;
     estimateReviews: number;
+    gmeaExpenses: number;
   };
 }) {
   const isGmea = role === "gmea",
@@ -200,7 +207,7 @@ export default function DashboardNavigation({
     isPurchaser = role === "purchaser",
     isEmployee = role === "employee";
   return (
-    <nav className="space-y-3">
+    <nav className="space-y-1">
       {(isGmea
         ? GMEA_NAV_ITEMS
         : isCeo
@@ -237,6 +244,10 @@ export default function DashboardNavigation({
               pathname,
               collapsed,
               onNavigate: onNavigate,
+              badgeCount:
+                item.href === "/gmea-projects"
+                  ? notificationCounts.gmeaExpenses
+                  : 0,
             }),
           )}
 

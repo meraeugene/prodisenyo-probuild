@@ -1,13 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CeoApprovalSummary } from "@/features/ceo-dashboard/types";
-
-const TONE_CLASSES = {
-  emerald: "bg-emerald-50 text-emerald-800",
-  amber: "bg-amber-50 text-amber-800",
-  sky: "bg-sky-50 text-sky-800",
-  rose: "bg-rose-50 text-rose-800",
-};
 
 export default function CeoDashboardApprovalQueue({
   items,
@@ -17,7 +10,7 @@ export default function CeoDashboardApprovalQueue({
   return (
     <section
       id="approval-queue"
-      className="scroll-mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+      className="scroll-mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white"
     >
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-bold text-slate-950">Approval Queue</h2>
@@ -25,11 +18,6 @@ export default function CeoDashboardApprovalQueue({
       <div className="divide-y divide-slate-100">
         {items.map((item) => (
           <div key={item.href} className="flex items-center gap-3 px-5 py-4">
-            <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${TONE_CLASSES[item.tone]}`}
-            >
-              <ClipboardCheck size={19} />
-            </div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-950">{item.label}</p>
               <p className="truncate text-xs text-slate-500">{item.detail}</p>

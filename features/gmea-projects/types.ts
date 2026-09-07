@@ -1,10 +1,3 @@
-export type GmeaStatus =
-  | "planning"
-  | "active"
-  | "on_hold"
-  | "completed"
-  | "archived";
-
 export type VatMode = "off" | "inclusive" | "exclusive";
 
 export interface Expense {
@@ -16,16 +9,24 @@ export interface Expense {
   invoice_number: string;
   invoice_name: string;
   amount: number;
+  refunded_amount: number;
   vat_mode: VatMode;
   vat_rate: number;
   method: string;
-  notes: string;
+  is_new?: boolean;
 }
 
 export interface Partner {
   id: string;
   name: string;
   percentage: number;
+}
+
+export interface ContractCollection {
+  id: string;
+  description: string;
+  amount: number;
+  notes: string;
 }
 
 export interface GmeaExpenseOptions {
@@ -40,13 +41,12 @@ export interface GmeaProject {
   client: string;
   location: string;
   contract_amount: number;
-  withholding_tax_rate: number;
   duration: string;
-  status: GmeaStatus;
   version: number;
   created_at: string;
   updated_at: string;
   expenses: Expense[];
+  collections: ContractCollection[];
   partners: Partner[];
 }
 
@@ -56,13 +56,13 @@ export type ProjectInput = Pick<
   | "client"
   | "location"
   | "contract_amount"
-  | "withholding_tax_rate"
   | "duration"
-  | "status"
 >;
 
 export type GmeaMutation =
   | { kind: "project"; value: ProjectInput }
   | { kind: "expense"; value: Expense }
+  | { kind: "collections"; value: ContractCollection[] }
   | { kind: "partners"; value: Partner[] }
+  | { kind: "delete_project" }
   | { kind: "delete"; entity: "expense"; id: string };
