@@ -2,7 +2,6 @@ import type { PayrollRow } from "@/lib/payrollEngine";
 import { calculatePayroll, roundPayrollCalculation } from "@/lib/payrollEngine";
 import { matchesSearchText } from "@/lib/utils";
 import {
-  DEFAULT_OVERTIME_MULTIPLIER,
   normalizeRoleCode,
   type RoleCode,
 } from "@/lib/payrollConfig";
@@ -27,6 +26,7 @@ import {
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
 import type { PayslipExportRecord } from "@/lib/payslipExport";
+import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
 
 const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
   pbryanm: "bryanmamerto",
@@ -347,8 +347,19 @@ function buildGroupedEmployeeLogMetrics(
     }
   }
 
+  const attendanceApprovedOvertimeHours = employee.sites.reduce(
+    (sum, row) =>
+      sum +
+      sumApprovedAttendanceOvertimeHours(
+        payroll.payrollOverrides[row.id]?.attendanceDecisions,
+      ),
+    0,
+  );
+
   return {
-    actualTotalHours,
+    actualTotalHours: round2(
+      actualTotalHours + attendanceApprovedOvertimeHours,
+    ),
     daysWorked,
   };
 }
@@ -388,15 +399,14 @@ export function buildGroupedEmployeeMetrics(
     compensation.totalWorkedHours > 0
       ? (compensation.totalBasePay / compensation.totalWorkedHours) * 8
       : compensation.breakdown[0]?.dailyRatePerDay ?? 0;
+  const approvedOvertimePay = round2(
+    employee.sites.reduce((sum, row) => sum + row.overtimePay, 0),
+  );
   const calculation = roundPayrollCalculation(
     calculatePayroll({
       dailyRate: effectiveDailyRate,
       regularHours: compensation.totalWorkedHours,
-      overtimeHours: employee.sites.reduce(
-        (sum, row) => sum + row.overtimeHours,
-        0,
-      ),
-      overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+      overtimeHours: 0,
       allowance,
       deductions: {
         cashAdvance: cashAdvancePay,
@@ -418,10 +428,10 @@ export function buildGroupedEmployeeMetrics(
     daysWorked: logMetrics.daysWorked,
     basePay: compensation.totalBasePay,
     paidHolidayPay: round2(paidHolidayPay),
-    approvedOvertimePay: calculation.overtimePay,
+    approvedOvertimePay,
     paidLeavePay: round2(paidLeavePay),
     cashAdvancePay: round2(cashAdvancePay),
-    totalPay: calculation.netPay,
+    totalPay: round2(calculation.netPay + approvedOvertimePay),
     dailyRates,
   };
 }

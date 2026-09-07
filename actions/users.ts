@@ -37,6 +37,7 @@ function normalizeEmail(value: string | undefined) {
 function validateRole(role: AppRole) {
   if (
     ![
+      APP_ROLES.GMEA,
       APP_ROLES.CEO,
       APP_ROLES.ADMIN,
       APP_ROLES.PAYROLL_MANAGER,

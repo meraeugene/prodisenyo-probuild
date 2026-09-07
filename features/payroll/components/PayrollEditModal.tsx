@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { requestOvertimeApprovalAction } from "@/actions/payroll";
 import { useAppState } from "@/features/app/AppStateProvider";
 import {
-  DEFAULT_OVERTIME_MULTIPLIER,
   ROLE_CODE_TO_NAME,
   type RoleCode,
 } from "@/lib/payrollConfig";
@@ -41,7 +40,10 @@ import {
   buildEmployeeBranchRateKey,
   getLogOverrideKey,
 } from "@/features/payroll/utils/payrollMappers";
-import { DEFAULT_REGULAR_PAID_HOURS } from "@/features/payroll/utils/branchRateConfig";
+import {
+  DEFAULT_REGULAR_PAID_HOURS,
+  normalizeOvertimeMultiplier,
+} from "@/features/payroll/utils/branchRateConfig";
 import {
   buildOvertimeRequestNotes,
   parseOvertimeRequestNotes,
@@ -73,6 +75,7 @@ import {
 import { PayrollCalculationWorkspace } from "@/features/payroll/components/payroll-edit/PayrollCalculationWorkspace";
 import { AttendanceResolutionDialog } from "@/features/payroll/components/payroll-edit/AttendanceResolutionDialog";
 import { useCutoffAttendanceReview } from "@/features/payroll/hooks/useCutoffAttendanceReview";
+import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
 
 interface PayrollEditModalProps {
   payroll: UsePayrollStateResult;
@@ -375,6 +378,9 @@ export default function PayrollEditModal({
       ratePerDay: siteRatePerDay,
       regularPaidHours:
         siteRateConfig?.regularPaidHours ?? DEFAULT_REGULAR_PAID_HOURS,
+      overtimeMultiplier: normalizeOvertimeMultiplier(
+        siteRateConfig?.overtimeMultiplier,
+      ),
     };
   });
   const branchPayInputs = sitePayBreakdown.map((entry) => ({
@@ -454,9 +460,17 @@ export default function PayrollEditModal({
   const rejectedOvertimeEntries = overtimeEntries.filter(
     (entry) => entry.status === "rejected",
   );
-  const approvedOvertimeHours = approvedOvertimeEntries.reduce(
+  const approvedAdjustmentOvertimeHours = approvedOvertimeEntries.reduce(
     (sum, entry) => sum + entry.hours,
     0,
+  );
+  const currentOvertimeMultiplier = normalizeOvertimeMultiplier(
+    sitePayBreakdownWithAllocation[0]?.overtimeMultiplier,
+  );
+  const attendanceApprovedOvertimeHours =
+    sumApprovedAttendanceOvertimeHours(attendanceReview.decisions);
+  const approvedOvertimeHours = round2(
+    approvedAdjustmentOvertimeHours + attendanceApprovedOvertimeHours,
   );
   const biometricOvertimeHours = round2(
     currentLogsForPay.reduce(
@@ -473,7 +487,7 @@ export default function PayrollEditModal({
       dailyRate: currentRatePerDay,
       regularHours: 0,
       overtimeHours: biometricOvertimeHours,
-      overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+      overtimeMultiplier: currentOvertimeMultiplier,
       allowance: 0,
       deductions: 0,
     }),
@@ -485,7 +499,7 @@ export default function PayrollEditModal({
       dailyRate: currentRatePerDay,
       regularHours: 0,
       overtimeHours: approvedOvertimeHours,
-      overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+      overtimeMultiplier: currentOvertimeMultiplier,
       allowance: 0,
       deductions: 0,
     }),
@@ -555,7 +569,7 @@ export default function PayrollEditModal({
       dailyRate: currentRatePerDay,
       regularHours: regularWorkedHours,
       overtimeHours: confirmedBiometricOvertimeHours + approvedOvertimeHours,
-      overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+      overtimeMultiplier: currentOvertimeMultiplier,
       allowance: paidHolidayPay + paidLeavePay + allowancePay,
       deductions: {
         cashAdvance: cashAdvanceAmount,
@@ -595,7 +609,7 @@ export default function PayrollEditModal({
         dailyRate: currentRatePerDay,
         regularHours: 0,
         overtimeHours: hours,
-        overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+        overtimeMultiplier: currentOvertimeMultiplier,
         allowance: 0,
         deductions: 0,
       }),

@@ -135,6 +135,20 @@ export function secondsToDecimalHours(seconds: number, decimals = 2) {
   return Math.round((nonNegativeInteger(seconds) / SECONDS_PER_HOUR) * scale) / scale;
 }
 
+export function sumApprovedAttendanceOvertimeHours(
+  decisions?: PayrollAttendanceDecisionMap,
+): number {
+  const approvedSeconds = Object.values(decisions ?? {}).reduce(
+    (sum, decision) =>
+      decision.overtimeStatus === "approved"
+        ? sum + nonNegativeInteger(decision.approvedOvertimeSeconds)
+        : sum,
+    0,
+  );
+
+  return approvedSeconds / SECONDS_PER_HOUR;
+}
+
 export function formatDurationSeconds(seconds: number) {
   const totalMinutes = Math.round(nonNegativeInteger(seconds) / 60);
   const hours = Math.floor(totalMinutes / 60);

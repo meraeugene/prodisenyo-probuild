@@ -174,13 +174,22 @@ create table if not exists public.employee_branch_rates (
   site_name_key text not null,
   daily_rate numeric(12,2) not null check (daily_rate >= 0),
   regular_paid_hours numeric(8,2) not null default 8 check (regular_paid_hours > 0),
+  overtime_multiplier numeric(6,4) not null default 1.25 check (overtime_multiplier > 0 and overtime_multiplier <= 5),
   updated_by uuid references public.profiles(id) on delete set null,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
 
 alter table public.employee_branch_rates
-  add column if not exists regular_paid_hours numeric(8,2) not null default 8;
+  add column if not exists regular_paid_hours numeric(8,2) not null default 8,
+  add column if not exists overtime_multiplier numeric(6,4) not null default 1.25;
+
+alter table public.employee_branch_rates
+  drop constraint if exists employee_branch_rates_overtime_multiplier_check;
+
+alter table public.employee_branch_rates
+  add constraint employee_branch_rates_overtime_multiplier_check
+  check (overtime_multiplier > 0 and overtime_multiplier <= 5);
 
 create table if not exists public.payroll_runs (
   id uuid primary key default gen_random_uuid(),
@@ -215,6 +224,7 @@ create table if not exists public.payroll_run_items (
   hours_worked numeric(8,2) not null default 0,
   overtime_hours numeric(8,2) not null default 0,
   rate_per_day numeric(12,2) not null default 0,
+  overtime_multiplier numeric(6,4) not null default 1.25 check (overtime_multiplier > 0 and overtime_multiplier <= 5),
   regular_pay numeric(14,2) not null default 0,
   overtime_pay numeric(14,2) not null default 0,
   holiday_pay numeric(14,2) not null default 0,
@@ -222,6 +232,16 @@ create table if not exists public.payroll_run_items (
   total_pay numeric(14,2) not null default 0,
   created_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.payroll_run_items
+  add column if not exists overtime_multiplier numeric(6,4) not null default 1.25;
+
+alter table public.payroll_run_items
+  drop constraint if exists payroll_run_items_overtime_multiplier_check;
+
+alter table public.payroll_run_items
+  add constraint payroll_run_items_overtime_multiplier_check
+  check (overtime_multiplier > 0 and overtime_multiplier <= 5);
 
 create table if not exists public.payroll_run_daily_totals (
   id uuid primary key default gen_random_uuid(),

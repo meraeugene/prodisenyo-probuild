@@ -88,6 +88,7 @@ async function readSeedUsers() {
       throw new Error(`User ${username} is missing password.`);
     }
     if (
+      role !== "gmea" &&
       role !== "admin" &&
       role !== "ceo" &&
       role !== "payroll_manager" &&

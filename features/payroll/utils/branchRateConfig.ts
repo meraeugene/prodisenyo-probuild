@@ -1,6 +1,9 @@
+import { DEFAULT_OVERTIME_MULTIPLIER } from "@/lib/payrollConfig";
+
 export interface EmployeeBranchRateConfig {
   dailyRate: number;
   regularPaidHours: number;
+  overtimeMultiplier: number;
 }
 
 export const DEFAULT_REGULAR_PAID_HOURS = 8;
@@ -16,6 +19,17 @@ export function normalizeRegularPaidHours(value: number | null | undefined): num
   }
 
   return round2(numericValue);
+}
+
+export function normalizeOvertimeMultiplier(
+  value: number | null | undefined,
+): number {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) {
+    return DEFAULT_OVERTIME_MULTIPLIER;
+  }
+
+  return Math.round(Math.min(numericValue, 5) * 10_000) / 10_000;
 }
 
 export function capRegularWorkedHours(
@@ -37,6 +51,7 @@ export function normalizeEmployeeBranchRateConfig(
     | {
         dailyRate?: number | null;
         regularPaidHours?: number | null;
+        overtimeMultiplier?: number | null;
       }
     | null
     | undefined,
@@ -50,5 +65,8 @@ export function normalizeEmployeeBranchRateConfig(
         ? round2(dailyRate)
         : round2(fallbackDailyRate),
     regularPaidHours: normalizeRegularPaidHours(config?.regularPaidHours),
+    overtimeMultiplier: normalizeOvertimeMultiplier(
+      config?.overtimeMultiplier,
+    ),
   };
 }

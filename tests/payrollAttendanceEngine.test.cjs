@@ -29,6 +29,16 @@ function loadTypeScriptModule(relativePath, dependencies = {}) {
 const engine = loadTypeScriptModule(
   "../features/payroll/utils/payrollAttendanceEngine.ts",
 );
+const payrollConfig = loadTypeScriptModule("../lib/payrollConfig.ts");
+const payrollHours = loadTypeScriptModule("../lib/payrollHours.ts");
+const payrollEngine = loadTypeScriptModule("../lib/payrollEngine.ts", {
+  "@/lib/payrollConfig": payrollConfig,
+  "@/lib/payrollHours": payrollHours,
+});
+const branchRateConfig = loadTypeScriptModule(
+  "../features/payroll/utils/branchRateConfig.ts",
+  { "@/lib/payrollConfig": payrollConfig },
+);
 const reconciliation = loadTypeScriptModule(
   "../features/payroll/utils/payrollReconciliation.ts",
   {
@@ -178,6 +188,52 @@ test("approved overtime is payable while rejected overtime is not", () => {
   });
   assert.equal(approved.approvedOvertimeSeconds, 3600);
   assert.equal(rejected.approvedOvertimeSeconds, 0);
+});
+
+test("attendance-approved overtime is included in saved payroll totals", () => {
+  const decisions = {
+    "2026-06-16": decision("2026-06-16", "WORKED", 8, {
+      approvedOvertimeSeconds: 30 * 60,
+      overtimeStatus: "approved",
+    }),
+    "2026-06-17": decision("2026-06-17", "WORKED", 8, {
+      approvedOvertimeSeconds: 60 * 60,
+      overtimeStatus: "rejected",
+    }),
+  };
+
+  assert.equal(engine.sumApprovedAttendanceOvertimeHours(decisions), 0.5);
+});
+
+test("configurable straight-time OT matches the manual payroll", () => {
+  const manualRule = branchRateConfig.normalizeEmployeeBranchRateConfig(
+    {
+      dailyRate: 550,
+      regularPaidHours: 8,
+      overtimeMultiplier: 1,
+    },
+    550,
+  );
+  const manualCalculation = payrollEngine.roundPayrollCalculation(
+    payrollEngine.calculatePayroll({
+      dailyRate: manualRule.dailyRate,
+      regularHours: 0,
+      overtimeHours: 6,
+      overtimeMultiplier: manualRule.overtimeMultiplier,
+    }),
+  );
+  const defaultCalculation = payrollEngine.roundPayrollCalculation(
+    payrollEngine.calculatePayroll({
+      dailyRate: 550,
+      regularHours: 0,
+      overtimeHours: 6,
+      overtimeMultiplier:
+        branchRateConfig.normalizeOvertimeMultiplier(undefined),
+    }),
+  );
+
+  assert.equal(manualCalculation.overtimePay, 412.5);
+  assert.equal(defaultCalculation.overtimePay, 515.63);
 });
 
 test("allowance, cash advance, and deduction remain separate records", () => {

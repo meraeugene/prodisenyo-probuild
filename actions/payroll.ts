@@ -5,7 +5,6 @@ import type { PayrollRunStatus } from "@/types/database";
 import type { Database } from "@/types/database";
 import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import { calculatePayroll, roundPayrollCalculation } from "@/lib/payrollEngine";
-import { DEFAULT_OVERTIME_MULTIPLIER } from "@/lib/payrollConfig";
 import type {
   PayrollOvertimeEntry,
   PayrollRowOverride,
@@ -18,13 +17,17 @@ import {
   FIXED_PAY_RATE_PER_DAY,
   FULL_WORKDAY_HOURS,
 } from "@/features/payroll/utils/payrollSelectors";
-import type { EmployeeBranchRateConfig } from "@/features/payroll/utils/branchRateConfig";
+import {
+  normalizeOvertimeMultiplier,
+  type EmployeeBranchRateConfig,
+} from "@/features/payroll/utils/branchRateConfig";
 import {
   buildEmployeeBranchRateKey,
   normalizeEmployeeNameKey,
 } from "@/features/payroll/utils/payrollMappers";
 import { attachOvertimeRejectionReason } from "@/features/payroll/utils/overtimeRequestNotes";
 import type { OvertimeRequestRecord } from "@/features/overtime-requests/types";
+import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
 
 interface SubmitOvertimeRequestInput {
   employeeName: string;
@@ -391,6 +394,7 @@ function buildPayrollCandidatesFromRows(
     ratePerDay: round2(
       (row.customRate ?? row.defaultRate ?? 0) * FULL_WORKDAY_HOURS,
     ),
+    overtimeMultiplier: normalizeOvertimeMultiplier(row.overtimeMultiplier),
   }));
 }
 
@@ -533,7 +537,7 @@ async function syncAdvanceOvertimeRequestsForPayroll(
         dailyRate: candidate.ratePerDay,
         regularHours: 0,
         overtimeHours,
-        overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+        overtimeMultiplier: candidate.overtimeMultiplier,
         allowance: 0,
         deductions: 0,
       }),
@@ -657,6 +661,7 @@ interface AdvanceOvertimePayrollCandidate {
   roleCode: string;
   siteName: string;
   ratePerDay: number;
+  overtimeMultiplier: number;
 }
 
 interface SyncAdvanceOvertimeRequestsInput {
@@ -668,6 +673,7 @@ interface SyncAdvanceOvertimeRequestsInput {
     site: string;
     defaultRate: number;
     customRate: number | null;
+    overtimeMultiplier?: number;
   }>;
 }
 
@@ -946,6 +952,9 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       branchRateConfig?.dailyRate ??
         (row.customRate ?? row.defaultRate) * FULL_WORKDAY_HOURS,
     );
+    const overtimeMultiplier = normalizeOvertimeMultiplier(
+      branchRateConfig?.overtimeMultiplier,
+    );
 
     return {
       row,
@@ -957,6 +966,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       leavePay,
       allowancePay,
       ratePerDay,
+      overtimeMultiplier,
       biometricOvertimeStatus,
     };
   });
@@ -977,6 +987,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       roleCode: snapshot.row.role.trim().toUpperCase() || "UNKNOWN",
       siteName: normalizeSiteName(snapshot.row.site),
       ratePerDay: snapshot.ratePerDay,
+      overtimeMultiplier: snapshot.overtimeMultiplier,
     })),
   });
 
@@ -1136,6 +1147,11 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       ) ?? null;
 
     const approvedOvertimeHours = round2(approvedOvertime?.totalHours ?? 0);
+    const attendanceApprovedOvertimeHours = round2(
+      sumApprovedAttendanceOvertimeHours(
+        snapshot.override?.attendanceDecisions,
+      ),
+    );
     const includedSites = new Set(splitSiteNames(snapshot.row.site));
     const storedBiometricHours = snapshot.override?.biometricOvertimeHours;
     const biometricOvertimeHours =
@@ -1167,7 +1183,9 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
             )
         : 0;
     const overtimeHours = round2(
-      biometricOvertimeHours + approvedOvertimeHours,
+      biometricOvertimeHours +
+        approvedOvertimeHours +
+        attendanceApprovedOvertimeHours,
     );
     const allowance = round2(
       holidayPay + snapshot.leavePay + snapshot.allowancePay,
@@ -1177,7 +1195,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         dailyRate: snapshot.ratePerDay,
         regularHours: snapshot.row.hoursWorked,
         overtimeHours,
-        overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+        overtimeMultiplier: snapshot.overtimeMultiplier,
         allowance,
         deductions: {
           cashAdvance: snapshot.cashAdvance,
@@ -1192,7 +1210,10 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       holidayPay,
       allowance,
       regularPayExcludingHoliday: calculation.regularPay,
-      approvedOvertimeHours,
+      approvedOvertimeHours: round2(
+        approvedOvertimeHours + attendanceApprovedOvertimeHours,
+      ),
+      attendanceApprovedOvertimeHours,
       biometricOvertimeHours,
       overtimeHours,
       approvedOvertimePay: calculation.overtimePay,
@@ -1426,8 +1447,9 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         ? round2(snapshot.allocatedBasePay / snapshot.ratePerDay)
         : 0,
     hours_worked: snapshot.row.hoursWorked,
-    overtime_hours: snapshot.approvedOvertimeHours,
+    overtime_hours: snapshot.overtimeHours,
     rate_per_day: snapshot.ratePerDay,
+    overtime_multiplier: snapshot.overtimeMultiplier,
     regular_pay: snapshot.regularPayExcludingHoliday,
     overtime_pay: snapshot.approvedOvertimePay,
     holiday_pay: snapshot.allowance,
@@ -1831,7 +1853,7 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
     const { data: item, error: itemError } = await database
       .from("payroll_run_items")
       .select(
-        "id, hours_worked, overtime_hours, rate_per_day, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay",
+        "id, hours_worked, overtime_hours, rate_per_day, overtime_multiplier, regular_pay, overtime_pay, holiday_pay, deductions_total, total_pay",
       )
       .eq("payroll_run_id", runId)
       .eq("employee_name", adjustment.employee_name)
@@ -1857,7 +1879,9 @@ export async function approveOvertimeAdjustmentAction(adjustmentId: string) {
             dailyRate: item.rate_per_day ?? 0,
             regularHours: item.hours_worked ?? 0,
             overtimeHours,
-            overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+            overtimeMultiplier: normalizeOvertimeMultiplier(
+              item.overtime_multiplier,
+            ),
             allowance: item.holiday_pay ?? 0,
             deductions: item.deductions_total ?? 0,
           }),

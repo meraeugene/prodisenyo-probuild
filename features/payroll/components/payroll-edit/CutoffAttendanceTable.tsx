@@ -3,6 +3,7 @@
 import { CalendarDays } from "lucide-react";
 import type { CutoffAttendanceDay } from "@/features/payroll/utils/payrollAttendanceEngine";
 import { secondsToDecimalHours } from "@/features/payroll/utils/payrollAttendanceEngine";
+import { toWeekLabel } from "@/features/payroll/utils/payrollFormatters";
 
 interface CutoffAttendanceTableProps {
   days: CutoffAttendanceDay[];
@@ -17,6 +18,11 @@ const badgeStyles: Record<string, string> = {
   NO_BIOMETRIC: "bg-amber-50 text-amber-700",
   ABSENT: "bg-red-50 text-red-600",
 };
+
+function isSunday(date: string): boolean {
+  const parsed = new Date(`${date}T00:00:00`);
+  return !Number.isNaN(parsed.getTime()) && parsed.getDay() === 0;
+}
 
 export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTableProps) {
   return (
@@ -35,32 +41,46 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
         <table className="w-full min-w-[760px] text-xs">
           <thead className="sticky top-0 z-10 bg-slate-50 text-[9px] uppercase tracking-[0.08em] text-slate-500">
             <tr>
-              {['Date', 'Time In - Out', 'Raw', 'Classification', 'Regular', 'OT', 'Payable', 'Action'].map((label) => (
+              {['Date/Week', 'Time In - Out', 'Raw', 'Classification', 'Regular', 'OT', 'Payable', 'Action'].map((label) => (
                 <th key={label} className="px-3 py-2 text-left font-semibold">{label}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {days.map((day) => (
-              <tr key={day.date} className="border-t border-slate-100 hover:bg-slate-50/70">
-                <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">{day.date}</td>
-                <td className="whitespace-nowrap px-3 py-2 font-mono text-[10px] text-slate-600">{day.biometricTimeIn ?? '-'} - {day.biometricTimeOut ?? '-'}</td>
-                <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.biometricWorkedSeconds)}</td>
-                <td className="px-3 py-2">
-                  <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-bold ${badgeStyles[day.classification] ?? 'bg-slate-100 text-slate-700'}`}>
-                    {day.classification.replaceAll('_', ' ')}
-                  </span>
-                </td>
-                <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedRegularSeconds)}</td>
-                <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedOvertimeSeconds)}</td>
-                <td className="px-3 py-2 font-mono font-bold">{secondsToDecimalHours(day.payableSeconds)}</td>
-                <td className="px-3 py-2">
-                  <button type="button" onClick={() => onResolve(day)} className="h-7 rounded-md border border-emerald-200 px-2.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-50">
-                    {day.needsReview ? 'Resolve' : 'Review'}
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {days.map((day) => {
+              const sunday = isSunday(day.date);
+
+              return (
+                <tr key={day.date} className="border-t border-slate-100 hover:bg-slate-50/70">
+                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
+                    <time dateTime={day.date} title={day.date}>{toWeekLabel(day.date)}</time>
+                  </td>
+                  {sunday ? (
+                    Array.from({ length: 7 }, (_, index) => (
+                      <td key={index} className="px-3 py-2 font-mono text-slate-400">--</td>
+                    ))
+                  ) : (
+                    <>
+                      <td className="whitespace-nowrap px-3 py-2 font-mono text-[10px] text-slate-600">{day.biometricTimeIn ?? '-'} - {day.biometricTimeOut ?? '-'}</td>
+                      <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.biometricWorkedSeconds)}</td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-bold ${badgeStyles[day.classification] ?? 'bg-slate-100 text-slate-700'}`}>
+                          {day.classification.replaceAll('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedRegularSeconds)}</td>
+                      <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedOvertimeSeconds)}</td>
+                      <td className="px-3 py-2 font-mono font-bold">{secondsToDecimalHours(day.payableSeconds)}</td>
+                      <td className="px-3 py-2">
+                        <button type="button" onClick={() => onResolve(day)} className="h-7 rounded-md border border-emerald-200 px-2.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-50">
+                          {day.needsReview ? 'Resolve' : 'Review'}
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

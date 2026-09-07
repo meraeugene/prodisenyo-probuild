@@ -49,6 +49,7 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
   "/request-material": ClipboardList,
   "/my-tasks": ListTodo,
   "/projects": FolderKanban,
+  "/gmea-projects": FolderKanban,
   "/progress-reports": FileText,
   "/overview": LayoutDashboard,
   "/projects?section=material-approvals": ClipboardCheck,
@@ -57,6 +58,10 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
 };
 
 const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
+  gmea: [
+    { href: "/gmea-projects", title: "GMEA Projects", description: "Manage quotations, payments, expenses, and profit sharing." },
+    { href: "/settings", title: "Settings", description: "Manage your account and password." },
+  ],
   admin: [
     {
       href: "/add-user",

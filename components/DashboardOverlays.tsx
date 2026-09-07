@@ -7,6 +7,7 @@ import type { AppRole } from "@/types/database";
 
 export default function DashboardOverlays({ role }: { role: AppRole | null }) {
   const { payroll } = useAppState();
+  if (role === "gmea") return null;
 
   return (
     <>

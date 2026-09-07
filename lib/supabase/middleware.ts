@@ -17,6 +17,7 @@ type CookieMutation = {
 };
 
 const PROTECTED_PREFIXES = [
+  "/gmea-projects",
   "/home",
   "/dashboard",
   "/payroll-dashboard",
@@ -52,6 +53,7 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 ] as const;
 
 const CEO_ALLOWED_PREFIXES = [
+  "/gmea-projects",
   "/dashboard",
   "/budget-tracker",
   "/estimate-approvals",
@@ -242,7 +244,9 @@ export async function updateSession(request: NextRequest) {
     if (!profileError && pathname === "/auth/login") {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname =
-        currentRole === "admin"
+        currentRole === "gmea"
+          ? "/gmea-projects"
+          : currentRole === "admin"
           ? ADMIN_REDIRECT_PATH
           : currentRole === "ceo"
           ? CEO_REDIRECT_PATH
@@ -322,6 +326,14 @@ export async function updateSession(request: NextRequest) {
         redirectUrl.searchParams.set("required", "documents");
         return redirect(redirectUrl);
       }
+    }
+
+    if (!profileError && currentRole === "gmea" &&
+      !["/gmea-projects", "/settings"].some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"))) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/gmea-projects";
+      redirectUrl.search = "";
+      return redirect(redirectUrl);
     }
 
     if (!profileError && currentRole === "ceo" && !isAllowedCeoPath(pathname)) {

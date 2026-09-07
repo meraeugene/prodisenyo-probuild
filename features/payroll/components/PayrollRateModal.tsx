@@ -98,10 +98,13 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
             const currentDailyRate = currentConfig.dailyRate;
             const nextRegularPaidHours = nextConfig.regularPaidHours;
             const currentRegularPaidHours = currentConfig.regularPaidHours;
+            const nextOvertimeMultiplier = nextConfig.overtimeMultiplier;
+            const currentOvertimeMultiplier = currentConfig.overtimeMultiplier;
 
             if (
               Math.abs(nextDailyRate - currentDailyRate) < 0.005 &&
-              Math.abs(nextRegularPaidHours - currentRegularPaidHours) < 0.005
+              Math.abs(nextRegularPaidHours - currentRegularPaidHours) < 0.005 &&
+              Math.abs(nextOvertimeMultiplier - currentOvertimeMultiplier) < 0.00005
             ) {
               return null;
             }
@@ -111,12 +114,18 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
             const regularHoursChanged =
               Math.abs(nextRegularPaidHours - currentRegularPaidHours) >=
               0.005;
+            const overtimeMultiplierChanged =
+              Math.abs(nextOvertimeMultiplier - currentOvertimeMultiplier) >=
+              0.00005;
             const changeDetails = [
               dailyRateChanged
                 ? `daily rate ${formatPayrollNumber(currentDailyRate)} to ${formatPayrollNumber(nextDailyRate)}`
                 : null,
               regularHoursChanged
                 ? `regular paid hours ${formatPayrollNumber(currentRegularPaidHours)}h to ${formatPayrollNumber(nextRegularPaidHours)}h`
+                : null,
+              overtimeMultiplierChanged
+                ? `OT multiplier ${formatPayrollNumber(currentOvertimeMultiplier)}x to ${formatPayrollNumber(nextOvertimeMultiplier)}x`
                 : null,
             ].filter(Boolean);
 
@@ -130,6 +139,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               siteName: row.site,
               dailyRate: nextDailyRate,
               regularPaidHours: nextRegularPaidHours,
+              overtimeMultiplier: nextOvertimeMultiplier,
             };
           })
           .filter((entry): entry is NonNullable<typeof entry> =>
@@ -256,6 +266,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-apple-steel">
                   Regular Paid Hours
                 </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-apple-steel">
+                  OT Multiplier
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -344,13 +357,42 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                         Max regular hours paid
                       </p>
                     </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        min={0.01}
+                        max={5}
+                        step="0.01"
+                        value={draftConfig.overtimeMultiplier}
+                        onChange={(event) => {
+                          const parsed = Number.parseFloat(event.target.value);
+                          payroll.setPayrollRateDraft((prev) => ({
+                            ...prev,
+                            [row.key]: {
+                              ...normalizeEmployeeBranchRateConfig(
+                                prev[row.key],
+                                row.fallbackRate,
+                              ),
+                              overtimeMultiplier:
+                                Number.isFinite(parsed) && parsed > 0
+                                  ? Math.min(parsed, 5)
+                                  : draftConfig.overtimeMultiplier,
+                            },
+                          }));
+                        }}
+                        className="h-10 w-full rounded-2xl border border-apple-silver bg-white px-3 text-right text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
+                      />
+                      <p className="mt-1 text-right text-[11px] text-apple-steel">
+                        Use 1.00 for straight-time OT
+                      </p>
+                    </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-sm text-apple-steel"
                   >
                     No employee branch rates matched your search.

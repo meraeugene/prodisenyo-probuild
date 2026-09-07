@@ -272,6 +272,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         } = await supabase.auth.getUser();
 
         if (!user || cancelled) return;
+        const { data: restoreProfile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+        if ((restoreProfile as { role: string } | null)?.role === "gmea") return;
 
         const { data: importData, error: importError } = await supabase
           .from("attendance_imports")

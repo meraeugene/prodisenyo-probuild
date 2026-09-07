@@ -108,8 +108,9 @@ Important fields:
 - `site_name_key`
 - `daily_rate`
 - `regular_paid_hours`
+- `overtime_multiplier` (`1.25` by default; use `1.00` for straight-time OT)
 
-If Supabase shows an error such as `regular_paid_hours column does not exist`, run the repair SQL in `supabase/repair-payroll-schema.sql`.
+If Supabase reports a missing branch-rate field, run the repair SQL in `supabase/repair-payroll-schema.sql`.
 
 ## Overtime Requests
 
@@ -395,6 +396,13 @@ Run:
 supabase/repair-payroll-schema.sql
 ```
 
+The same repair script adds `employee_branch_rates.overtime_multiplier` and
+`payroll_run_items.overtime_multiplier`. You can also run the focused migration:
+
+```text
+supabase/payroll-ot-multiplier.sql
+```
+
 ### `column overtime_requests.approval_mode does not exist`
 
 Your Supabase database is missing newer overtime request fields.
@@ -482,3 +490,7 @@ AGENTS.md
 ```
 
 Keep `AGENTS.md` updated whenever the repository architecture or development rules change.
+
+## GMEA workspace
+
+See [GMEA setup and workflow](docs/gmea-workspace.md) for the four ordered SQL migrations, Admin account creation, calculation rules, and verification commands.

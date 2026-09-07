@@ -13,6 +13,7 @@ interface SaveEmployeeBranchRateInput {
   siteName: string;
   dailyRate: number;
   regularPaidHours: number;
+  overtimeMultiplier: number;
 }
 
 export async function saveEmployeeBranchRatesAction(
@@ -28,6 +29,7 @@ export async function saveEmployeeBranchRatesAction(
       const siteName = entry.siteName.trim();
       const dailyRate = Number(entry.dailyRate);
       const regularPaidHours = Number(entry.regularPaidHours);
+      const overtimeMultiplier = Number(entry.overtimeMultiplier);
 
       if (
         !employeeName ||
@@ -36,7 +38,10 @@ export async function saveEmployeeBranchRatesAction(
         !Number.isFinite(dailyRate) ||
         dailyRate < 0 ||
         !Number.isFinite(regularPaidHours) ||
-        regularPaidHours <= 0
+        regularPaidHours <= 0 ||
+        !Number.isFinite(overtimeMultiplier) ||
+        overtimeMultiplier <= 0 ||
+        overtimeMultiplier > 5
       ) {
         return null;
       }
@@ -49,6 +54,8 @@ export async function saveEmployeeBranchRatesAction(
         site_name_key: normalizeSiteKey(siteName),
         daily_rate: Math.round(dailyRate * 100) / 100,
         regular_paid_hours: Math.round(regularPaidHours * 100) / 100,
+        overtime_multiplier:
+          Math.round(overtimeMultiplier * 10_000) / 10_000,
         updated_by: user.id,
       };
     })

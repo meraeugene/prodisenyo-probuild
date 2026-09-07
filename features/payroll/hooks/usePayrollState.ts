@@ -5,10 +5,10 @@ import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import { calculatePayroll, roundPayrollCalculation } from "@/lib/payrollEngine";
 import { calculateDailyWorkMinutes } from "@/lib/utils";
 import { normalizeLegacyRawRegularHours } from "@/features/payroll/utils/payrollLogHours";
+import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   DEFAULT_DAILY_RATE_BY_ROLE,
-  DEFAULT_OVERTIME_MULTIPLIER,
   ROLE_CODES,
   type RoleCode,
 } from "@/lib/payrollConfig";
@@ -20,6 +20,7 @@ import {
 } from "@/features/payroll/utils/payrollFormatters";
 import {
   normalizeEmployeeBranchRateConfig,
+  normalizeOvertimeMultiplier,
   type EmployeeBranchRateConfig,
 } from "@/features/payroll/utils/branchRateConfig";
 import {
@@ -524,7 +525,7 @@ export function usePayrollState({
         const { data, error } = await supabase
           .from("employee_branch_rates")
           .select(
-            "employee_name, role_code, site_name, daily_rate, regular_paid_hours",
+            "employee_name, role_code, site_name, daily_rate, regular_paid_hours, overtime_multiplier",
           );
 
         if (error || cancelled) return;
@@ -535,6 +536,7 @@ export function usePayrollState({
           site_name: string;
           daily_rate: number;
           regular_paid_hours: number | null;
+          overtime_multiplier: number | null;
         }>).reduce<Record<string, EmployeeBranchRateConfig>>((acc, row) => {
           const key = buildEmployeeBranchRateKey(
             row.employee_name,
@@ -545,6 +547,7 @@ export function usePayrollState({
             {
               dailyRate: row.daily_rate,
               regularPaidHours: row.regular_paid_hours,
+              overtimeMultiplier: row.overtime_multiplier,
             },
             Number(row.daily_rate ?? 0),
           );
@@ -680,6 +683,11 @@ export function usePayrollState({
               site: row.site,
               defaultRate: row.defaultRate,
               customRate: row.customRate,
+              overtimeMultiplier: normalizeOvertimeMultiplier(
+                employeeBranchRates[
+                  buildEmployeeBranchRateKey(row.worker, row.role, row.site)
+                ]?.overtimeMultiplier,
+              ),
             })),
           });
         }
@@ -821,7 +829,12 @@ export function usePayrollState({
       cancelled = true;
       window.removeEventListener("focus", handleWindowFocus);
     };
-  }, [attendancePeriod, currentAttendanceImportId, payrollBaseComputedRows]);
+  }, [
+    attendancePeriod,
+    currentAttendanceImportId,
+    employeeBranchRates,
+    payrollBaseComputedRows,
+  ]);
 
   const payrollDateRange = useMemo<PayrollDateRange | null>(() => {
     const normalizedPeriod = normalizePeriodLabel(attendancePeriod);
@@ -941,6 +954,11 @@ export function usePayrollState({
           override?.overtimeEntries,
           "approved",
         );
+        const overtimeMultiplier = normalizeOvertimeMultiplier(
+          rateConfig?.overtimeMultiplier,
+        );
+        const attendanceApprovedOvertimeHours =
+          sumApprovedAttendanceOvertimeHours(override?.attendanceDecisions);
         const biometricOvertimeApproved =
           override?.biometricOvertimeStatus === "approved";
         const storedBiometricHours = override?.biometricOvertimeHours;
@@ -969,10 +987,12 @@ export function usePayrollState({
           manualAllowance,
           approvedOvertimePay,
           approvedOvertimeHours,
+          attendanceApprovedOvertimeHours,
           biometricOvertimeHours,
           cashAdvance,
           deductions,
           ratePerDay,
+          overtimeMultiplier,
           effectiveHourlyRate,
         };
       });
@@ -1010,14 +1030,16 @@ export function usePayrollState({
           holidayPay + entry.leavePay + entry.manualAllowance,
         );
         const overtimeHours = round2(
-          entry.biometricOvertimeHours + entry.approvedOvertimeHours,
+          entry.biometricOvertimeHours +
+            entry.approvedOvertimeHours +
+            entry.attendanceApprovedOvertimeHours,
         );
         const calculation = roundPayrollCalculation(
           calculatePayroll({
             dailyRate: entry.ratePerDay,
             regularHours: entry.row.hoursWorked,
             overtimeHours,
-            overtimeMultiplier: DEFAULT_OVERTIME_MULTIPLIER,
+            overtimeMultiplier: entry.overtimeMultiplier,
             allowance,
             deductions: {
               cashAdvance: entry.cashAdvance,

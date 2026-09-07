@@ -174,10 +174,7 @@ export function PayrollCalculationWorkspace(
 
         <PayrollCalculationFooter
           isSaving={props.isSaving}
-          saveDisabled={
-            props.isSaving ||
-            (props.hasBiometricOvertime && props.biometricOvertimeStatus === null)
-          }
+          saveDisabled={props.isSaving}
           onClose={props.onClose}
           onSave={props.onSave}
         />

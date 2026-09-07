@@ -12,7 +12,8 @@ export type AppRole =
   | "payroll_manager"
   | "purchaser"
   | "engineer"
-  | "employee";
+  | "employee"
+  | "gmea";
 export type PayrollRunStatus = "draft" | "submitted" | "approved" | "rejected";
 export type AdjustmentStatus = "pending" | "approved" | "rejected";
 export type AttendanceClassification =
@@ -240,6 +241,7 @@ export interface Database {
           site_name_key: string;
           daily_rate: number;
           regular_paid_hours: number;
+          overtime_multiplier: number;
           updated_by: string | null;
           created_at: string;
           updated_at: string;
@@ -253,6 +255,7 @@ export interface Database {
           site_name_key: string;
           daily_rate: number;
           regular_paid_hours?: number;
+          overtime_multiplier?: number;
           updated_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -265,6 +268,7 @@ export interface Database {
           site_name_key?: string;
           daily_rate?: number;
           regular_paid_hours?: number;
+          overtime_multiplier?: number;
           updated_by?: string | null;
           updated_at?: string;
         };
@@ -355,6 +359,7 @@ export interface Database {
           hours_worked: number;
           overtime_hours: number;
           rate_per_day: number;
+          overtime_multiplier: number;
           regular_pay: number;
           overtime_pay: number;
           holiday_pay: number;
@@ -373,6 +378,7 @@ export interface Database {
           hours_worked?: number;
           overtime_hours?: number;
           rate_per_day?: number;
+          overtime_multiplier?: number;
           regular_pay?: number;
           overtime_pay?: number;
           holiday_pay?: number;
@@ -389,6 +395,7 @@ export interface Database {
           hours_worked?: number;
           overtime_hours?: number;
           rate_per_day?: number;
+          overtime_multiplier?: number;
           regular_pay?: number;
           overtime_pay?: number;
           holiday_pay?: number;

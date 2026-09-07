@@ -15,6 +15,7 @@ export const config = {
     "/upload-attendance/:path*",
     "/budget-tracker/:path*",
     "/projects/:path*",
+    "/gmea-projects/:path*",
     "/cost-estimator/:path*",
     "/estimate-approvals/:path*",
     "/estimate-reviews/:path*",
