@@ -82,7 +82,7 @@ export default function GmeaCollectionsSection({
             )}
           </tbody>
           {!!collections.length && (
-            <tfoot className="border-t border-slate-200 bg-amber-50">
+            <tfoot className="border-t border-emerald-300 bg-emerald-100 text-emerald-950">
               <tr>
                 <td className="p-3 text-right font-semibold">Total</td>
                 <td className="p-3 font-bold">{formatMoney(collected)}</td>
