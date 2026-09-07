@@ -24,9 +24,8 @@ export type ProjectRow = {
   name: string;
   client: string;
   location: string;
-  description: string;
-  start_date: string | null;
-  end_date: string | null;
+  contract_amount: number;
+  withholding_tax_rate: number;
   duration: string;
   status: string;
   version: number;
@@ -37,20 +36,14 @@ type GmeaDatabase = {
   public: {
     Tables: {
       gmea_projects: Table<ProjectRow>;
-      gmea_quotations: Table<DataRow & { status: string; total: number }>;
-      gmea_quotation_items: Table<{
-        id: string;
-        quotation_id: string;
-        sort_order: number;
-        description: string;
-        unit: string;
-        quantity: number;
-        unit_price: number;
-      }>;
-      gmea_milestones: Table<DataRow>;
-      gmea_receipts: Table<DataRow>;
       gmea_expenses: Table<DataRow>;
       gmea_partners: Table<DataRow>;
+      gmea_expense_options: Table<{
+        id: string;
+        field: string;
+        value: string;
+        created_at: string;
+      }>;
     };
     Views: Record<string, never>;
     Functions: {

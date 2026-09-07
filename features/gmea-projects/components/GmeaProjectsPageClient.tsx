@@ -53,8 +53,8 @@ export default function GmeaProjectsPageClient({
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             {canEdit
-              ? "Manage quotations, collections, and project costs."
-              : "View GMEA projects, quotations, and financial summaries."}
+              ? "Manage project details, expenses, and contract cost summaries."
+              : "View GMEA projects, expenses, and contract cost summaries."}
           </p>
         </div>
         {canEdit && (
@@ -68,8 +68,8 @@ export default function GmeaProjectsPageClient({
         {[
           ["Projects", String(visible.length)],
           [
-            "Contract value",
-            formatMoney(sumMoney(summaries.map((s) => s.contract ?? 0))),
+            "Net contract amount",
+            formatMoney(sumMoney(summaries.map((s) => s.netContract))),
           ],
           [
             "Total expenses",
@@ -144,9 +144,9 @@ export default function GmeaProjectsPageClient({
               </p>
               <div className="my-5 grid grid-cols-2 gap-3 border-y border-slate-100 py-4 text-sm">
                 <div>
-                  <p className="text-xs text-slate-500">Contract</p>
+                  <p className="text-xs text-slate-500">Net contract</p>
                   <p className="mt-1 font-semibold">
-                    {formatMoney(s.contract)}
+                    {formatMoney(s.netContract)}
                   </p>
                 </div>
                 <div>

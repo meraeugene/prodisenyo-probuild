@@ -2,29 +2,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
-import type { GmeaProject } from "../types";
+import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaSummaryCards from "./GmeaSummaryCards";
 import GmeaProjectOverview from "./GmeaProjectOverview";
 import GmeaProjectForm from "./GmeaProjectForm";
-import GmeaQuotationsSection from "./GmeaQuotationsSection";
-import GmeaPaymentsSection from "./GmeaPaymentsSection";
 import GmeaExpensesSection from "./GmeaExpensesSection";
 import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
-const tabs = [
-  "Overview",
-  "Quotations",
-  "Payments",
-  "Expenses",
-  "Profit Summary",
-] as const;
+const tabs = ["Overview", "Expenses", "Contract Cost Summary"] as const;
 export default function GmeaProjectWorkspace({
   project,
+  expenseOptions,
   canEdit,
 }: {
   project: GmeaProject;
+  expenseOptions: GmeaExpenseOptions;
   canEdit: boolean;
 }) {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview"),
@@ -73,6 +67,18 @@ export default function GmeaProjectWorkspace({
                 }
               />
             )}
+            {project.status === "archived" && (
+              <GmeaConfirmButton
+                label="Restore project"
+                description="Restore this project so expenses can be edited again."
+                onConfirm={() =>
+                  save({
+                    kind: "project",
+                    value: { ...project, status: "active" },
+                  })
+                }
+              />
+            )}
           </div>
         )}
       </header>
@@ -104,16 +110,14 @@ export default function GmeaProjectWorkspace({
       </nav>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         {tab === "Overview" && <GmeaProjectOverview project={project} />}
-        {tab === "Quotations" && (
-          <GmeaQuotationsSection project={project} canEdit={financialEdit} />
-        )}
-        {tab === "Payments" && (
-          <GmeaPaymentsSection project={project} canEdit={financialEdit} />
-        )}
         {tab === "Expenses" && (
-          <GmeaExpensesSection project={project} canEdit={financialEdit} />
+          <GmeaExpensesSection
+            project={project}
+            expenseOptions={expenseOptions}
+            canEdit={financialEdit}
+          />
         )}
-        {tab === "Profit Summary" && (
+        {tab === "Contract Cost Summary" && (
           <GmeaProfitSection project={project} canEdit={financialEdit} />
         )}
       </div>

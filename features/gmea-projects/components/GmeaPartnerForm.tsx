@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import type { GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -6,61 +6,47 @@ import { sumMoney } from "../utils/gmeaCalculations";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import { TextField } from "./GmeaFields";
-export default function GmeaAllocationForm({
+
+export default function GmeaPartnerForm({
   project,
-  kind,
   onClose,
 }: {
   project: GmeaProject;
-  kind: "partners" | "milestones";
   onClose: () => void;
 }) {
   const [rows, setRows] = useState(() =>
-    kind === "partners"
-      ? project.partners.map((p) => ({ ...p }))
-      : project.milestones.map((m) => ({
-          id: m.id,
-          name: m.label,
-          percentage: m.percentage,
-        })),
+    project.partners.map((partner) => ({ ...partner })),
   );
   const save = useGmeaMutation(project);
   let total: number | null = null;
-  try { total = sumMoney(rows.map(r => r.percentage)); } catch { /* Keep invalid input editable. */ }
+  try {
+    total = sumMoney(rows.map((row) => row.percentage));
+  } catch {
+    // Keep invalid input editable until the user saves.
+  }
   return (
     <GmeaDialog
-      title={
-        kind === "partners" ? "Profit sharing partners" : "Payment milestones"
-      }
-      description="Percentages must total 100%. Milestones with receipts cannot be removed."
+      title="Profit sharing partners"
+      description="Percentages must total 100%."
       onClose={onClose}
-      onSave={() =>
-        kind === "partners"
-          ? save({ kind, value: rows })
-          : save({
-              kind,
-              value: rows.map((r) => ({
-                id: r.id,
-                label: r.name,
-                percentage: r.percentage,
-              })),
-            })
-      }
+      onSave={() => save({ kind: "partners", value: rows })}
     >
-      {rows.map((row, i) => (
+      {rows.map((row, index) => (
         <div
           key={row.id}
           className="grid items-end gap-3 sm:grid-cols-[1fr_140px_auto]"
         >
           <TextField
-            label={kind === "partners" ? "Partner name" : "Milestone label"}
+            label="Partner name"
             required
             value={row.name}
             maxLength={200}
-            onChange={(e) =>
+            onChange={(event) =>
               setRows(
-                rows.map((r, n) =>
-                  n === i ? { ...r, name: e.target.value } : r,
+                rows.map((item, itemIndex) =>
+                  itemIndex === index
+                    ? { ...item, name: event.target.value }
+                    : item,
                 ),
               )
             }
@@ -73,10 +59,12 @@ export default function GmeaAllocationForm({
             max="100"
             step="0.01"
             value={row.percentage}
-            onChange={(e) =>
+            onChange={(event) =>
               setRows(
-                rows.map((r, n) =>
-                  n === i ? { ...r, percentage: Number(e.target.value) } : r,
+                rows.map((item, itemIndex) =>
+                  itemIndex === index
+                    ? { ...item, percentage: Number(event.target.value) }
+                    : item,
                 ),
               )
             }
@@ -84,7 +72,9 @@ export default function GmeaAllocationForm({
           <button
             type="button"
             className={secondaryClass + " text-rose-700"}
-            onClick={() => setRows(rows.filter((_, n) => n !== i))}
+            onClick={() =>
+              setRows(rows.filter((_, itemIndex) => itemIndex !== index))
+            }
           >
             Remove
           </button>
@@ -101,11 +91,9 @@ export default function GmeaAllocationForm({
             ])
           }
         >
-          + Add {kind === "partners" ? "partner" : "milestone"}
+          + Add partner
         </button>
-        <strong className="text-sm">
-          Total: {total ?? "Invalid"}%
-        </strong>
+        <strong className="text-sm">Total: {total ?? "Invalid"}%</strong>
       </div>
     </GmeaDialog>
   );

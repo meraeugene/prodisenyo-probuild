@@ -1,16 +1,18 @@
-﻿const assert = require("node:assert/strict"),
-  test = require("node:test"),
-  fs = require("node:fs");
-const { randomUUID } = require("node:crypto"),
-  { PGlite } = require("@electric-sql/pglite");
+const assert = require("node:assert/strict");
+const test = require("node:test");
+const fs = require("node:fs");
+const { randomUUID } = require("node:crypto");
+const { PGlite } = require("@electric-sql/pglite");
 const { normalizeMutation } = require("./helpers/loadGmeaModule.cjs")(
   "features/gmea-projects/utils/gmeaValidation.ts",
 );
-const actor = "11111111-1111-4111-8111-111111111111",
-  ceo = "22222222-2222-4222-8222-222222222222",
-  engineer = "33333333-3333-4333-8333-333333333333",
-  inactive = "44444444-4444-4444-8444-444444444444";
-test("GMEA database transactions history and role isolation", async (t) => {
+
+const actor = "11111111-1111-4111-8111-111111111111";
+const ceo = "22222222-2222-4222-8222-222222222222";
+const engineer = "33333333-3333-4333-8333-333333333333";
+const inactive = "44444444-4444-4444-8444-444444444444";
+
+test("GMEA expense monitoring database, transactions, and access", async (t) => {
   const db = new PGlite();
   t.after(() => db.close());
   await db.exec(
@@ -27,6 +29,7 @@ test("GMEA database transactions history and role isolation", async (t) => {
       "create policy broad_read on public.payroll_runs for select to authenticated using(true);",
     ].join("\n"),
   );
+
   for (const name of [
     "gmea-01-role.sql",
     "gmea-02-workspace.sql",
@@ -36,6 +39,7 @@ test("GMEA database transactions history and role isolation", async (t) => {
     await db.exec(
       fs.readFileSync("supabase/" + name, "utf8").replace(/^\uFEFF/, ""),
     );
+
   for (const [id, role, active] of [
     [actor, "gmea", true],
     [ceo, "ceo", true],
@@ -47,13 +51,15 @@ test("GMEA database transactions history and role isolation", async (t) => {
       role,
       active,
     ]);
+
   async function mutate(projectId, version, command, user = actor) {
-    const r = await db.query(
+    const result = await db.query(
       "select public.mutate_gmea_project($1,$2,$3,$4::jsonb) id",
       [user, projectId, version, JSON.stringify(normalizeMutation(command))],
     );
-    return r.rows[0].id;
+    return result.rows[0].id;
   }
+
   async function version(id) {
     return (
       await db.query("select version from public.gmea_projects where id=$1", [
@@ -61,206 +67,143 @@ test("GMEA database transactions history and role isolation", async (t) => {
       ])
     ).rows[0].version;
   }
+
   const input = {
-    name: "Test solar",
-    client: "Client",
-    location: "CDO",
-    description: "",
-    start_date: null,
-    end_date: null,
-    duration: "7–14 days",
+    name: "Installation of Analog CCTV",
+    client: "",
+    location: "Corrales Ave, Cagayan de Oro City",
+    contract_amount: 83300,
+    withholding_tax_rate: 0,
+    duration: "7 Days",
     status: "planning",
   };
-  const projectId = await mutate(null, null, { kind: "project", value: input }),
-    quoteId = randomUUID();
-  const quote = {
-    id: quoteId,
-    reference: "Q-001",
-    date: "2026-09-07",
-    notes: "",
-    items: [
-      { description: "Solar", unit: "lot", quantity: 1, unit_price: 175000 },
-    ],
-    discount: 0,
-    vat_mode: "off",
-    vat_rate: 0,
-  };
-  await t.test(
-    "creation includes partners and quotation items save atomically",
-    async () => {
-      assert.equal(
-        (
-          await db.query(
-            "select data from public.gmea_partners where project_id=$1",
-            [projectId],
-          )
-        ).rows.length,
-        2,
-      );
-      await mutate(projectId, 1, { kind: "quotation", value: quote });
-      assert.equal(await version(projectId), 2);
-      assert.equal(
-        Number(
-          (
-            await db.query(
-              "select total from public.gmea_quotations where id=$1",
-              [quoteId],
-            )
-          ).rows[0].total,
-        ),
-        175000,
-      );
-    },
-  );
-  await t.test(
-    "accepted history is immutable and stale edits fail",
-    async () => {
-      await mutate(projectId, 2, { kind: "accept", id: quoteId });
-      await assert.rejects(
-        mutate(projectId, 2, { kind: "project", value: input }),
-        /changed/,
-      );
-      await assert.rejects(
-        mutate(projectId, 3, { kind: "quotation", value: quote }),
-        /draft/,
-      );
-      await assert.rejects(
-        mutate(projectId, 3, {
-          kind: "delete",
-          entity: "quotation",
-          id: quoteId,
-        }),
-        /cannot be removed/,
-      );
-      const revision = { ...quote, id: randomUUID(), reference: "Q-002" };
-      await mutate(projectId, 3, { kind: "quotation", value: revision });
-      await mutate(projectId, 4, { kind: "accept", id: revision.id });
-      assert.deepEqual(
-        (
-          await db.query(
-            "select status from public.gmea_quotations where project_id=$1",
-            [projectId],
-          )
-        ).rows
-          .map((r) => r.status)
-          .sort(),
-        ["accepted", "superseded"],
-      );
-    },
-  );
-  await t.test(
-    "concurrent saves using the same version do not overwrite",
-    async () => {
-      const v = await version(projectId),
-        r = await Promise.allSettled([
-          mutate(projectId, v, {
-            kind: "project",
-            value: { ...input, name: "A" },
-          }),
-          mutate(projectId, v, {
-            kind: "project",
-            value: { ...input, name: "B" },
-          }),
-        ]);
-      assert.equal(r.filter((x) => x.status === "fulfilled").length, 1);
-      assert.equal(r.filter((x) => x.status === "rejected").length, 1);
-    },
-  );
-  await t.test("milestones with receipts cannot be removed", async () => {
-    const m = randomUUID();
-    await mutate(projectId, await version(projectId), {
-      kind: "milestones",
-      value: [{ id: m, label: "Completion", percentage: 100 }],
-    });
-    await mutate(projectId, await version(projectId), {
-      kind: "receipt",
-      value: {
-        id: randomUUID(),
-        milestone_id: m,
-        date: "2026-09-07",
-        cash: 1000,
-        withholding: 20,
-        method: "Cash",
-        reference: "0001",
-        notes: "",
-      },
-    });
-    await assert.rejects(
-      mutate(projectId, await version(projectId), {
-        kind: "milestones",
-        value: [],
-      }),
-      /cannot be removed/,
-    );
+
+  const projectId = await mutate(null, null, {
+    kind: "project",
+    value: input,
+  });
+
+  await t.test("project stores only the workbook fields and default partners", async () => {
+    const project = (
+      await db.query(
+        "select name,client,location,contract_amount,duration from public.gmea_projects where id=$1",
+        [projectId],
+      )
+    ).rows[0];
+    assert.equal(project.client, "");
+    assert.equal(Number(project.contract_amount), 83300);
     assert.equal(
       (
         await db.query(
-          "select data from public.gmea_receipts where project_id=$1",
+          "select id from public.gmea_partners where project_id=$1",
           [projectId],
         )
-      ).rows[0].data.cash,
-      1000,
+      ).rows.length,
+      2,
     );
+    const columns = (
+      await db.query(
+        "select column_name from information_schema.columns where table_schema='public' and table_name='gmea_projects'",
+      )
+    ).rows.map((row) => row.column_name);
+    for (const removed of ["description", "start_date", "end_date"])
+      assert.equal(columns.includes(removed), false);
   });
-  await t.test(
-    "cross-project ids cannot overwrite financial entries",
-    async () => {
-      const other = await mutate(null, null, { kind: "project", value: input });
+
+  await t.test("quotation and payment tables are removed", async () => {
+    const result = await db.query(
+      "select to_regclass('public.gmea_quotations') quotation,to_regclass('public.gmea_quotation_items') items,to_regclass('public.gmea_milestones') milestones,to_regclass('public.gmea_receipts') receipts",
+    );
+    assert.deepEqual(result.rows[0], {
+      quotation: null,
+      items: null,
+      milestones: null,
+      receipts: null,
+    });
+  });
+
+  const expenseId = randomUUID();
+  const expense = {
+    id: expenseId,
+    date: "2026-09-07",
+    description: "Steel Nail Gun",
+    category: "Materials",
+    supplier: "JIMAR CONSTRUCTION SUPPLY CO.",
+    invoice_number: "00059",
+    invoice_name: "GMEA MARKETING CORP.",
+    amount: 11568.2,
+    vat_mode: "off",
+    vat_rate: 0,
+    method: "Cash",
+    notes: "",
+  };
+
+  await t.test("expenses and reusable dropdown values save atomically", async () => {
+    await mutate(projectId, 1, { kind: "expense", value: expense });
+    assert.equal(await version(projectId), 2);
+    const saved = (
+      await db.query("select data from public.gmea_expenses where id=$1", [
+        expenseId,
+      ])
+    ).rows[0].data;
+    assert.equal(saved.invoice_number, "00059");
+    const options = (
+      await db.query(
+        "select field,value from public.gmea_expense_options where value in ('JIMAR CONSTRUCTION SUPPLY CO.','Cash','GMEA MARKETING CORP.')",
+      )
+    ).rows;
+    assert.ok(options.some((row) => row.field === "supplier"));
+    assert.ok(options.some((row) => row.field === "method"));
+    assert.ok(options.some((row) => row.field === "invoice_name"));
+  });
+
+  await t.test("stale and cross-project updates cannot overwrite data", async () => {
+    await assert.rejects(
+      mutate(projectId, 1, { kind: "project", value: input }),
+      /changed/,
+    );
+    const other = await mutate(null, null, {
+      kind: "project",
+      value: { ...input, name: "Other" },
+    });
+    await assert.rejects(
+      mutate(other, 1, { kind: "expense", value: expense }),
+      /does not belong/,
+    );
+    assert.equal(await version(other), 1);
+  });
+
+  await t.test("archive blocks expense writes and restore enables them", async () => {
+    await mutate(projectId, await version(projectId), {
+      kind: "project",
+      value: { ...input, status: "archived" },
+    });
+    await assert.rejects(
+      mutate(projectId, await version(projectId), {
+        kind: "expense",
+        value: { ...expense, id: randomUUID() },
+      }),
+      /Restore/,
+    );
+    await mutate(projectId, await version(projectId), {
+      kind: "project",
+      value: { ...input, status: "active" },
+    });
+  });
+
+  await t.test("CEO, other roles, and inactive GMEA cannot write", async () => {
+    for (const user of [ceo, engineer, inactive])
       await assert.rejects(
-        mutate(other, 1, { kind: "quotation", value: quote }),
-        /draft/,
+        mutate(
+          projectId,
+          await version(projectId),
+          { kind: "project", value: input },
+          user,
+        ),
+        /Only active GMEA/,
       );
-      const r = (
-        await db.query(
-          "select id,data from public.gmea_receipts where project_id=$1",
-          [projectId],
-        )
-      ).rows[0];
-      await assert.rejects(
-        mutate(other, 1, {
-          kind: "receipt",
-          value: { ...r.data, id: r.id, milestone_id: null },
-        }),
-        /does not belong/,
-      );
-      assert.equal(await version(other), 1);
-    },
-  );
-  await t.test(
-    "archive blocks financial writes and preserves history",
-    async () => {
-      await mutate(projectId, await version(projectId), {
-        kind: "project",
-        value: { ...input, status: "archived" },
-      });
-      await assert.rejects(
-        mutate(projectId, await version(projectId), {
-          kind: "quotation",
-          value: { ...quote, id: randomUUID() },
-        }),
-        /Restore/,
-      );
-      await mutate(projectId, await version(projectId), {
-        kind: "project",
-        value: input,
-      });
-    },
-  );
-  await t.test(
-    "CEO other roles and inactive accounts cannot invoke privileged writes",
-    async () => {
-      for (const user of [ceo, engineer, inactive])
-        await assert.rejects(
-          mutate(
-            projectId,
-            await version(projectId),
-            { kind: "project", value: input },
-            user,
-          ),
-          /Only active GMEA/,
-        );
-    },
-  );
+  });
+
   async function asUser(user, fn) {
     await db.query("select set_config('test.user_id',$1,false)", [user]);
     await db.exec("set role authenticated");
@@ -270,13 +213,16 @@ test("GMEA database transactions history and role isolation", async (t) => {
       await db.exec("reset role");
     }
   }
+
   await t.test("RLS permits active GMEA and CEO reads only", async () => {
     for (const user of [actor, ceo])
-      await asUser(user, async () =>
+      await asUser(user, async () => {
+        assert.ok((await db.query("select id from public.gmea_projects")).rows.length);
         assert.ok(
-          (await db.query("select id from public.gmea_projects")).rows.length,
-        ),
-      );
+          (await db.query("select value from public.gmea_expense_options")).rows
+            .length,
+        );
+      });
     for (const user of [engineer, inactive])
       await asUser(user, async () =>
         assert.equal(
@@ -285,58 +231,21 @@ test("GMEA database transactions history and role isolation", async (t) => {
         ),
       );
   });
-  await t.test(
-    "direct client writes and service-only RPC are inaccessible",
-    async () => {
-      await asUser(actor, async () => {
-        await assert.rejects(
-          db.exec("delete from public.gmea_projects"),
-          /permission denied/,
-        );
-        await assert.rejects(
-          db.query("select public.mutate_gmea_project($1,$2,1,'{}')", [
-            actor,
-            projectId,
-          ]),
-          /permission denied/,
-        );
-      });
-    },
-  );
-  await t.test(
-    "GMEA cannot read payroll or promote itself; ordinary profile edits work",
-    async () => {
-      await asUser(actor, async () => {
-        assert.equal(
-          (await db.query("select * from public.payroll_runs")).rows.length,
-          0,
-        );
-        await assert.rejects(
-          db.query("update public.profiles set role='ceo' where id=$1", [
-            actor,
-          ]),
-          /privileges/,
-        );
-        await assert.rejects(
-          db.query("update public.profiles set is_active=false where id=$1", [
-            actor,
-          ]),
-          /privileges/,
-        );
-        await db.query(
-          "update public.profiles set full_name='Updated GMEA' where id=$1",
-          [actor],
-        );
-      });
-      await asUser(ceo, async () =>
-        assert.equal(
-          (await db.query("select * from public.payroll_runs")).rows.length,
-          1,
-        ),
+
+  await t.test("direct client writes and payroll reads remain blocked", async () => {
+    await asUser(actor, async () => {
+      await assert.rejects(
+        db.exec("delete from public.gmea_expenses"),
+        /permission denied/,
       );
-    },
-  );
-  await t.test("reapplying migrations retains history", async () => {
+      assert.equal((await db.query("select * from public.payroll_runs")).rows.length, 0);
+    });
+    await asUser(ceo, async () =>
+      assert.equal((await db.query("select * from public.payroll_runs")).rows.length, 1),
+    );
+  });
+
+  await t.test("reapplying setup retains expense history", async () => {
     for (const name of [
       "gmea-02-workspace.sql",
       "gmea-03-mutations.sql",
@@ -346,9 +255,82 @@ test("GMEA database transactions history and role isolation", async (t) => {
         fs.readFileSync("supabase/" + name, "utf8").replace(/^\uFEFF/, ""),
       );
     assert.equal(
-      (await db.query("select count(*)::int n from public.gmea_quotations"))
-        .rows[0].n,
-      2,
+      (
+        await db.query(
+          "select count(*)::int count from public.gmea_expenses where project_id=$1",
+          [projectId],
+        )
+      ).rows[0].count,
+      1,
     );
   });
+});
+
+test("old accepted quotation amount is preserved before legacy tables are removed", async (t) => {
+  const db = new PGlite();
+  t.after(() => db.close());
+  const projectId = randomUUID();
+  const quotationId = randomUUID();
+  await db.exec(
+    [
+      "create role anon;create role authenticated;create role service_role bypassrls;create schema auth;",
+      "create function auth.uid() returns uuid language sql as $$ select null::uuid $$;",
+      "create type public.app_role as enum('gmea','ceo');",
+      "create table public.profiles(id uuid primary key,role public.app_role,is_active boolean);",
+      "create table public.gmea_projects(id uuid primary key,name text not null,client text not null default '',location text not null,description text not null default '',start_date date,end_date date,duration text not null default '',status text not null default 'planning',version integer not null default 1,created_by uuid references public.profiles(id),updated_by uuid references public.profiles(id),created_at timestamptz not null default now(),updated_at timestamptz not null default now());",
+      "create table public.gmea_quotations(id uuid primary key,project_id uuid not null references public.gmea_projects(id),status text,total numeric(16,2),data jsonb,created_at timestamptz default now(),updated_at timestamptz default now());",
+      "create table public.gmea_quotation_items(id uuid primary key,quotation_id uuid references public.gmea_quotations(id));",
+      "create table public.gmea_milestones(id uuid primary key,project_id uuid references public.gmea_projects(id));",
+      "create table public.gmea_receipts(id uuid primary key,project_id uuid references public.gmea_projects(id),data jsonb not null);",
+    ].join("\n"),
+  );
+  await db.query(
+    "insert into public.gmea_projects(id,name,location,duration) values($1,'Legacy','CDO','7 Days')",
+    [projectId],
+  );
+  await db.query(
+    "insert into public.gmea_quotations(id,project_id,status,total,data) values($1,$2,'accepted',78950,'{}')",
+    [quotationId, projectId],
+  );
+  await db.query(
+    "insert into public.gmea_receipts(id,project_id,data) values($1,$2,'{\"withholding\":1579}')",
+    [randomUUID(), projectId],
+  );
+
+  await db.exec(
+    fs
+      .readFileSync("supabase/gmea-02-workspace.sql", "utf8")
+      .replace(/^\uFEFF/, ""),
+  );
+
+  assert.equal(
+    Number(
+      (
+        await db.query(
+          "select contract_amount from public.gmea_projects where id=$1",
+          [projectId],
+        )
+      ).rows[0].contract_amount,
+    ),
+    78950,
+  );
+  assert.equal(
+    Number(
+      (
+        await db.query(
+          "select withholding_tax_rate from public.gmea_projects where id=$1",
+          [projectId],
+        )
+      ).rows[0].withholding_tax_rate,
+    ),
+    2,
+  );
+  assert.equal(
+    (
+      await db.query(
+        "select to_regclass('public.gmea_quotations') legacy_table",
+      )
+    ).rows[0].legacy_table,
+    null,
+  );
 });

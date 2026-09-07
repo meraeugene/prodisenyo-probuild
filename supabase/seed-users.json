@@ -42,6 +42,12 @@
     "role": "purchaser"
   },
   {
+    "username": "gmea",
+    "password": "ChangeMe123!",
+    "full_name": "GMEA",
+    "role": "gmea"
+  },
+  {
     "username": "employee",
     "password": "ChangeMe123!",
     "full_name": "Site Employee",

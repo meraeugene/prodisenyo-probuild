@@ -1,6 +1,6 @@
-﻿import "server-only";
+import "server-only";
 import { APP_ROLES, requireRole } from "@/lib/auth";
-import type { GmeaProject } from "../types";
+import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { gmeaReader, type DataRow } from "./gmeaDatabase";
 import { readAllGmeaRows } from "./readAllGmeaRows";
 
@@ -11,9 +11,17 @@ export async function requireGmeaAccess(write = false) {
   if (!auth.profile.is_active) throw new Error("This account is inactive.");
   return auth;
 }
+
 function unpack(rows: DataRow[]) {
-  return [...rows].sort((a,b) => Number(a.data.sort_order ?? 0) - Number(b.data.sort_order ?? 0)).map((row) => ({ ...row.data, id: row.id }));
+  return [...rows]
+    .sort(
+      (left, right) =>
+        Number(left.data.sort_order ?? 0) -
+        Number(right.data.sort_order ?? 0),
+    )
+    .map((row) => ({ ...row.data, id: row.id }));
 }
+
 export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
   await requireGmeaAccess();
   const db = await gmeaReader();
@@ -27,101 +35,66 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
     return id ? query.eq("id", id) : query;
   });
   const output: GmeaProject[] = [];
-  // Keep filters small enough for PostgREST URLs while loading every financial row.
+
   for (let offset = 0; offset < projects.length; offset += 100) {
-    const batch = projects.slice(offset, offset + 100),
-      ids = batch.map((p) => p.id);
-    const [quotes, milestones, receipts, expenses, partners] =
-      await Promise.all([
-        readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_quotations")
-            .select("*")
-            .in("project_id", ids)
-            .order("created_at")
-            .order("id")
-            .range(from, to),
-        ),
-        readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_milestones")
-            .select("*")
-            .in("project_id", ids)
-            .order("created_at")
-            .order("id")
-            .range(from, to),
-        ),
-        readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_receipts")
-            .select("*")
-            .in("project_id", ids)
-            .order("created_at")
-            .order("id")
-            .range(from, to),
-        ),
-        readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_expenses")
-            .select("*")
-            .in("project_id", ids)
-            .order("created_at")
-            .order("id")
-            .range(from, to),
-        ),
-        readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_partners")
-            .select("*")
-            .in("project_id", ids)
-            .order("created_at")
-            .order("id")
-            .range(from, to),
-        ),
-      ]);
-    const itemBatches = [];
-    for (let i = 0; i < quotes.length; i += 100) {
-      const quoteIds = quotes.slice(i, i + 100).map((q) => q.id);
-      itemBatches.push(
-        await readAllGmeaRows((from, to) =>
-          db
-            .from("gmea_quotation_items")
-            .select("*")
-            .in("quotation_id", quoteIds)
-            .order("sort_order")
-            .order("id")
-            .range(from, to),
-        ),
-      );
-    }
-    const items = itemBatches.flat();
+    const batch = projects.slice(offset, offset + 100);
+    const ids = batch.map((project) => project.id);
+    const [expenses, partners] = await Promise.all([
+      readAllGmeaRows((from, to) =>
+        db
+          .from("gmea_expenses")
+          .select("*")
+          .in("project_id", ids)
+          .order("created_at")
+          .order("id")
+          .range(from, to),
+      ),
+      readAllGmeaRows((from, to) =>
+        db
+          .from("gmea_partners")
+          .select("*")
+          .in("project_id", ids)
+          .order("created_at")
+          .order("id")
+          .range(from, to),
+      ),
+    ]);
+
     output.push(
       ...(batch.map((project) => ({
         ...project,
-        quotations: quotes
-          .filter((q) => q.project_id === project.id)
-          .map((q) => ({
-            ...q.data,
-            id: q.id,
-            project_id: q.project_id,
-            status: q.status,
-            total: Number(q.total),
-            items: items
-              .filter((i) => i.quotation_id === q.id)
-              .map((i) => ({
-                ...i,
-                quantity: Number(i.quantity),
-                unit_price: Number(i.unit_price),
-              })),
-          })),
-        milestones: unpack(
-          milestones.filter((r) => r.project_id === project.id),
+        contract_amount: Number(project.contract_amount),
+        withholding_tax_rate: Number(project.withholding_tax_rate),
+        expenses: unpack(
+          expenses.filter((row) => row.project_id === project.id),
         ),
-        receipts: unpack(receipts.filter((r) => r.project_id === project.id)),
-        expenses: unpack(expenses.filter((r) => r.project_id === project.id)),
-        partners: unpack(partners.filter((r) => r.project_id === project.id)),
+        partners: unpack(
+          partners.filter((row) => row.project_id === project.id),
+        ),
       })) as unknown as GmeaProject[]),
     );
   }
   return output;
+}
+
+export async function getGmeaExpenseOptions(): Promise<GmeaExpenseOptions> {
+  await requireGmeaAccess();
+  const db = await gmeaReader();
+  const rows = await readAllGmeaRows((from, to) =>
+    db
+      .from("gmea_expense_options")
+      .select("*")
+      .order("value")
+      .range(from, to),
+  );
+  const values = (field: string) =>
+    rows
+      .filter((row) => row.field === field)
+      .map((row) => row.value)
+      .filter(Boolean);
+  return {
+    suppliers: values("supplier"),
+    methods: values("method"),
+    invoiceNames: values("invoice_name"),
+  };
 }

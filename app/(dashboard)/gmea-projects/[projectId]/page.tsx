@@ -1,6 +1,7 @@
 ﻿import { notFound } from "next/navigation";
 import {
   getGmeaProjects,
+  getGmeaExpenseOptions,
   requireGmeaAccess,
 } from "@/features/gmea-projects/server/gmeaQueries";
 import { validId } from "@/features/gmea-projects/utils/gmeaValidation";
@@ -17,9 +18,16 @@ export default async function Page({
   } catch {
     notFound();
   }
-  const [project] = await getGmeaProjects(projectId);
+  const [[project], expenseOptions] = await Promise.all([
+    getGmeaProjects(projectId),
+    getGmeaExpenseOptions(),
+  ]);
   if (!project) notFound();
   return (
-    <GmeaProjectWorkspace project={project} canEdit={profile.role === "gmea"} />
+    <GmeaProjectWorkspace
+      project={project}
+      expenseOptions={expenseOptions}
+      canEdit={profile.role === "gmea"}
+    />
   );
 }

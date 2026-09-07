@@ -24,7 +24,18 @@ function App() {
     <>
       <Toaster />
       {project ? (
-        <GmeaProjectWorkspace project={project} canEdit={canEdit} />
+        <GmeaProjectWorkspace
+          project={project}
+          expenseOptions={{
+            suppliers: ["B.S. Electrical", "Solarfy Corporation"],
+            methods: ["Cash", "Cheque", "Bank transfer", "GCash"],
+            invoiceNames: [
+              "GMEA MARKETING CORP.",
+              "Prodisenyo Builders Corp.",
+            ],
+          }}
+          canEdit={canEdit}
+        />
       ) : (
         <GmeaProjectsPageClient projects={projects} canEdit={canEdit} />
       )}

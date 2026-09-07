@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
-import type { Expense, GmeaProject } from "../types";
+import type { Expense, GmeaExpenseOptions, GmeaProject } from "../types";
 import {
   buttonClass,
   inputClass,
@@ -13,9 +13,11 @@ import GmeaExpenseForm from "./GmeaExpenseForm";
 import GmeaConfirmButton from "./GmeaConfirmButton";
 export default function GmeaExpensesSection({
   project,
+  expenseOptions,
   canEdit,
 }: {
   project: GmeaProject;
+  expenseOptions: GmeaExpenseOptions;
   canEdit: boolean;
 }) {
   const [editor, setEditor] = useState<{ expense?: Expense } | null>(null),
@@ -134,6 +136,7 @@ export default function GmeaExpensesSection({
       {editor && (
         <GmeaExpenseForm
           project={project}
+          expenseOptions={expenseOptions}
           expense={editor.expense}
           readOnly={!canEdit}
           onClose={() => setEditor(null)}

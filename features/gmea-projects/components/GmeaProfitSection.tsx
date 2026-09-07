@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { secondaryClass } from "../utils/gmeaConstants";
-import GmeaAllocationForm from "./GmeaAllocationForm";
+import GmeaPartnerForm from "./GmeaPartnerForm";
 export default function GmeaProfitSection({
   project,
   canEdit,
@@ -13,18 +13,17 @@ export default function GmeaProfitSection({
 }) {
   const [edit, setEdit] = useState(false);
   const s = projectSummary(project);
-  const lines: [string, number | null][] = [
-    ["Contract value", s.contract],
+  const lines: [string, number][] = [
+    ["Gross contract amount", s.contract],
+    [`Withholding tax (${project.withholding_tax_rate}%)`, s.withholding],
+    ["Net contract amount", s.netContract],
     ["Total project expenses", s.expenses],
-    ["Contract profit / loss", s.profit],
-    ["Recorded withholding", s.withholding],
-    ["Amount available for sharing", s.sharing],
-    ["Distributable profit", s.distributable],
+    ["Total net profit", s.profit],
   ];
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Profit summary</h2>
+        <h2 className="text-xl font-semibold">Contract cost summary</h2>
         {canEdit && (
           <button className={secondaryClass} onClick={() => setEdit(true)}>
             Edit partners
@@ -54,9 +53,8 @@ export default function GmeaProfitSection({
         </dl>
         <div className="space-y-4">
           <p className="text-sm text-slate-500">
-            Amount available for sharing = contract value − recorded withholding
-            − expenses. A loss remains visible; distributable profit is zero
-            when the result is negative.
+            Net profit is the net contract amount less all project expenses.
+            Partner shares are calculated from positive net profit.
           </p>
           {s.partners.map((p) => (
             <div
@@ -72,17 +70,11 @@ export default function GmeaProfitSection({
               <strong>{formatMoney(p.amount)}</strong>
             </div>
           ))}
-          {s.contract === null && (
-            <p className="text-sm text-slate-500">
-              Accept a quotation to calculate profit and partner shares.
-            </p>
-          )}
         </div>
       </div>
       {edit && (
-        <GmeaAllocationForm
+        <GmeaPartnerForm
           project={project}
-          kind="partners"
           onClose={() => setEdit(false)}
         />
       )}

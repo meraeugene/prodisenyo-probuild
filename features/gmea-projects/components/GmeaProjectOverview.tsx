@@ -8,10 +8,11 @@ export default function GmeaProjectOverview({
   const s = projectSummary(project);
   const details = [
     ["Client", project.client],
-    ["Location", project.location],
-    ["Duration", project.duration],
-    ["Start date", project.start_date],
-    ["End date", project.end_date],
+    ["Project location", project.location],
+    ["Gross contract amount", formatMoney(s.contract)],
+    ["Withholding tax", formatMoney(s.withholding)],
+    ["Net contract amount", formatMoney(s.netContract)],
+    ["Project duration", project.duration],
     ["Status", project.status.replace("_", " ")],
   ];
   return (
@@ -28,28 +29,10 @@ export default function GmeaProjectOverview({
           </div>
         ))}
       </dl>
-      {project.description && (
-        <p className="whitespace-pre-wrap text-sm text-slate-600">
-          {project.description}
-        </p>
-      )}
       <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-sm">
         <p>
-          Contract profit / loss: <strong>{formatMoney(s.profit)}</strong>
+          Total net profit: <strong>{formatMoney(s.profit)}</strong>
         </p>
-        <p className="mt-2">
-          Available for sharing: <strong>{formatMoney(s.sharing)}</strong>
-        </p>
-        {s.contract === null && (
-          <p className="mt-3 text-slate-500">
-            Accept a quotation to set the contract value and calculate balances.
-          </p>
-        )}
-        {(s.overpayment ?? 0) > 0 && (
-          <p className="mt-2">
-            Overpayment: <strong>{formatMoney(s.overpayment)}</strong>
-          </p>
-        )}
       </div>
     </div>
   );

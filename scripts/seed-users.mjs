@@ -97,7 +97,7 @@ async function readSeedUsers() {
       role !== "employee"
     ) {
       throw new Error(
-        `User ${username} has invalid role "${role}". Expected "admin", "ceo", "payroll_manager", "purchaser", "engineer", or "employee".`,
+        `User ${username} has invalid role "${role}". Expected "gmea", "admin", "ceo", "payroll_manager", "purchaser", "engineer", or "employee".`,
       );
     }
 

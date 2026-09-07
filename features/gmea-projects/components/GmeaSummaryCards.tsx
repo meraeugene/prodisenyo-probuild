@@ -6,14 +6,15 @@ export default function GmeaSummaryCards({
   project: GmeaProject;
 }) {
   const s = projectSummary(project);
-  const entries: [string, number | null][] = [
-    ["Contract value", s.contract],
-    ["Expenses", s.expenses],
-    ["Cash received", s.cash],
-    ["Outstanding balance", s.outstanding],
+  const entries: [string, number][] = [
+    ["Gross contract amount", s.contract],
+    ["Withholding tax", s.withholding],
+    ["Net contract amount", s.netContract],
+    ["Total project expenses", s.expenses],
+    ["Total net profit", s.profit],
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       {entries.map(([label, value]) => (
         <div
           key={label}
