@@ -9,7 +9,7 @@ export default function PayrollApprovalQueueSkeleton() {
       {Array.from({ length: 2 }).map((_, index) => (
         <div
           key={`approval-skeleton-${index}`}
-          className="h-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)]"
+          className="h-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)]"
         >
           <div className="flex h-full flex-col animate-pulse">
             <div className="min-w-0 space-y-3">

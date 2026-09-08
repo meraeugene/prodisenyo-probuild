@@ -68,7 +68,7 @@ export default function DashboardPageClient() {
       />
 
       {state.error ? (
-        <section className="mt-5 rounded-[12px] border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <section className="mt-5 rounded-[12px] border border-red-100 bg-red-50 p-4 text-sm text-red-700 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
           {state.error}
         </section>
       ) : null}

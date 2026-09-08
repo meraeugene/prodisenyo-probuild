@@ -80,7 +80,7 @@ export default function EmployeeLogsModal({
   return (
     <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-0 backdrop-blur-sm sm:p-4">
       <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[90vh] sm:max-w-6xl sm:rounded-2xl">
-        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white sm:px-6 sm:py-5">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-4 text-white sm:px-6 sm:py-5">
           <div className="flex items-start justify-between ">
             <div className="min-w-0 flex-1 pr-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">

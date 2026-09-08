@@ -22,7 +22,7 @@ export default function PayrollApprovalsPanel({
         </div>
         <Link
           href="/payroll-analytics"
-          className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
         >
           Analytics <ArrowRight size={13} />
         </Link>

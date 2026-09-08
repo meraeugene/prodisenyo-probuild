@@ -84,7 +84,7 @@ export default function AttendanceAnalyticsSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <div className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
         <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-apple-steel">
@@ -221,7 +221,7 @@ export default function AttendanceAnalyticsSection({
                 </div>
               </div>
 
-              <div className="h-[320px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(24,83,43,0.04)] sm:h-[360px]">
+              <div className="h-[320px] rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(7,109,105,0.04)] sm:h-[360px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={dailyLaborHours}

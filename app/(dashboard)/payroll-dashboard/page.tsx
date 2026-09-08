@@ -3,8 +3,8 @@ import PayrollDashboardPage from "@/features/payroll-dashboard/components/Payrol
 import { getPayrollDashboardData } from "@/features/payroll-dashboard/server/getPayrollDashboardData";
 
 export default async function PayrollDashboardRoute() {
-  const { user, profile } = await requireRole(APP_ROLES.PAYROLL_MANAGER);
+  const { user } = await requireRole(APP_ROLES.PAYROLL_MANAGER);
   const data = await getPayrollDashboardData(user.id);
 
-  return <PayrollDashboardPage data={data} fullName={profile.full_name} />;
+  return <PayrollDashboardPage data={data} />;
 }

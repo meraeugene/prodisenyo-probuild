@@ -39,7 +39,7 @@ type MaterialFormErrors = Partial<
 >;
 
 function inputClass(hasError: boolean) {
-  return `h-11 rounded-xl w-full border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
+  return `h-11 rounded-xl w-full border px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69] ${
     hasError
       ? "border-rose-400 ring-1 ring-rose-200"
       : "border-apple-mist bg-white"
@@ -50,7 +50,7 @@ function priorityBadgeClass(priority: MaterialRequestPriority) {
   if (priority === "urgent") return "border-rose-200 bg-rose-50 text-rose-700";
   if (priority === "high") return "border-amber-200 bg-amber-50 text-amber-700";
   if (priority === "medium") return "border-sky-200 bg-sky-50 text-sky-700";
-  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  return "border-teal-200 bg-teal-50 text-teal-700";
 }
 
 function formatDate(value: string) {
@@ -198,7 +198,7 @@ export default function MaterialRequestPageClient({
         title="Request Materials"
         description="Submit material requests with quantity and urgency so procurement can process site needs faster."
         actions={
-          <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 sm:mt-0">
+          <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 sm:mt-0">
             <ClipboardPlus size={14} />
             {totalPending} pending
           </span>
@@ -206,7 +206,7 @@ export default function MaterialRequestPageClient({
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             New Request
           </p>
@@ -215,14 +215,14 @@ export default function MaterialRequestPageClient({
           </h2>
 
           {plannedMaterial ? (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+            <div className="mt-4 rounded-2xl border border-teal-200 bg-teal-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
                 Approved estimate material
               </p>
-              <p className="mt-2 font-semibold text-emerald-950">
+              <p className="mt-2 font-semibold text-teal-950">
                 {plannedMaterial.materialName}
               </p>
-              <p className="mt-1 text-sm text-emerald-800">
+              <p className="mt-1 text-sm text-teal-800">
                 {plannedMaterial.remainingQuantity} {plannedMaterial.unit} remaining of{" "}
                 {plannedMaterial.plannedQuantity} planned
               </p>
@@ -362,7 +362,7 @@ export default function MaterialRequestPageClient({
                 value={form.site ?? ""}
                 onChange={(event) => updateField("site", event.target.value)}
                 placeholder="Site A - Main Building"
-                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className="h-11 rounded-xl border border-apple-mist px-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
               />
             </label>
 
@@ -375,7 +375,7 @@ export default function MaterialRequestPageClient({
                 value={form.notes ?? ""}
                 onChange={(event) => updateField("notes", event.target.value)}
                 placeholder="Include specs, brand preference, or usage details."
-                className={`rounded-xl border px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37] ${
+                className={`rounded-xl border px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69] ${
                   formErrors.notes
                     ? "border-rose-300 bg-rose-50/40"
                     : "border-apple-mist bg-white"
@@ -391,7 +391,7 @@ export default function MaterialRequestPageClient({
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex h-11 w-fit items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 w-fit items-center gap-2 rounded-[10px] bg-[#076d69] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? (
                 <>
@@ -408,7 +408,7 @@ export default function MaterialRequestPageClient({
           </form>
         </div>
 
-        <div className="rounded-none h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             Request Queue
           </p>

@@ -123,7 +123,7 @@ export function PayrollCalculationWorkspace(
                 />
               ) : null}
               <details open={!props.cutoffAttendanceDays?.length} className="group">
-                <summary className="mb-2 cursor-pointer text-[10px] font-semibold text-slate-500 hover:text-emerald-700">
+                <summary className="mb-2 cursor-pointer text-[10px] font-semibold text-slate-500 hover:text-teal-700">
                   Biometric log editing
                 </summary>
                 <PayrollAttendanceLogsTable

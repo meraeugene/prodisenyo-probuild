@@ -66,7 +66,7 @@ export default function CostEstimatorItemModal(
             onClick={props.onClose}
             disabled={props.pending}
             aria-label="Close"
-            className="inline-flex size-10 shrink-0 items-center justify-center rounded-[9px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:opacity-60"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-[9px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-60"
           >
             <X aria-hidden="true" size={20} />
           </button>
@@ -116,7 +116,7 @@ export default function CostEstimatorItemModal(
               type="button"
               onClick={props.onClose}
               disabled={props.pending}
-              className="inline-flex h-10 items-center justify-center rounded-[9px] border border-slate-200 px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center rounded-[9px] border border-slate-200 px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-60"
             >
               {isReadOnly ? "Close" : "Cancel"}
             </button>
@@ -125,7 +125,7 @@ export default function CostEstimatorItemModal(
                 type="button"
                 onClick={props.onSave}
                 disabled={props.pending}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-[9px] bg-emerald-700 px-6 text-sm font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[9px] bg-teal-700 px-6 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:opacity-60"
               >
                 {props.pending ? (
                   <LoaderCircle

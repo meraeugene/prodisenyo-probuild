@@ -24,7 +24,7 @@ export default function ProjectWorkspaceTabs<Tab extends string>({
             disabled={disabled}
             className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize transition ${
               isActive
-                ? "border-emerald-700 text-emerald-800"
+                ? "border-teal-700 text-teal-800"
                 : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-950"
             } disabled:cursor-wait`}
           >

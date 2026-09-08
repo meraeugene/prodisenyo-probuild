@@ -92,11 +92,11 @@ export default function ProjectCostTrackingPanel({
         <label className="relative">
           <span className="sr-only">Search costs</span>
           <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" />
         </label>
         <label>
           <span className="sr-only">Filter by category</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+          <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
             <option value="all">All categories</option>
             {categories.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -104,7 +104,7 @@ export default function ProjectCostTrackingPanel({
         <label className="relative">
           <CalendarDays size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <span className="sr-only">Filter by date</span>
-          <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+          <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
             <option value="all">All dates</option>
             <option value="recent">Past 30 days</option>
             <option value="past-due">Past due</option>

@@ -87,7 +87,7 @@ export default function PurchasingWorkspace() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel">Procurement</p>
           <h1 className="mt-1 text-2xl font-semibold text-apple-charcoal">Purchasing</h1>
         </div>
-        <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700">
+        <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700">
           <BadgeDollarSign size={14} /> Purchase value: {money(total)}
         </span>
       </div>
@@ -96,11 +96,11 @@ export default function PurchasingWorkspace() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver" />
         <input value={search} onChange={(event) => setSearch(event.target.value)}
           placeholder="Search project, material, supplier..."
-          className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-9 pr-3 text-sm outline-none focus:border-[#1f6a37]" />
+          className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-9 pr-3 text-sm outline-none focus:border-[#076d69]" />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><LoaderCircle className="animate-spin text-emerald-700" /></div>
+        <div className="flex justify-center py-16"><LoaderCircle className="animate-spin text-teal-700" /></div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-apple-mist py-16 text-center text-sm text-apple-smoke">
           No approved material purchases are assigned yet.
@@ -108,7 +108,7 @@ export default function PurchasingWorkspace() {
       ) : (
         <div className="space-y-3">
           {filtered.map((record) => (
-            <article key={record.id} className="rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(24,83,43,0.03)]">
+            <article key={record.id} className="rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(7,109,105,0.03)]">
               <div className="flex flex-col justify-between gap-4 sm:flex-row">
                 <div>
                   <p className="text-xs font-semibold uppercase text-apple-steel">{record.projectName}</p>
@@ -116,7 +116,7 @@ export default function PurchasingWorkspace() {
                   <p className="mt-1 text-sm text-apple-smoke">{record.quantity} {record.unit} · {record.supplierName || "Supplier pending"}</p>
                   <p className="mt-2 text-xs text-apple-steel">Quotation: {record.quotationReference || "Not recorded"} · Delivery: {record.deliveryStatus.replace("_", " ")}</p>
                   {record.receiptFile ? (
-                    <button type="button" onClick={() => openReceipt(record.receiptFile!.id)} className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                    <button type="button" onClick={() => openReceipt(record.receiptFile!.id)} className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100">
                       <FileCheck2 size={13} /> {record.receiptFile.fileName} <Download size={12} />
                     </button>
                   ) : (
@@ -126,16 +126,16 @@ export default function PurchasingWorkspace() {
                 <div className="flex items-start gap-3">
                   <div className="text-right">
                     <p className="text-xs text-apple-steel">Actual total</p>
-                    <p className="font-bold text-emerald-800">{money(record.quantity * record.actualUnitCost)}</p>
+                    <p className="font-bold text-teal-800">{money(record.quantity * record.actualUnitCost)}</p>
                     <span className="text-xs font-semibold uppercase text-apple-smoke">{record.status}</span>
                   </div>
                   {record.status === "received" ? (
-                    <span className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                    <span className="rounded-lg bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700">
                       Final
                     </span>
                   ) : (
                     <button onClick={() => { setEditing(record); setSelectedReceiptName(""); }} aria-label="Edit purchase details"
-                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-apple-mist text-emerald-700 hover:bg-emerald-50">
+                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-apple-mist text-teal-700 hover:bg-teal-50">
                       <Pencil size={14} />
                     </button>
                   )}
@@ -159,17 +159,17 @@ export default function PurchasingWorkspace() {
             </div>
             <label className="block text-xs font-semibold text-slate-700">Supplier quotation reference<input name="quotationReference" defaultValue={editing.quotationReference} placeholder="Quotation number or file reference" className="mt-1 h-10 w-full rounded-xl border border-apple-mist px-3 text-sm" /></label>
             <label className="block text-xs font-semibold text-slate-700">Receipt / invoice reference<input name="receiptInvoiceReference" defaultValue={editing.receiptInvoiceReference} placeholder="Invoice number (optional when uploading a file)" className="mt-1 h-10 w-full rounded-xl border border-apple-mist px-3 text-sm" /></label>
-            <label className="block cursor-pointer rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/40 p-4 text-center transition hover:border-emerald-400 hover:bg-emerald-50">
+            <label className="block cursor-pointer rounded-xl border-2 border-dashed border-teal-200 bg-teal-50/40 p-4 text-center transition hover:border-teal-400 hover:bg-teal-50">
               <input name="receiptFile" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" className="sr-only" onChange={(event) => setSelectedReceiptName(event.target.files?.[0]?.name ?? "")} />
-              <UploadCloud size={22} className="mx-auto text-emerald-700" />
+              <UploadCloud size={22} className="mx-auto text-teal-700" />
               <span className="mt-2 block text-sm font-semibold text-slate-800">Upload receipt or invoice</span>
               <span className="mt-1 block text-xs text-slate-500">PDF, PNG or JPG, up to 10 MB</span>
-              {selectedReceiptName ? <span className="mt-2 block text-xs font-semibold text-emerald-700">Selected: {selectedReceiptName}</span> : editing.receiptFile ? <span className="mt-2 block text-xs font-semibold text-emerald-700">Current: {editing.receiptFile.fileName}</span> : null}
+              {selectedReceiptName ? <span className="mt-2 block text-xs font-semibold text-teal-700">Selected: {selectedReceiptName}</span> : editing.receiptFile ? <span className="mt-2 block text-xs font-semibold text-teal-700">Current: {editing.receiptFile.fileName}</span> : null}
             </label>
             <label className="block text-xs font-semibold text-slate-700">Notes<textarea name="notes" defaultValue={editing.notes} rows={3} className="mt-1 w-full rounded-xl border border-apple-mist p-3 text-sm" /></label>
             <div className="flex justify-end gap-2 border-t border-apple-mist pt-4">
               <button type="button" onClick={() => { setEditing(null); setSelectedReceiptName(""); }} className="h-10 rounded-xl border border-apple-mist px-4 text-sm">Cancel</button>
-              <button disabled={isPending} className={cn("flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-sm font-semibold text-white", isPending && "opacity-60")}>{isPending ? <LoaderCircle size={14} className="animate-spin" /> : null}Save</button>
+              <button disabled={isPending} className={cn("flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-sm font-semibold text-white", isPending && "opacity-60")}>{isPending ? <LoaderCircle size={14} className="animate-spin" /> : null}Save</button>
             </div>
           </form>
         </div>

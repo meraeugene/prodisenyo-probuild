@@ -96,7 +96,7 @@ export function AttendanceResolutionDialog({ day, onClose, onSave }: AttendanceR
         </div>
         <div className="flex justify-end gap-2 border-t border-slate-200 p-4">
           <button type="button" onClick={onClose} className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-bold text-slate-700">Cancel</button>
-          <button type="button" onClick={submit} className="h-9 rounded-lg bg-emerald-700 px-4 text-xs font-bold text-white">Save Resolution</button>
+          <button type="button" onClick={submit} className="h-9 rounded-lg bg-teal-700 px-4 text-xs font-bold text-white">Save Resolution</button>
         </div>
       </div>
     </div>

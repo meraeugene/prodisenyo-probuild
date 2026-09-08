@@ -53,7 +53,7 @@ export default function BudgetTrackerSummaryPanel({
               className={cn(
                 "mt-1 text-2xl font-semibold tracking-[-0.03em]",
                 summary.remainingBudget >= 0
-                  ? "text-emerald-600"
+                  ? "text-teal-600"
                   : "text-rose-600",
               )}
             >
@@ -65,7 +65,7 @@ export default function BudgetTrackerSummaryPanel({
           </div>
         </div>
 
-        <div className="mt-6 rounded-[12px] bg-emerald-50 px-4 py-4 text-sm leading-7 text-emerald-800">
+        <div className="mt-6 rounded-[12px] bg-teal-50 px-4 py-4 text-sm leading-7 text-teal-800">
           {summary.actualSpent === 0
             ? "No actual spending recorded yet."
             : budgetHealthMessage}

@@ -71,7 +71,7 @@ export default function CeoSiteLogsModal({
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search employee..."
-                className="h-9 min-w-[220px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className="h-9 min-w-[220px] rounded-lg border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#076d69]"
               />
             </div>
           </div>

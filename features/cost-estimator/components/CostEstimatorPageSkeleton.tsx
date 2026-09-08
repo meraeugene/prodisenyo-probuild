@@ -1,7 +1,7 @@
 function SkeletonBlock({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(232,242,236,0.95),rgba(244,249,246,1),rgba(232,242,236,0.95))] bg-[length:200%_100%] ${className}`}
+      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(230,250,247,0.95),rgba(240,253,250,1),rgba(230,250,247,0.95))] bg-[length:200%_100%] ${className}`}
     />
   );
 }
@@ -51,7 +51,7 @@ export default function CostEstimatorPageSkeleton() {
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={`cost-estimator-item-skeleton-${index}`}
-                    className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(24,83,43,0.06)]"
+                    className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-2">

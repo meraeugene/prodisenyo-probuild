@@ -36,7 +36,7 @@ export default function GmeaPaymentTermRow({
   const badge = {
     unpaid: "bg-slate-100 text-slate-700",
     partial: "bg-amber-100 text-amber-800",
-    paid: "bg-emerald-100 text-emerald-800",
+    paid: "bg-teal-100 text-teal-800",
   }[summary.status];
 
   return (

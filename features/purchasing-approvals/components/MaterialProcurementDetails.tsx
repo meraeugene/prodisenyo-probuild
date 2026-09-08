@@ -44,7 +44,7 @@ export default function MaterialProcurementDetails({
     <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-xs">
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
-          <Store size={12} className="text-emerald-700" />
+          <Store size={12} className="text-teal-700" />
           {order.supplier_name || "Supplier pending"}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 font-semibold text-sky-700">
@@ -62,7 +62,7 @@ export default function MaterialProcurementDetails({
           type="button"
           onClick={openReceipt}
           disabled={openingReceipt}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-60"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-white px-2.5 py-1.5 font-semibold text-teal-700 transition hover:bg-teal-50 disabled:opacity-60"
         >
           {openingReceipt ? <LoaderCircle size={13} className="animate-spin" /> : <FileCheck2 size={13} />}
           {order.receipt_evidence.fileName}

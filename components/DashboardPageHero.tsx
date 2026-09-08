@@ -18,7 +18,7 @@ export default function DashboardPageHero({
   actions,
 }: DashboardPageHeroProps) {
   return (
-    <section className="rounded-none bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white  sm:rounded-[14px] sm:p-6 flex items-center justify-between flex-wrap ">
+    <section className="rounded-none bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-5 text-white  sm:rounded-[14px] sm:p-6 flex items-center justify-between flex-wrap ">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
           {eyebrow}

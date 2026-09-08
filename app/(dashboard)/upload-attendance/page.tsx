@@ -44,7 +44,7 @@ export default function UploadAttendancePage() {
         title="Upload Attendance"
         description="Import biometric attendance files and sync them into the payroll workspace."
       />
-      <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
+      <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[14px]">
         <UploadZone
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}

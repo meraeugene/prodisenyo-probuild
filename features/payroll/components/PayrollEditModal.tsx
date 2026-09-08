@@ -986,7 +986,7 @@ export default function PayrollEditModal({
               {primarySitePeriodLabel && (
                 <>
                   <span className="text-apple-silver">&middot;</span>
-                  <span className="text-sm text-emerald-700">
+                  <span className="text-sm text-teal-700">
                     {primarySitePeriodLabel}
                   </span>
                 </>
@@ -996,7 +996,7 @@ export default function PayrollEditModal({
           <button
             type="button"
             onClick={payroll.closePayrollEditModal}
-            className="flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl bg-emerald-100 text-emerald-800 transition hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 sm:h-8 sm:w-8 sm:rounded-full"
+            className="flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl bg-teal-100 text-teal-800 transition hover:bg-teal-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 sm:h-8 sm:w-8 sm:rounded-full"
           >
             <X size={18} className="sm:h-4 sm:w-4" />
           </button>
@@ -1035,7 +1035,7 @@ export default function PayrollEditModal({
                         }
                         className={`h-10 w-full rounded-xl border px-4 text-sm font-semibold transition ${
                           active
-                            ? "bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800"
+                            ? "bg-teal-700 text-white border-teal-700 hover:bg-teal-800"
                             : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                         }`}
                       >
@@ -1096,7 +1096,7 @@ export default function PayrollEditModal({
                       </button>
                       <button
                         type="submit"
-                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto"
+                        className="h-9 w-full rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 sm:w-auto"
                       >
                         Add Cash Advance
                       </button>
@@ -1193,7 +1193,7 @@ export default function PayrollEditModal({
                         disabled={
                           parseNonNegativeValue(overtimeHoursInput) <= 0
                         }
-                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                        className="h-9 w-full rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                       >
                         Add Overtime
                       </button>
@@ -1250,7 +1250,7 @@ export default function PayrollEditModal({
                       >
                         Cancel
                       </button>
-                      <button className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto">
+                      <button className="h-9 w-full rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 sm:w-auto">
                         Add Paid Leave
                       </button>
                     </div>
@@ -1308,7 +1308,7 @@ export default function PayrollEditModal({
                       </button>
                       <button
                         type="submit"
-                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto"
+                        className="h-9 w-full rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 sm:w-auto"
                       >
                         Add Allowance
                       </button>
@@ -1393,7 +1393,7 @@ export default function PayrollEditModal({
                       </button>
                       <button
                         type="submit"
-                        className="h-9 w-full rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 sm:w-auto"
+                        className="h-9 w-full rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 sm:w-auto"
                       >
                         Save Reductions
                       </button>
@@ -1437,7 +1437,7 @@ export default function PayrollEditModal({
                         key={entry.id}
                         className="flex items-center gap-3 text-sm"
                       >
-                        <span className="font-semibold text-emerald-600">
+                        <span className="font-semibold text-teal-600">
                           Overtime +{formatPeso(entry.pay)}
                         </span>
 
@@ -1448,9 +1448,9 @@ export default function PayrollEditModal({
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                             entry.status === "approved"
-                              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                              ? "border border-teal-200 bg-teal-50 text-teal-700"
                               : entry.status === "rejected"
-                                ? "border border-[#cfe3d3] bg-[#eef7f0] text-[#2d6a4f]"
+                                ? "border border-[#ccfbf1] bg-[#f0fdfa] text-[#0f766e]"
                                 : "border border-amber-200 bg-amber-50 text-amber-700"
                           }`}
                         >
@@ -1483,7 +1483,7 @@ export default function PayrollEditModal({
                         key={entry.id}
                         className="flex items-center gap-3 text-sm"
                       >
-                        <span className="font-semibold text-emerald-600">
+                        <span className="font-semibold text-teal-600">
                           Paid Leave +{formatPeso(entry.pay)}
                         </span>
 
@@ -1511,7 +1511,7 @@ export default function PayrollEditModal({
                         key={entry.id}
                         className="flex items-center gap-3 text-sm"
                       >
-                        <span className="font-semibold text-emerald-600">
+                        <span className="font-semibold text-teal-600">
                           Allowance +{formatPeso(entry.amount)}
                         </span>
 
@@ -1580,7 +1580,7 @@ export default function PayrollEditModal({
                   </p>
                 )}
                 {overtimeLogs.length > 0 && (
-                  <p className="mt-1 text-xs font-semibold text-emerald-700">
+                  <p className="mt-1 text-xs font-semibold text-teal-700">
                     Payable main-shift time above 8 hours is classified as
                     overtime. Separate OT In and OT Out records are included
                     when they do not overlap the regular shift.
@@ -1694,7 +1694,7 @@ export default function PayrollEditModal({
                                     </span>
                                   )}
                                   {isOvertimeDay && !isHighOvertimeHours && (
-                                    <span className="w-fit whitespace-nowrap rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-2xs font-semibold text-emerald-800">
+                                    <span className="w-fit whitespace-nowrap rounded-full border border-teal-300 bg-teal-100 px-2 py-0.5 text-2xs font-semibold text-teal-800">
                                       Overtime
                                     </span>
                                   )}
@@ -1815,7 +1815,7 @@ export default function PayrollEditModal({
                       className={`flex h-8 items-center gap-1 rounded-[10px] border px-3 text-xs font-semibold transition ${
                         allReportLogsPage === 1
                           ? "cursor-not-allowed border-apple-mist text-apple-silver"
-                          : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+                          : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
                       }`}
                     >
                       <ArrowLeft size={14} />
@@ -1835,7 +1835,7 @@ export default function PayrollEditModal({
                       className={`flex h-8 items-center gap-1 rounded-[10px] border px-3 text-xs font-semibold transition ${
                         allReportLogsPage === allReportLogsTotalPages
                           ? "cursor-not-allowed border-apple-mist text-apple-silver"
-                          : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+                          : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
                       }`}
                     >
                       Next
@@ -1889,7 +1889,7 @@ export default function PayrollEditModal({
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] "
+                    className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(7,109,105,0.06)] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] "
                   >
                     <p className="text-2xs font-medium text-white/65 uppercase tracking-wider">
                       {item.label}
@@ -1947,7 +1947,7 @@ export default function PayrollEditModal({
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-apple-charcoal">Total OT Pay</span>
-                  <span className="font-mono font-semibold text-emerald-700 text-right">
+                  <span className="font-mono font-semibold text-teal-700 text-right">
                     {formatPeso(payableOvertimePay)}
                   </span>
                 </div>
@@ -1959,7 +1959,7 @@ export default function PayrollEditModal({
                         ({formatPayrollNumber(biometricOvertimeHours)} hrs)
                       </span>
                     </span>
-                    <span className="font-mono font-semibold text-emerald-700 text-right">
+                    <span className="font-mono font-semibold text-teal-700 text-right">
                       {formatPeso(biometricOvertimePay)}
                     </span>
                   </div>
@@ -1986,7 +1986,7 @@ export default function PayrollEditModal({
                           onClick={() =>
                             setConfirmBiometricOvertimeStatus("approved")
                           }
-                          className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                          className="inline-flex h-9 items-center gap-2 rounded-lg border border-teal-300 bg-teal-50 px-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-100"
                         >
                           <Check size={15} />
                           Confirm
@@ -2033,14 +2033,14 @@ export default function PayrollEditModal({
                 )}
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-apple-charcoal">+ Paid Holiday</span>
-                  <span className="font-mono font-semibold text-emerald-700 text-right">
+                  <span className="font-mono font-semibold text-teal-700 text-right">
                     {formatPeso(paidHolidayPay)}
                   </span>
                 </div>
                 {allowancePay > 0 && (
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span className="text-apple-charcoal">+ Allowance</span>
-                    <span className="font-mono font-semibold text-emerald-700 text-right">
+                    <span className="font-mono font-semibold text-teal-700 text-right">
                       {formatPeso(allowancePay)}
                     </span>
                   </div>
@@ -2107,7 +2107,7 @@ export default function PayrollEditModal({
                 isSavingChanges ||
                 (hasBiometricOvertime && biometricOvertimeStatus === null)
               }
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isSavingChanges ? (
                 <>
@@ -2159,7 +2159,7 @@ export default function PayrollEditModal({
                   setBiometricOvertimeStatus(confirmBiometricOvertimeStatus);
                   setConfirmBiometricOvertimeStatus(null);
                 }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800"
               >
                 {confirmBiometricOvertimeStatus === "approved" ? (
                   <>

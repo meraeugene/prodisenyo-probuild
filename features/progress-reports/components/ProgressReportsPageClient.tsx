@@ -91,7 +91,7 @@ export default function ProgressReportsPageClient() {
         actions={
           <button
             onClick={() => setShowForm(!showForm)}
-            className="mt-3 sm:mt-0 flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white hover:bg-emerald-800 transition shadow-sm"
+            className="mt-3 sm:mt-0 flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm"
           >
             {showForm ? <Eye size={15} /> : <Plus size={15} />}
             {showForm ? "View Report History" : "New Progress Report"}
@@ -100,7 +100,7 @@ export default function ProgressReportsPageClient() {
       />
 
       {showForm ? (
-        <div className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_10px_30px_rgba(24,83,43,0.06)] animate-in fade-in duration-300">
+        <div className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_10px_30px_rgba(7,109,105,0.06)] animate-in fade-in duration-300">
           <div className="border-b border-slate-100 pb-3 mb-4">
             <h3 className="text-lg font-bold text-apple-charcoal">Submit Progress Report</h3>
             <p className="text-xs text-slate-400">Describe site completion percentages and construction notes.</p>
@@ -113,7 +113,7 @@ export default function ProgressReportsPageClient() {
                 <select
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="h-10 rounded-xl w-full border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                  className="h-10 rounded-xl w-full border border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#076d69]"
                 >
                   <option value="">Select Project</option>
                   {activeProjects.map((p) => (
@@ -133,7 +133,7 @@ export default function ProgressReportsPageClient() {
                       className={cn(
                         "h-10 text-[10px] font-bold rounded-lg border uppercase tracking-wider capitalize transition-all",
                         weatherCondition === cond
-                          ? "border-[#1f6a37] bg-emerald-50/50 text-emerald-800"
+                          ? "border-[#076d69] bg-teal-50/50 text-teal-800"
                           : "border-slate-200 text-slate-600 bg-white hover:bg-slate-50"
                       )}
                     >
@@ -147,7 +147,7 @@ export default function ProgressReportsPageClient() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-slate-700">Physical Progress Target</span>
-                <span className="font-bold text-[#1f6a37]">{completionPercentage}%</span>
+                <span className="font-bold text-[#076d69]">{completionPercentage}%</span>
               </div>
               <input
                 type="range"
@@ -156,7 +156,7 @@ export default function ProgressReportsPageClient() {
                 step="5"
                 value={completionPercentage}
                 onChange={(e) => setCompletionPercentage(Number(e.target.value))}
-                className="w-full accent-[#1f6a37] h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#076d69] h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -167,7 +167,7 @@ export default function ProgressReportsPageClient() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="List completed layouts, concrete compression details, or structural steel grids installed..."
                 rows={4}
-                className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#1f6a37]"
+                className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#076d69]"
               />
             </div>
 
@@ -178,7 +178,7 @@ export default function ProgressReportsPageClient() {
                 onChange={(e) => setChallenges(e.target.value)}
                 placeholder="Mention weather delays, supply shortage, material revisions, etc..."
                 rows={2}
-                className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#1f6a37]"
+                className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#076d69]"
               />
             </div>
 
@@ -193,7 +193,7 @@ export default function ProgressReportsPageClient() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="h-10 px-5 rounded-xl bg-[#1f6a37] text-xs font-semibold text-white hover:bg-emerald-800 transition shadow-sm flex items-center gap-1.5 disabled:opacity-70"
+                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-sm flex items-center gap-1.5 disabled:opacity-70"
               >
                 {isPending && <LoaderCircle size={14} className="animate-spin" />}
                 Submit Report
@@ -206,7 +206,7 @@ export default function ProgressReportsPageClient() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_4px_20px_rgba(24,83,43,0.03)] hover:border-slate-300 transition"
+              className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_4px_20px_rgba(7,109,105,0.03)] hover:border-slate-300 transition"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-50 pb-3">
                 <div className="space-y-0.5">
@@ -254,9 +254,9 @@ export default function ProgressReportsPageClient() {
                       <Activity size={12} /> Project Completion
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-bold text-[#1f6a37]">{report.completionPercentage}%</span>
+                      <span className="text-base font-bold text-[#076d69]">{report.completionPercentage}%</span>
                       <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${report.completionPercentage}%` }} />
+                        <div className="h-full bg-teal-600 rounded-full" style={{ width: `${report.completionPercentage}%` }} />
                       </div>
                     </div>
                   </div>

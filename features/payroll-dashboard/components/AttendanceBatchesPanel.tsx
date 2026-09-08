@@ -16,7 +16,7 @@ const STATUS_PRESENTATION: Record<
     label: "Awaiting CEO",
     className: "bg-violet-50 text-violet-700",
   },
-  approved: { label: "Approved", className: "bg-emerald-50 text-emerald-700" },
+  approved: { label: "Approved", className: "bg-teal-50 text-teal-700" },
   returned: { label: "Returned", className: "bg-rose-50 text-rose-700" },
 };
 
@@ -49,7 +49,7 @@ export default function AttendanceBatchesPanel({
         </div>
         <Link
           href="/attendance-analytics"
-          className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
         >
           View all <ArrowRight size={13} />
         </Link>
@@ -109,7 +109,7 @@ export default function AttendanceBatchesPanel({
                     <td className="px-5 py-3.5 text-right">
                       <Link
                         href={action.href}
-                        className="inline-flex h-8 items-center rounded-lg border border-emerald-700 px-3 text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+                        className="inline-flex h-8 items-center rounded-lg border border-teal-700 px-3 text-[11px] font-bold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
                       >
                         {action.label}
                       </Link>
@@ -134,7 +134,7 @@ export default function AttendanceBatchesPanel({
       <div className="border-t border-slate-100 px-5 py-3.5">
         <Link
           href="/upload-attendance"
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-teal-700 px-3 text-xs font-bold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
         >
           <Upload size={14} /> Upload Attendance
         </Link>

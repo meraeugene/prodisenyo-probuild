@@ -16,22 +16,21 @@ export default function LandingFooter() {
             />
             <div>
               <p className="font-bold tracking-[-0.025em]">Prodisenyo ProBuild</p>
-              <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-emerald-100/70">
+              <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-teal-100/70">
                 Construction ERP
               </p>
             </div>
           </div>
-          <p className="mt-5 text-sm leading-6 text-emerald-50/65">
-            A connected construction operations platform for projects, BOQ,
-            materials, procurement, progress, payroll, and costs.
+          <p className="mt-5 text-sm leading-6 text-teal-50/65">
+            One system for construction projects, costs, and delivery.
           </p>
         </div>
 
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-200">
             Product
           </p>
-          <nav className="mt-4 flex flex-col gap-3 text-sm text-emerald-50/70">
+          <nav className="mt-4 flex flex-col gap-3 text-sm text-teal-50/70">
             <a href="#modules" className="hover:text-white">Modules</a>
             <a href="#workflow" className="hover:text-white">How it works</a>
             <a href="#product-tour" className="hover:text-white">Product tour</a>
@@ -39,23 +38,23 @@ export default function LandingFooter() {
         </div>
 
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-200">
             Access
           </p>
           <div className="mt-4 flex flex-col gap-3 text-sm">
-            <Link href="/auth/login" className="text-emerald-50/70 hover:text-white">
+            <Link href="/auth/login?switch=1" className="text-teal-50/70 hover:text-white">
               Sign In
             </Link>
-            <a href="#roles" className="text-emerald-50/70 hover:text-white">
+            <a href="#roles" className="text-teal-50/70 hover:text-white">
               Role workspaces
             </a>
           </div>
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-2 px-5 py-5 text-xs text-emerald-50/55 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-2 px-5 py-5 text-xs text-teal-50/55 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
           <p>Prodisenyo Builders Corp. All rights reserved.</p>
-          <p>Building dreams into reality.</p>
+          <p>Built for better project delivery.</p>
         </div>
       </div>
     </footer>

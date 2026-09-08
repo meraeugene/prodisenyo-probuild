@@ -10,7 +10,7 @@ export function PayrollReportSummaryCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-emerald-400/25 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-2">
+    <div className="rounded-xl border border-teal-400/25 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-3 py-2">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
         {label}
       </p>
@@ -27,7 +27,7 @@ export function PayrollReportSummaryChip({
   value: number;
 }) {
   return (
-    <div className="rounded-lg border border-emerald-400/25 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-2">
+    <div className="rounded-lg border border-teal-400/25 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-3 py-2">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
         {label}
       </p>
@@ -140,7 +140,7 @@ export function PayrollReportStatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-emerald-500/15 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-3 text-white shadow-[0_14px_28px_rgba(17,46,26,0.18)] sm:px-4 sm:py-4">
+    <div className="rounded-2xl border border-teal-500/15 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-3 py-3 text-white shadow-[0_14px_28px_rgba(6,59,56,0.18)] sm:px-4 sm:py-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
         {label}
       </p>

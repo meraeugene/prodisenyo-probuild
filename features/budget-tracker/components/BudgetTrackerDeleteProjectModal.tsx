@@ -48,7 +48,7 @@ export default function BudgetTrackerDeleteProjectModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center rounded-[10px] border border-apple-mist px-4 py-3 text-sm font-medium text-apple-charcoal transition hover:border-[#1f6a37]/35 hover:bg-[#f8fbf9] focus-visible:border-[#1f6a37]/45 focus-visible:bg-[#f8fbf9] focus-visible:outline-none"
+            className="inline-flex items-center justify-center rounded-[10px] border border-apple-mist px-4 py-3 text-sm font-medium text-apple-charcoal transition hover:border-[#076d69]/35 hover:bg-[#f8fbf9] focus-visible:border-[#076d69]/45 focus-visible:bg-[#f8fbf9] focus-visible:outline-none"
           >
             Cancel
           </button>

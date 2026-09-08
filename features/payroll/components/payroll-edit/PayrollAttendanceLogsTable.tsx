@@ -41,7 +41,7 @@ export function PayrollAttendanceLogsTable(
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex min-h-11 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2">
-          <Clock3 size={16} className="text-emerald-700" />
+          <Clock3 size={16} className="text-teal-700" />
           <div>
             <h3 className="text-xs font-bold text-slate-950">Attendance Logs</h3>
             <p className="text-[10px] text-slate-400">Biometric time and editable payable hours</p>
@@ -126,7 +126,7 @@ export function PayrollAttendanceLogsTable(
                         onChange={(event) =>
                           props.onUpdateHour(log, "regularHours", event.target.value)
                         }
-                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
                       />
                     </td>
                     <td className="px-3 py-1.5">
@@ -139,7 +139,7 @@ export function PayrollAttendanceLogsTable(
                         onChange={(event) =>
                           props.onUpdateHour(log, "overtimeHours", event.target.value)
                         }
-                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
                       />
                     </td>
                     <td className="px-3 py-2 font-mono font-bold text-slate-950">

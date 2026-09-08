@@ -31,15 +31,15 @@ export default function CostEstimatorSummaryPanel({
   const messageConfig =
     budgetState === "empty"
       ? {
-          wrapperClassName: "border-emerald-100 bg-emerald-50",
-          textClassName: "text-emerald-900",
+          wrapperClassName: "border-teal-100 bg-teal-50",
+          textClassName: "text-teal-900",
           message:
             "Add your first cost item to start building the estimate breakdown.",
         }
       : budgetState === "under"
         ? {
-            wrapperClassName: "border-emerald-100 bg-emerald-50",
-            textClassName: "text-emerald-900",
+            wrapperClassName: "border-teal-100 bg-teal-50",
+            textClassName: "text-teal-900",
             message: `${formatBudgetMoney(variance)} remaining before you reach the estimate target.`,
           }
         : budgetState === "over"
@@ -75,14 +75,14 @@ export default function CostEstimatorSummaryPanel({
 
         <div>
           <p className="text-sm text-apple-steel">Item cost total</p>
-          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#2d6a4f]">
+          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#0f766e]">
             {formatBudgetMoney(currentItemTotal)}
           </p>
         </div>
 
         <div>
           <p className="text-sm text-apple-steel">Total quantity</p>
-          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-emerald-600">
+          <p className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-teal-600">
             {totalQuantity.toLocaleString("en-PH", {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
@@ -99,7 +99,7 @@ export default function CostEstimatorSummaryPanel({
         </div>
 
         {estimate?.status === "rejected" ? (
-          <div className="overflow-hidden rounded-[20px] border border-[#dceadb] bg-[linear-gradient(180deg,#fcfffd_0%,#f4f9f5_100%)] px-4 py-4">
+          <div className="overflow-hidden rounded-[20px] border border-[#ccfbf1] bg-[linear-gradient(180deg,#fcfffd_0%,#f4f9f5_100%)] px-4 py-4">
             <div className="flex items-start gap-3">
               <div className="relative hidden h-[88px] w-[88px] shrink-0 sm:block">
                 <Image
@@ -111,7 +111,7 @@ export default function CostEstimatorSummaryPanel({
                 />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5b7d63]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#527d79]">
                   Estimate Update Needed
                 </p>
                 <p className="mt-2 text-sm leading-7 text-apple-charcoal">

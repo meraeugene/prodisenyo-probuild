@@ -218,6 +218,17 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  if (
+    user &&
+    pathname === "/auth/login" &&
+    request.nextUrl.searchParams.get("switch") === "1"
+  ) {
+    await supabase.auth.signOut();
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.search = "";
+    return redirect(loginUrl);
+  }
+
   if (!user && isProtectedPath(pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/login";
@@ -239,6 +250,28 @@ export async function updateSession(request: NextRequest) {
     authenticatedProfile = profileError
       ? null
       : (profile as Database["public"]["Tables"]["profiles"]["Row"] | null);
+
+    if (!authenticatedProfile || !authenticatedProfile.is_active) {
+      await supabase.auth.signOut();
+
+      if (pathname !== "/auth/login") {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = "/auth/login";
+        redirectUrl.search = "";
+        redirectUrl.searchParams.set(
+          "error",
+          authenticatedProfile ? "inactive" : "profile",
+        );
+        return redirect(redirectUrl);
+      }
+
+      return applyCookies(
+        NextResponse.next({
+          request: { headers: requestHeaders },
+        }),
+      );
+    }
+
     const currentRole = authenticatedProfile?.role ?? null;
 
     if (!profileError && pathname === "/auth/login") {

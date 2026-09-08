@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
@@ -53,17 +53,17 @@ export default function AttendanceReviewSection({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
+      <div className="overflow-hidden rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[14px]">
         <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-2xs font-mono font-semibold text-apple-steel uppercase tracking-widest">
               Step 2
             </span>
-            <span className="rounded-full border border-[#1f6a37] bg-[#1f6a37] px-2 py-0.5 text-2xs font-semibold text-white">
+            <span className="rounded-full border border-[#076d69] bg-[#076d69] px-2 py-0.5 text-2xs font-semibold text-white">
               {site}
             </span>
             {step > 2 && (
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-2xs font-semibold text-emerald-700">
+              <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-2xs font-semibold text-teal-700">
                 Complete
               </span>
             )}
@@ -85,7 +85,7 @@ export default function AttendanceReviewSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="rounded-[12px] border border-apple-mist  px-4 py-3 transition hover:bg-white shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)]  "
+                  className="rounded-[12px] border border-apple-mist  px-4 py-3 transition hover:bg-white shadow-[0_8px_18px_rgba(7,109,105,0.06)] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)]  "
                 >
                   <p className="text-[11px] uppercase tracking-wider text-white/65">
                     Branch
@@ -113,8 +113,8 @@ export default function AttendanceReviewSection({
                 className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     step2View === "daily"
-                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
+                      ? "border-[#076d69] bg-[#076d69] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
                   }`}
               >
                 Daily View
@@ -126,8 +126,8 @@ export default function AttendanceReviewSection({
                 className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     step2View === "detailed"
-                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
+                      ? "border-[#076d69] bg-[#076d69] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
                   }`}
               >
                 Detailed Logs
@@ -396,7 +396,7 @@ export default function AttendanceReviewSection({
 ${
   recordsPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     First
@@ -411,7 +411,7 @@ ${
 ${
   recordsPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     <ArrowLeft size={16} />
@@ -426,8 +426,8 @@ ${
                       className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition
 ${
   recordsPage === p
-    ? "bg-[#1f6a37] text-white border-[#1f6a37]"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    ? "bg-[#076d69] text-white border-[#076d69]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                     >
                       {p}
@@ -445,7 +445,7 @@ ${
 ${
   recordsPage === totalRecordPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     <ArrowRight size={16} />
@@ -460,7 +460,7 @@ ${
 ${
   recordsPage === totalRecordPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     Last

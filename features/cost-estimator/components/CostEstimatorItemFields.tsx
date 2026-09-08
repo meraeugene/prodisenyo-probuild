@@ -51,7 +51,7 @@ export default function CostEstimatorItemFields(props: Props) {
             disabled={disabled}
             placeholder="e.g. Structural Works"
             className={cn(
-              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
               props.errors.section ? "border-rose-300" : "border-slate-200",
             )}
           />
@@ -80,7 +80,7 @@ export default function CostEstimatorItemFields(props: Props) {
             disabled={disabled}
             placeholder={props.itemNumberLabel}
             className={cn(
-              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
               props.errors.itemNumber
                 ? "border-rose-300"
                 : "border-slate-200",
@@ -104,7 +104,7 @@ export default function CostEstimatorItemFields(props: Props) {
           disabled={disabled}
           placeholder="Describe this BOQ item"
           className={cn(
-            "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+            "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
             props.errors.displayName ? "border-rose-300" : "border-slate-200",
           )}
         />
@@ -139,7 +139,7 @@ export default function CostEstimatorItemFields(props: Props) {
           type="button"
           onClick={props.onAddMaterial}
           disabled={props.pending}
-          className="inline-flex h-10 items-center gap-2 rounded-[9px] border border-emerald-700 px-4 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:opacity-60"
+          className="inline-flex h-10 items-center gap-2 rounded-[9px] border border-teal-700 px-4 text-sm font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-60"
         >
           <Plus aria-hidden="true" size={16} /> Add another cost line
         </button>
@@ -154,7 +154,7 @@ export default function CostEstimatorItemFields(props: Props) {
           maxLength={500}
           rows={3}
           placeholder="Add details for this BOQ item..."
-          className="mt-2 w-full resize-y rounded-[9px] border border-slate-200 bg-white p-3 text-sm font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+          className="mt-2 w-full resize-y rounded-[9px] border border-slate-200 bg-white p-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
         />
         <span className="mt-1 block text-right text-xs font-normal text-slate-500">
           {props.form.notes.length} / 500
@@ -234,7 +234,7 @@ function MaterialFields({
             disabled={disabled}
             placeholder="Search or enter a cost item"
             className={cn(
-              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
               errors.searchInput ? "border-rose-300" : "border-slate-200",
             )}
           />
@@ -259,7 +259,7 @@ function MaterialFields({
             }
             disabled={disabled}
             className={cn(
-              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
               errors.unitType ? "border-rose-300" : "border-slate-200",
             )}
           >
@@ -288,7 +288,7 @@ function MaterialFields({
             inputMode="decimal"
             placeholder="0"
             className={cn(
-              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100",
+              "mt-2 h-11 w-full rounded-[9px] border bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
               errors.quantityInput ? "border-rose-300" : "border-slate-200",
             )}
           />
@@ -311,7 +311,7 @@ function MaterialFields({
             disabled={disabled}
             inputMode="decimal"
             placeholder="0"
-            className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
           />
         </label>
 
@@ -330,7 +330,7 @@ function MaterialFields({
               onFieldChange(material.id, "pricingBasis", event.target.value)
             }
             disabled={disabled}
-            className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
           >
             <option value="catalog">Catalog / reference rate</option>
             <option value="supplier_quote">Supplier quotation</option>
@@ -380,7 +380,7 @@ function QuoteField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+        className="mt-2 h-11 w-full rounded-[9px] border border-slate-200 bg-white px-3 font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
       />
     </label>
   );

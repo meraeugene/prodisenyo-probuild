@@ -58,7 +58,7 @@ export default function BudgetTrackerHeader({
           <select
             value={selectedProject.id}
             onChange={(event) => onSelectProject(event.target.value)}
-            className="h-11 w-full rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#1f6a37]/60 hover:bg-[#f8fbf9] focus:border-[#1f6a37] focus:bg-[#f8fbf9]"
+            className="h-11 w-full rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#076d69]/60 hover:bg-[#f8fbf9] focus:border-[#076d69] focus:bg-[#f8fbf9]"
           >
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
@@ -86,7 +86,7 @@ export default function BudgetTrackerHeader({
                   ? "border-sky-200 bg-sky-50 text-sky-700"
                   : saveState === "error"
                     ? "border-rose-200 bg-rose-50 text-rose-700"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                    : "border-teal-200 bg-teal-50 text-teal-700",
             )}
           >
             {saveState === "saving" ? (
@@ -147,7 +147,7 @@ export default function BudgetTrackerHeader({
                         setShowMobileActions(false);
                       }}
                       disabled={!selectedProject || !schemaReady || isPending}
-                      className="flex h-10 w-full items-center gap-2 rounded-[10px] px-3 text-sm font-semibold text-[#1f6a37] transition hover:bg-[#eaf7ef] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex h-10 w-full items-center gap-2 rounded-[10px] px-3 text-sm font-semibold text-[#076d69] transition hover:bg-[#eaf7ef] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <Plus size={16} />
                       Add cost
@@ -193,7 +193,7 @@ export default function BudgetTrackerHeader({
             <select
               value={selectedProject.id}
               onChange={(event) => onSelectProject(event.target.value)}
-              className="h-11 min-w-[280px] rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#1f6a37]/60 hover:bg-[#f8fbf9] focus:border-[#1f6a37] focus:bg-[#f8fbf9]"
+              className="h-11 min-w-[280px] rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#076d69]/60 hover:bg-[#f8fbf9] focus:border-[#076d69] focus:bg-[#f8fbf9]"
             >
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -217,7 +217,7 @@ export default function BudgetTrackerHeader({
                   ? "border-sky-200 bg-sky-50 text-sky-700"
                   : saveState === "error"
                     ? "border-rose-200 bg-rose-50 text-rose-700"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                    : "border-teal-200 bg-teal-50 text-teal-700",
             )}
           >
             {saveState === "saving" ? (
@@ -246,7 +246,7 @@ export default function BudgetTrackerHeader({
               type="button"
               onClick={onSaveDraft}
               disabled={isPending || !canSaveDraft}
-              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saveState === "saving" ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -272,7 +272,7 @@ export default function BudgetTrackerHeader({
                 type="button"
                 onClick={onAddCost}
                 disabled={!selectedProject || !schemaReady || isPending}
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#076d69] px-5 text-sm font-semibold text-white transition hover:bg-[#18552b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Plus size={16} />
                 Add cost

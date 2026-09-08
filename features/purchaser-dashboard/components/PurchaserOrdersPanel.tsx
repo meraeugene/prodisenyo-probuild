@@ -9,9 +9,9 @@ import {
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700",
   submitted: "bg-sky-50 text-sky-700",
-  approved: "bg-emerald-50 text-emerald-700",
+  approved: "bg-teal-50 text-teal-700",
   ordered: "bg-violet-50 text-violet-700",
-  received: "bg-emerald-50 text-emerald-700",
+  received: "bg-teal-50 text-teal-700",
 };
 
 export default function PurchaserOrdersPanel({ records }: { records: PurchaserDashboardRecord[] }) {
@@ -43,7 +43,7 @@ export default function PurchaserOrdersPanel({ records }: { records: PurchaserDa
         })}
         {!orders.length ? <p className="px-5 py-10 text-center text-sm text-slate-500">No purchase orders are available.</p> : null}
       </div>
-      <Link href="/purchasing-approvals" className="flex items-center justify-center gap-1 border-t border-slate-100 px-5 py-3 text-xs font-bold text-emerald-800">
+      <Link href="/purchasing-approvals" className="flex items-center justify-center gap-1 border-t border-slate-100 px-5 py-3 text-xs font-bold text-teal-800">
         Manage purchase orders <ArrowRight size={13} />
       </Link>
     </section>

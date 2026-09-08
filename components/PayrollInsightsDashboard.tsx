@@ -51,11 +51,11 @@ const PIE_CHART_COLORS = [
   "rgb(var(--theme-chart-3))",
   "rgb(var(--theme-chart-4))",
   "rgb(var(--theme-chart-5))",
-  "rgba(24, 83, 43, 0.75)",
-  "rgba(37, 113, 58, 0.75)",
-  "rgba(57, 145, 80, 0.72)",
-  "rgba(92, 179, 116, 0.72)",
-  "rgba(147, 212, 163, 0.88)",
+  "rgba(7, 109, 105, 0.75)",
+  "rgba(15, 118, 110, 0.75)",
+  "rgba(13, 148, 136, 0.72)",
+  "rgba(45, 212, 191, 0.72)",
+  "rgba(94, 234, 212, 0.88)",
 ];
 
 const STACK_COLORS = {
@@ -186,7 +186,7 @@ function ChartCard({
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5   shadow-[0_8px_18px_rgba(24,83,43,0.06)] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] ">
+    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5   shadow-[0_8px_18px_rgba(7,109,105,0.06)] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] ">
       <p className="text-[11px] text-white/65 font-semibold uppercase tracking-wider ">
         {label}
       </p>
@@ -312,7 +312,7 @@ export default function PayrollInsightsDashboard({
                       onClick={() => setTrendRange(option)}
                       className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
                         trendRange === option
-                          ? "bg-[#1f6a37] text-white"
+                          ? "bg-[#076d69] text-white"
                           : "text-apple-steel hover:text-apple-charcoal"
                       }`}
                     >
@@ -335,8 +335,8 @@ export default function PayrollInsightsDashboard({
                 >
                   <defs>
                     <linearGradient id="analyticsTrendFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
+                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.04} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid

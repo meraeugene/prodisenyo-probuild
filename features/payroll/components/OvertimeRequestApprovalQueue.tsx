@@ -30,9 +30,9 @@ function formatDateTime(value: string) {
 
 function getStatusClasses(status: OvertimeRequestRecord["status"]) {
   if (status === "approved")
-    return "bg-emerald-50 text-emerald-700 ring-emerald-200/40";
+    return "bg-teal-50 text-teal-700 ring-teal-200/40";
   if (status === "rejected")
-    return "bg-[#eef7f0] text-[#2d6a4f] ring-[#cfe3d3]";
+    return "bg-[#f0fdfa] text-[#0f766e] ring-[#ccfbf1]";
   return "bg-amber-50 text-amber-700 ring-amber-200/40";
 }
 
@@ -132,9 +132,9 @@ export default function OvertimeRequestApprovalQueue({
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#1f4f2c] shadow-[0_8px_20px_rgba(24,83,43,0.04)] sm:rounded-[14px] sm:p-6">
+      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#075f5b] shadow-[0_8px_20px_rgba(7,109,105,0.04)] sm:rounded-[14px] sm:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="mt-1 text-xl font-bold text-[#1f4f2c]">
+          <h2 className="mt-1 text-xl font-bold text-[#075f5b]">
             Overtime Request Forms
           </h2>
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -154,7 +154,7 @@ export default function OvertimeRequestApprovalQueue({
             sortedRequests.map((request) => (
               <article
                 key={request.id}
-                className="group flex h-fit w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all"
+                className="group flex h-fit w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all"
               >
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -215,7 +215,7 @@ export default function OvertimeRequestApprovalQueue({
                   </p>
 
                   {request.rejection_reason ? (
-                    <p className="rounded-xl border border-[#cfe3d3] bg-[#eef7f0] px-3 py-2 text-xs text-[#2d6a4f]">
+                    <p className="rounded-xl border border-[#ccfbf1] bg-[#f0fdfa] px-3 py-2 text-xs text-[#0f766e]">
                       Return reason:{" "}
                       <span className="font-semibold">
                         {request.rejection_reason}
@@ -239,7 +239,7 @@ export default function OvertimeRequestApprovalQueue({
                       </span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-                      <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500" />
                       {request.overtime_hours.toLocaleString("en-PH", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -262,7 +262,7 @@ export default function OvertimeRequestApprovalQueue({
                           setRejectionReason("");
                         }}
                         disabled={isPending}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#eef7f0] px-4 text-xs font-bold text-[#2d6a4f] transition-colors hover:bg-[#e2efe5] focus:outline-none focus:ring-2 focus:ring-[#cfe3d3] disabled:opacity-50"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#f0fdfa] px-4 text-xs font-bold text-[#0f766e] transition-colors hover:bg-[#ccfbf1] focus:outline-none focus:ring-2 focus:ring-[#ccfbf1] disabled:opacity-50"
                       >
                         <XCircle size={16} />
                         Return
@@ -271,7 +271,7 @@ export default function OvertimeRequestApprovalQueue({
                         type="button"
                         onClick={() => handleApprove(request.id)}
                         disabled={isPending}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
                       >
                         {pendingActionId === request.id &&
                         pendingActionType === "approve" ? (
@@ -298,7 +298,7 @@ export default function OvertimeRequestApprovalQueue({
       {rejectRequestId ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
-            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Return Overtime Request
               </p>
@@ -313,7 +313,7 @@ export default function OvertimeRequestApprovalQueue({
                 onChange={(event) => setRejectionReason(event.target.value)}
                 rows={5}
                 placeholder="Add an optional return note."
-                className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -323,7 +323,7 @@ export default function OvertimeRequestApprovalQueue({
                     setRejectionReason("");
                   }}
                   disabled={isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -331,7 +331,7 @@ export default function OvertimeRequestApprovalQueue({
                   type="button"
                   onClick={handleConfirmReject}
                   disabled={isPending}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#5b7d63] px-4 text-sm font-semibold text-white transition hover:bg-[#4d6b54] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#527d79] px-4 text-sm font-semibold text-white transition hover:bg-[#527d79] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pendingActionId === rejectRequestId &&
                   pendingActionType === "reject" ? (

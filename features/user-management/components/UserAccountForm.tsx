@@ -24,7 +24,7 @@ export default function UserAccountForm({
   | "handleSubmit"
 > & { currentUserId: string }) {
   return (
-    <div className="min-w-0 rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px] sm:p-6">
+    <div className="min-w-0 rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[22px] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -55,7 +55,7 @@ export default function UserAccountForm({
             onChange={(event) => updateField("fullName", event.target.value)}
             placeholder="e.g. Maria Santos"
             className={cn(
-              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
               errors.fullName ? "border-rose-300" : "border-apple-mist",
             )}
           />
@@ -73,7 +73,7 @@ export default function UserAccountForm({
             onChange={(event) => updateField("username", event.target.value)}
             placeholder="e.g. maria.santos"
             className={cn(
-              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
               errors.username ? "border-rose-300" : "border-apple-mist",
             )}
           />
@@ -91,7 +91,7 @@ export default function UserAccountForm({
             onChange={(event) => updateField("email", event.target.value)}
             placeholder="e.g. maria@prodisenyo.com"
             className={cn(
-              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+              "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
               errors.email ? "border-rose-300" : "border-apple-mist",
             )}
           />
@@ -110,7 +110,7 @@ export default function UserAccountForm({
               updateField("role", event.target.value as AppRole)
             }
             className={cn(
-              "mt-2 w-full rounded-[12px] border bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+              "mt-2 w-full rounded-[12px] border bg-white px-4 py-3 text-sm outline-none focus:border-[#076d69]",
               errors.role ? "border-rose-300" : "border-apple-mist",
             )}
           >
@@ -136,7 +136,7 @@ export default function UserAccountForm({
               onChange={(event) => updateField("password", event.target.value)}
               placeholder="Minimum 8 characters"
               className={cn(
-                "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                "mt-2 w-full rounded-[12px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                 errors.password ? "border-rose-300" : "border-apple-mist",
               )}
             />
@@ -165,7 +165,7 @@ export default function UserAccountForm({
             type="button"
             onClick={handleSubmit}
             disabled={isPending}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#076d69] px-5 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             <UserPlus size={16} />
             {isPending

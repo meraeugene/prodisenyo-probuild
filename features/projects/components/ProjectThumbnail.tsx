@@ -26,7 +26,7 @@ export default function ProjectThumbnail({
   if (!imageSrc || failed) {
     return (
       <div
-        className={`flex items-center justify-center bg-emerald-50 text-emerald-700 ${className}`}
+        className={`flex items-center justify-center bg-teal-50 text-teal-700 ${className}`}
         aria-label={`${name} project image unavailable`}
       >
         <FolderKanban size={24} />

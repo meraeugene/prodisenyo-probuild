@@ -9,19 +9,19 @@
   --font-mono: "SF Mono", "Fira Code", ui-monospace, monospace;
   --apple-white: 255 255 255;
   --apple-snow: 255 255 255;
-  --apple-mist: 222 243 229;
-  --apple-silver: 174 220 188;
+  --apple-mist: 204 251 241;
+  --apple-silver: 153 246 228;
   --apple-steel: 120 124 132;
   --apple-smoke: 82 86 94;
   --apple-ash: 46 51 56;
   --apple-charcoal: 22 24 29;
   --apple-black: 10 12 16;
-  --theme-chart-1: 24 83 43;
-  --theme-chart-2: 37 113 58;
-  --theme-chart-3: 57 145 80;
-  --theme-chart-4: 92 179 116;
-  --theme-chart-5: 147 212 163;
-  --theme-chart-grid: 214 238 221;
+  --theme-chart-1: 15 118 110;
+  --theme-chart-2: 13 148 136;
+  --theme-chart-3: 20 184 166;
+  --theme-chart-4: 45 212 191;
+  --theme-chart-5: 94 234 212;
+  --theme-chart-grid: 204 251 241;
   --theme-chart-axis: 70 74 82;
   --theme-chart-cursor: 247 250 248;
 }
@@ -118,17 +118,17 @@ body {
   0%,
   100% {
     transform: translateY(0) scale(1);
-    box-shadow: 0 16px 32px rgba(31, 106, 55, 0.1);
+    box-shadow: 0 16px 32px rgba(7, 109, 105, 0.1);
   }
 
   30% {
     transform: translateY(-18px) scale(1.04);
-    box-shadow: 0 26px 38px rgba(31, 106, 55, 0.16);
+    box-shadow: 0 26px 38px rgba(7, 109, 105, 0.16);
   }
 
   60% {
     transform: translateY(4px) scale(0.98);
-    box-shadow: 0 12px 22px rgba(31, 106, 55, 0.08);
+    box-shadow: 0 12px 22px rgba(7, 109, 105, 0.08);
   }
 }
 
@@ -239,37 +239,37 @@ input[type="number"] {
 @layer base {
   :root {
     --radius: 0.625rem;
-    --background: oklch(1 0.003 145);
-    --foreground: oklch(0.22 0.01 150);
-    --card: oklch(1 0.003 145);
-    --card-foreground: oklch(0.22 0.01 150);
-    --popover: oklch(1 0.003 145);
-    --popover-foreground: oklch(0.22 0.01 150);
-    --primary: oklch(0.5 0.1 150);
-    --primary-foreground: oklch(0.99 0.003 145);
-    --secondary: oklch(0.98 0.008 151);
+    --background: oklch(1 0.003 190);
+    --foreground: oklch(0.22 0.01 190);
+    --card: oklch(1 0.003 190);
+    --card-foreground: oklch(0.22 0.01 190);
+    --popover: oklch(1 0.003 190);
+    --popover-foreground: oklch(0.22 0.01 190);
+    --primary: oklch(0.48 0.085 190);
+    --primary-foreground: oklch(0.99 0.003 190);
+    --secondary: oklch(0.98 0.008 190);
     --secondary-foreground: oklch(0.28 0 0);
-    --muted: oklch(0.98 0.008 151);
+    --muted: oklch(0.98 0.008 190);
     --muted-foreground: oklch(0.45 0 0);
-    --accent: oklch(0.97 0.012 151);
+    --accent: oklch(0.97 0.012 190);
     --accent-foreground: oklch(0.24 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.9 0.015 150);
-    --input: oklch(0.9 0.015 150);
-    --ring: oklch(0.62 0.08 150);
-    --chart-1: oklch(0.44 0.08 150);
-    --chart-2: oklch(0.53 0.09 151);
-    --chart-3: oklch(0.61 0.09 151);
-    --chart-4: oklch(0.71 0.08 152);
-    --chart-5: oklch(0.81 0.06 153);
-    --sidebar: oklch(1 0.003 145);
-    --sidebar-foreground: oklch(0.22 0.01 150);
-    --sidebar-primary: oklch(0.5 0.1 150);
-    --sidebar-primary-foreground: oklch(0.99 0.003 145);
-    --sidebar-accent: oklch(0.95 0.015 150);
+    --border: oklch(0.9 0.015 190);
+    --input: oklch(0.9 0.015 190);
+    --ring: oklch(0.62 0.08 190);
+    --chart-1: oklch(0.44 0.08 190);
+    --chart-2: oklch(0.53 0.09 188);
+    --chart-3: oklch(0.61 0.09 186);
+    --chart-4: oklch(0.71 0.08 184);
+    --chart-5: oklch(0.81 0.06 182);
+    --sidebar: oklch(1 0.003 190);
+    --sidebar-foreground: oklch(0.22 0.01 190);
+    --sidebar-primary: oklch(0.48 0.085 190);
+    --sidebar-primary-foreground: oklch(0.99 0.003 190);
+    --sidebar-accent: oklch(0.95 0.015 190);
     --sidebar-accent-foreground: oklch(0.24 0 0);
-    --sidebar-border: oklch(0.9 0.015 150);
-    --sidebar-ring: oklch(0.62 0.08 150);
+    --sidebar-border: oklch(0.9 0.015 190);
+    --sidebar-ring: oklch(0.62 0.08 190);
   }
 
   .theme {
@@ -305,14 +305,14 @@ input[type="number"] {
   0%,
   100% {
     box-shadow:
-      0 10px 24px rgba(93, 211, 132, 0.28),
-      0 0 0 0 rgba(147, 243, 178, 0.45);
+      0 10px 24px rgba(20, 184, 166, 0.28),
+      0 0 0 0 rgba(94, 234, 212, 0.45);
   }
 
   50% {
     box-shadow:
-      0 14px 30px rgba(93, 211, 132, 0.38),
-      0 0 0 10px rgba(147, 243, 178, 0);
+      0 14px 30px rgba(20, 184, 166, 0.38),
+      0 0 0 10px rgba(94, 234, 212, 0);
   }
 }
 

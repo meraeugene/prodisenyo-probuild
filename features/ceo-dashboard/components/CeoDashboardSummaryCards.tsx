@@ -40,13 +40,13 @@ export default function CeoDashboardSummaryCards({ data }: { data: CeoDashboardD
         <article key={label} className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-medium text-slate-500">{label}</p>
-            <Icon size={16} className="shrink-0 text-emerald-700" />
+            <Icon size={16} className="shrink-0 text-teal-700" />
           </div>
           <p className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">{value}</p>
           <p className="mt-2 text-xs text-slate-500">{helper}</p>
           {label === "Budget used" ? (
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-emerald-700" style={{ width: `${budgetPercent}%` }} />
+              <div className="h-full rounded-full bg-teal-700" style={{ width: `${budgetPercent}%` }} />
             </div>
           ) : null}
         </article>

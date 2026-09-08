@@ -7,8 +7,8 @@ export default function Loading() {
         {/* Icon Section with Pulsing Aura */}
         <div className="relative mb-6 flex h-24 w-24 items-center justify-center">
           {/* Animated Background Rings */}
-          <div className="absolute inset-0 animate-ping rounded-3xl bg-emerald-100/50 duration-[2000ms]" />
-          <div className="absolute inset-2 animate-pulse rounded-2xl bg-emerald-50/80" />
+          <div className="absolute inset-0 animate-ping rounded-3xl bg-teal-100/50 duration-[2000ms]" />
+          <div className="absolute inset-2 animate-pulse rounded-2xl bg-teal-50/80" />
 
           {/* Main Icon Card */}
           <div className="z-10 flex h-20 w-20 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-transform duration-700">
@@ -32,14 +32,14 @@ export default function Loading() {
             <span className="bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
               Pro
             </span>
-            <span className="text-emerald-600">Build</span>
+            <span className="text-teal-600">Build</span>
           </div>
         </div>
 
         {/* Progress Bar Container */}
         <div className="mt-10 flex flex-col items-center gap-3">
           <div className="h-[3px] w-40 overflow-hidden rounded-full bg-slate-200/60">
-            <div className="h-full bg-emerald-600 animate-[loading_1.5s_ease-in-out_infinite]" />
+            <div className="h-full bg-teal-600 animate-[loading_1.5s_ease-in-out_infinite]" />
           </div>
           <p className="text-[13px] font-medium text-slate-400 animate-pulse">
             Initializing workspace...

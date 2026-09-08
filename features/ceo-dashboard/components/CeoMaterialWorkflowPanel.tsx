@@ -42,7 +42,7 @@ export default function CeoMaterialWorkflowPanel({
             <div key={item.label} className="rounded-xl border border-slate-100 p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xl font-semibold text-slate-950">{item.count}</p>
-                <Icon size={16} className="text-emerald-700" />
+                <Icon size={16} className="text-teal-700" />
               </div>
               <p className="mt-0.5 text-[11px] text-slate-500">{item.label}</p>
             </div>

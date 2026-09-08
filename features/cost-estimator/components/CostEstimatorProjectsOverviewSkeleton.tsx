@@ -5,7 +5,7 @@ function SkeletonBlock({ className }: { className: string }) {
 export default function CostEstimatorProjectsOverviewSkeleton() {
   return (
     <div className="space-y-5 overflow-x-hidden p-0 sm:p-6">
-      <section className="rounded-none bg-emerald-900 px-6 py-9 sm:rounded-[14px] sm:px-10 sm:py-10">
+      <section className="rounded-none bg-[#076d69] px-6 py-9 sm:rounded-[14px] sm:px-10 sm:py-10">
         <SkeletonBlock className="h-12 w-72 max-w-full bg-white/20" />
         <SkeletonBlock className="mt-3 h-5 w-[34rem] max-w-full bg-white/15" />
       </section>

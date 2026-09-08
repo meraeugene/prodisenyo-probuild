@@ -56,9 +56,9 @@ export default function PayrollApprovalQueue({
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#1f4f2c] shadow-[0_8px_20px_rgba(24,83,43,0.04)] sm:rounded-[14px] sm:p-6">
+      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#075f5b] shadow-[0_8px_20px_rgba(7,109,105,0.04)] sm:rounded-[14px] sm:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="mt-1 text-xl font-bold text-[#1f4f2c]">
+          <h2 className="mt-1 text-xl font-bold text-[#075f5b]">
             Pending Overtime Requests
           </h2>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -111,7 +111,7 @@ export default function PayrollApprovalQueue({
       {rejectConfirmRequest ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
-            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Return Overtime
               </p>
@@ -126,7 +126,7 @@ export default function PayrollApprovalQueue({
                 onChange={(event) => setRejectionReason(event.target.value)}
                 rows={5}
                 placeholder="Add an optional return note for HR."
-                className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -139,7 +139,7 @@ export default function PayrollApprovalQueue({
                     state.pendingActionId === rejectConfirmRequest.id &&
                     state.pendingActionType === "reject"
                   }
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -157,7 +157,7 @@ export default function PayrollApprovalQueue({
                     state.pendingActionId === rejectConfirmRequest.id &&
                     state.pendingActionType === "reject"
                   }
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#5b7d63] px-4 text-sm font-semibold text-white transition hover:bg-[#4d6b54] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#527d79] px-4 text-sm font-semibold text-white transition hover:bg-[#527d79] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {state.pendingActionId === rejectConfirmRequest.id &&
                   state.pendingActionType === "reject" ? (

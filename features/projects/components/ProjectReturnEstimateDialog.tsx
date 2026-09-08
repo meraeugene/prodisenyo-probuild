@@ -18,7 +18,7 @@ export default function ProjectReturnEstimateDialog({
   return (
     <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
-        <div className="border-b border-slate-100 bg-emerald-900 px-5 py-4 text-white">
+        <div className="border-b border-slate-100 bg-teal-900 px-5 py-4 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             Return estimate
           </p>
@@ -32,7 +32,7 @@ export default function ProjectReturnEstimateDialog({
             onChange={(event) => onReasonChange(event.target.value)}
             rows={5}
             placeholder="Add an optional return note for the engineer."
-            className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none transition focus:border-emerald-700"
+            className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none transition focus:border-teal-700"
           />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
@@ -47,7 +47,7 @@ export default function ProjectReturnEstimateDialog({
               type="button"
               onClick={onConfirm}
               disabled={isPending}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-800 px-4 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? <LoaderCircle size={15} className="animate-spin" /> : null}
               Confirm return

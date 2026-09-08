@@ -32,12 +32,12 @@ export function getPayrollReportStatusBadgeClass(
   status: PayrollRunStatus,
 ): string {
   if (status === "approved") {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    return "bg-teal-50 text-teal-700 border-teal-200";
   }
   if (status === "submitted" || status === "draft") {
     return "bg-amber-50 text-amber-700 border-amber-200";
   }
-  return "bg-[#eef7f0] text-[#2d6a4f] border-[#cfe3d3]";
+  return "bg-[#f0fdfa] text-[#0f766e] border-[#ccfbf1]";
 }
 
 export function getPayrollReportStatusLabel(status: PayrollRunStatus): string {
@@ -323,11 +323,11 @@ export function buildPayrollReportSiteDistribution(
 }
 
 export const PAYROLL_REPORT_SITE_COLORS = [
-  "#14532d",
-  "#166534",
-  "#15803d",
-  "#16a34a",
-  "#22c55e",
+  "#075f5b",
+  "#076d69",
+  "#087f79",
+  "#0d9488",
+  "#14b8a6",
   "#4ade80",
 ];
 

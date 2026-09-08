@@ -43,7 +43,7 @@ export default function PayrollApprovalEmployeeLogsModal({
       }}
     >
       <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[92vh] sm:max-w-[min(1180px,96vw)] sm:rounded-[28px]">
-        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
+        <div className="border-b border-teal-950/10 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
           <div className="relative flex items-start gap-4 pr-12">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">

@@ -55,7 +55,7 @@ function NumberField({
         step="0.01"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
         placeholder="0.00"
       />
     </label>
@@ -76,7 +76,7 @@ function NotesField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={3}
-        className="resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+        className="resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
         placeholder="Optional note"
       />
     </label>
@@ -103,7 +103,7 @@ export function PayrollAdjustmentDialog({
       >
         <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
               Adjustment
             </p>
             <h3 className="mt-1 text-lg font-bold text-slate-950">
@@ -114,7 +114,7 @@ export function PayrollAdjustmentDialog({
             type="button"
             onClick={onClose}
             aria-label="Close adjustment form"
-            className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <X size={18} />
           </button>
@@ -240,7 +240,7 @@ export function PayrollAdjustmentDialog({
           </button>
           <button
             type="submit"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800"
           >
             <Plus size={16} />
             Save adjustment

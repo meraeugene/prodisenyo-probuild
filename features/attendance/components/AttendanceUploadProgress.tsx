@@ -20,7 +20,7 @@ export default function AttendanceUploadProgress({
 
   return (
     <div
-      className="w-full rounded-[12px] border border-emerald-100 bg-emerald-50/60 p-3 sm:max-w-md"
+      className="w-full rounded-[12px] border border-teal-100 bg-teal-50/60 p-3 sm:max-w-md"
       role="progressbar"
       aria-label={PHASE_LABELS[phase]}
       aria-valuemin={0}
@@ -29,16 +29,16 @@ export default function AttendanceUploadProgress({
       aria-valuetext={`${roundedProgress}% — ${PHASE_LABELS[phase]}`}
     >
       <div className="mb-2 flex items-center justify-between gap-4 text-xs">
-        <span className="font-semibold text-emerald-900">
+        <span className="font-semibold text-teal-900">
           {PHASE_LABELS[phase]}
         </span>
-        <span className="font-mono font-bold tabular-nums text-emerald-700">
+        <span className="font-mono font-bold tabular-nums text-teal-700">
           {roundedProgress}%
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-emerald-100">
+      <div className="h-2 overflow-hidden rounded-full bg-teal-100">
         <div
-          className="h-full rounded-full bg-[linear-gradient(90deg,#15803d,#34d399)] transition-[width] duration-300 ease-out"
+          className="h-full rounded-full bg-[linear-gradient(90deg,#087f79,#34d399)] transition-[width] duration-300 ease-out"
           style={{ width: `${roundedProgress}%` }}
         />
       </div>

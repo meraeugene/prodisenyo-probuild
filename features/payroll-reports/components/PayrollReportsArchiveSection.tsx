@@ -70,7 +70,7 @@ export default function PayrollReportsArchiveSection({
 }) {
   return (
     <>
-      <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px]">
+      <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
         <div className="mb-4">
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={12} />
@@ -180,7 +180,7 @@ export default function PayrollReportsArchiveSection({
               <button
                 type="button"
                 onClick={() => onViewReport(openMenuReport)}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-apple-charcoal transition hover:bg-emerald-50 hover:text-emerald-800"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-apple-charcoal transition hover:bg-teal-50 hover:text-teal-800"
               >
                 <Eye size={14} />
                 View Reports
@@ -190,7 +190,7 @@ export default function PayrollReportsArchiveSection({
                   <button
                     type="button"
                     onClick={() => onApproveReport(openMenuReport)}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={pendingDecisionRunId === openMenuReport.id}
                   >
                     <CheckCircle2 size={14} />
@@ -246,7 +246,7 @@ export default function PayrollReportsArchiveSection({
               }}
             >
               <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(15,23,42,0.26)]">
-                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Confirm Delete
                   </p>
@@ -311,7 +311,7 @@ export default function PayrollReportsArchiveSection({
               }}
             >
               <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
-                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+                <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                     Return Payroll
                   </p>
@@ -335,14 +335,14 @@ export default function PayrollReportsArchiveSection({
                     }
                     rows={5}
                     placeholder="Add an optional return note for HR."
-                    className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                    className="w-full rounded-2xl border border-apple-mist px-3 py-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
                   />
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={onCloseRejectConfirm}
                       disabled={pendingDecisionRunId === rejectConfirmReport.id}
-                      className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Cancel
                     </button>
@@ -350,7 +350,7 @@ export default function PayrollReportsArchiveSection({
                       type="button"
                       onClick={onConfirmReject}
                       disabled={pendingDecisionRunId === rejectConfirmReport.id}
-                      className="inline-flex h-10 items-center justify-center rounded-xl bg-[#5b7d63] px-4 text-sm font-semibold text-white transition hover:bg-[#4d6b54] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex h-10 items-center justify-center rounded-xl bg-[#527d79] px-4 text-sm font-semibold text-white transition hover:bg-[#527d79] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {pendingDecisionRunId === rejectConfirmReport.id &&
                       pendingDecisionAction === "reject" ? (

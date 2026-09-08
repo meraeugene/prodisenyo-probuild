@@ -44,7 +44,7 @@ export default function PayrollApprovalQueueCard({
   const notes = parseOvertimeRequestNotes(request.notes).displayNotes;
 
   return (
-    <div className="group flex h-full w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all">
+    <div className="group flex h-full w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all">
       <div className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
@@ -54,9 +54,9 @@ export default function PayrollApprovalQueueCard({
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset",
               request.status === "approved"
-                ? "bg-emerald-50 text-emerald-700 ring-emerald-200/40"
+                ? "bg-teal-50 text-teal-700 ring-teal-200/40"
                 : request.status === "rejected"
-                  ? "bg-[#eef7f0] text-[#2d6a4f] ring-[#cfe3d3]"
+                  ? "bg-[#f0fdfa] text-[#0f766e] ring-[#ccfbf1]"
                   : "bg-amber-50 text-amber-700 ring-amber-200/40",
             )}
           >
@@ -104,7 +104,7 @@ export default function PayrollApprovalQueueCard({
             type="button"
             onClick={() => onOpenLogs(request)}
             disabled={logsLoading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#18532b] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#076d69] bg-[#076d69] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {logsLoading ? (
               <>
@@ -128,7 +128,7 @@ export default function PayrollApprovalQueueCard({
           </span>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500" />
           {request.quantity.toLocaleString("en-PH")} total hr
           {request.quantity === 1 ? "" : "s"}
         </div>
@@ -144,7 +144,7 @@ export default function PayrollApprovalQueueCard({
               type="button"
               onClick={() => onReject(request)}
               disabled={rowBusy}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#eef7f0] px-4 text-xs font-bold text-[#2d6a4f] transition-colors hover:bg-[#e2efe5] focus:outline-none focus:ring-2 focus:ring-[#cfe3d3] disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#f0fdfa] px-4 text-xs font-bold text-[#0f766e] transition-colors hover:bg-[#ccfbf1] focus:outline-none focus:ring-2 focus:ring-[#ccfbf1] disabled:opacity-50"
               aria-label={`Return overtime request for ${request.employee_name ?? "employee"}`}
             >
               {rejectBusy ? (
@@ -159,7 +159,7 @@ export default function PayrollApprovalQueueCard({
               type="button"
               onClick={() => onApprove(request.id)}
               disabled={rowBusy}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-xs font-bold text-white shadow-md shadow-emerald-900/10 transition-all hover:bg-[#18552d] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
               aria-label={`Approve overtime request for ${request.employee_name ?? "employee"}`}
             >
               {approveBusy ? (

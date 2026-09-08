@@ -5,9 +5,10 @@ import LoginHero from "@/features/auth/components/LoginHero";
 
 interface LoginPageProps {
   nextPath: string | null;
+  initialError?: string | null;
 }
 
-export default function LoginPage({ nextPath }: LoginPageProps) {
+export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
   return (
     <main className="min-h-screen bg-[#f7f9fb] lg:grid lg:grid-cols-[51.8%_48.2%]">
       <LoginHero />
@@ -42,7 +43,7 @@ export default function LoginPage({ nextPath }: LoginPageProps) {
           </header>
 
           <div className="mt-11">
-            <LoginForm nextPath={nextPath} />
+            <LoginForm nextPath={nextPath} initialError={initialError} />
           </div>
 
           <div className="mt-9 flex items-center gap-5" aria-hidden="true">

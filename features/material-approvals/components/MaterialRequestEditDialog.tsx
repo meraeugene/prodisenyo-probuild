@@ -8,7 +8,7 @@ import type {
 } from "@/features/material-approvals/types";
 
 const FIELD_CLASS =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100";
+  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-100";
 
 export default function MaterialRequestEditDialog({
   request,
@@ -71,7 +71,7 @@ export default function MaterialRequestEditDialog({
         onSubmit={submit}
         className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-[0_24px_70px_rgba(15,23,42,.25)]"
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-emerald-900 px-5 py-4 text-white">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-teal-900 px-5 py-4 text-white">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[.16em] text-white/70">
               CEO material correction
@@ -154,7 +154,7 @@ export default function MaterialRequestEditDialog({
               maxLength={500}
               value={form.notes ?? ""}
               onChange={(event) => update("notes", event.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-100"
             />
           </label>
           {error ? (
@@ -172,7 +172,7 @@ export default function MaterialRequestEditDialog({
           </button>
           <button
             type="submit"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white hover:bg-emerald-900"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white hover:bg-teal-900"
           >
             <Save size={15} /> Save changes
           </button>

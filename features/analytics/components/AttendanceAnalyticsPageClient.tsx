@@ -38,7 +38,7 @@ export default function AttendanceAnalyticsPageClient() {
       />
 
       {periodOptions.length > 0 ? (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <section className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm font-semibold text-apple-charcoal">
               Payroll Period
@@ -65,11 +65,11 @@ export default function AttendanceAnalyticsPageClient() {
       ) : employees.length > 0 && records.length > 0 ? (
         <AttendanceAnalyticsSection employees={employees} records={records} />
       ) : error ? (
-        <section className="rounded-[14px] border border-red-100 bg-red-50 p-6 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <section className="rounded-[14px] border border-red-100 bg-red-50 p-6 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
           <p className="text-sm text-red-700">{error}</p>
         </section>
       ) : (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+        <section className="rounded-[14px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
           <p className="text-sm text-apple-smoke">
             {isCeo
               ? "No saved payroll periods yet."

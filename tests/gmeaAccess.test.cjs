@@ -47,7 +47,7 @@ test("GMEA role home and server access agree; CEO cannot mutate", async () => {
       "./gmeaDatabase": {},
     },
   );
-  await assert.rejects(requireGmeaAccess(true), /inactive/);
+  await assert.rejects(requireGmeaAccess(true), /REDIRECT:\/auth\/login/);
 });
 test("middleware redirects unauthenticated and unauthorized roles and allows GMEA paths", async () => {
   async function request(role, pathname) {

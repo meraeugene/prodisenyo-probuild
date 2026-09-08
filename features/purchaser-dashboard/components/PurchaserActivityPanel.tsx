@@ -3,7 +3,7 @@ import type { PurchaserActivityItem } from "@/features/purchaser-dashboard/types
 import { formatPurchaserDate } from "@/features/purchaser-dashboard/utils/purchaserDashboard";
 
 const PRESENTATION = {
-  emerald: { icon: CheckCircle2, classes: "bg-emerald-50 text-emerald-700" },
+  emerald: { icon: CheckCircle2, classes: "bg-teal-50 text-teal-700" },
   sky: { icon: Truck, classes: "bg-sky-50 text-sky-700" },
   amber: { icon: FileText, classes: "bg-amber-50 text-amber-700" },
   slate: { icon: Clock3, classes: "bg-slate-100 text-slate-600" },

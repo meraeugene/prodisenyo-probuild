@@ -53,7 +53,7 @@ export default function CeoProjectOverview({
             </p>
           </div>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-emerald-700" style={{ width: currentProgress + "%" }} />
+            <div className="h-full rounded-full bg-teal-700" style={{ width: currentProgress + "%" }} />
           </div>
           <div className="mt-5 grid gap-3 text-sm">
             <InfoRow label="Start Date" value={project.startDate} />
@@ -116,7 +116,7 @@ function OverviewCard({ title, icon: Icon, children }: { title: string; icon: ty
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
       <div className="mb-5 flex items-center gap-2">
-        <Icon size={17} className="text-emerald-700" />
+        <Icon size={17} className="text-teal-700" />
         <h2 className="font-bold text-slate-950">{title}</h2>
       </div>
       {children}
@@ -127,8 +127,8 @@ function OverviewCard({ title, icon: Icon, children }: { title: string; icon: ty
 function InfoRow({ label, value, emphasized = false }: { label: string; value: string; emphasized?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className={emphasized ? "font-semibold text-emerald-700" : "text-slate-500"}>{label}</span>
-      <span className={"text-right capitalize " + (emphasized ? "font-bold text-emerald-800" : "font-semibold text-slate-900")}>{value}</span>
+      <span className={emphasized ? "font-semibold text-teal-700" : "text-slate-500"}>{label}</span>
+      <span className={"text-right capitalize " + (emphasized ? "font-bold text-teal-800" : "font-semibold text-slate-900")}>{value}</span>
     </div>
   );
 }

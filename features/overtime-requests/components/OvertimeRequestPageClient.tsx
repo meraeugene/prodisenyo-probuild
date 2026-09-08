@@ -22,9 +22,9 @@ function formatDateTime(value: string) {
 
 function getStatusClasses(status: OvertimeRequestRecord["status"]) {
   if (status === "approved")
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-teal-200 bg-teal-50 text-teal-700";
   if (status === "rejected")
-    return "border-[#cfe3d3] bg-[#eef7f0] text-[#2d6a4f]";
+    return "border-[#ccfbf1] bg-[#f0fdfa] text-[#0f766e]";
   return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
@@ -42,7 +42,7 @@ type OvertimeFormErrors = {
 };
 
 function baseInputClass(hasError: boolean) {
-  return `h-10 w-full rounded-xl border px-3 outline-none transition focus:border-emerald-400 ${
+  return `h-10 w-full rounded-xl border px-3 outline-none transition focus:border-teal-400 ${
     hasError
       ? "border-rose-400  ring-1 ring-rose-200"
       : "border-apple-mist bg-white"
@@ -169,7 +169,7 @@ export default function OvertimeRequestPageClient({
       <DashboardPageHero eyebrow="Overtime Workflow" title="Request Overtime" />
 
       <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[1.08fr_0.92fr] xl:items-stretch">
-        <section className="rounded-none border border-apple-mist h-fit bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px]">
+        <section className="rounded-none border border-apple-mist h-fit bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
           <h2 className="text-lg font-semibold text-apple-charcoal">
             Overtime Request Form
           </h2>
@@ -298,7 +298,7 @@ export default function OvertimeRequestPageClient({
                   }));
                 }}
                 rows={3}
-                className={`w-full rounded-xl border px-3 py-2 outline-none transition focus:border-emerald-400 ${
+                className={`w-full rounded-xl border px-3 py-2 outline-none transition focus:border-teal-400 ${
                   formErrors.reason
                     ? "border-rose-300 bg-rose-50/40"
                     : "border-apple-mist bg-white"
@@ -316,7 +316,7 @@ export default function OvertimeRequestPageClient({
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>
@@ -331,7 +331,7 @@ export default function OvertimeRequestPageClient({
           </form>
         </section>
 
-        <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+        <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-apple-charcoal">
               Your Overtime Requests
@@ -363,7 +363,7 @@ export default function OvertimeRequestPageClient({
                           {request.employee_name}
                         </h3>
                         <div className="mt-1 inline-flex items-center gap-1 text-sm text-apple-smoke">
-                          <MapPin size={14} className="text-emerald-700" />
+                          <MapPin size={14} className="text-teal-700" />
                           {request.site_name}
                         </div>
                       </div>
@@ -379,7 +379,7 @@ export default function OvertimeRequestPageClient({
                         <span className="inline-flex items-center gap-1.5">
                           <CalendarDays
                             size={14}
-                            className="text-emerald-700"
+                            className="text-teal-700"
                           />
                           Work date
                         </span>
@@ -418,7 +418,7 @@ export default function OvertimeRequestPageClient({
                     </p>
 
                     {request.rejection_reason ? (
-                      <p className="rounded-lg border border-[#cfe3d3] bg-[#eef7f0] px-3 py-2 text-sm text-[#2d6a4f]">
+                      <p className="rounded-lg border border-[#ccfbf1] bg-[#f0fdfa] px-3 py-2 text-sm text-[#0f766e]">
                         Return reason:{" "}
                         <span className="font-semibold">
                           {request.rejection_reason}
@@ -436,7 +436,7 @@ export default function OvertimeRequestPageClient({
       {confirmOpen ? (
         <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
-            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-5 py-4 text-white">
+            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Confirm Submission
               </p>
@@ -495,7 +495,7 @@ export default function OvertimeRequestPageClient({
                   type="button"
                   disabled={isPending}
                   onClick={() => setConfirmOpen(false)}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -503,7 +503,7 @@ export default function OvertimeRequestPageClient({
                   type="button"
                   disabled={isPending}
                   onClick={submitRequest}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isPending ? (
                     <>

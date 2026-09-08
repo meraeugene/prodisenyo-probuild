@@ -20,13 +20,13 @@ export default function PurchaserPricingPanel({ records }: { records: PurchaserD
             </div>
             <div className="text-right">
               <p className="text-sm font-bold text-slate-900">{formatPurchaserCurrency(record.quantity * record.actualUnitCost)}</p>
-              <p className="mt-0.5 text-[10px] uppercase text-emerald-700">{record.quotationReference || "Quotation recorded"}</p>
+              <p className="mt-0.5 text-[10px] uppercase text-teal-700">{record.quotationReference || "Quotation recorded"}</p>
             </div>
           </div>
         ))}
         {!priced.length ? <p className="px-5 py-10 text-center text-sm text-slate-500">No supplier pricing has been recorded.</p> : null}
       </div>
-      <Link href="/purchasing-approvals" className="flex items-center justify-center gap-1 border-t border-slate-100 px-5 py-3 text-xs font-bold text-emerald-800">
+      <Link href="/purchasing-approvals" className="flex items-center justify-center gap-1 border-t border-slate-100 px-5 py-3 text-xs font-bold text-teal-800">
         View all purchases <ArrowRight size={13} />
       </Link>
     </section>

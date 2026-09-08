@@ -72,7 +72,7 @@ export function PayrollSummaryCards(props: PayrollSummaryCardsProps) {
             key={card.label}
             className={`flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 ${
               card.strong
-                ? "border-emerald-200 bg-emerald-50/70"
+                ? "border-teal-200 bg-teal-50/70"
                 : card.accent
                   ? "border-amber-200 bg-amber-50/60"
                   : "border-slate-200 bg-white"
@@ -82,7 +82,7 @@ export function PayrollSummaryCards(props: PayrollSummaryCardsProps) {
               className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
                 card.accent
                   ? "bg-amber-100 text-amber-700"
-                  : "bg-emerald-50 text-emerald-700"
+                  : "bg-teal-50 text-teal-700"
               }`}
             >
               <Icon size={16} />
@@ -93,7 +93,7 @@ export function PayrollSummaryCards(props: PayrollSummaryCardsProps) {
               </p>
               <p
                 className={`truncate font-mono font-black leading-5 ${
-                  card.strong ? "text-base text-emerald-700" : "text-sm text-slate-950"
+                  card.strong ? "text-base text-teal-700" : "text-sm text-slate-950"
                 }`}
               >
                 {card.value}{" "}

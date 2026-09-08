@@ -19,10 +19,10 @@ export default function EstimateRejectedAlertModal({
   return createPortal(
     <div className="fixed inset-0 z-[180] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-[#d8e9dc] bg-[linear-gradient(180deg,#fcfffd_0%,#f3f8f4_100%)] p-7 shadow-[0_28px_90px_rgba(15,23,42,0.28)] sm:p-8">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-[#ccfbf1] bg-[linear-gradient(180deg,#fcfffd_0%,#f0fdfa_100%)] p-7 shadow-[0_28px_90px_rgba(15,23,42,0.28)] sm:p-8">
         <div className="grid gap-6 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-center">
           <div className="relative mx-auto w-full max-w-[220px]">
-            <div className="absolute inset-x-8 bottom-3 h-12 rounded-full bg-[#a9d86c]/30 blur-2xl" />
+            <div className="absolute inset-x-8 bottom-3 h-12 rounded-full bg-[#5eead4]/30 blur-2xl" />
             <Image
               src="/estimate-rejection-robot.png"
               alt="Friendly robot assistant holding an estimate document"
@@ -34,7 +34,7 @@ export default function EstimateRejectedAlertModal({
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#5b7d63]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#527d79]">
               Estimate Update Needed
             </p>
             <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-apple-charcoal">
@@ -47,8 +47,8 @@ export default function EstimateRejectedAlertModal({
           </div>
         </div>
 
-        <div className="mt-6 rounded-[22px] border border-[#dceadb] bg-white/85 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5b7d63]">
+        <div className="mt-6 rounded-[22px] border border-[#ccfbf1] bg-white/85 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#527d79]">
             Review Notes
           </p>
           <p className="mt-2 text-sm leading-7 text-apple-charcoal">
@@ -60,7 +60,7 @@ export default function EstimateRejectedAlertModal({
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 inline-flex w-full items-center justify-center rounded-[14px] bg-[#2d6a4f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#245540]"
+          className="mt-6 inline-flex w-full items-center justify-center rounded-[14px] bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#115e59]"
         >
           Review estimate
         </button>

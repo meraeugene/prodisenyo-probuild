@@ -126,15 +126,20 @@ function renderSidebarLink(params: {
         "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
         collapsed && "justify-center px-2.5",
         active
-          ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+          ? collapsed
+            ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
+            : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
           : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
       )}
     >
       <div
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+          "flex h-7 w-7 items-center justify-center transition-colors",
+          collapsed ? "rounded-none" : "rounded-full",
           active
-            ? "bg-[#1f6a37] text-white"
+            ? collapsed
+              ? "bg-transparent text-white"
+              : "bg-[#076d69] text-white"
             : "text-apple-smoke group-hover:text-apple-charcoal",
         )}
       >
@@ -148,7 +153,7 @@ function renderSidebarLink(params: {
       {badgeCount > 0 ? (
         <span
           className={cn(
-            "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#1f6a37] px-2 py-0.5 text-[11px] font-bold text-white",
+            "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#076d69] px-2 py-0.5 text-[11px] font-bold text-white",
             collapsed ? "absolute -right-1 -top-1" : "ml-1",
           )}
         >
@@ -172,7 +177,7 @@ function renderSidebarSectionLabel(params: {
 
   return (
     <div className="px-3 pb-2 pt-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-700">
         {label}
       </p>
     </div>

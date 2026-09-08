@@ -34,7 +34,7 @@ export default function DashboardTrendSection({
   latestTrendPoint: TrendPoint | null;
 }) {
   return (
-    <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+    <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -49,7 +49,7 @@ export default function DashboardTrendSection({
               className={cn(
                 "mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
                 trendPercent >= 0
-                  ? "bg-emerald-50 text-emerald-700"
+                  ? "bg-teal-50 text-teal-700"
                   : "bg-rose-50 text-rose-700",
               )}
             >
@@ -68,7 +68,7 @@ export default function DashboardTrendSection({
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition",
                   trendRange === range
-                    ? "bg-[#1f6a37] text-white"
+                    ? "bg-[#076d69] text-white"
                     : "text-apple-steel hover:text-apple-charcoal",
                 )}
               >
@@ -84,7 +84,7 @@ export default function DashboardTrendSection({
           <div className="flex h-full items-center justify-center">
             <Loader2
               size={26}
-              className="animate-spin text-[#1f6a37]"
+              className="animate-spin text-[#076d69]"
               aria-label="Loading trend data"
             />
           </div>
@@ -106,8 +106,8 @@ export default function DashboardTrendSection({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.32} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.04} />
+                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.32} />
+                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.04} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -137,7 +137,7 @@ export default function DashboardTrendSection({
                   return (
                     <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl">
                       <p className="text-xs font-semibold">{point.label}</p>
-                      <p className="mt-1 text-sm font-semibold text-emerald-700">
+                      <p className="mt-1 text-sm font-semibold text-teal-700">
                         {PESO_SIGN} {formatPayrollNumber(point.total)}
                       </p>
                     </div>
@@ -147,13 +147,13 @@ export default function DashboardTrendSection({
               <Area
                 type="monotone"
                 dataKey="total"
-                stroke="#16a34a"
+                stroke="#0d9488"
                 strokeWidth={3}
                 fill="url(#ceoDashboardTrendFill)"
                 dot={{ r: 0 }}
                 activeDot={{
                   r: 5,
-                  fill: "#16a34a",
+                  fill: "#0d9488",
                   stroke: "white",
                   strokeWidth: 2,
                 }}

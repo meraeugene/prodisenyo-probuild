@@ -29,7 +29,7 @@ export function PayrollCalculationFooter({
         type="button"
         onClick={onSave}
         disabled={saveDisabled}
-        className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-5 text-xs font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 text-xs font-bold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSaving ? (
           <>
@@ -81,7 +81,7 @@ export function PayrollOvertimeConfirmation({
           <button
             type="button"
             onClick={onConfirm}
-            className="h-9 rounded-lg bg-emerald-700 px-4 text-xs font-bold text-white"
+            className="h-9 rounded-lg bg-teal-700 px-4 text-xs font-bold text-white"
           >
             Confirm decision
           </button>

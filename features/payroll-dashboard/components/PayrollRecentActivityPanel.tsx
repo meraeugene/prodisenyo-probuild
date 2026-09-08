@@ -18,7 +18,7 @@ const PRESENTATION: Record<
   attendance: { icon: CalendarCheck2, tone: "bg-sky-50 text-sky-700" },
   created: { icon: FilePlus2, tone: "bg-amber-50 text-amber-700" },
   submitted: { icon: FileClock, tone: "bg-violet-50 text-violet-700" },
-  approved: { icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700" },
+  approved: { icon: CheckCircle2, tone: "bg-teal-50 text-teal-700" },
   rejected: { icon: CircleAlert, tone: "bg-rose-50 text-rose-700" },
 };
 
@@ -27,15 +27,17 @@ export default function PayrollRecentActivityPanel({
 }: {
   items: PayrollActivityItem[];
 }) {
+  const visibleItems = items.slice(0, 5);
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
       <h2 className="font-bold text-slate-950">Recent Activity</h2>
       <p className="mt-0.5 text-xs text-slate-500">
-        Attendance and payroll workflow records
+        Latest attendance and payroll updates
       </p>
 
       <div className="mt-4 divide-y divide-slate-100">
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const presentation = PRESENTATION[item.type];
           const Icon = presentation.icon;
           return (
@@ -67,7 +69,7 @@ export default function PayrollRecentActivityPanel({
             </article>
           );
         })}
-        {!items.length ? (
+        {!visibleItems.length ? (
           <div className="rounded-xl bg-slate-50 px-4 py-8 text-center">
             <p className="text-sm font-semibold text-slate-800">No payroll activity yet</p>
             <p className="mt-1 text-xs text-slate-500">Saved workflow events will appear here.</p>

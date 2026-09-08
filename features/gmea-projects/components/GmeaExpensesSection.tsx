@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
 import { Eye, Pencil, Trash2 } from "lucide-react";
@@ -109,7 +109,7 @@ export default function GmeaExpensesSection({
                   <td className="max-w-64 p-3">
                     <p className="font-medium">{e.description}</p>
                     {e.is_new && (
-                      <span className="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                      <span className="mt-1 inline-flex rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-800">
                         New
                       </span>
                     )}

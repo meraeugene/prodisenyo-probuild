@@ -44,8 +44,8 @@ export default function SettingsPasswordSection({
             <span className="text-sm font-semibold text-apple-charcoal">
               New Password
             </span>
-            <div className="group flex h-12 items-center rounded-[14px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#1f6a37] focus-within:ring-4 focus-within:ring-[#1f6a37]/10">
-              <LockKeyhole className="mr-3 h-4 w-4 text-apple-silver transition group-focus-within:text-[#1f6a37]" />
+            <div className="group flex h-12 items-center rounded-[14px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-4 focus-within:ring-[#076d69]/10">
+              <LockKeyhole className="mr-3 h-4 w-4 text-apple-silver transition group-focus-within:text-[#076d69]" />
               <input
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
@@ -56,7 +56,7 @@ export default function SettingsPasswordSection({
               <button
                 type="button"
                 onClick={onToggleNewPassword}
-                className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-apple-steel transition hover:bg-[#f3f7f4] hover:text-[#1f6a37]"
+                className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-apple-steel transition hover:bg-[#f0fdfa] hover:text-[#076d69]"
                 aria-label={
                   showNewPassword ? "Hide new password" : "Show new password"
                 }
@@ -74,8 +74,8 @@ export default function SettingsPasswordSection({
             <span className="text-sm font-semibold text-apple-charcoal">
               Confirm New Password
             </span>
-            <div className="group flex h-12 items-center rounded-[14px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#1f6a37] focus-within:ring-4 focus-within:ring-[#1f6a37]/10">
-              <LockKeyhole className="mr-3 h-4 w-4 text-apple-silver transition group-focus-within:text-[#1f6a37]" />
+            <div className="group flex h-12 items-center rounded-[14px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-4 focus-within:ring-[#076d69]/10">
+              <LockKeyhole className="mr-3 h-4 w-4 text-apple-silver transition group-focus-within:text-[#076d69]" />
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
@@ -88,7 +88,7 @@ export default function SettingsPasswordSection({
               <button
                 type="button"
                 onClick={onToggleConfirmPassword}
-                className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-apple-steel transition hover:bg-[#f3f7f4] hover:text-[#1f6a37]"
+                className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-apple-steel transition hover:bg-[#f0fdfa] hover:text-[#076d69]"
                 aria-label={
                   showConfirmPassword
                     ? "Hide confirm password"
@@ -115,7 +115,7 @@ export default function SettingsPasswordSection({
             type="button"
             onClick={onChangePassword}
             disabled={changingPassword}
-            className="mt-4 inline-flex h-11 w-fit items-center justify-center rounded-[12px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18532b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1f6a37]/10 disabled:cursor-not-allowed disabled:bg-[#93b6a0]"
+            className="mt-4 inline-flex h-11 w-fit items-center justify-center rounded-[12px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#0f766e] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:bg-[#99f6e4]"
           >
             {changingPassword ? (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />

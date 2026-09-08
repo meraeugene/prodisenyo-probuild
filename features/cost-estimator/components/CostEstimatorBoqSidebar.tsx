@@ -36,12 +36,12 @@ export default function CostEstimatorBoqSidebar({
       <section className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
         <h2 className="text-xl font-semibold tracking-[-0.025em] text-slate-950">BOQ Summary</h2>
         <dl className="mt-6 space-y-5 text-[15px]">
-          <SummaryRow label="Estimated Cost" value={formatBudgetMoney(estimatedCost)} valueClassName="text-emerald-800" />
+          <SummaryRow label="Estimated Cost" value={formatBudgetMoney(estimatedCost)} valueClassName="text-teal-800" />
           <SummaryRow label="Budget Ceiling" value={budgetCeiling === null ? "Not recorded" : formatBudgetMoney(budgetCeiling)} />
           <SummaryRow
             label="Remaining Budget"
             value={remainingBudget === null ? "Unavailable" : formatBudgetMoney(remainingBudget)}
-            valueClassName={remainingBudget !== null && remainingBudget < 0 ? "text-rose-700" : "text-emerald-800"}
+            valueClassName={remainingBudget !== null && remainingBudget < 0 ? "text-rose-700" : "text-teal-800"}
           />
         </dl>
 
@@ -51,7 +51,7 @@ export default function CostEstimatorBoqSidebar({
             <span className="font-medium text-slate-800">{budgetUsage === null ? "Unavailable" : `${budgetUsage}%`}</span>
           </div>
           <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
-            <div className="h-full rounded-full bg-emerald-700" style={{ width: `${Math.min(Math.max(budgetUsage ?? 0, 0), 100)}%` }} />
+            <div className="h-full rounded-full bg-teal-700" style={{ width: `${Math.min(Math.max(budgetUsage ?? 0, 0), 100)}%` }} />
           </div>
         </div>
       </section>
@@ -107,7 +107,7 @@ function getStatusContent(estimate: ProjectEstimateRow) {
     case "submitted":
       return { icon: Send, title: "Submitted to CEO review", description: "Your BOQ has been submitted and is awaiting review.", wrapperClassName: "border-sky-200 bg-sky-50 text-sky-800" };
     case "approved":
-      return { icon: CheckCircle2, title: "Approved by CEO", description: "This BOQ is the approved estimate baseline for the project.", wrapperClassName: "border-emerald-200 bg-emerald-50 text-emerald-800" };
+      return { icon: CheckCircle2, title: "Approved by CEO", description: "This BOQ is the approved estimate baseline for the project.", wrapperClassName: "border-teal-200 bg-teal-50 text-teal-800" };
     case "rejected":
       return { icon: RotateCcw, title: "Returned for correction", description: "Review the CEO note, then reopen and update the BOQ.", wrapperClassName: "border-rose-200 bg-rose-50 text-rose-800" };
     default:

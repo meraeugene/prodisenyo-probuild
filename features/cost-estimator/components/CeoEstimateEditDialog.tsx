@@ -59,7 +59,7 @@ export default function CeoEstimateEditDialog({
   return (
     <div className="fixed inset-0 z-[180] flex items-center justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:p-4">
       <div className="flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden bg-white shadow-2xl sm:max-h-[94vh] sm:rounded-3xl">
-        <header className="flex items-start justify-between border-b border-slate-200 bg-emerald-950 px-5 py-4 text-white">
+        <header className="flex items-start justify-between border-b border-slate-200 bg-teal-950 px-5 py-4 text-white">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">Controlled CEO edit</p>
             <h2 className="mt-2 flex items-center gap-2 text-xl font-bold"><PencilLine size={19} /> Edit submitted estimate</h2>
@@ -76,13 +76,13 @@ export default function CeoEstimateEditDialog({
               <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="flex flex-col justify-between gap-2 md:flex-row md:items-start">
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700">
+                    <p className="text-xs font-semibold text-teal-700">
                       {item.boq_section || "General Works"} / {item.boq_item_number || item.sort_order + 1}
                     </p>
                     <h3 className="mt-1 font-bold text-slate-900">{item.item_name_snapshot}</h3>
                     <p className="mt-1 text-xs text-slate-500">{item.material_name_snapshot || item.item_name_snapshot} / {item.unit_label_snapshot}</p>
                   </div>
-                  <p className="font-bold text-emerald-800">₱{(value.quantity * value.unitCost).toLocaleString("en-PH", { maximumFractionDigits: 2 })}</p>
+                  <p className="font-bold text-teal-800">₱{(value.quantity * value.unitCost).toLocaleString("en-PH", { maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <Field label="Quantity"><input type="number" min="0.01" step="0.01" value={value.quantity} onChange={(event) => updateItem(item.id, { quantity: Number(event.target.value) })} className="input" /></Field>
@@ -103,7 +103,7 @@ export default function CeoEstimateEditDialog({
 
         <footer className="flex justify-end gap-2 border-t border-slate-200 bg-white p-4">
           <button type="button" onClick={onClose} disabled={isPending} className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Cancel</button>
-          <button type="button" onClick={save} disabled={isPending} className="inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white disabled:opacity-60">{isPending ? <LoaderCircle size={15} className="animate-spin" /> : null}Save audited changes</button>
+          <button type="button" onClick={save} disabled={isPending} className="inline-flex h-10 items-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white disabled:opacity-60">{isPending ? <LoaderCircle size={15} className="animate-spin" /> : null}Save audited changes</button>
         </footer>
       </div>
       <style jsx>{`.input { margin-top:.35rem; height:2.5rem; width:100%; border:1px solid #dbe5dd; border-radius:.75rem; padding:0 .75rem; font-size:.875rem; outline:none } .input:focus { border-color:#047857; box-shadow:0 0 0 2px #d1fae5 }`}</style>

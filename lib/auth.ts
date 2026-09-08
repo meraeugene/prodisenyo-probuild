@@ -81,7 +81,11 @@ export async function requireRole(roles: AppRole | AppRole[]) {
   const profile = await getCurrentProfile();
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
-  if (!profile || !allowedRoles.includes(profile.role)) {
+  if (!profile || !profile.is_active) {
+    redirect("/auth/login");
+  }
+
+  if (!allowedRoles.includes(profile.role)) {
     redirect(getRoleHomePath(profile?.role));
   }
 

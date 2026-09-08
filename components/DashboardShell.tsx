@@ -187,7 +187,7 @@ export default function DashboardShell({
             <div className="mt-auto space-y-1 pt-3">
               {!collapsed ? (
                 <div className="px-3 pb-2 pt-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-silver">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-700">
                     Account
                   </p>
                 </div>
@@ -199,15 +199,20 @@ export default function DashboardShell({
                     "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
                     collapsed && "justify-center px-2.5",
                     settingsActive
-                      ? "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+                      ? collapsed
+                        ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
+                        : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
                       : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
                   )}
                 >
                 <div
                   className={cn(
-                    "flex h-7 w-7 mr items-center justify-center rounded-full transition-colors",
+                    "flex h-7 w-7 items-center justify-center transition-colors",
+                    collapsed ? "rounded-none" : "rounded-full",
                     settingsActive
-                      ? "bg-[#1f6a37] text-white"
+                      ? collapsed
+                        ? "bg-transparent text-white"
+                        : "bg-[#076d69] text-white"
                       : "text-apple-smoke group-hover:text-apple-charcoal",
                   )}
                 >
@@ -230,7 +235,7 @@ export default function DashboardShell({
                   className={cn(
                     collapsed
                       ? "flex justify-center"
-                      : "rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(24,83,43,0.06)]",
+                      : "rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(7,109,105,0.06)]",
                   )}
                 >
                   <div

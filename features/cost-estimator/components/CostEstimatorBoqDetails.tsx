@@ -58,12 +58,12 @@ export default function CostEstimatorBoqDetails({
     <div className="space-y-5 p-4 sm:p-6">
       <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
-            <button type="button" onClick={onBack} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 hover:text-emerald-950">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-teal-800">
+            <button type="button" onClick={onBack} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 hover:text-teal-950">
               Cost Estimator
             </button>
             <span aria-hidden="true" className="text-slate-400">/</span>
-            <button type="button" onClick={onBack} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 hover:text-emerald-950">
+            <button type="button" onClick={onBack} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 hover:text-teal-950">
               Assigned Projects
             </button>
             <span aria-hidden="true" className="text-slate-400">/</span>
@@ -76,16 +76,16 @@ export default function CostEstimatorBoqDetails({
 
         <div className="flex flex-wrap gap-3">
           {onEdit ? (
-            <button type="button" onClick={onEdit} disabled={pending} className="inline-flex h-11 items-center gap-2 rounded-[9px] border border-emerald-700 bg-white px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-60">
+            <button type="button" onClick={onEdit} disabled={pending} className="inline-flex h-11 items-center gap-2 rounded-[9px] border border-teal-700 bg-white px-5 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:opacity-60">
               <Pencil aria-hidden="true" size={17} />
               Edit BOQ
             </button>
           ) : null}
-          <button type="button" onClick={onViewReport} className="inline-flex h-11 items-center gap-2 rounded-[9px] border border-emerald-700 bg-white px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+          <button type="button" onClick={onViewReport} className="inline-flex h-11 items-center gap-2 rounded-[9px] border border-teal-700 bg-white px-5 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
             <FileText aria-hidden="true" size={17} />
             View Report
           </button>
-          <a href="#submission-status" className="inline-flex h-11 items-center gap-2 rounded-[9px] bg-emerald-800 px-5 text-sm font-semibold text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+          <a href="#submission-status" className="inline-flex h-11 items-center gap-2 rounded-[9px] bg-teal-800 px-5 text-sm font-semibold text-white transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
             <Eye aria-hidden="true" size={18} />
             Submission Status
           </a>
@@ -96,7 +96,7 @@ export default function CostEstimatorBoqDetails({
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-[22px] font-semibold text-slate-950">{estimate.project_name}</h2>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+            <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
               {formatProjectTypeLabel(estimate.project_type)}
             </span>
           </div>
@@ -123,7 +123,7 @@ export default function CostEstimatorBoqDetails({
 }
 
 const METRIC_TONES = {
-  emerald: "bg-emerald-50 text-emerald-700",
+  emerald: "bg-teal-50 text-teal-700",
   amber: "bg-amber-50 text-amber-600",
   sky: "bg-sky-50 text-sky-600",
 } as const;

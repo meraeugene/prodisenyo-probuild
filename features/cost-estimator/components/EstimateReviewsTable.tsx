@@ -69,7 +69,7 @@ export default function EstimateReviewsTable({
   }
 
   return (
-    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
+    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
       <div className="mb-4">
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -147,7 +147,7 @@ export default function EstimateReviewsTable({
                         )
                       }
                       data-estimate-actions-root
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-teal-100 hover:bg-teal-50/60 hover:text-apple-charcoal"
                       aria-label={`Open actions for ${estimate.project_name}`}
                     >
                       <MoreHorizontal size={15} />
@@ -182,7 +182,7 @@ export default function EstimateReviewsTable({
                   setOpenMenu(null);
                   onOpenReport(openMenuEstimate.id);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-emerald-50/70"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-teal-50/70"
               >
                 <Eye size={13} />
                 View estimate

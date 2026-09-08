@@ -8,7 +8,7 @@ import {
 } from "@/features/ceo-dashboard/utils/ceoDashboard";
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700",
+  active: "bg-teal-50 text-teal-700",
   completed: "bg-sky-50 text-sky-700",
   planning: "bg-amber-50 text-amber-700",
   on_hold: "bg-rose-50 text-rose-700",
@@ -33,7 +33,7 @@ export default function CeoDashboardProjectsPanel({
           <h2 className="font-bold text-slate-950">Project Overview</h2>
           <p className="mt-0.5 text-xs text-slate-500">Latest persisted project health</p>
         </div>
-        <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950">
+        <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950">
           View all <ArrowRight size={13} />
         </Link>
       </div>
@@ -60,7 +60,7 @@ export default function CeoDashboardProjectsPanel({
             <div>
               <p className="text-sm font-bold text-slate-950">{project.progress}%</p>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-emerald-700" style={{ width: project.progress + "%" }} />
+                <div className="h-full rounded-full bg-teal-700" style={{ width: project.progress + "%" }} />
               </div>
               <p className="mt-1 text-[10px] text-slate-400">
                 {project.latestProgressAt ? "Updated " + formatCeoDate(project.latestProgressAt) : "No progress update"}

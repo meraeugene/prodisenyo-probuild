@@ -63,7 +63,7 @@ export default function CostEstimatorSetupForm({
         ) : null}
 
         <div className="mt-6">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-800">
             <Calculator size={18} />
           </div>
           <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -108,7 +108,7 @@ export default function CostEstimatorSetupForm({
                 )
               }
               className={cn(
-                "mt-2 w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                "mt-2 w-full rounded-[10px] border bg-white px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                 errors.projectType ? "border-red-500" : "border-apple-mist",
               )}
             >
@@ -139,7 +139,7 @@ export default function CostEstimatorSetupForm({
                 onChange={(event) => onFieldChange("location", event.target.value)}
                 placeholder="e.g. Quezon City, Metro Manila"
                 className={cn(
-                  "mt-2 w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  "mt-2 w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                   errors.location ? "border-red-500" : "border-apple-mist",
                 )}
               />
@@ -157,7 +157,7 @@ export default function CostEstimatorSetupForm({
                 onChange={(event) => onFieldChange("ownerName", event.target.value)}
                 placeholder="e.g. Maria Santos"
                 className={cn(
-                  "mt-2 w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  "mt-2 w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                   errors.ownerName ? "border-red-500" : "border-apple-mist",
                 )}
               />
@@ -186,7 +186,7 @@ export default function CostEstimatorSetupForm({
                 placeholder="2,500,000"
                 inputMode="decimal"
                 className={cn(
-                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#076d69]",
                   errors.costEstimate ? "border-red-500" : "border-apple-mist",
                 )}
               />
@@ -222,7 +222,7 @@ export default function CostEstimatorSetupForm({
             type="button"
             onClick={() => onSubmit()}
             disabled={pending}
-            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#1f6a37] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#076d69] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? <ButtonLoader label="Creating estimate" /> : "Start cost estimate"}
           </button>

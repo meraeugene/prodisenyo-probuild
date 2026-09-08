@@ -38,7 +38,7 @@ export default function SummaryFormulaModal({
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-0 backdrop-blur-sm sm:p-4">
       <div className="flex h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-none bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)] sm:h-auto sm:max-h-[90dvh] sm:rounded-[28px]">
-        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:py-5">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/65">
@@ -77,7 +77,7 @@ export default function SummaryFormulaModal({
                 key={step}
                 className="flex items-start gap-3 rounded-[18px] border border-apple-mist bg-white px-4 py-3"
               >
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-semibold text-emerald-700">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700">
                   {index + 1}
                 </div>
                 <p className="text-sm leading-6 text-apple-smoke">{step}</p>

@@ -74,14 +74,14 @@ export default function EngineerProjectOverview({
             <p className="pb-1 text-sm text-slate-500">Overall progress</p>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-emerald-700 transition-[width]" style={{ width: `${overallProgress}%` }} />
+            <div className="h-full rounded-full bg-teal-700 transition-[width]" style={{ width: `${overallProgress}%` }} />
           </div>
           <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
             <Info label="Target Completion" value={formatDate(project.endDate)} />
             <Info label="Schedule" value={schedule.label} tone={schedule.state === "overdue" ? "danger" : "default"} />
           </dl>
           {canUpdateProgress ? (
-            <button type="button" onClick={onUpdateProgress} className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-700 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">
+            <button type="button" onClick={onUpdateProgress} className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-teal-700 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
               Update Progress <ArrowRight size={15} />
             </button>
           ) : null}
@@ -106,7 +106,7 @@ export default function EngineerProjectOverview({
               <h2 className="text-sm font-semibold text-slate-950">Materials</h2>
               <p className="mt-1 text-xs text-slate-500">Requests for this project</p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700"><PackageOpen size={21} /></div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-700"><PackageOpen size={21} /></div>
           </div>
           <p className="mt-6 text-4xl font-bold tracking-tight text-slate-950">{materialCounts.total}</p>
           <p className="mt-1 text-sm text-slate-500">Total material requests</p>
@@ -115,7 +115,7 @@ export default function EngineerProjectOverview({
             <MaterialStat label="Approved" value={materialCounts.approved} icon={CheckCircle2} tone="emerald" />
             <MaterialStat label="Returned" value={materialCounts.returned} icon={PackageCheck} tone="rose" />
           </div>
-          <button type="button" onClick={onOpenMaterials} className="mt-5 inline-flex w-full items-center justify-between rounded-lg px-1 py-2 text-sm font-semibold text-emerald-800 transition hover:text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">
+          <button type="button" onClick={onOpenMaterials} className="mt-5 inline-flex w-full items-center justify-between rounded-lg px-1 py-2 text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
             View Material Requests <ArrowRight size={16} />
           </button>
         </article>
@@ -124,13 +124,13 @@ export default function EngineerProjectOverview({
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div><h2 className="text-base font-semibold text-slate-950">Recent Progress Updates</h2><p className="mt-1 text-xs text-slate-500">Latest overall progress reports submitted for this project.</p></div>
-          {progressUpdates.length > 0 ? <button type="button" onClick={onUpdateProgress} className="text-sm font-semibold text-emerald-800 hover:text-emerald-950">View all</button> : null}
+          {progressUpdates.length > 0 ? <button type="button" onClick={onUpdateProgress} className="text-sm font-semibold text-teal-800 hover:text-teal-950">View all</button> : null}
         </div>
         <div className="mt-4 divide-y divide-slate-100">
           {progressUpdates.slice(0, 4).map((update) => (
             <article key={update.id} className="grid gap-3 py-4 sm:grid-cols-[120px_70px_minmax(0,1fr)] sm:items-start">
               <time className="text-xs font-medium text-slate-500">{formatDate(update.created_at)}</time>
-              <p className="text-sm font-bold text-emerald-700">{update.overall_percent}%</p>
+              <p className="text-sm font-bold text-teal-700">{update.overall_percent}%</p>
               <div><p className="text-sm font-semibold text-slate-800">{update.completed_work_summary}</p>{update.remarks ? <p className="mt-1 text-xs leading-5 text-slate-500">{update.remarks}</p> : null}</div>
             </article>
           ))}
@@ -146,6 +146,6 @@ function Info({ label, value, tone = "default" }: { label: string; value: string
 }
 
 function MaterialStat({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Clock3; tone: "amber" | "emerald" | "rose" }) {
-  const colors = { amber: "text-amber-600", emerald: "text-emerald-700", rose: "text-rose-600" };
+  const colors = { amber: "text-amber-600", emerald: "text-teal-700", rose: "text-rose-600" };
   return <div className="flex items-center justify-between gap-3 py-3"><span className="inline-flex items-center gap-2 text-sm text-slate-600"><Icon size={15} className={colors[tone]} />{label}</span><strong className="text-sm text-slate-950">{value}</strong></div>;
 }

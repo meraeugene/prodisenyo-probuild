@@ -32,7 +32,7 @@ export const COST_COLUMNS: Array<{
   {
     value: "completed",
     label: "Completed",
-    dotClassName: "bg-emerald-600",
+    dotClassName: "bg-teal-600",
     emptyMessage: "No accepted materials or approved expenses yet.",
   },
 ];

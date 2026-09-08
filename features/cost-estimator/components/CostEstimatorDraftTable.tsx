@@ -91,9 +91,9 @@ export default function CostEstimatorDraftTable({
                 type="button"
                 onClick={() => setActiveFilter(filter)}
                 className={cn(
-                  "border-b-2 pb-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600",
+                  "border-b-2 pb-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
                   activeFilter === filter
-                    ? "border-emerald-700 text-emerald-800"
+                    ? "border-teal-700 text-teal-800"
                     : "border-transparent text-slate-600 hover:text-slate-950",
                 )}
               >
@@ -109,13 +109,13 @@ export default function CostEstimatorDraftTable({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search items..."
-            className="h-11 w-full rounded-[9px] border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="h-11 w-full rounded-[9px] border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
           />
         </label>
       </div>
 
       <div className="flex flex-wrap gap-3 border-b border-slate-200 px-5 py-4">
-        <button type="button" onClick={onAdd} disabled={disabled} className="inline-flex h-10 items-center gap-2 rounded-[9px] bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-60">
+        <button type="button" onClick={onAdd} disabled={disabled} className="inline-flex h-10 items-center gap-2 rounded-[9px] bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:opacity-60">
           <Plus aria-hidden="true" size={17} /> Add Item
         </button>
       </div>
@@ -139,7 +139,7 @@ export default function CostEstimatorDraftTable({
               <tr key={row.key} className="text-slate-700 hover:bg-slate-50/70">
                 <td className="px-5 py-4 font-medium text-slate-950">{row.itemNumber}</td>
                 <td className="px-4 py-4">
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">{row.section}</span>
+                  <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">{row.section}</span>
                 </td>
                 <td className="px-4 py-4 font-medium text-slate-950">{row.title}</td>
                 <td className="px-4 py-4">{row.unit}</td>
@@ -148,7 +148,7 @@ export default function CostEstimatorDraftTable({
                 <td className="px-4 py-4 text-right font-semibold text-slate-950">{formatBudgetMoney(row.total)}</td>
                 <td className="px-5 py-4">
                   <div className="flex justify-center gap-1">
-                    <button type="button" onClick={() => onEdit(row.indices)} disabled={disabled} aria-label={`Edit ${row.title}`} className="rounded-md p-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:opacity-50"><Pencil aria-hidden="true" size={16} /></button>
+                    <button type="button" onClick={() => onEdit(row.indices)} disabled={disabled} aria-label={`Edit ${row.title}`} className="rounded-md p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50"><Pencil aria-hidden="true" size={16} /></button>
                     <button type="button" onClick={() => onDelete(row.indices)} disabled={disabled} aria-label={`Delete ${row.title}`} className="rounded-md p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50"><Trash2 aria-hidden="true" size={16} /></button>
                   </div>
                 </td>

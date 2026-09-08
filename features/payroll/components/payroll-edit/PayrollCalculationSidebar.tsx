@@ -47,7 +47,7 @@ interface PayrollCalculationSidebarProps {
 function PanelTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 text-xs font-bold text-slate-950">
-      <span className="text-emerald-700">{icon}</span>
+      <span className="text-teal-700">{icon}</span>
       {children}
     </div>
   );
@@ -97,9 +97,9 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between bg-emerald-50 px-3.5 py-2.5">
-          <span className="text-[11px] font-bold text-emerald-900">Adjusted Total Pay</span>
-          <span className="font-mono text-base font-black text-emerald-700">
+        <div className="flex items-center justify-between bg-teal-50 px-3.5 py-2.5">
+          <span className="text-[11px] font-bold text-teal-900">Adjusted Total Pay</span>
+          <span className="font-mono text-base font-black text-teal-700">
             {formatPeso(props.adjustedTotalPay)}
           </span>
         </div>
@@ -117,7 +117,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
               <button
                 type="button"
                 onClick={() => props.onBiometricDecision("approved")}
-                className="inline-flex h-7 items-center gap-1 rounded-md border border-emerald-200 px-2.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-50"
+                className="inline-flex h-7 items-center gap-1 rounded-md border border-teal-200 px-2.5 text-[10px] font-bold text-teal-700 hover:bg-teal-50"
               >
                 <Check size={12} /> Confirm
               </button>
@@ -141,7 +141,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
               key={key}
               type="button"
               onClick={() => props.onOpenAdjustment(key)}
-              className="inline-flex h-8 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 text-[10px] font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+              className="inline-flex h-8 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 text-[10px] font-semibold text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
             >
               <Plus size={12} /> {label}
             </button>

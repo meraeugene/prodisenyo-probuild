@@ -25,7 +25,7 @@ export default function ProjectWorkspaceTabSkeleton({
             <Skeleton className="h-3 w-28" />
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Skeleton className="h-8 w-56" strong />
-              <Skeleton className="h-8 w-40 rounded-xl bg-emerald-100" />
+              <Skeleton className="h-8 w-40 rounded-xl bg-teal-100" />
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-6">
               {[0, 1, 2].map((item) => (
@@ -44,8 +44,8 @@ export default function ProjectWorkspaceTabSkeleton({
         <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:px-6 lg:flex-row lg:justify-between">
           <Skeleton className="h-10 w-full rounded-xl sm:w-36" />
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Skeleton className="h-10 w-full rounded-xl sm:w-28 bg-emerald-100" />
-            <Skeleton className="h-10 w-full rounded-xl sm:w-28 bg-emerald-200" />
+            <Skeleton className="h-10 w-full rounded-xl sm:w-28 bg-teal-100" />
+            <Skeleton className="h-10 w-full rounded-xl sm:w-28 bg-teal-200" />
           </div>
         </div>
       </div>
@@ -73,8 +73,8 @@ export default function ProjectWorkspaceTabSkeleton({
 
   return (
     <div aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">
-      <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
-        <Skeleton className="h-4 w-72 bg-emerald-100" />
+      <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+        <Skeleton className="h-4 w-72 bg-teal-100" />
       </div>
       <ListSkeleton rows={4} />
     </div>
@@ -86,7 +86,7 @@ function ListSkeleton({ rows }: { rows: number }) {
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-center justify-between gap-4">
         <Skeleton className="h-6 w-44" strong />
-        <Skeleton className="h-9 w-28 rounded-xl bg-emerald-100" />
+        <Skeleton className="h-9 w-28 rounded-xl bg-teal-100" />
       </div>
       <div className="mt-5 divide-y divide-slate-100">
         {Array.from({ length: rows }, (_, item) => (

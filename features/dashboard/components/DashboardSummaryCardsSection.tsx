@@ -19,7 +19,7 @@ export default function DashboardSummaryCardsSection({
       {cards.map((card) => {
         const iconWrapClass =
           card.key === "gross"
-            ? "bg-emerald-50 text-emerald-700"
+            ? "bg-teal-50 text-teal-700"
             : card.key === "deductions"
               ? "bg-red-50 text-red-700"
               : "bg-sky-50 text-sky-700";
@@ -35,7 +35,7 @@ export default function DashboardSummaryCardsSection({
             key={card.key}
             type="button"
             onClick={() => onSelectCard(card.key)}
-            className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(24,83,43,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(24,83,43,0.12)]"
+            className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(7,109,105,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(7,109,105,0.12)]"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -49,7 +49,7 @@ export default function DashboardSummaryCardsSection({
                 </p>
               </div>
               <div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs text-green-600">
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-xs text-teal-600">
                   Updated <ArrowUp size={12} />
                 </span>
               </div>
@@ -60,7 +60,7 @@ export default function DashboardSummaryCardsSection({
             <p className="mt-3 text-sm font-medium text-apple-charcoal">
               {card.badge}
             </p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-teal-600">
               View Details
             </p>
           </button>

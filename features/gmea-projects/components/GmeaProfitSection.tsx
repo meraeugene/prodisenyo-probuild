@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
@@ -57,7 +57,7 @@ export default function GmeaProfitSection({
           {s.partners.map((p) => (
             <div
               key={p.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50/40 p-5"
+              className="flex items-center justify-between gap-3 rounded-xl border border-teal-100 bg-teal-50/40 p-5"
             >
               <div>
                 <h3 className="font-semibold">{p.name}</h3>

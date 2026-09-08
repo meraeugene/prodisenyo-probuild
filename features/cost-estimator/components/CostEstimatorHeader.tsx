@@ -66,7 +66,7 @@ export default function CostEstimatorHeader({
               value={selectedEstimate.id}
               onChange={(event) => onSelectEstimate(event.target.value)}
               disabled={uiLocked}
-              className="h-11 w-full min-w-0 rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#1f6a37]/60 hover:bg-[#f8fbf9] focus:border-[#1f6a37] focus:bg-[#f8fbf9] sm:min-w-[280px] sm:w-auto"
+              className="h-11 w-full min-w-0 rounded-[10px] border border-apple-mist bg-white px-4 text-base font-semibold text-apple-charcoal outline-none transition hover:border-[#076d69]/60 hover:bg-[#f8fbf9] focus:border-[#076d69] focus:bg-[#f8fbf9] sm:min-w-[280px] sm:w-auto"
             >
               {estimates.map((estimate) => (
                 <option key={estimate.id} value={estimate.id}>
@@ -89,7 +89,7 @@ export default function CostEstimatorHeader({
                   ? "border-rose-200 bg-rose-50 text-rose-700"
                   : saveState === "dirty"
                     ? "border-sky-200 bg-sky-50 text-sky-700"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                    : "border-teal-200 bg-teal-50 text-teal-700",
             )}
           >
             {saveState === "saving" ? (
@@ -114,7 +114,7 @@ export default function CostEstimatorHeader({
                 type="button"
                 onClick={onSaveDraft}
                 disabled={uiLocked || saveState !== "dirty"}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {pendingSaveEstimate ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -128,7 +128,7 @@ export default function CostEstimatorHeader({
                 <button
                   type="button"
                   disabled
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 opacity-80 cursor-default"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 opacity-80 cursor-default"
                 >
                   <CheckCircle2 size={18} />
                   Submitted

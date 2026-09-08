@@ -11,7 +11,7 @@ interface CutoffAttendanceTableProps {
 }
 
 const badgeStyles: Record<string, string> = {
-  WORKED: "bg-emerald-50 text-emerald-700",
+  WORKED: "bg-teal-50 text-teal-700",
   REGULAR_HOLIDAY: "bg-violet-50 text-violet-700",
   SPECIAL_NON_WORKING_HOLIDAY: "bg-violet-50 text-violet-700",
   REST_DAY: "bg-sky-50 text-sky-700",
@@ -29,7 +29,7 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex min-h-11 items-center justify-between border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2">
-          <CalendarDays size={16} className="text-emerald-700" />
+          <CalendarDays size={16} className="text-teal-700" />
           <div>
             <h3 className="text-xs font-bold text-slate-950">Cutoff Attendance</h3>
             <p className="text-[10px] text-slate-400">Every date in the payroll cutoff</p>
@@ -72,7 +72,7 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
                       <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedOvertimeSeconds)}</td>
                       <td className="px-3 py-2 font-mono font-bold">{secondsToDecimalHours(day.payableSeconds)}</td>
                       <td className="px-3 py-2">
-                        <button type="button" onClick={() => onResolve(day)} className="h-7 rounded-md border border-emerald-200 px-2.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-50">
+                        <button type="button" onClick={() => onResolve(day)} className="h-7 rounded-md border border-teal-200 px-2.5 text-[10px] font-bold text-teal-700 hover:bg-teal-50">
                           {day.needsReview ? 'Resolve' : 'Review'}
                         </button>
                       </td>

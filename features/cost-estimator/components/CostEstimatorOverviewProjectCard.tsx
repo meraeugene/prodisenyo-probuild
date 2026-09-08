@@ -27,7 +27,7 @@ function getStatusStyles(status: ProjectEstimateRow["status"] | "not_started") {
     case "submitted":
       return "border-sky-200 bg-sky-50 text-sky-700";
     case "approved":
-      return "border-emerald-300 bg-emerald-50 text-emerald-800";
+      return "border-teal-300 bg-teal-50 text-teal-800";
     case "rejected":
       return "border-rose-200 bg-rose-50 text-rose-700";
     case "draft":
@@ -81,7 +81,7 @@ export default function CostEstimatorOverviewProjectCard({
   return (
     <article className="flex min-h-[474px] min-w-0 flex-col rounded-[14px] border border-slate-200 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.045)]">
       <div className="flex items-start justify-between gap-4">
-        <span className="inline-flex max-w-[70%] rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-800">
+        <span className="inline-flex max-w-[70%] rounded-full bg-teal-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-teal-800">
           {projectTypeLabel}
         </span>
         <span
@@ -105,15 +105,15 @@ export default function CostEstimatorOverviewProjectCard({
             <span className="break-words">{location}</span>
           </p>
 
-          <div className="mt-8 flex min-h-[96px] items-center justify-center gap-3 rounded-[12px] border border-dashed border-emerald-300 bg-emerald-50/20 px-5 text-center text-sm text-slate-600">
-            <ClipboardList aria-hidden="true" className="shrink-0 text-emerald-700" size={21} />
+          <div className="mt-8 flex min-h-[96px] items-center justify-center gap-3 rounded-[12px] border border-dashed border-teal-300 bg-teal-50/20 px-5 text-center text-sm text-slate-600">
+            <ClipboardList aria-hidden="true" className="shrink-0 text-teal-700" size={21} />
             <span>No BOQ has been created for this project.</span>
           </div>
 
           <div className="mt-7 border-t border-slate-200 pt-7">
             <div className="flex items-center justify-between gap-4 text-[15px]">
               <span className="text-slate-600">Budget Ceiling:</span>
-              <span className="text-right font-semibold text-emerald-800">
+              <span className="text-right font-semibold text-teal-800">
                 {formatOptionalMoney(budgetCeiling)}
               </span>
             </div>
@@ -128,7 +128,7 @@ export default function CostEstimatorOverviewProjectCard({
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-slate-600">Estimated Cost:</dt>
-              <dd className="text-right font-semibold text-emerald-800">
+              <dd className="text-right font-semibold text-teal-800">
                 {formatOptionalMoney(estimatedCost)}
               </dd>
             </div>
@@ -145,7 +145,7 @@ export default function CostEstimatorOverviewProjectCard({
                   "text-right font-semibold",
                   remainingBudget !== null && remainingBudget < 0
                     ? "text-rose-700"
-                    : "text-emerald-800",
+                    : "text-teal-800",
                 )}
               >
                 {formatOptionalMoney(remainingBudget)}
@@ -164,7 +164,7 @@ export default function CostEstimatorOverviewProjectCard({
               <div
                 className={cn(
                   "h-full rounded-full transition-[width] duration-300",
-                  estimate.status === "submitted" ? "bg-sky-500" : "bg-emerald-700",
+                  estimate.status === "submitted" ? "bg-sky-500" : "bg-teal-700",
                 )}
                 style={{ width: `${barWidth}%` }}
               />
@@ -191,10 +191,10 @@ export default function CostEstimatorOverviewProjectCard({
           onClick={onOpen}
           disabled={pending}
           className={cn(
-            "inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+            "inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
             isNotStarted
-              ? "border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800"
-              : "border-emerald-700 bg-white text-emerald-800 hover:bg-emerald-50",
+              ? "border-teal-700 bg-teal-700 text-white hover:bg-teal-800"
+              : "border-teal-700 bg-white text-teal-800 hover:bg-teal-50",
           )}
         >
           {isNotStarted ? (

@@ -177,7 +177,7 @@ export default function GmeaPaymentTermsEditor({
           Select a template or add the first payment term.
         </p>
       )}
-      <div className={`rounded-xl p-4 text-sm ${difference === 0 ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
+      <div className={`rounded-xl p-4 text-sm ${difference === 0 ? "bg-teal-50 text-teal-900" : "bg-amber-50 text-amber-900"}`}>
         Scheduled: <strong>{formatMoney(scheduled)}</strong> · Contract: <strong>{formatMoney(contractAmount)}</strong>
         {difference !== 0 && <> · Difference: <strong>{formatMoney(difference)}</strong></>}
       </div>

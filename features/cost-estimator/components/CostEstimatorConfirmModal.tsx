@@ -64,7 +64,7 @@ export default function CostEstimatorConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={pending}
-            className="inline-flex h-11 items-center justify-center rounded-[10px] border border-apple-mist px-4 text-sm font-medium text-apple-charcoal transition hover:border-[#1f6a37]/35 hover:bg-[#f8fbf9] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center rounded-[10px] border border-apple-mist px-4 text-sm font-medium text-apple-charcoal transition hover:border-[#076d69]/35 hover:bg-[#f8fbf9] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {cancelLabel}
           </button>
@@ -75,7 +75,7 @@ export default function CostEstimatorConfirmModal({
             className={`inline-flex h-11 items-center justify-center rounded-[10px] px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               confirmTone === "danger"
                 ? "border-0 bg-red-600 text-white hover:bg-red-700"
-                : "bg-[#1f6a37] text-white hover:bg-[#18552d]"
+                : "bg-[#076d69] text-white hover:bg-[#055f5b]"
             }`}
           >
             {pending ? (

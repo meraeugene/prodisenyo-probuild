@@ -220,7 +220,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                 onClick={() => setBranchFilter("all")}
                 className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
                   branchFilter === "all"
-                    ? "bg-emerald-700 text-white"
+                    ? "bg-teal-700 text-white"
                     : "text-apple-ash hover:bg-white"
                 }`}
               >
@@ -231,7 +231,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                 onClick={() => setBranchFilter("multi")}
                 className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
                   branchFilter === "multi"
-                    ? "bg-emerald-700 text-white"
+                    ? "bg-teal-700 text-white"
                     : "text-apple-ash hover:bg-white"
                 }`}
               >
@@ -290,7 +290,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
                         {(branchCountByEmployee.get(
                           row.worker.trim().toLowerCase(),
                         ) ?? 0) > 1 ? (
-                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                          <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-700">
                             Multi-branch
                           </span>
                         ) : null}
@@ -421,7 +421,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               type="button"
               onClick={handleSave}
               disabled={isPending}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {isPending ? (
                 <>

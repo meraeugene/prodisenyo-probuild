@@ -267,7 +267,7 @@ export default function EngineeringProgressWorksheet({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sortedActivities.map((activity, index) => (
-                <tr key={activity.id} className="transition even:bg-slate-50/40 hover:bg-emerald-50/40">
+                <tr key={activity.id} className="transition even:bg-slate-50/40 hover:bg-teal-50/40">
                   <td className="border-r border-slate-100 px-2 py-2 text-center font-semibold text-slate-500">
                     {index + 1}
                   </td>
@@ -281,11 +281,11 @@ export default function EngineeringProgressWorksheet({
                     <div className="ml-auto flex max-w-[118px] items-center gap-1.5">
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
                         <div
-                          className="h-full rounded-full bg-emerald-600"
+                          className="h-full rounded-full bg-teal-600"
                           style={{ width: `${activity.progressPercent}%` }}
                         />
                       </div>
-                      <span className="w-14 text-right font-bold text-emerald-700">
+                      <span className="w-14 text-right font-bold text-teal-700">
                         {formatPercent(activity.progressPercent)}
                       </span>
                     </div>
@@ -297,7 +297,7 @@ export default function EngineeringProgressWorksheet({
                           type="button"
                           onClick={() => handleEdit(activity)}
                           aria-label={`Edit ${activity.activity}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700"
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-teal-50 hover:text-teal-700"
                         >
                           <Pencil size={14} />
                         </button>
@@ -320,7 +320,7 @@ export default function EngineeringProgressWorksheet({
                 <tr>
                   <td className="border-r border-slate-100 px-2 py-2" colSpan={3} />
                   <td className="border-r border-slate-100 px-2 py-2 text-right font-bold text-apple-charcoal">
-                    <span className="block w-full rounded-sm bg-emerald-500 px-2 py-1 text-center font-bold text-emerald-950">
+                    <span className="block w-full rounded-sm bg-teal-500 px-2 py-1 text-center font-bold text-teal-950">
                       {formatPercent(summary.overallProgress)}
                     </span>
                   </td>
@@ -349,7 +349,7 @@ export default function EngineeringProgressWorksheet({
                       type="button"
                       onClick={() => handleEdit(activity)}
                       aria-label={`Edit ${activity.activity}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-teal-50 hover:text-teal-700"
                     >
                       <Pencil size={14} />
                     </button>
@@ -369,8 +369,8 @@ export default function EngineeringProgressWorksheet({
           ))}
           {hasActivities ? (
             <div className="bg-slate-50 p-4 text-right text-xs">
-              <div className="inline-flex rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2">
-                <p className="font-bold text-emerald-900">
+              <div className="inline-flex rounded-md border border-teal-100 bg-teal-50 px-3 py-2">
+                <p className="font-bold text-teal-900">
                   {formatPercent(summary.overallProgress)}
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function EngineeringProgressWorksheet({
                 className={`mt-1 h-10 w-full rounded-md border bg-slate-50 px-3 text-sm outline-none transition focus:bg-white focus:ring-2 ${
                   formErrors.activity
                     ? "border-red-500 focus:border-red-600 focus:ring-red-100"
-                    : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-100"
+                    : "border-slate-200 focus:border-teal-600 focus:ring-teal-100"
                 }`}
               />
             </Field>
@@ -442,7 +442,7 @@ export default function EngineeringProgressWorksheet({
                 className={`mt-1 h-10 w-full rounded-md border bg-slate-50 px-3 text-sm outline-none transition focus:bg-white focus:ring-2 ${
                   formErrors.weightPercent
                     ? "border-red-500 focus:border-red-600 focus:ring-red-100"
-                    : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-100"
+                    : "border-slate-200 focus:border-teal-600 focus:ring-teal-100"
                 }`}
               />
             </Field>
@@ -464,7 +464,7 @@ export default function EngineeringProgressWorksheet({
                 className={`mt-1 h-10 w-full rounded-md border bg-slate-50 px-3 text-sm outline-none transition focus:bg-white focus:ring-2 ${
                   formErrors.progressPercent
                     ? "border-red-500 focus:border-red-600 focus:ring-red-100"
-                    : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-100"
+                    : "border-slate-200 focus:border-teal-600 focus:ring-teal-100"
                 }`}
                 placeholder="0 to 100"
               />
@@ -475,7 +475,7 @@ export default function EngineeringProgressWorksheet({
             <div className="flex gap-2 pt-1">
               <button
                 type="submit"
-                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#1f6a37] px-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#076d69] px-3 text-sm font-semibold text-white transition hover:bg-teal-800"
               >
                 {editingId ? <Save size={15} /> : null}
                 {submitLabel}
@@ -519,7 +519,7 @@ export default function EngineeringProgressWorksheet({
               type="button"
               disabled={!hasActivities || isSubmitting}
               onClick={submitToCeo}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-800 px-3 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-teal-800 px-3 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? <LoaderCircle size={15} className="animate-spin" /> : <Send size={15} />}
               {isSubmitting ? "Submitting..." : progressButtonLabel}
@@ -531,12 +531,12 @@ export default function EngineeringProgressWorksheet({
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Overall progress
           </p>
-          <p className="mt-2 text-3xl font-bold text-emerald-800">
+          <p className="mt-2 text-3xl font-bold text-teal-800">
             {formatPercent(summary.overallProgress)}
           </p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-emerald-600"
+              className="h-full rounded-full bg-teal-600"
               style={{ width: `${Math.min(summary.overallProgress, 100)}%` }}
             />
           </div>
@@ -587,9 +587,9 @@ function ProgressMetrics({ activity }: { activity: ProgressDraftActivity }) {
           {formatPercent(activity.weightPercent)}
         </dd>
       </div>
-      <div className="rounded-md border border-emerald-100 bg-emerald-50 p-2">
-        <dt className="font-semibold text-emerald-700">Progress</dt>
-        <dd className="mt-1 font-bold text-emerald-800">
+      <div className="rounded-md border border-teal-100 bg-teal-50 p-2">
+        <dt className="font-semibold text-teal-700">Progress</dt>
+        <dd className="mt-1 font-bold text-teal-800">
           {formatPercent(activity.progressPercent)}
         </dd>
       </div>

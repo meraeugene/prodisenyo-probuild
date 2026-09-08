@@ -47,7 +47,7 @@ export default function MaterialRequestReviewDialog({
                 : "Explain reason for rejecting the request..."
             }
             rows={3}
-            className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver focus:border-[#1f6a37]"
+            className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver focus:border-[#076d69]"
           />
         </label>
 
@@ -66,7 +66,7 @@ export default function MaterialRequestReviewDialog({
             className={cn(
               "flex h-10 items-center gap-1.5 rounded-xl px-5 text-xs font-semibold text-white shadow-sm disabled:opacity-60",
               action === "approve"
-                ? "bg-[#1f6a37] hover:bg-emerald-800"
+                ? "bg-[#076d69] hover:bg-teal-800"
                 : "bg-rose-600 hover:bg-rose-700",
             )}
           >

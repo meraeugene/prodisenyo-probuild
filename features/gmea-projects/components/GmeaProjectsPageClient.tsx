@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -46,7 +46,7 @@ export default function GmeaProjectsPageClient({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
             GMEA Marketing Corporation
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
@@ -122,9 +122,9 @@ export default function GmeaProjectsPageClient({
               className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
             >
               <div className="flex items-center justify-between">
-                <FolderKanban size={22} className="text-emerald-700" />
+                <FolderKanban size={22} className="text-teal-700" />
                 {!canEdit && p.expenses.some((expense) => expense.is_new) && (
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                  <span className="rounded-full bg-teal-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-teal-800">
                     New expense
                   </span>
                 )}

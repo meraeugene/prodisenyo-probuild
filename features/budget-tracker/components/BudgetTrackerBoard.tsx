@@ -89,7 +89,7 @@ function BudgetTrackerCardContent({
           <span
             className={cn(
               "font-semibold",
-              variance >= 0 ? "text-emerald-600" : "text-rose-600",
+              variance >= 0 ? "text-teal-600" : "text-rose-600",
             )}
           >
             {formatBudgetMoney(Math.abs(variance), currencyCode)}
@@ -151,9 +151,9 @@ function SortableBudgetItem({
         transition,
       }}
       className={cn(
-        "group w-full rounded-[12px] border border-apple-mist p-4 text-left shadow-[0_8px_20px_rgba(24,83,43,0.06)] transition-[border-color,box-shadow,background-color] duration-200 focus-visible:shadow-[0_16px_36px_rgba(24,83,43,0.14)] focus-visible:outline-none",
+        "group w-full rounded-[12px] border border-apple-mist p-4 text-left shadow-[0_8px_20px_rgba(7,109,105,0.06)] transition-[border-color,box-shadow,background-color] duration-200 focus-visible:shadow-[0_16px_36px_rgba(7,109,105,0.14)] focus-visible:outline-none",
         canManageProjects
-          ? "cursor-grab hover:shadow-[0_16px_36px_rgba(24,83,43,0.12)] active:cursor-grabbing"
+          ? "cursor-grab hover:shadow-[0_16px_36px_rgba(7,109,105,0.12)] active:cursor-grabbing"
           : "cursor-default",
         categoryColors.cardBg,
         categoryColors.cardHoverBorder,
@@ -161,7 +161,7 @@ function SortableBudgetItem({
           "shadow-none hover:shadow-none focus-visible:shadow-none",
         (isDragging || sortableDragging) &&
           cn(
-            "border-[#1f6a37]/20 opacity-55 shadow-none",
+            "border-[#076d69]/20 opacity-55 shadow-none",
             categoryColors.cardActiveBg,
           ),
       )}
@@ -241,7 +241,7 @@ function BudgetTrackerColumn({
         className={cn(
           "min-h-[520px] rounded-[14px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-3",
           (isOver || activeDropStatus === group.value) &&
-            "ring-2 ring-[#1f6a37]/20",
+            "ring-2 ring-[#076d69]/20",
         )}
       >
         <SortableContext
@@ -355,7 +355,7 @@ export default function BudgetTrackerBoard({
 
       <DragOverlay dropAnimation={null}>
         {activeItem ? (
-          <div className="rotate-[2deg] rounded-[12px] border border-[#1f6a37]/25 bg-white p-4 text-left">
+          <div className="rotate-[2deg] rounded-[12px] border border-[#076d69]/25 bg-white p-4 text-left">
             <BudgetTrackerCardContent
               item={activeItem}
               label={activeGroupLabel ?? "Item"}

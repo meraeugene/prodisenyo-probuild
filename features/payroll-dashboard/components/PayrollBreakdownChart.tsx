@@ -3,7 +3,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
 
-const COLORS = ["#15803d", "#f59e0b", "#e11d48"];
+const COLORS = ["#087f79", "#f59e0b", "#e11d48"];
 
 export default function PayrollBreakdownChart({
   regularPay,

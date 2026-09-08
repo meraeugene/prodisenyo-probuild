@@ -57,7 +57,7 @@ export default function BudgetTrackerProjectsOverview({
             type="button"
             onClick={onCreateProject}
             disabled={pending}
-            className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:mt-0"
+            className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60 sm:mt-0"
           >
             <PlusCircle size={14} />
             New project
@@ -66,7 +66,7 @@ export default function BudgetTrackerProjectsOverview({
         }
       />
 
-      <section className="rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px] sm:p-5">
+      <section className="rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px] sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -140,7 +140,7 @@ export default function BudgetTrackerProjectsOverview({
                   </p>
                   <p>
                     Remaining:{" "}
-                    <span className="font-semibold text-emerald-700">
+                    <span className="font-semibold text-teal-700">
                       {formatBudgetMoney(remaining, project.currency_code)}
                     </span>
                   </p>
@@ -156,7 +156,7 @@ export default function BudgetTrackerProjectsOverview({
                   type="button"
                   onClick={() => onOpenProject(project.id)}
                   disabled={pending}
-                  className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <FolderOpen size={15} />
                   Open project

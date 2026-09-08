@@ -1,7 +1,7 @@
 function SkeletonBlock({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(232,242,236,0.95),rgba(244,249,246,1),rgba(232,242,236,0.95))] bg-[length:200%_100%] ${className}`}
+      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(230,250,247,0.95),rgba(240,253,250,1),rgba(230,250,247,0.95))] bg-[length:200%_100%] ${className}`}
     />
   );
 }
@@ -20,7 +20,7 @@ export function PayrollAnalyticsLoadingState() {
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-4 shadow-[0_8px_18px_rgba(24,83,43,0.06)] sm:p-5"
+              className="rounded-2xl border border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-4 shadow-[0_8px_18px_rgba(7,109,105,0.06)] sm:p-5"
             >
               <SkeletonBlock className="h-3 w-24 rounded-full bg-white/20" />
               <SkeletonBlock className="mt-4 h-7 w-32 rounded-full bg-white/20" />

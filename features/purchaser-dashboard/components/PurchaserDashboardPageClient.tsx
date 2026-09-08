@@ -51,12 +51,12 @@ export default function PurchaserDashboardPageClient({
           <label className="relative">
             <span className="sr-only">Filter by project</span>
             <FolderKanban size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="h-10 min-w-56 rounded-xl border border-slate-200 bg-white pl-9 pr-9 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100">
+            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="h-10 min-w-56 rounded-xl border border-slate-200 bg-white pl-9 pr-9 text-sm font-semibold text-slate-700 outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-100">
               <option value="all">All projects</option>
               {projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
             </select>
           </label>
-          <Link href="/purchasing-approvals" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+          <Link href="/purchasing-approvals" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-bold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-200">
             Manage purchases <ArrowRight size={15} />
           </Link>
           <div className="hidden border-l border-slate-200 pl-4 xl:block">

@@ -62,11 +62,11 @@ export default function CostEstimatorBoqTable({
           </tbody>
           {items.length > 0 ? (
             <tfoot>
-              <tr className="border-t border-emerald-200 bg-emerald-50/60">
-                <td colSpan={6} className="px-4 py-4 text-right font-bold uppercase tracking-[0.08em] text-emerald-900">
+              <tr className="border-t border-teal-200 bg-teal-50/60">
+                <td colSpan={6} className="px-4 py-4 text-right font-bold uppercase tracking-[0.08em] text-teal-900">
                   Total
                 </td>
-                <td className="px-4 py-4 text-right text-base font-bold text-emerald-900">
+                <td className="px-4 py-4 text-right text-base font-bold text-teal-900">
                   {formatBudgetMoney(total)}
                 </td>
               </tr>
@@ -90,8 +90,8 @@ function SectionRows({
 }) {
   return (
     <>
-      <tr className="border-b border-slate-200 bg-emerald-50/45">
-        <td colSpan={7} className="px-4 py-3 font-bold text-emerald-900">
+      <tr className="border-b border-slate-200 bg-teal-50/45">
+        <td colSpan={7} className="px-4 py-3 font-bold text-teal-900">
           {section}
         </td>
       </tr>

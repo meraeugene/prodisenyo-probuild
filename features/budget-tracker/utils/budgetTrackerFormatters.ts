@@ -57,13 +57,13 @@ export function getBudgetCategoryColorClasses(value: BudgetItemCategory): {
   switch (value) {
     case "materials":
       return {
-        badge: "bg-emerald-50 text-emerald-700",
-        text: "text-emerald-700",
-        bar: "bg-emerald-600",
-        cardBg: "bg-emerald-50/45",
+        badge: "bg-teal-50 text-teal-700",
+        text: "text-teal-700",
+        bar: "bg-teal-600",
+        cardBg: "bg-teal-50/45",
         cardHoverBorder:
-          "hover:border-emerald-300/80 focus-visible:border-emerald-400/80",
-        cardActiveBg: "bg-emerald-100/55",
+          "hover:border-teal-300/80 focus-visible:border-teal-400/80",
+        cardActiveBg: "bg-teal-100/55",
       };
     case "labor":
       return {

@@ -51,7 +51,7 @@ export default function CostEstimatorProjectsOverview({
 
   return (
     <div className="space-y-5 p-0 sm:p-6">
-      <section className="rounded-none bg-[linear-gradient(135deg,#064e2b,#075f35_55%,#087443)] px-6 py-9 text-white shadow-[0_16px_34px_rgba(6,78,43,0.14)] sm:rounded-[14px] sm:px-10 sm:py-10">
+      <section className="rounded-none bg-[#076d69] px-6 py-9 text-white shadow-[0_16px_34px_rgba(7,109,105,0.18)] sm:rounded-[14px] sm:px-10 sm:py-10">
         <h1 className="text-[34px] font-semibold tracking-[-0.035em] sm:text-[40px]">
           Cost Estimator
         </h1>
@@ -61,10 +61,10 @@ export default function CostEstimatorProjectsOverview({
       </section>
 
       <section aria-label="Estimate summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <CostEstimatorOverviewMetric icon={BriefcaseBusiness} value={queueCount} label="Projects" tone="emerald" />
+        <CostEstimatorOverviewMetric icon={BriefcaseBusiness} value={queueCount} label="Projects" tone="teal" />
         <CostEstimatorOverviewMetric icon={FileText} value={draftCount} label="Draft" tone="amber" />
         <CostEstimatorOverviewMetric icon={Send} value={submittedCount} label="Submitted" tone="sky" />
-        <CostEstimatorOverviewMetric icon={CircleCheck} value={approvedCount} label="Approved" tone="green" />
+        <CostEstimatorOverviewMetric icon={CircleCheck} value={approvedCount} label="Approved" tone="teal" />
       </section>
 
       <section aria-labelledby="assigned-projects-heading" className="space-y-4 px-3 sm:px-2">
@@ -101,7 +101,7 @@ export default function CostEstimatorProjectsOverview({
             ))}
           </div>
         ) : (
-          <div className="rounded-[14px] border border-dashed border-emerald-200 bg-white px-5 py-14 text-center">
+          <div className="rounded-[14px] border border-dashed border-teal-200 bg-white px-5 py-14 text-center">
             <p className="font-semibold text-slate-900">No estimating assignments yet</p>
             <p className="mt-2 text-sm text-slate-500">
               Projects assigned by the CEO for cost estimation will appear here.

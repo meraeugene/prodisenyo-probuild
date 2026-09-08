@@ -16,7 +16,7 @@ export default function LandingSectionHeading({
       <p
         className={[
           "text-xs font-bold uppercase tracking-[0.2em]",
-          inverse ? "text-emerald-200" : "text-emerald-700",
+          inverse ? "text-teal-200" : "text-teal-700",
         ].join(" ")}
       >
         {eyebrow}
@@ -32,7 +32,7 @@ export default function LandingSectionHeading({
       <p
         className={[
           "mt-4 text-[15px] leading-7",
-          inverse ? "text-emerald-50/75" : "text-slate-600",
+          inverse ? "text-teal-50/75" : "text-slate-600",
         ].join(" ")}
       >
         {description}

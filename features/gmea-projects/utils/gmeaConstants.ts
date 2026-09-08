@@ -48,9 +48,9 @@ export const PAYMENT_TERM_TEMPLATES = [
 ] as const;
 
 export const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600";
 export const buttonClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-[#1f6a37] px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-[#076d69] px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50";
 export const secondaryClass =
   "inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50";
 

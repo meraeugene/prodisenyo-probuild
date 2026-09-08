@@ -8,38 +8,32 @@ import type {
 export const landingModules: LandingModule[] = [
   {
     title: "Project Management",
-    description:
-      "Keep assignments, project details, budgets, schedules, and delivery status in one workspace.",
+    description: "Manage assignments, budgets, schedules, and delivery in one place.",
     icon: "projects",
   },
   {
     title: "BOQ & Cost Estimation",
-    description:
-      "Prepare structured estimates, submit them for review, and establish an approved project baseline.",
+    description: "Build BOQs, submit estimates, and set approved budgets.",
     icon: "estimate",
   },
   {
     title: "Materials & Procurement",
-    description:
-      "Connect planned materials, CEO authorization, quotations, purchase orders, and receipts.",
+    description: "Move approved materials from quote to receipt.",
     icon: "procurement",
   },
   {
     title: "Attendance & Payroll",
-    description:
-      "Import attendance, compute payroll, review overtime, and submit payroll reports for approval.",
+    description: "Import attendance, calculate payroll, and submit for approval.",
     icon: "payroll",
   },
   {
     title: "Progress Tracking",
-    description:
-      "Capture overall project progress and weighted activities with clear review and approval states.",
+    description: "Track project progress with clear review states.",
     icon: "progress",
   },
   {
     title: "Cost Tracking",
-    description:
-      "Follow upcoming, ongoing, and completed project costs against the approved budget.",
+    description: "Track project costs against the approved budget.",
     icon: "cost",
   },
 ];
@@ -47,32 +41,32 @@ export const landingModules: LandingModule[] = [
 export const landingWorkflow: LandingWorkflowStep[] = [
   {
     label: "Assign",
-    description: "CEO creates and assigns the project.",
+    description: "CEO assigns the project.",
     icon: "assign",
   },
   {
     label: "Estimate",
-    description: "Engineer prepares the BOQ and cost plan.",
+    description: "Engineer prepares the BOQ.",
     icon: "estimate",
   },
   {
     label: "Approve",
-    description: "CEO reviews the estimate and authorizes work.",
+    description: "CEO approves the estimate.",
     icon: "approve",
   },
   {
     label: "Procure",
-    description: "Purchaser sources approved materials.",
+    description: "Purchaser orders materials.",
     icon: "procurement",
   },
   {
     label: "Build",
-    description: "Teams track progress, costs, and payroll.",
+    description: "Teams track work, costs, and payroll.",
     icon: "build",
   },
   {
     label: "Close",
-    description: "Management reviews and closes the project.",
+    description: "Management closes the project.",
     icon: "close",
   },
 ];
@@ -80,26 +74,22 @@ export const landingWorkflow: LandingWorkflowStep[] = [
 export const landingRoles: LandingRole[] = [
   {
     title: "CEO",
-    description:
-      "Review the portfolio, approve estimates and requests, and monitor budget and progress.",
+    description: "Review projects, approvals, budgets, and progress.",
     icon: "ceo",
   },
   {
     title: "Engineer / Project Manager",
-    description:
-      "Prepare estimates, request materials, update progress, and track project health.",
+    description: "Prepare estimates, request materials, and track progress.",
     icon: "engineer",
   },
   {
     title: "Purchaser",
-    description:
-      "Record quotations, manage purchase orders, update deliveries, and upload receipts.",
+    description: "Manage quotes, orders, deliveries, and receipts.",
     icon: "purchaser",
   },
   {
     title: "Payroll Manager",
-    description:
-      "Process attendance, overtime, payroll computations, and CEO-ready submissions.",
+    description: "Process attendance, overtime, and payroll submissions.",
     icon: "admin",
   },
 ];
@@ -107,77 +97,72 @@ export const landingRoles: LandingRole[] = [
 export const landingTourSlides: LandingTourSlide[] = [
   {
     label: "Executive view",
-    title: "See project performance from one decision-ready dashboard.",
-    description:
-      "The CEO view brings active projects, approvals, budgets, material requests, and progress into one place.",
+    title: "See project performance at a glance.",
+    description: "View projects, approvals, budgets, requests, and progress.",
     image: "/landing/ceo-dashboard.png",
     imageAlt: "Prodisenyo ProBuild CEO dashboard",
     imageWidth: 1672,
     imageHeight: 941,
     bullets: [
-      "Live project and budget summaries",
-      "Centralized approval queue",
-      "Recent progress and workflow activity",
+      "Project and budget summaries",
+      "Approval queue",
+      "Recent activity",
     ],
   },
   {
     label: "Planning",
-    title: "Turn assigned projects into structured, reviewable BOQs.",
-    description:
-      "Engineers organize sections, item numbers, quantities, and cost sources before sending estimates to the CEO.",
+    title: "Build clear, reviewable BOQs.",
+    description: "Organize quantities and costs before CEO review.",
     image: "/landing/cost-estimator.png",
     imageAlt: "Prodisenyo ProBuild cost estimator",
     imageWidth: 1672,
     imageHeight: 941,
     bullets: [
-      "Section-based BOQ preparation",
-      "Budget-ceiling visibility",
-      "Controlled CEO review workflow",
+      "Structured BOQs",
+      "Budget visibility",
+      "CEO review",
     ],
   },
   {
     label: "Project delivery",
-    title: "Give engineers a focused view of projects and requests.",
-    description:
-      "Assigned teams can follow project health, pending work, material requests, and workflow alerts without seeing other projects.",
+    title: "Keep engineers focused on assigned work.",
+    description: "Track project health, requests, and alerts in one view.",
     image: "/landing/engineer-dashboard.png",
     imageAlt: "Prodisenyo ProBuild engineer dashboard",
     imageWidth: 1672,
     imageHeight: 941,
     bullets: [
-      "Assigned-project visibility",
-      "Material request tracking",
-      "Progress and estimate alerts",
+      "Assigned projects",
+      "Material requests",
+      "Progress alerts",
     ],
   },
   {
     label: "Procurement",
-    title: "Carry approved materials through purchasing and delivery.",
-    description:
-      "Purchasers work from authorized requests, record supplier quotations, and keep order and receipt details traceable.",
+    title: "Move approved materials to delivery.",
+    description: "Manage quotes, orders, and receipts with a clear trail.",
     image: "/landing/purchaser-dashboard.png",
     imageAlt: "Prodisenyo ProBuild purchaser dashboard",
     imageWidth: 1672,
     imageHeight: 941,
     bullets: [
-      "Approved-request queue",
-      "Supplier and quotation records",
-      "Purchase and delivery status",
+      "Approved requests",
+      "Supplier quotes",
+      "Order status",
     ],
   },
   {
     label: "Payroll",
-    title: "Connect attendance records to payroll approval.",
-    description:
-      "Payroll managers can review imported attendance, generate payroll, and track submissions returned or approved by the CEO.",
+    title: "Turn attendance into approved payroll.",
+    description: "Review attendance, calculate payroll, and track approval.",
     image: "/landing/payroll-dashboard.png",
     imageAlt: "Prodisenyo ProBuild payroll dashboard",
     imageWidth: 1536,
     imageHeight: 1024,
     bullets: [
-      "Attendance batch readiness",
-      "Approved payroll totals",
-      "CEO submission tracking",
+      "Attendance readiness",
+      "Payroll totals",
+      "Submission tracking",
     ],
   },
 ];

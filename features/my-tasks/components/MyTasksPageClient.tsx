@@ -20,11 +20,11 @@ import { cn } from "@/lib/utils";
 function priorityBadgeClass(priority: TaskPriority) {
   if (priority === "high") return "border-rose-200 bg-rose-50 text-rose-700 text-xs";
   if (priority === "medium") return "border-amber-200 bg-amber-50 text-amber-700 text-xs";
-  return "border-emerald-200 bg-emerald-50 text-emerald-700 text-xs";
+  return "border-teal-200 bg-teal-50 text-teal-700 text-xs";
 }
 
 function statusBadgeClass(status: TaskStatus) {
-  if (status === "completed") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "completed") return "border-teal-200 bg-teal-50 text-teal-700";
   if (status === "in_progress") return "border-sky-200 bg-sky-50 text-sky-700";
   if (status === "delayed") return "border-rose-200 bg-rose-50 text-rose-700 animate-pulse";
   return "border-gray-200 bg-gray-50 text-gray-700";
@@ -83,7 +83,7 @@ export default function MyTasksPageClient() {
         title="My Assigned Tasks"
         description="Monitor structural benchmarks, quality checks, and utility layouts on site."
         actions={
-          <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-[#1f6a37]/20 bg-[#1f6a37]/5 px-4 text-sm font-semibold text-[#1f6a37] sm:mt-0">
+          <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-[#076d69]/20 bg-[#076d69]/5 px-4 text-sm font-semibold text-[#076d69] sm:mt-0">
             <ClipboardCheck size={14} />
             {stats.inProgress} active task{stats.inProgress !== 1 && "s"}
           </span>
@@ -94,7 +94,7 @@ export default function MyTasksPageClient() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Total Tasks", val: stats.total, color: "text-slate-700 bg-slate-50 border-slate-100", icon: ClipboardCheck },
-          { label: "Completed", val: stats.completed, color: "text-emerald-700 bg-emerald-50/50 border-emerald-100", icon: CheckCircle2 },
+          { label: "Completed", val: stats.completed, color: "text-teal-700 bg-teal-50/50 border-teal-100", icon: CheckCircle2 },
           { label: "In Progress", val: stats.inProgress, color: "text-sky-700 bg-sky-50/50 border-sky-100", icon: TrendingUp },
           { label: "Delayed / Alert", val: stats.delayed, color: "text-rose-700 bg-rose-50/50 border-rose-100", icon: AlertCircle },
         ].map((item, i) => (
@@ -111,7 +111,7 @@ export default function MyTasksPageClient() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-apple-mist p-3 rounded-2xl shadow-[0_4px_16px_rgba(24,83,43,0.03)]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-apple-mist p-3 rounded-2xl shadow-[0_4px_16px_rgba(7,109,105,0.03)]">
         <div className="flex flex-wrap gap-1">
           {([
             { id: "all", label: "All Tasks" },
@@ -126,7 +126,7 @@ export default function MyTasksPageClient() {
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all",
                 selectedStatus === tab.id
-                  ? "bg-[#1f6a37] text-white shadow-sm"
+                  ? "bg-[#076d69] text-white shadow-sm"
                   : "text-apple-smoke hover:bg-apple-mist/50 hover:text-apple-charcoal"
               )}
             >
@@ -142,7 +142,7 @@ export default function MyTasksPageClient() {
             placeholder="Search tasks, projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-xl border border-apple-mist bg-apple-mist/20 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#1f6a37] focus:bg-white"
+            className="w-full h-9 pl-9 pr-4 rounded-xl border border-apple-mist bg-apple-mist/20 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#076d69] focus:bg-white"
           />
         </div>
       </div>
@@ -153,11 +153,11 @@ export default function MyTasksPageClient() {
           filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_8px_20px_rgba(24,83,43,0.04)] transition-all duration-300 hover:border-emerald-200 hover:shadow-[0_12px_26px_rgba(24,83,43,0.08)]"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all duration-300 hover:border-teal-200 hover:shadow-[0_12px_26px_rgba(7,109,105,0.08)]"
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">
                     {task.projectName}
                   </span>
                   <span className={cn("border px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider", priorityBadgeClass(task.priority))}>
@@ -165,7 +165,7 @@ export default function MyTasksPageClient() {
                   </span>
                 </div>
 
-                <h3 className="mt-3 text-base font-semibold text-apple-charcoal group-hover:text-emerald-950 transition-colors">
+                <h3 className="mt-3 text-base font-semibold text-apple-charcoal group-hover:text-teal-950 transition-colors">
                   {task.title}
                 </h3>
                 <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
@@ -183,7 +183,7 @@ export default function MyTasksPageClient() {
                       className={cn(
                         "h-full rounded-full transition-all duration-500",
                         task.status === "completed"
-                          ? "bg-emerald-600"
+                          ? "bg-teal-600"
                           : task.status === "delayed"
                           ? "bg-rose-500"
                           : "bg-sky-500"
@@ -266,12 +266,12 @@ export default function MyTasksPageClient() {
                       className={cn(
                         "h-10 px-3 border rounded-xl text-xs font-medium transition-all text-left flex items-center justify-between",
                         modalStatus === stat.id
-                          ? "border-[#1f6a37] bg-emerald-50/30 text-emerald-800 ring-1 ring-emerald-600/20"
+                          ? "border-[#076d69] bg-teal-50/30 text-teal-800 ring-1 ring-teal-600/20"
                           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                       )}
                     >
                       <span>{stat.label}</span>
-                      {modalStatus === stat.id && <div className="h-2 w-2 rounded-full bg-emerald-600" />}
+                      {modalStatus === stat.id && <div className="h-2 w-2 rounded-full bg-teal-600" />}
                     </button>
                   ))}
                 </div>
@@ -281,7 +281,7 @@ export default function MyTasksPageClient() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-slate-700">Completion Progress</span>
-                  <span className="font-bold text-[#1f6a37]">{modalProgress}%</span>
+                  <span className="font-bold text-[#076d69]">{modalProgress}%</span>
                 </div>
                 <input
                   type="range"
@@ -291,7 +291,7 @@ export default function MyTasksPageClient() {
                   value={modalProgress}
                   disabled={modalStatus === "completed" || modalStatus === "todo"}
                   onChange={(e) => setModalProgress(Number(e.target.value))}
-                  className="w-full accent-[#1f6a37] h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
+                  className="w-full accent-[#076d69] h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
                 />
               </div>
 
@@ -303,7 +303,7 @@ export default function MyTasksPageClient() {
                   onChange={(e) => setModalNotes(e.target.value)}
                   placeholder="Include spacing checks, cement mixer delay explanations, or structural verification notes..."
                   rows={3}
-                  className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#1f6a37] focus:bg-white resize-none"
+                  className="w-full rounded-xl border border-apple-mist p-3 text-xs text-apple-charcoal outline-none placeholder:text-apple-silver transition focus:border-[#076d69] focus:bg-white resize-none"
                 />
               </div>
             </div>
@@ -319,7 +319,7 @@ export default function MyTasksPageClient() {
               <button
                 type="button"
                 onClick={handleSave}
-                className="h-10 px-5 rounded-xl bg-[#1f6a37] text-xs font-semibold text-white hover:bg-emerald-800 transition shadow-sm"
+                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-sm"
               >
                 Save Changes
               </button>

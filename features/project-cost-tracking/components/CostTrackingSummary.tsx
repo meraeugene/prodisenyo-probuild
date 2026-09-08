@@ -19,7 +19,7 @@ export default function CostTrackingSummary({ summary }: { summary: Summary }) {
     { label: "Starting budget", value: currency.format(summary.startingBudget), icon: WalletCards },
     { label: "Estimated costs", value: currency.format(summary.estimatedCosts), icon: ClipboardList },
     { label: "Actual expenses", value: currency.format(summary.actualExpenses), icon: Banknote, valueClass: "text-rose-600" },
-    { label: "Remaining budget", value: currency.format(summary.remainingBudget), icon: ChartNoAxesCombined, valueClass: summary.remainingBudget >= 0 ? "text-emerald-700" : "text-rose-600" },
+    { label: "Remaining budget", value: currency.format(summary.remainingBudget), icon: ChartNoAxesCombined, valueClass: summary.remainingBudget >= 0 ? "text-teal-700" : "text-rose-600" },
   ];
 
   return (
@@ -55,7 +55,7 @@ export default function CostTrackingSummary({ summary }: { summary: Summary }) {
           ))}
         </div>
 
-        <div className="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">
+        <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-teal-900">
           Totals are calculated automatically from material purchases, accepted receipts, and project-expense approvals.
         </div>
       </section>

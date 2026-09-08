@@ -52,7 +52,7 @@ export default function ProjectPortfolioCard({
             {project.name}
           </h3>
           <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-md bg-slate-950/55 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-            <MapPin size={13} className="shrink-0 text-emerald-200" />
+            <MapPin size={13} className="shrink-0 text-teal-200" />
             <span className="truncate">{project.location}</span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function ProjectPortfolioCard({
               {project.name}
             </h3>
             <div className="mt-2 inline-flex max-w-full items-center gap-1.5 text-xs font-semibold text-slate-600">
-              <MapPin size={13} className="shrink-0 text-emerald-700" />
+              <MapPin size={13} className="shrink-0 text-teal-700" />
               <span className="truncate">{project.location}</span>
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function ProjectPortfolioCard({
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-emerald-700 transition-all duration-700"
+              className="h-full rounded-full bg-teal-700 transition-all duration-700"
               style={{ width: `${project.progress}%` }}
             />
           </div>
@@ -110,7 +110,7 @@ export default function ProjectPortfolioCard({
               <p
                 className={cn(
                   "mt-1 text-sm font-semibold",
-                  budgetWarning ? "text-rose-600" : "text-emerald-700",
+                  budgetWarning ? "text-rose-600" : "text-teal-700",
                 )}
               >
                 {formatCurrency(project.spent)}
@@ -120,7 +120,7 @@ export default function ProjectPortfolioCard({
         ) : (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-600">
             <span className="inline-flex items-center gap-1.5">
-              <CheckCircle size={13} className="text-emerald-600" />
+              <CheckCircle size={13} className="text-teal-600" />
               {project.completedTasksCount} / {project.tasksCount} completed
             </span>
             <span className="inline-flex items-center gap-1.5">
@@ -137,7 +137,7 @@ export default function ProjectPortfolioCard({
           </span>
           <button
             onClick={onOpen}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-emerald-800 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-900"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-teal-800 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-teal-900"
           >
             {role === "ceo" ? "View Details" : "Open Workspace"}
             <ArrowRight size={13} />

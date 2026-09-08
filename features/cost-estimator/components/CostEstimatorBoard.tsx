@@ -94,7 +94,7 @@ export default function CostEstimatorBoard({
             type="button"
             onClick={onAddCost}
             disabled={!estimate || disabled}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-emerald-200 bg-emerald-50 px-5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-teal-200 bg-teal-50 px-5 text-sm font-semibold text-teal-700 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Plus size={16} />
             Add item
@@ -115,7 +115,7 @@ export default function CostEstimatorBoard({
               return (
                 <div
                   key={`${group.key}-${index}`}
-                  className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(24,83,43,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_14px_30px_rgba(24,83,43,0.12)]"
+                  className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-[0_14px_30px_rgba(7,109,105,0.12)]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -123,7 +123,7 @@ export default function CostEstimatorBoard({
                         Item no. {index + 1}
                       </p>
                       <div className="mt-2 w-full flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-[#1f6a37]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-[#076d69]">
                           <ReceiptText size={16} />
                         </div>
                         <p className="truncate text-[17px] font-semibold tracking-[-0.02em] text-apple-charcoal">
@@ -156,7 +156,7 @@ export default function CostEstimatorBoard({
                               onViewItem(group.indices);
                             }}
                             disabled={disabled}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-apple-charcoal transition hover:bg-emerald-50"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-apple-charcoal transition hover:bg-teal-50"
                           >
                             <Eye size={14} />
                             View item cost
@@ -171,7 +171,7 @@ export default function CostEstimatorBoard({
                                 onEditItem(group.indices);
                               }}
                               disabled={disabled}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-apple-charcoal transition hover:bg-emerald-50"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-apple-charcoal transition hover:bg-teal-50"
                             >
                               <Pencil size={14} />
                               Edit item cost
@@ -200,7 +200,7 @@ export default function CostEstimatorBoard({
 
                   <div className="mt-4 flex items-center justify-between text-sm text-apple-smoke">
                     <span>Total estimate</span>
-                    <span className="font-semibold text-[#1f6a37]">
+                    <span className="font-semibold text-[#076d69]">
                       {formatBudgetMoney(group.total)}
                     </span>
                   </div>

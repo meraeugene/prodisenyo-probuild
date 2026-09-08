@@ -163,7 +163,7 @@ export default function ProjectsPageClient({
               >
                 <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
                       Construction workflow
                     </p>
                     <h2 id="create-project-title" className="mt-1 text-xl font-bold text-slate-950">
@@ -195,7 +195,7 @@ export default function ProjectsPageClient({
                       className={`mt-1 h-11 w-full rounded-xl border bg-white px-3 outline-none transition ${
                         formErrors.estimateEngineerId
                           ? "border-red-500 focus:border-red-600"
-                          : "border-slate-200 focus:border-emerald-700"
+                          : "border-slate-200 focus:border-teal-700"
                       }`}
                     >
                       <option value="">Select estimate engineer</option>
@@ -227,7 +227,7 @@ export default function ProjectsPageClient({
                       className={`mt-1 h-11 w-full rounded-xl border px-3 font-normal outline-none ${
                         formErrors.budget
                           ? "border-red-500 focus:border-red-600"
-                          : "border-slate-200 focus:border-emerald-700"
+                          : "border-slate-200 focus:border-teal-700"
                       }`}
                     />
                     {formErrors.budget ? (
@@ -250,7 +250,7 @@ export default function ProjectsPageClient({
                   </button>
                   <button
                     disabled={pending}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(6,95,70,0.18)] hover:bg-emerald-900 disabled:opacity-60"
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(7,109,105,0.18)] hover:bg-teal-900 disabled:opacity-60"
                   >
                     {pending ? (
                       <LoaderCircle className="animate-spin" size={16} />
@@ -293,7 +293,7 @@ function Field({
         className={`mt-1 h-11 w-full rounded-xl border px-3 font-normal outline-none transition ${
           error
             ? "border-red-500 focus:border-red-600"
-            : "border-slate-200 focus:border-emerald-700"
+            : "border-slate-200 focus:border-teal-700"
         }`}
       />
       {error ? (

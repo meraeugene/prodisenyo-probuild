@@ -24,7 +24,7 @@ function fieldClass(hasError: boolean, withPrefix = false) {
   const base = withPrefix
     ? "w-full rounded-[10px] px-9 py-3 text-sm outline-none"
     : "mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none";
-  return `${base} transition focus:border-[#1f6a37] ${
+  return `${base} transition focus:border-[#076d69] ${
     hasError
       ? "border border-red-500 bg-white"
       : "border border-apple-mist bg-[rgb(var(--apple-snow))]"
@@ -158,7 +158,7 @@ export default function BudgetTrackerSetupForm({
                   projectType: undefined,
                 }));
               }}
-              className={`mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none transition focus:border-[#1f6a37] ${
+              className={`mt-2 w-full rounded-[10px] px-4 py-3 text-sm outline-none transition focus:border-[#076d69] ${
                 fieldErrors.projectType
                   ? "border border-red-500 bg-white"
                   : "border border-apple-mist bg-white"
@@ -228,7 +228,7 @@ export default function BudgetTrackerSetupForm({
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#1f6a37] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(6,95,70,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#076d69] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(7,109,105,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "project" ? (
               <ButtonLoader label="Starting tracking costs" />

@@ -27,7 +27,7 @@ export default function CeoDashboardApprovalQueue({
             </span>
             <Link
               href={item.href}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-teal-700 px-3 text-xs font-bold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               Review <ArrowRight size={12} />
             </Link>

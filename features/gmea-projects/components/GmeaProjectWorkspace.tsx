@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
@@ -44,14 +44,14 @@ export default function GmeaProjectWorkspace({
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <Link
         href="/gmea-projects"
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-700"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
       >
         <ArrowLeft size={16} />
         GMEA projects
       </Link>
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
             GMEA Marketing Corporation
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
@@ -93,7 +93,7 @@ export default function GmeaProjectWorkspace({
             className={
               "whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium " +
               (tab === t
-                ? "border-emerald-700 text-emerald-800"
+                ? "border-teal-700 text-teal-800"
                 : "border-transparent text-slate-500 hover:text-slate-900")
             }
           >

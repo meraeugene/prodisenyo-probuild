@@ -79,7 +79,7 @@ export function PayrollAdjustmentEntries(props: PayrollAdjustmentEntriesProps) {
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-950">
-          <SlidersHorizontal size={15} className="text-emerald-700" />
+          <SlidersHorizontal size={15} className="text-teal-700" />
           Adjustment Entries
         </div>
         <span className="text-[10px] font-medium text-slate-400">
@@ -102,7 +102,7 @@ export function PayrollAdjustmentEntries(props: PayrollAdjustmentEntriesProps) {
                 <p className="truncate text-[10px] text-slate-400">{entry.detail}</p>
               </div>
               <span
-                className={`font-mono text-[11px] font-bold ${entry.amount < 0 ? "text-red-600" : "text-emerald-700"}`}
+                className={`font-mono text-[11px] font-bold ${entry.amount < 0 ? "text-red-600" : "text-teal-700"}`}
               >
                 {entry.amount < 0 ? "-" : "+"}
                 {formatPeso(Math.abs(entry.amount))}

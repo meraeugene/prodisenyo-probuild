@@ -15,7 +15,7 @@ export default function PurchaserRequestsPanel({ records }: { records: Purchaser
           <h2 className="font-bold text-slate-950">Approved Material Requests</h2>
           <p className="mt-0.5 text-xs text-slate-500">Purchase records created from CEO approvals</p>
         </div>
-        <Link href="/purchasing-approvals" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800">
+        <Link href="/purchasing-approvals" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800">
           Open purchasing <ArrowRight size={13} />
         </Link>
       </div>

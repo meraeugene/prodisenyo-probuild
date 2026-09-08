@@ -16,7 +16,7 @@ export default function PurchaserReceiptsPanel({ records }: { records: Purchaser
       <div className="mt-4 divide-y divide-slate-100">
         {receipts.slice(0, 5).map((record) => (
           <div key={record.id} className="flex items-center gap-3 py-3 first:pt-0">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><FileCheck2 size={16} /></div>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><FileCheck2 size={16} /></div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-bold text-slate-900">{record.receiptInvoiceReference}</p>
               <p className="mt-0.5 truncate text-[11px] text-slate-500">{purchaseOrderCode(record.id)} · {record.itemName}</p>

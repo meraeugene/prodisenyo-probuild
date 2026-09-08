@@ -71,7 +71,7 @@ export default function ProjectEditModal({
             <Field label="Location" value={location} onChange={setLocation} required />
             <label className="space-y-1.5 text-sm font-semibold text-slate-700">
               Assign Engineer/Manager <span className="text-rose-500">*</span>
-              <select value={assignee} onChange={(event) => setAssignee(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#1f6a37]">
+              <select value={assignee} onChange={(event) => setAssignee(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#076d69]">
                 {ASSIGNEES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
             </label>
@@ -87,7 +87,7 @@ export default function ProjectEditModal({
             <input type="text" inputMode="numeric" required value={budget} onChange={(event) => {
               const digits = event.target.value.replace(/\D/g, "");
               setBudget(digits ? Number(digits).toLocaleString("en-US") : "");
-            }} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#1f6a37]" />
+            }} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#076d69]" />
           </label>
 
           <div className="grid grid-cols-2 gap-4">
@@ -97,7 +97,7 @@ export default function ProjectEditModal({
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-3">
             <button type="button" onClick={onClose} className="h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
-            <button type="submit" className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#1f6a37] px-5 text-sm font-semibold text-white hover:bg-emerald-800"><Save size={15} />Save Changes</button>
+            <button type="submit" className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-sm font-semibold text-white hover:bg-teal-800"><Save size={15} />Save Changes</button>
           </div>
         </form>
       </div>
@@ -107,9 +107,9 @@ export default function ProjectEditModal({
 }
 
 function Field({ label, value, onChange, required = false }: { label: string; value: string; onChange: (value: string) => void; required?: boolean }) {
-  return <label className="block space-y-1.5 text-sm font-semibold text-slate-700">{label} {required ? <span className="text-rose-500">*</span> : null}<input type="text" required={required} value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#1f6a37]" /></label>;
+  return <label className="block space-y-1.5 text-sm font-semibold text-slate-700">{label} {required ? <span className="text-rose-500">*</span> : null}<input type="text" required={required} value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#076d69]" /></label>;
 }
 
 function DateField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <label className="block space-y-1.5 text-sm font-semibold text-slate-700">{label} <span className="text-rose-500">*</span><input type="date" required value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#1f6a37]" /></label>;
+  return <label className="block space-y-1.5 text-sm font-semibold text-slate-700">{label} <span className="text-rose-500">*</span><input type="date" required value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-xl border border-apple-mist bg-white px-3 text-sm font-normal text-apple-charcoal outline-none focus:border-[#076d69]" /></label>;
 }

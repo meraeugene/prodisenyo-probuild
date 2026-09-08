@@ -305,7 +305,7 @@ export default function ProjectWorkspaceClient({
   return (
     <div className="min-h-full space-y-5 bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <div className="sticky top-0 z-40 -mx-4 -mt-5 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-7 lg:px-8">
-        <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">
+        <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
           <ArrowLeft size={15} /> Back to Projects
         </Link>
       </div>
@@ -474,7 +474,7 @@ export default function ProjectWorkspaceClient({
                   type="button"
                   onClick={() => setReturnEstimateId(activeEstimate.id)}
                   disabled={pendingEstimateAction !== null}
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal-50 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   <XCircle size={16} />
                   Return
@@ -483,7 +483,7 @@ export default function ProjectWorkspaceClient({
                   type="button"
                   onClick={() => approveEstimate(activeEstimate.id)}
                   disabled={pendingEstimateAction !== null}
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-teal-800 px-4 text-sm font-semibold text-white transition hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {pendingEstimateAction?.id === activeEstimate.id &&
                   pendingEstimateAction.type === "approve" ? (

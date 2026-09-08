@@ -17,7 +17,7 @@ export default function DashboardHeroSection({
   onSync: () => void | Promise<void>;
 }) {
   return (
-    <section className="mb-5 rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-6 text-white shadow-[0_18px_36px_rgba(22,101,52,0.18)]">
+    <section className="mb-5 rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-6 text-white shadow-[0_18px_36px_rgba(7,109,105,0.18)]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[12px] font-medium text-white/65">

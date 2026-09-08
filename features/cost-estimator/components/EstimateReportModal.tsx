@@ -51,7 +51,7 @@ export default function EstimateReportModal({
             remainingBudget,
           )} still remaining before reaching the estimate target.`,
           className:
-            "border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] text-white",
+            "border-teal-900 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] text-white",
         }
       : remainingBudget < 0
         ? {
@@ -90,8 +90,8 @@ export default function EstimateReportModal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-x-hidden overflow-y-hidden rounded-none bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[96vh] sm:max-w-[1380px] sm:rounded-[28px]">
-        <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
+      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-x-hidden overflow-y-hidden rounded-none bg-[#f0fdfa] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[96vh] sm:max-w-[1380px] sm:rounded-[28px]">
+        <div className="border-b border-teal-950/10 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
@@ -114,7 +114,7 @@ export default function EstimateReportModal({
 
         <div className="min-h-0 overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
           <div className="grid gap-5 xl:grid-cols-[1fr_1.08fr]">
-            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)]">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -128,7 +128,7 @@ export default function EstimateReportModal({
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                <div className="rounded-2xl border border-teal-900 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Project Type
                   </p>
@@ -136,7 +136,7 @@ export default function EstimateReportModal({
                     {formatProjectTypeLabel(estimate.project_type)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                <div className="rounded-2xl border border-teal-900 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Total Estimate
                   </p>
@@ -144,7 +144,7 @@ export default function EstimateReportModal({
                     {formatBudgetMoney(estimate.estimate_total)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                <div className="rounded-2xl border border-teal-900 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Submitted
                   </p>
@@ -152,7 +152,7 @@ export default function EstimateReportModal({
                     {formatEstimateDateTime(estimate.submitted_at)}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-emerald-900 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-3">
+                <div className="rounded-2xl border border-teal-900 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Submitted By
                   </p>
@@ -185,8 +185,8 @@ export default function EstimateReportModal({
               </div>
 
               {estimate.status === "rejected" ? (
-                <div className="mt-4 rounded-2xl border border-[#dceadb] bg-[#f5faf6] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5b7d63]">
+                <div className="mt-4 rounded-2xl border border-[#ccfbf1] bg-[#f5faf6] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#527d79]">
                     Review Notes
                   </p>
                   <p className="mt-2 text-sm leading-6 text-apple-charcoal">
@@ -197,7 +197,7 @@ export default function EstimateReportModal({
               ) : null}
             </section>
 
-            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)]">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -283,7 +283,7 @@ export default function EstimateReportModal({
                             </td>
                           </tr>
                         ))}
-                        <tr className="bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)]">
+                        <tr className="bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)]">
                           <td
                             colSpan={6}
                             className="px-3 py-3 text-right text-sm font-semibold uppercase tracking-[0.12em] text-white"

@@ -16,12 +16,12 @@ export default function CostEstimatorItemSummary({
   const remaining = budgetCeiling === null ? null : budgetCeiling - estimatedCost;
 
   return (
-    <aside className="rounded-[14px] border border-emerald-200 bg-emerald-50/40 p-5">
+    <aside className="rounded-[14px] border border-teal-200 bg-teal-50/40 p-5">
       <h3 className="text-base font-semibold text-slate-950">Estimate Summary</h3>
       <dl className="mt-7 space-y-6">
         <div>
           <dt className="text-xs font-semibold text-slate-700">Estimated Cost</dt>
-          <dd className="mt-2 break-words text-[22px] font-semibold tracking-[-0.025em] text-emerald-700">
+          <dd className="mt-2 break-words text-[22px] font-semibold tracking-[-0.025em] text-teal-700">
             {formatBudgetMoney(estimatedCost)}
           </dd>
         </div>
@@ -38,7 +38,7 @@ export default function CostEstimatorItemSummary({
               "mt-2 break-words text-[20px] font-semibold",
               remaining !== null && remaining < 0
                 ? "text-rose-700"
-                : "text-emerald-700",
+                : "text-teal-700",
             )}
           >
             {remaining === null ? "Unavailable" : formatBudgetMoney(remaining)}

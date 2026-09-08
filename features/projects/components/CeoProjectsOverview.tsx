@@ -21,7 +21,7 @@ import {
 type Filter = "all" | ProjectStatus;
 
 const STATUS_CLASSES = {
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  emerald: "border-teal-200 bg-teal-50 text-teal-700",
   amber: "border-amber-200 bg-amber-50 text-amber-700",
   rose: "border-rose-200 bg-rose-50 text-rose-700",
   slate: "border-slate-200 bg-slate-100 text-slate-700",
@@ -73,7 +73,7 @@ export default function CeoProjectsOverview({
         <button
           type="button"
           onClick={onCreateProject}
-          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white transition hover:bg-emerald-900"
+          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white transition hover:bg-teal-900"
         >
           <Plus size={17} /> Create New Project
         </button>
@@ -88,7 +88,7 @@ export default function CeoProjectsOverview({
               onClick={() => setFilter(item.value)}
               className={`h-10 shrink-0 rounded-xl px-4 text-sm font-semibold transition ${
                 filter === item.value
-                  ? "bg-emerald-800 text-white"
+                  ? "bg-teal-800 text-white"
                   : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -102,7 +102,7 @@ export default function CeoProjectsOverview({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search projects"
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-100"
           />
         </label>
       </div>
@@ -119,7 +119,7 @@ export default function CeoProjectsOverview({
             <article key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-slate-500">{String(label)}</p>
-                <MetricIcon size={16} className="text-emerald-700" />
+                <MetricIcon size={16} className="text-teal-700" />
               </div>
               <p className="mt-2 text-2xl font-semibold text-slate-950">{String(value)}</p>
               <p className="mt-1 text-sm text-slate-500">{String(helper)}</p>
@@ -158,7 +158,7 @@ export default function CeoProjectsOverview({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">{project.status === "planning" ? "Workflow" : "Progress"}</p>
-                  {project.status === "planning" ? <p className="mt-1 text-sm font-bold text-amber-700">Cost estimate first</p> : <><p className="mt-1 text-sm font-bold text-slate-950">{project.progress}%</p><div className="mt-2 h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-700" style={{ width: `${project.progress}%` }} /></div></>}
+                  {project.status === "planning" ? <p className="mt-1 text-sm font-bold text-amber-700">Cost estimate first</p> : <><p className="mt-1 text-sm font-bold text-slate-950">{project.progress}%</p><div className="mt-2 h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} /></div></>}
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Budget</p>

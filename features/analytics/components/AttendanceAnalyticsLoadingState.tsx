@@ -1,14 +1,14 @@
 function SkeletonBlock({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(232,242,236,0.95),rgba(244,249,246,1),rgba(232,242,236,0.95))] bg-[length:200%_100%] ${className}`}
+      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(230,250,247,0.95),rgba(240,253,250,1),rgba(230,250,247,0.95))] bg-[length:200%_100%] ${className}`}
     />
   );
 }
 
 export function AttendanceAnalyticsLoadingState() {
   return (
-    <section className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+    <section className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
       <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
         <SkeletonBlock className="h-3 w-24 rounded-full" />
         <SkeletonBlock className="mt-4 h-8 w-72 max-w-full" />
@@ -50,7 +50,7 @@ export function AttendanceAnalyticsLoadingState() {
               <SkeletonBlock className="h-3 w-44 rounded-full" />
               <SkeletonBlock className="h-3 w-28 rounded-full" />
             </div>
-            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(24,83,43,0.04)]">
+            <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_1px_3px_rgba(7,109,105,0.04)]">
               <div className="relative h-[240px] overflow-hidden sm:h-[270px]">
                 <div className="absolute inset-x-0 top-[20%] border-t border-dashed border-apple-mist/80" />
                 <div className="absolute inset-x-0 top-[46%] border-t border-dashed border-apple-mist/80" />

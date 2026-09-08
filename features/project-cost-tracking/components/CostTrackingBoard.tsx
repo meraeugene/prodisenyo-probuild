@@ -46,7 +46,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
                     </div>
                     <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
                       column.value === "completed"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-teal-50 text-teal-700"
                         : column.value === "ongoing"
                           ? "bg-orange-50 text-orange-700"
                           : "bg-amber-50 text-amber-700"

@@ -165,10 +165,10 @@ export default function UploadZone({
           relative cursor-pointer rounded-[14px] border-2 border-dashed transition-all duration-200
           ${
             dragging
-              ? "scale-[1.01] border-emerald-500 bg-emerald-50 shadow-[0_18px_36px_rgba(16,185,129,0.12)]"
+              ? "scale-[1.01] border-teal-500 bg-teal-50 shadow-[0_18px_36px_rgba(20,184,166,0.12)]"
               : hasFiles
-                ? "border-emerald-100 bg-[rgb(var(--apple-snow))] shadow-[0_12px_30px_rgba(24,83,43,0.05)]"
-                : "border-slate-300 bg-white hover:border-emerald-300 hover:bg-emerald-50/40 hover:shadow-[0_14px_32px_rgba(24,83,43,0.06)]"
+                ? "border-teal-100 bg-[rgb(var(--apple-snow))] shadow-[0_12px_30px_rgba(7,109,105,0.05)]"
+                : "border-slate-300 bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-[0_14px_32px_rgba(7,109,105,0.06)]"
           }
         `}
       >
@@ -183,7 +183,7 @@ export default function UploadZone({
 
         {!hasFiles ? (
           <div className="flex flex-col items-center px-8 py-16 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-[0_16px_32px_rgba(22,101,52,0.22)] transition-transform duration-200 group-hover:scale-110">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-[0_16px_32px_rgba(7,109,105,0.22)] transition-transform duration-200 group-hover:scale-110">
               <Upload size={28} className="text-white" strokeWidth={1.5} />
             </div>
             <p className="mb-1 text-[17px] font-semibold tracking-tight text-apple-charcoal">
@@ -196,7 +196,7 @@ export default function UploadZone({
               {["PDF", "XLS", "XLSX", "CSV"].map((f) => (
                 <span
                   key={f}
-                  className="rounded-[8px] border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-2xs font-mono font-semibold text-emerald-700 shadow-sm"
+                  className="rounded-[8px] border border-teal-200 bg-teal-50 px-2.5 py-1 text-2xs font-mono font-semibold text-teal-700 shadow-sm"
                 >
                   {f}
                 </span>
@@ -206,7 +206,7 @@ export default function UploadZone({
         ) : (
           <div className="space-y-3 p-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-[0_14px_28px_rgba(22,101,52,0.2)]">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-[0_14px_28px_rgba(7,109,105,0.2)]">
                 <FileSpreadsheet size={22} className="text-white" />
               </div>
               <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ export default function UploadZone({
                   e.stopPropagation();
                   inputRef.current?.click();
                 }}
-                className="h-9 rounded-[10px] border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-100"
+                className="h-9 rounded-[10px] border border-teal-200 bg-teal-50 px-3 text-xs font-semibold text-teal-700 shadow-sm transition-all hover:border-teal-300 hover:bg-teal-100"
               >
                 Add files
               </button>
@@ -242,7 +242,7 @@ export default function UploadZone({
                   }
                   setError(null);
                 }}
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#14532d,#166534)] shadow-sm transition-colors hover:bg-[#15803d]"
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-sm transition-colors hover:bg-[#087f79]"
               >
                 <X size={14} className="text-white" />
               </button>
@@ -256,7 +256,7 @@ export default function UploadZone({
                 {files.map((current) => (
                   <div
                     key={getFileKey(current)}
-                    className="flex items-center justify-between gap-2 rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2 shadow-[0_8px_20px_rgba(24,83,43,0.05)]"
+                    className="flex items-center justify-between gap-2 rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2 shadow-[0_8px_20px_rgba(7,109,105,0.05)]"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-xs text-apple-ash">
@@ -272,7 +272,7 @@ export default function UploadZone({
                         e.stopPropagation();
                         handleRemoveSingle(current);
                       }}
-                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[8px] bg-[linear-gradient(135deg,#14532d,#166534)] transition-colors hover:bg-[#15803d]"
+                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[8px] bg-[linear-gradient(135deg,#075f5b,#076d69)] transition-colors hover:bg-[#087f79]"
                       aria-label={`Remove ${current.name}`}
                       title={`Remove ${current.name}`}
                     >
@@ -312,8 +312,8 @@ export default function UploadZone({
             transition-all duration-200
             ${
               hasFiles && !loading
-                ? "border border-emerald-700  bg-[#1f6a37] hover:bg-[#18552d]   text-white shadow-[0_16px_34px_rgba(22,101,52,0.24)] hover:border-emerald-600  active:scale-[0.98]"
-                : "cursor-not-allowed border border-emerald-800/40 bg-emerald-800/70 text-white"
+                ? "border border-teal-700  bg-[#076d69] hover:bg-[#055f5b]   text-white shadow-[0_16px_34px_rgba(7,109,105,0.24)] hover:border-teal-600  active:scale-[0.98]"
+                : "cursor-not-allowed border border-teal-800/40 bg-teal-800/70 text-white"
             }
           `}
         >

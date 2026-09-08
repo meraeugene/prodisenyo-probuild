@@ -24,7 +24,7 @@ export default function CeoDepartmentReview({
   const siteCards = useMemo(() => buildSiteCards(payrollItems), [payrollItems]);
 
   return (
-    <section className="mb-5 sm:rounded-[12px] bg-white sm:p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+    <section className="mb-5 sm:rounded-[12px] bg-white sm:p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
       <div className="mb-4 hidden sm:flex items-center justify-between">
         <div>
           <p className="text-[15px] font-semibold text-apple-charcoal">
@@ -38,7 +38,7 @@ export default function CeoDepartmentReview({
           siteCards.map((card) => (
             <div
               key={card.siteName}
-              className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-left text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]"
+              className="rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-5 text-left text-white shadow-[0_18px_36px_rgba(7,109,105,0.16)]"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -65,7 +65,7 @@ export default function CeoDepartmentReview({
             </div>
           ))
         ) : (
-          <div className="rounded-[16px] bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] p-5 text-white shadow-[0_18px_36px_rgba(22,101,52,0.16)]">
+          <div className="rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-5 text-white shadow-[0_18px_36px_rgba(7,109,105,0.16)]">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">OPERATIONS</p>
               <span className="text-[11px] text-white/65">DEPT</span>

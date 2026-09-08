@@ -66,7 +66,7 @@ export const BUDGET_ITEM_STATUS_OPTIONS: Array<{
 }> = [
   { value: "upcoming", label: "Upcoming", dotClassName: "bg-rose-500" },
   { value: "ongoing", label: "Ongoing", dotClassName: "bg-amber-500" },
-  { value: "completed", label: "Completed", dotClassName: "bg-emerald-500" },
+  { value: "completed", label: "Completed", dotClassName: "bg-teal-500" },
 ];
 
 export const BUDGET_ITEM_CATEGORY_OPTIONS: Array<{

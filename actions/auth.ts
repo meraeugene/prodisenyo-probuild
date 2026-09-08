@@ -74,8 +74,10 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
 
   if (role === APP_ROLES.ENGINEER) {
     return hasAllowedPrefix(pathname, [
+      "/overview",
       "/projects",
       "/cost-estimator",
+      "/request-material",
       "/request-overtime",
       "/settings",
     ]);

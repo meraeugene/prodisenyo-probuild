@@ -259,7 +259,7 @@ export default function PayrollSection({
       className="animate-fade-up mt-4"
       style={{ animationFillMode: "both", animationDelay: "80ms" }}
     >
-      <div className="rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(24,83,43,0.07)] sm:rounded-[14px]">
+      <div className="rounded-none border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[14px]">
         <div className="flex flex-col gap-4 border-b border-apple-mist px-4 pb-4 pt-5 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:pb-5 sm:pt-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -267,7 +267,7 @@ export default function PayrollSection({
                 Step 3
               </span>
               {payroll.payrollGenerated && (
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-2xs font-semibold text-emerald-700">
+                <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-2xs font-semibold text-teal-700">
                   Complete
                 </span>
               )}
@@ -295,7 +295,7 @@ export default function PayrollSection({
               type="button"
               onClick={onGeneratePreview}
               disabled={savePending}
-              className="flex items-center gap-2 rounded-[10px] bg-[#1f6a37] hover:bg-[#18552d] px-5 py-3 text-sm font-semibold text-white transition  disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-[10px] bg-[#076d69] hover:bg-[#055f5b] px-5 py-3 text-sm font-semibold text-white transition  disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Calculator size={18} />
               Generate Payroll Preview
@@ -316,8 +316,8 @@ export default function PayrollSection({
                 className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     payroll.payrollTab === "payroll"
-                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
+                      ? "border-[#076d69] bg-[#076d69] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
                   }`}
               >
                 Payroll Summary
@@ -327,8 +327,8 @@ export default function PayrollSection({
                 className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
                   ${
                     payroll.payrollTab === "logs"
-                      ? "border-[#1f6a37] bg-[#1f6a37] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#7ebd8b]"
+                      ? "border-[#076d69] bg-[#076d69] text-white"
+                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
                   }`}
               >
                 Attendance Logs
@@ -340,7 +340,7 @@ export default function PayrollSection({
                     type="button"
                     onClick={onSavePayroll}
                     disabled={savePending}
-                    className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] bg-[#1f6a37] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
+                    className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] bg-[#076d69] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
                   >
                     {savePending ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -414,7 +414,7 @@ export default function PayrollSection({
                 <SlidersHorizontal size={15} />
                 Filters
                 {activeMobileFilterCount > 0 ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1f6a37] px-1.5 text-[11px] font-semibold text-white">
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#076d69] px-1.5 text-[11px] font-semibold text-white">
                     {activeMobileFilterCount}
                   </span>
                 ) : null}
@@ -680,7 +680,7 @@ export default function PayrollSection({
                       )}
                     </tbody>
                     <tfoot>
-                      <tr className="border-t border-apple-silver bg-[#1f6a37]">
+                      <tr className="border-t border-apple-silver bg-[#076d69]">
                         <td className="px-4 py-3 text-sm font-semibold text-white">
                           Summary
                         </td>
@@ -791,7 +791,7 @@ export default function PayrollSection({
 ${
   payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     First
@@ -808,7 +808,7 @@ ${
 ${
   payrollPage === 1
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     <ArrowLeft size={16} />
@@ -823,8 +823,8 @@ ${
                       className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition
 ${
   payrollPage === p
-    ? "bg-[#1f6a37] text-white border-[#1f6a37]"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    ? "bg-[#076d69] text-white border-[#076d69]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                     >
                       {p}
@@ -844,7 +844,7 @@ ${
 ${
   payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     <ArrowRight size={16} />
@@ -859,7 +859,7 @@ ${
 ${
   payrollPage === payrollTotalPages
     ? "border-apple-mist text-apple-silver cursor-not-allowed"
-    : "border-apple-silver text-apple-charcoal hover:border-[#7ebd8b]"
+    : "border-apple-silver text-apple-charcoal hover:border-[#5eead4]"
 }`}
                   >
                     Last
@@ -964,7 +964,7 @@ ${
                   <button
                     type="button"
                     onClick={() => setShowMobileFilters(false)}
-                    className="inline-flex h-10 flex-1 items-center justify-center rounded-[12px] bg-[#1f6a37] text-sm font-semibold text-white"
+                    className="inline-flex h-10 flex-1 items-center justify-center rounded-[12px] bg-[#076d69] text-sm font-semibold text-white"
                   >
                     Done
                   </button>

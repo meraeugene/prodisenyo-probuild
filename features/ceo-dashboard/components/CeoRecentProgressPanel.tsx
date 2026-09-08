@@ -15,7 +15,7 @@ export default function CeoRecentProgressPanel({
           <h2 className="font-bold text-slate-950">Recent Progress Updates</h2>
           <p className="mt-0.5 text-xs text-slate-500">Engineer-submitted overall progress</p>
         </div>
-        <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800">
+        <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800">
           View all <ArrowRight size={13} />
         </Link>
       </div>
@@ -25,7 +25,7 @@ export default function CeoRecentProgressPanel({
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <p className="truncate text-sm font-bold text-slate-950">{update.projectName}</p>
-                <span className="shrink-0 text-xs font-bold text-emerald-700">{update.overallPercent}%</span>
+                <span className="shrink-0 text-xs font-bold text-teal-700">{update.overallPercent}%</span>
               </div>
               <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600">{update.summary}</p>
               <p className="mt-1 text-[10px] text-slate-400">{update.engineer} · {formatCeoDate(update.createdAt)}</p>

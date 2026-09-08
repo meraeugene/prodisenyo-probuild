@@ -43,11 +43,11 @@ export default function CeoDashboardPage({
         <div className="flex items-center gap-3">
           <Link
             href={reviewApprovalsHref}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-700 bg-white px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-teal-700 bg-white px-4 text-sm font-bold text-teal-800 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
           >
             Review approvals
             {totals.pendingApprovals > 0 ? (
-              <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] text-white">{totals.pendingApprovals}</span>
+              <span className="rounded-full bg-teal-700 px-2 py-0.5 text-[10px] text-white">{totals.pendingApprovals}</span>
             ) : null}
           </Link>
           <div className="hidden border-l border-slate-200 pl-4 sm:block">
@@ -83,7 +83,7 @@ export default function CeoDashboardPage({
       </div>
 
       <div className="mt-5 flex justify-end">
-        <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-800 hover:text-emerald-950">
+        <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-800 hover:text-teal-950">
           Open project portfolio <ArrowRight size={14} />
         </Link>
       </div>

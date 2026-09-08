@@ -6,10 +6,11 @@ import { type AuthActionState, signInAction } from "@/actions/auth";
 
 interface LoginFormProps {
   nextPath: string | null;
+  initialError?: string | null;
 }
 
-export default function LoginForm({ nextPath }: LoginFormProps) {
-  const initialAuthActionState: AuthActionState = { error: null };
+export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
+  const initialAuthActionState: AuthActionState = { error: initialError ?? null };
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, pending] = useActionState(
     signInAction,

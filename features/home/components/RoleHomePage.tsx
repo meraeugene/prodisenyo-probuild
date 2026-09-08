@@ -295,28 +295,28 @@ export default function RoleHomePage({
               <Link
                 key={card.href}
                 href={card.href}
-                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[18px] border border-emerald-200 bg-white p-4 text-emerald-950 shadow-[0_12px_26px_rgba(14,53,30,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_18px_34px_rgba(14,53,30,0.18)]"
+                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[18px] border border-teal-200 bg-white p-4 text-teal-950 shadow-[0_12px_26px_rgba(6,59,56,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-[0_18px_34px_rgba(6,59,56,0.18)]"
               >
-                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-emerald-100/60 blur-2xl transition duration-300 group-hover:bg-emerald-100" />
+                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-teal-100/60 blur-2xl transition duration-300 group-hover:bg-teal-100" />
 
-                <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-[0_6px_14px_rgba(22,101,52,0.12)] transition duration-300 group-hover:scale-105 group-hover:border-emerald-300 group-hover:text-emerald-800">
+                <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-teal-200 bg-teal-50 text-teal-700 shadow-[0_6px_14px_rgba(7,109,105,0.12)] transition duration-300 group-hover:scale-105 group-hover:border-teal-300 group-hover:text-teal-800">
                   <Icon size={18} />
                 </div>
 
                 <div className="relative z-10 flex items-start justify-between gap-3">
-                  <p className="text-[20px] font-semibold tracking-[-0.02em] text-emerald-950">
+                  <p className="text-[20px] font-semibold tracking-[-0.02em] text-teal-950">
                     {card.title}
                   </p>
                 </div>
 
-                <p className="relative z-10 mt-4 text-base leading-6 text-emerald-800">
+                <p className="relative z-10 mt-4 text-base leading-6 text-teal-800">
                   {card.description}
                 </p>
 
                 <div className="relative z-10 mt-2 flex items-center justify-end">
                   <ArrowRight
                     size={16}
-                    className="text-emerald-700 transition duration-300 group-hover:translate-x-1 group-hover:text-emerald-800"
+                    className="text-teal-700 transition duration-300 group-hover:translate-x-1 group-hover:text-teal-800"
                   />
                 </div>
               </Link>

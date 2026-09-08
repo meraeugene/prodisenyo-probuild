@@ -388,7 +388,7 @@ export default function PayrollPage() {
           <div className="w-full max-w-xl rounded-[24px] border border-apple-mist bg-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
             <div className="border-b border-apple-mist px-6 py-5">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#14532d,#166534)] text-white shadow-[0_12px_28px_rgba(22,101,52,0.18)]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#075f5b,#076d69)] text-white shadow-[0_12px_28px_rgba(7,109,105,0.18)]">
                   <BadgeCheck size={22} />
                 </div>
                 <div className="min-w-0">
@@ -410,7 +410,7 @@ export default function PayrollPage() {
             </div>
 
             <div className="space-y-4 px-6 py-5">
-              <div className="grid gap-3 rounded-[20px] border border-apple-mist bg-[linear-gradient(180deg,#fbfdfc,#f6faf8)] p-4 sm:grid-cols-2">
+              <div className="grid gap-3 rounded-[20px] border border-apple-mist bg-[linear-gradient(180deg,#f8fffd,#f6faf8)] p-4 sm:grid-cols-2">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
                     Site
@@ -429,8 +429,8 @@ export default function PayrollPage() {
                 </div>
               </div>
 
-              <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <p className="text-sm leading-6 text-emerald-900">
+              <div className="rounded-[18px] border border-teal-200 bg-teal-50 px-4 py-3">
+                <p className="text-sm leading-6 text-teal-900">
                   This submits the payroll report as pending CEO review. It will
                   only appear in the CEO dashboard totals after the CEO accepts
                   it. Only overtime requests continue through the separate
@@ -457,7 +457,7 @@ export default function PayrollPage() {
                   executeSavePayroll();
                 }}
                 disabled={isPending}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#1f6a37] px-5 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#076d69] px-5 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Send size={15} />
                 Confirm Submission

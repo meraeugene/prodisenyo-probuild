@@ -23,7 +23,7 @@ export default function CeoBudgetSnapshot({
           <h2 className="font-bold text-slate-950">Cost & Budget Summary</h2>
           <p className="mt-0.5 text-xs text-slate-500">Across all live projects</p>
         </div>
-        <Link href="/budget-tracker" className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800">
+        <Link href="/budget-tracker" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800">
           Details <ArrowRight size={13} />
         </Link>
       </div>
@@ -43,7 +43,7 @@ export default function CeoBudgetSnapshot({
         ))}
       </div>
       <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-emerald-700" style={{ width: percentage + "%" }} />
+        <div className="h-full rounded-full bg-teal-700" style={{ width: percentage + "%" }} />
       </div>
       <p className="mt-2 text-xs text-slate-500">{percentage}% of the combined budget ceiling has been recorded as spent.</p>
     </section>

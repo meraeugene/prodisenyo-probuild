@@ -11,7 +11,7 @@ export default function CeoAttentionPanel({ items }: { items: CeoAttentionItem[]
       </div>
       <div className="mt-4 divide-y divide-slate-100">
         {items.slice(0, 5).map((item) => (
-          <Link key={item.id} href={item.href} className="flex items-center gap-3 py-3 first:pt-0 hover:text-emerald-800">
+          <Link key={item.id} href={item.href} className="flex items-center gap-3 py-3 first:pt-0 hover:text-teal-800">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-slate-900">{item.label}</p>
               <p className="mt-0.5 truncate text-[11px] text-slate-500">{item.detail}</p>
@@ -21,7 +21,7 @@ export default function CeoAttentionPanel({ items }: { items: CeoAttentionItem[]
         ))}
         {!items.length ? (
           <div className="py-8 text-center">
-            <p className="text-sm font-semibold text-emerald-700">No derived alerts</p>
+            <p className="text-sm font-semibold text-teal-700">No derived alerts</p>
             <p className="mt-1 text-xs text-slate-500">No overdue or over-budget project was found.</p>
           </div>
         ) : null}

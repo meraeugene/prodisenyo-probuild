@@ -2,10 +2,9 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TONE_STYLES = {
-  emerald: "bg-emerald-50 text-emerald-700",
+  teal: "bg-teal-50 text-teal-700",
   amber: "bg-amber-50 text-amber-600",
   sky: "bg-sky-50 text-sky-600",
-  green: "bg-green-50 text-green-700",
 } as const;
 
 export default function CostEstimatorOverviewMetric({
@@ -31,7 +30,7 @@ export default function CostEstimatorOverviewMetric({
         <Icon size={29} strokeWidth={1.8} />
       </span>
       <div>
-        <p className="text-[30px] font-semibold leading-none tracking-[-0.03em] text-emerald-950">
+        <p className="text-[30px] font-semibold leading-none tracking-[-0.03em] text-teal-950">
           {value}
         </p>
         <p className="mt-2 text-[15px] text-slate-600">{label}</p>

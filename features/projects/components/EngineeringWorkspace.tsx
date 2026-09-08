@@ -61,7 +61,7 @@ export default function EngineeringWorkspace({
               type="button"
               onClick={onBack}
               aria-label="Back to projects"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
             >
               <ArrowLeft size={16} />
             </button>
@@ -79,7 +79,7 @@ export default function EngineeringWorkspace({
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
               Overall progress
             </p>
-            <p className="text-lg font-bold text-emerald-700">
+            <p className="text-lg font-bold text-teal-700">
               {formatPercent(progressSummary.overallProgress)}
             </p>
           </div>
@@ -98,9 +98,9 @@ export default function EngineeringWorkspace({
               onClick={() => onTabChange(item.id)}
               aria-current={tab === item.id ? "page" : undefined}
               className={cn(
-                "flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600",
+                "flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
                 tab === item.id
-                  ? "bg-[#1f6a37] text-white"
+                  ? "bg-[#076d69] text-white"
                   : "text-slate-600 hover:bg-slate-50 hover:text-apple-charcoal",
               )}
             >

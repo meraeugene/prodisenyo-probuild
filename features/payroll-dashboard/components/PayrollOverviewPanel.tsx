@@ -12,13 +12,13 @@ export default function PayrollOverviewPanel({
   hasOwnedAttendance: boolean;
 }) {
   const metrics = [
-    { label: "Total Gross Pay", value: overview.grossPay, icon: Banknote, tone: "text-emerald-700 bg-emerald-50" },
+    { label: "Total Gross Pay", value: overview.grossPay, icon: Banknote, tone: "text-teal-700 bg-teal-50" },
     { label: "Total Deductions", value: overview.deductions, icon: ReceiptText, tone: "text-rose-700 bg-rose-50" },
-    { label: "Total Net Pay", value: overview.netPay, icon: Wallet, tone: "text-emerald-700 bg-emerald-50" },
+    { label: "Total Net Pay", value: overview.netPay, icon: Wallet, tone: "text-teal-700 bg-teal-50" },
     { label: "Approved Runs", value: overview.approvedRunCount, icon: Calculator, tone: "text-sky-700 bg-sky-50", count: true },
   ];
   const chartRows = [
-    { label: "Regular pay", value: overview.regularPay, color: "bg-emerald-700" },
+    { label: "Regular pay", value: overview.regularPay, color: "bg-teal-700" },
     { label: "Overtime & holiday", value: overview.overtimePay + overview.holidayPay, color: "bg-amber-500" },
     { label: "Deductions", value: overview.deductions, color: "bg-rose-600" },
   ];
@@ -34,7 +34,7 @@ export default function PayrollOverviewPanel({
         </div>
         <Link
           href="/payroll-analytics"
-          className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
         >
           View report <ArrowRight size={13} />
         </Link>
@@ -94,7 +94,7 @@ export default function PayrollOverviewPanel({
 
       <Link
         href={hasOwnedAttendance ? "/generate-payroll" : "/upload-attendance"}
-        className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-emerald-700 px-4 text-xs font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+        className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-teal-700 px-4 text-xs font-bold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
       >
         {hasOwnedAttendance ? "Open Payroll Workspace" : "Upload Attendance"}
       </Link>

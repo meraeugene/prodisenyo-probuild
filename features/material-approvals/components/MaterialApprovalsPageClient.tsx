@@ -55,7 +55,7 @@ function statusClass(status: ProjectMaterialRequest["status"]) {
   if (status === "purchasing" || status === "ordered") {
     return "border-sky-200 bg-sky-50 text-sky-700";
   }
-  return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  return "border-teal-200 bg-teal-50 text-teal-700";
 }
 
 export default function MaterialApprovalsPageClient({
@@ -177,7 +177,7 @@ export default function MaterialApprovalsPageClient({
               className={cn(
                 "rounded-lg border px-3.5 py-1.5 text-xs font-semibold transition-all",
                 activeTab === tab.id
-                  ? "border-emerald-800 bg-emerald-800 text-white"
+                  ? "border-teal-800 bg-teal-800 text-white"
                   : "border-apple-mist bg-white text-apple-smoke hover:bg-apple-mist/50",
               )}
             >
@@ -193,7 +193,7 @@ export default function MaterialApprovalsPageClient({
             placeholder="Search material, project..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            className="h-9 w-full rounded-xl border border-apple-mist bg-white pl-9 pr-4 text-xs outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+            className="h-9 w-full rounded-xl border border-apple-mist bg-white pl-9 pr-4 text-xs outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-100"
           />
         </label>
       </div>
@@ -202,10 +202,10 @@ export default function MaterialApprovalsPageClient({
         {filteredRequests.map((request) => (
           <article
             key={request.id}
-            className="flex flex-col justify-between gap-6 rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(24,83,43,.03)] md:flex-row md:items-center"
+            className="flex flex-col justify-between gap-6 rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(7,109,105,.03)] md:flex-row md:items-center"
           >
             <div className="flex min-w-0 flex-1 items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-teal-50 text-teal-700">
                 <Package size={25} />
               </div>
               <div className="min-w-0 flex-1 space-y-2">
@@ -219,7 +219,7 @@ export default function MaterialApprovalsPageClient({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-apple-charcoal">{request.material_name}</h3>
-                  <p className="mt-0.5 text-sm font-semibold text-emerald-700">
+                  <p className="mt-0.5 text-sm font-semibold text-teal-700">
                     Quantity: {Number(request.quantity).toLocaleString("en-PH")} {request.unit}
                   </p>
                   <MaterialEstimateSource request={request} plannedMaterials={plannedMaterials} />
@@ -255,7 +255,7 @@ export default function MaterialApprovalsPageClient({
                   <button
                     type="button"
                     onClick={() => beginReview(request, "approve")}
-                    className="flex h-10 items-center gap-1.5 rounded-xl bg-emerald-800 px-4 text-xs font-semibold text-white hover:bg-emerald-900"
+                    className="flex h-10 items-center gap-1.5 rounded-xl bg-teal-800 px-4 text-xs font-semibold text-white hover:bg-teal-900"
                   >
                     <ThumbsUp size={14} /> Approve
                   </button>
@@ -316,7 +316,7 @@ function MaterialEstimateSource({
   }
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 font-bold uppercase tracking-wider text-emerald-700">
+      <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-1 font-bold uppercase tracking-wider text-teal-700">
         Approved estimate
       </span>
       <span>Reference: {new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(planned.unitCost)} / {planned.unit}</span>

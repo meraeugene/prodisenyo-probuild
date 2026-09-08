@@ -50,7 +50,7 @@ export function ModalShell({
           size,
         )}
       >
-        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-6 py-5 text-white">
+        <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-6 py-5 text-white">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
@@ -86,7 +86,7 @@ export function SummaryStat({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-emerald-400/25 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-3 py-2 text-white">
+    <div className="rounded-xl border border-teal-400/25 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-3 py-2 text-white">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
         {label}
       </p>

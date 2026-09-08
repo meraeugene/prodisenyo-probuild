@@ -82,27 +82,27 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
           </div>
 
           {/* Financial details & progress */}
-          <div className="grid sm:grid-cols-3 gap-4 bg-emerald-50/20 border border-emerald-100 p-4 rounded-2xl">
+          <div className="grid sm:grid-cols-3 gap-4 bg-teal-50/20 border border-teal-100 p-4 rounded-2xl">
             <div className="space-y-0.5">
-              <span className="text-[10px] text-emerald-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
+              <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
                 <DollarSign size={11} /> Total Budget
               </span>
               <p className="text-lg font-bold text-apple-charcoal">{formatCurrency(project.budget)}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-[10px] text-emerald-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
+              <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
                 <DollarSign size={11} /> Actual Spent
               </span>
               <p className="text-lg font-bold text-apple-charcoal">{formatCurrency(project.spent)}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-[10px] text-emerald-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
+              <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
                 <Activity size={11} /> Project Progress
               </span>
               <div className="flex items-center gap-2">
                 <p className="text-lg font-bold text-apple-charcoal">{project.progress}%</p>
                 <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${project.progress}%` }} />
+                  <div className="h-full bg-teal-600 rounded-full" style={{ width: `${project.progress}%` }} />
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
             <button type="button" onClick={onDelete} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50">
               <Trash2 size={15} /> Delete Project
             </button>
-            <button type="button" onClick={onEdit} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#1f6a37] px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">
+            <button type="button" onClick={onEdit} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-teal-800">
               <Pencil size={15} /> Edit Project
             </button>
           </div>

@@ -28,7 +28,7 @@ export function getPayrollLogStatus(
     return { label: "Under 8h", className: "bg-amber-50 text-amber-700" };
   }
 
-  return { label: "Regular", className: "bg-emerald-50 text-emerald-700" };
+  return { label: "Regular", className: "bg-teal-50 text-teal-700" };
 }
 
 export function getPayrollLogTimeIn(log: DailyLogRow) {

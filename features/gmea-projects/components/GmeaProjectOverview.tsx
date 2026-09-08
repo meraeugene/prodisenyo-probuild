@@ -1,4 +1,4 @@
-﻿import type { GmeaProject } from "../types";
+import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { formatProjectDuration } from "../utils/gmeaFormatters";
 export default function GmeaProjectOverview({
@@ -27,7 +27,7 @@ export default function GmeaProjectOverview({
           </div>
         ))}
       </dl>
-      <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-sm">
+      <div className="rounded-xl border border-teal-100 bg-teal-50/50 p-4 text-sm">
         <p>
           Total net profit: <strong>{formatMoney(s.profit)}</strong>
         </p>

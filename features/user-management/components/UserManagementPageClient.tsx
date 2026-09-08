@@ -40,7 +40,7 @@ export default function UserManagementPageClient({
 
       <section className="grid gap-4 2xl:grid-cols-[420px_minmax(0,1fr)]">
         <UserAccountForm {...state} currentUserId={currentUserId} />
-        <section className="min-w-0 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[22px]">
+        <section className="min-w-0 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[22px]">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -50,7 +50,7 @@ export default function UserManagementPageClient({
                 Users
               </h2>
             </div>
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
               {sortedUsers.length} users
             </span>
           </div>
@@ -90,7 +90,7 @@ export default function UserManagementPageClient({
                           {user.full_name || "Unnamed user"}
                         </p>
                         {isCurrentUser ? (
-                          <p className="mt-1 text-xs text-emerald-700">
+                          <p className="mt-1 text-xs text-teal-700">
                             Current account
                           </p>
                         ) : null}
@@ -109,7 +109,7 @@ export default function UserManagementPageClient({
                           className={cn(
                             "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
                             user.is_active
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-teal-50 text-teal-700"
                               : "bg-rose-50 text-rose-700",
                           )}
                         >
@@ -126,7 +126,7 @@ export default function UserManagementPageClient({
                             )
                           }
                           data-user-actions-root
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-emerald-100 hover:bg-emerald-50/60 hover:text-apple-charcoal"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:border-teal-100 hover:bg-teal-50/60 hover:text-apple-charcoal"
                           aria-label={`Open actions for ${user.full_name || user.username}`}
                         >
                           <MoreHorizontal size={15} />
@@ -167,7 +167,7 @@ export default function UserManagementPageClient({
               <button
                 type="button"
                 onClick={() => handleEditUser(openMenuUser)}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-emerald-50/70"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-teal-50/70"
               >
                 <Pencil size={13} />
                 Edit user

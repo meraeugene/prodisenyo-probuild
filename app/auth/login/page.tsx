@@ -9,14 +9,26 @@ export const metadata = {
 export default async function LoginRoute({
   searchParams,
 }: {
-  searchParams?: Promise<{ next?: string }>;
+  searchParams?: Promise<{ next?: string; error?: string }>;
 }) {
   const profile = await getCurrentProfile();
 
-  if (profile) {
+  if (profile?.is_active) {
     redirect(getRoleHomePath(profile.role));
   }
 
   const params = searchParams ? await searchParams : undefined;
-  return <LoginPage nextPath={params?.next ?? null} />;
+  const initialError =
+    params?.error === "inactive"
+      ? "This account is inactive. Contact your administrator."
+      : params?.error === "profile"
+        ? "This account setup is incomplete. Contact your administrator."
+        : null;
+
+  return (
+    <LoginPage
+      nextPath={params?.next ?? null}
+      initialError={initialError}
+    />
+  );
 }

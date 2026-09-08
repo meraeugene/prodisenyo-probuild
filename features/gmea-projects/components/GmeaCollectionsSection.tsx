@@ -89,7 +89,7 @@ export default function GmeaCollectionsSection({
             )}
           </tbody>
           {!!terms.length && (
-            <tfoot className="border-t border-emerald-300 bg-emerald-100 text-emerald-950">
+            <tfoot className="border-t border-teal-300 bg-teal-100 text-teal-950">
               <tr>
                 <td colSpan={2} className="p-3 text-right font-semibold">
                   Total

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import {
   cloneElement,
   useEffect,
@@ -180,7 +180,7 @@ export function SearchableSelect({
               type="button"
               role="option"
               aria-selected={option === value}
-              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-normal text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-normal text-slate-700 hover:bg-teal-50 hover:text-teal-900"
               onClick={() => {
                 onChange(option);
                 setOpen(false);

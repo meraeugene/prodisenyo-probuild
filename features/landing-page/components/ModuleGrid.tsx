@@ -8,17 +8,17 @@ export default function ModuleGrid() {
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-10">
         <LandingSectionHeading
           eyebrow="Core modules"
-          title="One platform across the project lifecycle"
-          description="Every module follows the same approval chain and project context, so teams do not lose decisions between spreadsheets, chat threads, and separate tools."
+          title="One platform for every project"
+          description="Keep work, approvals, and costs together."
         />
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {landingModules.map((module) => (
             <article
               key={module.title}
-              className="group rounded-2xl border border-emerald-950/10 bg-[#fbfdfc] p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_40px_rgba(14,61,55,0.08)]"
+              className="group rounded-2xl border border-teal-950/10 bg-[#f8fffd] p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-teal-700/25 hover:shadow-[0_18px_40px_rgba(14,61,55,0.08)]"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
                 <LandingIcon name={module.icon} className="h-5 w-5" />
               </div>
               <h3 className="mt-5 text-lg font-bold tracking-[-0.025em] text-[#103d39]">
@@ -29,7 +29,7 @@ export default function ModuleGrid() {
               </p>
               <a
                 href="#product-tour"
-                className="mt-5 inline-flex text-xs font-bold text-emerald-700 transition-colors hover:text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-4"
+                className="mt-5 inline-flex text-xs font-bold text-teal-700 transition-colors hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4"
               >
                 View in product tour
               </a>

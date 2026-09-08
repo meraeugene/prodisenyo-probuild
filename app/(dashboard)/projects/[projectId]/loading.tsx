@@ -24,7 +24,7 @@ export default function ProjectWorkspaceLoading() {
           <div
             key={item}
             className={`h-10 animate-pulse rounded-lg ${
-              index === 0 ? "w-24 bg-emerald-100" : "w-28 border border-slate-200 bg-slate-100"
+              index === 0 ? "w-24 bg-teal-100" : "w-28 border border-slate-200 bg-slate-100"
             }`}
           />
         ))}
@@ -67,7 +67,7 @@ export default function ProjectWorkspaceLoading() {
                   <div className="mt-2 h-5 w-40 animate-pulse rounded bg-slate-200" />
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div className="h-14 animate-pulse rounded bg-slate-100" />
-                    <div className="h-14 animate-pulse rounded bg-emerald-50" />
+                    <div className="h-14 animate-pulse rounded bg-teal-50" />
                   </div>
                 </div>
               ))}
@@ -80,7 +80,7 @@ export default function ProjectWorkspaceLoading() {
             <div className="mt-4 space-y-3">
               <div className="h-10 animate-pulse rounded bg-slate-100" />
               <div className="h-10 animate-pulse rounded bg-slate-100" />
-              <div className="h-10 animate-pulse rounded bg-emerald-100" />
+              <div className="h-10 animate-pulse rounded bg-teal-100" />
             </div>
           </aside>
         </section>

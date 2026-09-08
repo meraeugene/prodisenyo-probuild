@@ -91,7 +91,7 @@ export default function BudgetTrackerItemModal({
                 }
                 placeholder="e.g. kitchen cabinets, architect fee"
                 className={cn(
-                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                   itemFieldErrors.name
                     ? "border-rose-300"
                     : "border-apple-mist",
@@ -133,7 +133,7 @@ export default function BudgetTrackerItemModal({
                             option.value === "ongoing"
                           ? "bg-amber-500 text-white shadow-[0_10px_20px_rgba(245,158,11,0.24)]"
                           : itemForm.status === option.value
-                            ? "bg-emerald-600 text-white shadow-[0_10px_20px_rgba(5,150,105,0.22)]"
+                            ? "bg-teal-600 text-white shadow-[0_10px_20px_rgba(13,148,136,0.22)]"
                             : "bg-[rgb(var(--apple-snow))] text-apple-smoke hover:bg-white",
                     )}
                   >
@@ -161,7 +161,7 @@ export default function BudgetTrackerItemModal({
                   }))
                 }
                 className={cn(
-                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                  "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]",
                   itemFieldErrors.category
                     ? "border-rose-300"
                     : "border-apple-mist",
@@ -199,7 +199,7 @@ export default function BudgetTrackerItemModal({
                   placeholder="0"
                   inputMode="decimal"
                   className={cn(
-                    "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]",
+                    "w-full rounded-[10px] border bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#076d69]",
                     itemFieldErrors.estimatedCost
                       ? "border-rose-300"
                       : "border-apple-mist",
@@ -230,7 +230,7 @@ export default function BudgetTrackerItemModal({
                   onChange={(event) => onActualSpentChange(event.target.value)}
                   placeholder="Actual spent"
                   inputMode="decimal"
-                  className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                  className="w-full rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-9 py-3 text-sm outline-none focus:border-[#076d69]"
                 />
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function BudgetTrackerItemModal({
                 }
                 rows={5}
                 placeholder="Notes"
-                className="w-full resize-none rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#1f6a37]"
+                className="w-full resize-none rounded-[10px] border border-apple-mist bg-[rgb(var(--apple-snow))] px-4 py-3 text-sm outline-none focus:border-[#076d69]"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function BudgetTrackerItemModal({
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex flex-1 items-center justify-center rounded-[10px] bg-[#1f6a37] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#18552d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 items-center justify-center rounded-[10px] bg-[#076d69] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pendingAction === "item" ? (
                   <ButtonLoader

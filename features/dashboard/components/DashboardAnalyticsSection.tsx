@@ -35,7 +35,7 @@ export default function DashboardAnalyticsSection({
 }) {
   return (
     <section className="mb-5">
-      <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.07)]">
+      <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
         <div className="mb-5 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[15px] font-semibold text-apple-charcoal">
@@ -50,7 +50,7 @@ export default function DashboardAnalyticsSection({
               <select
                 value={selectedPeriodKey ?? ""}
                 onChange={(event) => onSelectPeriod(event.target.value || null)}
-                className="h-10 w-full min-w-0 rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#1f6a37] md:min-w-[300px] md:w-auto"
+                className="h-10 w-full min-w-0 rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#076d69] md:min-w-[300px] md:w-auto"
               >
                 {periodOptions.map((option) => (
                   <option key={option.key} value={option.key}>

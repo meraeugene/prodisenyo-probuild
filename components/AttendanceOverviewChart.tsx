@@ -87,7 +87,7 @@ export default function AttendanceOverviewChart({
           {
             label: "Present",
             data: chartData.present,
-            backgroundColor: "rgba(37, 113, 58, 0.95)",
+            backgroundColor: "rgba(15, 118, 110, 0.95)",
             borderRadius: 999,
             borderSkipped: false,
             maxBarThickness: 14,
@@ -95,7 +95,7 @@ export default function AttendanceOverviewChart({
           {
             label: "Exceptions",
             data: chartData.exceptions,
-            backgroundColor: "rgba(147, 212, 163, 0.95)",
+            backgroundColor: "rgba(94, 234, 212, 0.95)",
             borderRadius: 999,
             borderSkipped: false,
             maxBarThickness: 14,

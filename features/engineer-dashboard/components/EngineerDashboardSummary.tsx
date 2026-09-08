@@ -21,7 +21,7 @@ export default function EngineerDashboardSummary({
           <div
             className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${
               tone === "emerald"
-                ? "bg-emerald-50 text-emerald-700"
+                ? "bg-teal-50 text-teal-700"
                 : tone === "sky"
                   ? "bg-sky-50 text-sky-700"
                   : "bg-amber-50 text-amber-600"

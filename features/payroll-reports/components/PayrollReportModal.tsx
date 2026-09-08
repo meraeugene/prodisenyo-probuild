@@ -224,8 +224,8 @@ export default function PayrollReportModal({
           if (event.target === event.currentTarget) onClose();
         }}
       >
-        <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-[#f6faf7] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:max-h-[95vh] sm:h-auto sm:max-w-[min(1520px,96vw)] sm:rounded-[28px]">
-          <div className="border-b border-emerald-950/10 bg-[linear-gradient(135deg,#112e1a,#1f4f2c,#245f34)] px-4 py-4 text-white sm:px-6 sm:py-5">
+        <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-[#f0fdfa] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:max-h-[95vh] sm:h-auto sm:max-w-[min(1520px,96vw)] sm:rounded-[28px]">
+          <div className="border-b border-teal-950/10 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 py-4 text-white sm:px-6 sm:py-5">
             <div className="flex items-start justify-between ">
               <div className="min-w-0 flex-1 pr-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
@@ -324,12 +324,12 @@ export default function PayrollReportModal({
                               >
                                 <stop
                                   offset="5%"
-                                  stopColor="#22c55e"
+                                  stopColor="#14b8a6"
                                   stopOpacity={0.26}
                                 />
                                 <stop
                                   offset="95%"
-                                  stopColor="#22c55e"
+                                  stopColor="#14b8a6"
                                   stopOpacity={0.03}
                                 />
                               </linearGradient>
@@ -367,13 +367,13 @@ export default function PayrollReportModal({
                               type="monotone"
                               dataKey="paid"
                               name="Paid"
-                              stroke="#16a34a"
+                              stroke="#0d9488"
                               strokeWidth={3.5}
                               fill="url(#payrollReportTrendFill)"
                               dot={false}
                               activeDot={{
                                 r: 5,
-                                fill: "#16a34a",
+                                fill: "#0d9488",
                                 stroke: "white",
                                 strokeWidth: 2,
                               }}
@@ -553,7 +553,7 @@ export default function PayrollReportModal({
                   </div>
                 </div>
 
-                <div className="order-2 overflow-hidden rounded-[24px] bg-white shadow-[0_12px_28px_rgba(17,46,26,0.08)]">
+                <div className="order-2 overflow-hidden rounded-[24px] bg-white shadow-[0_12px_28px_rgba(6,59,56,0.08)]">
                   <div className="border-b border-apple-mist px-4 py-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
@@ -581,13 +581,13 @@ export default function PayrollReportModal({
                           value={search}
                           onChange={(event) => setSearch(event.target.value)}
                           placeholder="Search employee..."
-                          className="h-9 w-full rounded-lg border border-apple-mist bg-white pl-9 pr-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                          className="h-9 w-full rounded-lg border border-apple-mist bg-white pl-9 pr-3 text-xs text-apple-charcoal outline-none transition focus:border-[#076d69]"
                         />
                       </div>
                       <select
                         value={siteFilter}
                         onChange={(event) => setSiteFilter(event.target.value)}
-                        className="h-9 min-w-[180px] rounded-lg border w-full sm:w-fit border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#1f6a37]"
+                        className="h-9 min-w-[180px] rounded-lg border w-full sm:w-fit border-apple-mist bg-white px-3 text-xs text-apple-charcoal outline-none transition focus:border-[#076d69]"
                       >
                         <option value="all">All Sites</option>
                         {siteOptions.map((site) => (
@@ -660,7 +660,7 @@ export default function PayrollReportModal({
                                 <button
                                   type="button"
                                   onClick={() => setActiveItemId(item.id)}
-                                  className="rounded-lg border border-[#1f6a37] bg-[#1f6a37] px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white transition hover:bg-[#18532b]"
+                                  className="rounded-lg border border-[#076d69] bg-[#076d69] px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-white transition hover:bg-[#0f766e]"
                                 >
                                   View Logs
                                 </button>
@@ -731,7 +731,7 @@ export default function PayrollReportModal({
                               className={cn(
                                 "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-2.5 text-xs font-semibold transition",
                                 page === safePayrollPage
-                                  ? "border-[#1f6a37] bg-[#1f6a37] text-white"
+                                  ? "border-[#076d69] bg-[#076d69] text-white"
                                   : "border-apple-mist bg-white text-apple-charcoal hover:bg-apple-mist/50",
                               )}
                             >

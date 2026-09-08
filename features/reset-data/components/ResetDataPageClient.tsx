@@ -42,7 +42,7 @@ export default function ResetDataPageClient() {
         description="Permanently clears operational records while preserving user accounts. This action cannot be undone."
       />
 
-      <section className="rounded-none border border-red-200 bg-white p-5 shadow-[0_10px_30px_rgba(24,83,43,0.06)] sm:rounded-[18px]">
+      <section className="rounded-none border border-red-200 bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
         <div className="flex items-start gap-3 rounded-[14px] border border-red-200 bg-red-50 p-4">
           <div className="mt-0.5 text-red-600">
             <ShieldAlert size={20} />

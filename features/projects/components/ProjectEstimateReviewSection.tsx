@@ -94,7 +94,7 @@ function EstimateReviewCard({
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
       <div className="grid gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
             Estimate review
           </p>
 
@@ -106,7 +106,7 @@ function EstimateReviewCard({
               className={cn(
                 "inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold",
                 isSubmitted
-                  ? "bg-emerald-50 text-emerald-800"
+                  ? "bg-teal-50 text-teal-800"
                   : "border border-slate-200 bg-slate-50 capitalize text-slate-600",
               )}
             >
@@ -137,7 +137,7 @@ function EstimateReviewCard({
           <p
             className={cn(
               "mt-2 text-3xl font-bold tracking-[-0.03em]",
-              isOverBudget ? "text-rose-600" : "text-emerald-800",
+              isOverBudget ? "text-rose-600" : "text-teal-800",
             )}
           >
             {formatBudgetMoney(estimate.estimate_total)}
@@ -155,7 +155,7 @@ function EstimateReviewCard({
           <button
             type="button"
             onClick={() => onViewDetails(estimate.id)}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
           >
             <Eye aria-hidden="true" size={16} />
             View details
@@ -166,7 +166,7 @@ function EstimateReviewCard({
               type="button"
               onClick={() => onReturn(estimate.id)}
               disabled={pendingAction !== null}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-50 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction?.id === estimate.id &&
               pendingAction.type === "return" ? (
@@ -184,7 +184,7 @@ function EstimateReviewCard({
               type="button"
               onClick={() => onApprove(estimate.id)}
               disabled={pendingAction !== null}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction?.id === estimate.id &&
               pendingAction.type === "approve" ? (
