@@ -1,4 +1,8 @@
-import type { GmeaProject, VatMode } from "../types";
+import type {
+  ContractPaymentTerm,
+  GmeaProject,
+  VatMode,
+} from "../types";
 
 export function money(value: number): number {
   if (!Number.isFinite(value) || Math.abs(value) > 1e12)
@@ -54,6 +58,36 @@ export function allocatePercentages(total: number, percentages: number[]) {
     allocated = target;
     return amount;
   });
+}
+
+export function postedReceiptTotal(term: ContractPaymentTerm) {
+  return sumMoney(
+    term.receipts
+      .filter((receipt) => receipt.status === "posted")
+      .map((receipt) => receipt.amount),
+  );
+}
+
+export function paymentTermSummary(term: ContractPaymentTerm) {
+  const received = postedReceiptTotal(term);
+  const balance = Math.max(0, money(term.amount - received));
+  return {
+    received,
+    balance,
+    status: received <= 0 ? "unpaid" : balance > 0 ? "partial" : "paid",
+  } as const;
+}
+
+export function contractCollectionSummary(project: GmeaProject) {
+  const scheduled = sumMoney(project.payment_terms.map((term) => term.amount));
+  const received = sumMoney(
+    project.payment_terms.map((term) => postedReceiptTotal(term)),
+  );
+  return {
+    scheduled,
+    received,
+    outstanding: Math.max(0, money(project.contract_amount - received)),
+  };
 }
 
 export function projectSummary(project: GmeaProject) {

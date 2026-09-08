@@ -26,6 +26,7 @@ async function main() {
       "gmea-02-workspace.sql",
       "gmea-03-mutations.sql",
       "gmea-04-access.sql",
+      "gmea-05-contract-payments.sql",
     ])
       await db.exec(
         fs.readFileSync("supabase/" + name, "utf8").replace(/^\uFEFF/, ""),
@@ -90,7 +91,7 @@ async function main() {
       ).rows;
       for (const p of projects) {
         p.contract_amount = Number(p.contract_amount);
-        for (const field of ["expenses", "collections", "partners"]) {
+        for (const field of ["expenses", "partners"]) {
           p[field] = (
             await db.query(
               "select id,data from public.gmea_" +
@@ -119,6 +120,35 @@ async function main() {
             }));
           }
         }
+        const receipts = (
+          await db.query(
+            "select * from public.gmea_collection_receipts where project_id=$1 order by received_date,recorded_at,id",
+            [p.id],
+          )
+        ).rows.map((receipt) => ({
+          ...receipt,
+          amount: Number(receipt.amount),
+        }));
+        p.payment_terms = (
+          await db.query(
+            "select id,data from public.gmea_collections where project_id=$1 order by created_at,id",
+            [p.id],
+          )
+        ).rows
+          .map((row) => ({
+            ...row.data,
+            id: row.id,
+            amount: Number(row.data.amount),
+            percentage:
+              row.data.value_mode === "percentage"
+                ? Number(row.data.percentage)
+                : null,
+            receipts: receipts.filter((receipt) => receipt.term_id === row.id),
+          }))
+          .sort(
+            (left, right) =>
+              Number(left.sort_order ?? 0) - Number(right.sort_order ?? 0),
+          );
       }
       return projects;
     }
@@ -200,6 +230,9 @@ async function main() {
       "85,000",
     );
     await page
+      .getByLabel("Starting template", { exact: true })
+      .selectOption("75-25");
+    await page
       .getByLabel("Project duration *", { exact: true })
       .fill("7–14 days");
     await page
@@ -209,38 +242,32 @@ async function main() {
       .getByRole("heading", { name: "GMEA Solar Installation", exact: true })
       .waitFor();
     await page
-      .getByRole("button", { name: "Contract Collections", exact: true })
+      .getByRole("button", { name: "Payment Schedule", exact: true })
       .click();
     await page
-      .getByRole("button", { name: "Edit schedule", exact: true })
+      .getByRole("button", { name: "Edit contract terms", exact: true })
       .click();
-    assert.equal(await page.getByRole("dialog").locator("input").count(), 4);
-    assert.equal(await page.getByLabel("Description *").count(), 0);
     await page
-      .getByLabel("Down payment of the contract 80%", { exact: true })
-      .fill("68000");
-    await page
-      .getByLabel("Completion and final turn over 20%", { exact: true })
-      .fill("17000");
-    await page
-      .getByLabel("Notes", { exact: true }).first()
-      .fill("Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited");
+      .getByLabel("Contract notes", { exact: true })
+      .first()
+      .fill("Verify legacy workbook details");
     await page
       .getByRole("button", { name: "Save changes", exact: true })
       .click();
     await page.getByRole("dialog").waitFor({ state: "detached" });
-    await page
-      .getByRole("cell", {
-        name: "Down payment of the contract 80%",
-        exact: true,
-      })
-      .waitFor();
-    assert.ok((await page.locator("body").innerText()).includes("68,000.00"));
-    assert.ok(
-      (await page.locator("body").innerText()).includes(
-        "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
-      ),
-    );
+    await page.getByRole("button", { name: "Down payment of the contract" }).click();
+    await page.getByRole("button", { name: "Record payment", exact: true }).click();
+    await page.getByLabel("Amount received (PHP) *").fill("63000");
+    await page.getByLabel("Payment method").fill("Bank transfer");
+    await page.getByLabel("Reference number").fill("PAY-001");
+    await page.getByRole("button", { name: "Record payment", exact: true }).last().click();
+    await page.getByRole("dialog").waitFor({ state: "detached" });
+    await page.getByText("partial", { exact: true }).waitFor();
+    await page.getByRole("button", { name: "Record payment", exact: true }).click();
+    await page.getByRole("button", { name: "Record payment", exact: true }).last().click();
+    await page.getByRole("dialog").waitFor({ state: "detached" });
+    await page.getByText("paid", { exact: true }).waitFor();
+    assert.ok((await page.locator("body").innerText()).includes("PAY-001"));
     await page.getByRole("button", { name: "Expenses", exact: true }).click();
     await page
       .getByRole("button", { name: "New expense", exact: true })

@@ -38,12 +38,29 @@ type ExpenseNotificationRow = {
   read_at: string | null;
   created_at: string;
 };
+export type ReceiptRow = {
+  id: string;
+  project_id: string;
+  term_id: string;
+  amount: number;
+  received_date: string;
+  method: string;
+  reference_number: string;
+  notes: string;
+  status: "posted" | "voided";
+  recorded_by: string;
+  recorded_at: string;
+  voided_by: string | null;
+  voided_at: string | null;
+  void_reason: string;
+};
 type GmeaDatabase = {
   public: {
     Tables: {
       gmea_projects: Table<ProjectRow>;
       gmea_expenses: Table<DataRow>;
       gmea_collections: Table<DataRow>;
+      gmea_collection_receipts: Table<ReceiptRow>;
       gmea_expense_notifications: Table<ExpenseNotificationRow>;
       gmea_partners: Table<DataRow>;
       gmea_expense_options: Table<{

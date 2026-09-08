@@ -38,7 +38,7 @@ export async function saveGmeaProjectAction(
     validId(projectId);
     if (!Number.isInteger(version) || (version ?? 0) < 1)
       throw new Error("Reload this project before saving.");
-  } else if (command.kind !== "project")
+  } else if (command.kind !== "create_project")
     throw new Error("Create a project first.");
   const { data, error } = await gmeaWriter().rpc("mutate_gmea_project", {
     p_actor: user.id,

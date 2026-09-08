@@ -13,7 +13,7 @@ import GmeaExpensesSection from "./GmeaExpensesSection";
 import GmeaCollectionsSection from "./GmeaCollectionsSection";
 import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
-const tabs = ["Contract Collections", "Expenses", "Contract Cost Summary"] as const;
+const tabs = ["Payment Schedule", "Expenses", "Contract Cost Summary"] as const;
 export default function GmeaProjectWorkspace({
   project: initialProject,
   expenseOptions: initialExpenseOptions,
@@ -23,7 +23,7 @@ export default function GmeaProjectWorkspace({
   expenseOptions: GmeaExpenseOptions;
   canEdit: boolean;
 }) {
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Contract Collections"),
+  const [tab, setTab] = useState<(typeof tabs)[number]>("Payment Schedule"),
     [edit, setEdit] = useState(false);
   const { data } = useSWR(
     ["gmea-project", initialProject.id],
@@ -109,7 +109,7 @@ export default function GmeaProjectWorkspace({
             canEdit={canEdit}
           />
         )}
-        {tab === "Contract Collections" && (
+        {tab === "Payment Schedule" && (
           <GmeaCollectionsSection project={project} canEdit={canEdit} />
         )}
         {tab === "Contract Cost Summary" && (

@@ -1,7 +1,15 @@
 import "server-only";
 import { APP_ROLES, requireRole } from "@/lib/auth";
-import type { GmeaExpenseOptions, GmeaProject } from "../types";
-import { gmeaReader, type DataRow } from "./gmeaDatabase";
+import type {
+  ContractPaymentTermInput,
+  GmeaExpenseOptions,
+  GmeaProject,
+} from "../types";
+import {
+  gmeaReader,
+  type DataRow,
+  type ReceiptRow,
+} from "./gmeaDatabase";
 import { readAllGmeaRows } from "./readAllGmeaRows";
 
 export async function requireGmeaAccess(write = false) {
@@ -12,14 +20,14 @@ export async function requireGmeaAccess(write = false) {
   return auth;
 }
 
-function unpack(rows: DataRow[]) {
+function unpack<T extends Record<string, unknown>>(rows: DataRow[]) {
   return [...rows]
     .sort(
       (left, right) =>
         Number(left.data.sort_order ?? 0) -
         Number(right.data.sort_order ?? 0),
     )
-    .map((row) => ({ ...row.data, id: row.id }));
+    .map((row) => ({ ...row.data, id: row.id }) as T & { id: string });
 }
 
 export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
@@ -39,7 +47,7 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
   for (let offset = 0; offset < projects.length; offset += 100) {
     const batch = projects.slice(offset, offset + 100);
     const ids = batch.map((project) => project.id);
-    const [expenses, collections, partners, notifications] = await Promise.all([
+    const [expenses, collections, receipts, partners, notifications] = await Promise.all([
       readAllGmeaRows((from, to) =>
         db
           .from("gmea_expenses")
@@ -55,6 +63,16 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
           .select("*")
           .in("project_id", ids)
           .order("created_at")
+          .order("id")
+          .range(from, to),
+      ),
+      readAllGmeaRows((from, to) =>
+        db
+          .from("gmea_collection_receipts")
+          .select("*")
+          .in("project_id", ids)
+          .order("received_date")
+          .order("recorded_at")
           .order("id")
           .range(from, to),
       ),
@@ -96,9 +114,18 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
           ...expense,
           is_new: unreadExpenseIds.has(String(expense.id)),
         })),
-        collections: unpack(
+        payment_terms: unpack<ContractPaymentTermInput>(
           collections.filter((row) => row.project_id === project.id),
-        ),
+        ).map((term) => ({
+          ...term,
+          value_mode: term.value_mode === "percentage" ? "percentage" : "fixed",
+          percentage:
+            term.value_mode === "percentage" ? Number(term.percentage) : null,
+          amount: Number(term.amount),
+          receipts: (receipts as ReceiptRow[])
+            .filter((receipt) => receipt.term_id === term.id)
+            .map((receipt) => ({ ...receipt, amount: Number(receipt.amount) })),
+        })),
         partners: unpack(
           partners.filter((row) => row.project_id === project.id),
         ),

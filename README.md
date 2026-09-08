@@ -493,4 +493,4 @@ Keep `AGENTS.md` updated whenever the repository architecture or development rul
 
 ## GMEA workspace
 
-See [GMEA setup and workflow](docs/gmea-workspace.md) for the four ordered SQL migrations, Admin account creation, calculation rules, and verification commands.
+See [GMEA setup and workflow](docs/gmea-workspace.md) for the five ordered SQL migrations, Admin account creation, calculation rules, and verification commands.

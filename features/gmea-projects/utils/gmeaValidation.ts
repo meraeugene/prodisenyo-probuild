@@ -1,4 +1,10 @@
-import type { GmeaMutation, ProjectInput, VatMode } from "../types";
+import type {
+  ContractTermsInput,
+  GmeaMutation,
+  PaymentTermValueMode,
+  ProjectDetailsInput,
+  VatMode,
+} from "../types";
 import { money, sumMoney, vatBreakdown } from "./gmeaCalculations";
 import { EXPENSE_CATEGORIES } from "./gmeaConstants";
 import { normalizeProjectDuration } from "./gmeaFormatters";
@@ -68,29 +74,90 @@ function vat(value: Record<string, unknown>) {
   return { vat_mode: mode, vat_rate: rate };
 }
 
-export function normalizeProject(value: unknown): ProjectInput {
+export function normalizeProjectDetails(value: unknown): ProjectDetailsInput {
   const project = object(value);
-  const contractAmount = money(
-    number(project.contract_amount, "Contract amount"),
-  );
-  if (contractAmount <= 0)
-    throw new Error("Contract amount must be greater than zero.");
   return {
     name: text(project.name, "Project name", true, 200),
     client: text(project.client, "Client", false, 200),
     location: text(project.location, "Project location", true, 300),
-    contract_amount: contractAmount,
     duration: normalizeProjectDuration(
       text(project.duration, "Project duration", true, 100),
     ),
   };
 }
 
+export function normalizeContractTerms(value: unknown): ContractTermsInput {
+  const contract = object(value);
+  const contractAmount = money(
+    number(contract.contract_amount, "Contract amount"),
+  );
+  if (contractAmount <= 0)
+    throw new Error("Contract amount must be greater than zero.");
+
+  let lastPercentageIndex = -1;
+  const rows = array(contract.payment_terms, 30).map((row, index) => {
+    const mode = text(row.value_mode, "Value mode", true, 20);
+    if (mode !== "percentage" && mode !== "fixed")
+      throw new Error("Select percentage or fixed amount for every term.");
+    const valueMode = mode as PaymentTermValueMode;
+    const percentage =
+      mode === "percentage"
+        ? number(row.percentage, "Percentage", 100)
+        : null;
+    if (percentage !== null && percentage <= 0)
+      throw new Error("Percentages must be greater than zero.");
+    if (percentage !== null) lastPercentageIndex = index;
+    const amount =
+      mode === "percentage"
+        ? money((contractAmount * percentage!) / 100)
+        : money(number(row.amount, "Payment term amount"));
+    if (amount <= 0)
+      throw new Error("Payment term amounts must be greater than zero.");
+    return {
+      id: validId(row.id),
+      description: text(row.description, "Description", true, 300),
+      value_mode: valueMode,
+      percentage,
+      amount,
+      notes: text(row.notes, "Notes", false, 1000),
+    };
+  });
+  if (!rows.length) throw new Error("Add at least one payment term.");
+  if (new Set(rows.map((row) => row.id)).size !== rows.length)
+    throw new Error("Payment terms must have unique identifiers.");
+
+  const difference = money(
+    contractAmount - sumMoney(rows.map((row) => row.amount)),
+  );
+  if (Math.abs(difference) > 0.01)
+    throw new Error("Payment terms must total the contract amount.");
+  if (difference && lastPercentageIndex >= 0)
+    rows[lastPercentageIndex].amount = money(
+      rows[lastPercentageIndex].amount + difference,
+    );
+  if (sumMoney(rows.map((row) => row.amount)) !== contractAmount)
+    throw new Error("Payment terms must total the contract amount.");
+
+  return { contract_amount: contractAmount, payment_terms: rows };
+}
+
 export function normalizeMutation(input: unknown): GmeaMutation {
   const command = object(input);
   const kind = command.kind;
-  if (kind === "project")
-    return { kind, value: normalizeProject(command.value) };
+  if (kind === "create_project") {
+    const value = object(command.value);
+    return {
+      kind,
+      value: {
+        details: normalizeProjectDetails(value.details),
+        contract: normalizeContractTerms(value.contract),
+      },
+    };
+  }
+  if (kind === "project_details")
+    return { kind, value: normalizeProjectDetails(command.value) };
+  if (kind === "contract_terms")
+    return { kind, value: normalizeContractTerms(command.value) };
   if (kind === "delete_project") return { kind };
   if (kind === "delete") {
     if (command.entity !== "expense")
@@ -139,29 +206,39 @@ export function normalizeMutation(input: unknown): GmeaMutation {
       },
     };
   }
-  if (kind === "collections") {
-    const descriptions = [
-      "Down payment of the contract 80%",
-      "Completion and final turn over 20%",
-    ];
-    const rows = array(command.value, 2).map((value, index) => {
-      const amount = money(number(value.amount, "Collection amount"));
-      if (amount <= 0)
-        throw new Error("Collection amounts must be greater than zero.");
-      if (text(value.description, "Description", true, 300) !== descriptions[index])
-        throw new Error("Invalid contract collection schedule.");
-      return {
-        id: validId(value.id),
-        description: descriptions[index],
-        amount,
-        notes: text(value.notes, "Notes", false, 1000),
-      };
+  if (kind === "record_receipt") {
+    const value = object(command.value);
+    const amount = money(number(value.amount, "Receipt amount"));
+    if (amount <= 0) throw new Error("Receipt amount must be greater than zero.");
+    const receivedDate = date(value.received_date);
+    const today = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila",
     });
-    if (rows.length !== descriptions.length)
-      throw new Error("Both contract collection rows are required.");
+    if (receivedDate > today)
+      throw new Error("Receipt date cannot be in the future.");
     return {
       kind,
-      value: rows,
+      value: {
+        id: validId(value.id),
+        term_id: validId(value.term_id),
+        amount,
+        received_date: receivedDate,
+        method: text(value.method, "Payment method", false, 100),
+        reference_number: text(
+          value.reference_number,
+          "Reference number",
+          false,
+          100,
+        ),
+        notes: text(value.notes, "Notes", false, 1000),
+      },
+    };
+  }
+  if (kind === "void_receipt") {
+    return {
+      kind,
+      receipt_id: validId(command.receipt_id),
+      reason: text(command.reason, "Void reason", true, 500),
     };
   }
   throw new Error("Invalid operation.");

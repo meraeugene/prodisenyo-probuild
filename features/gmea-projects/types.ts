@@ -22,12 +22,38 @@ export interface Partner {
   percentage: number;
 }
 
-export interface ContractCollection {
+export type PaymentTermValueMode = "percentage" | "fixed";
+
+export interface ContractReceipt {
+  id: string;
+  term_id: string;
+  amount: number;
+  received_date: string;
+  method: string;
+  reference_number: string;
+  notes: string;
+  status: "posted" | "voided";
+  recorded_by: string;
+  recorded_at: string;
+  voided_by: string | null;
+  voided_at: string | null;
+  void_reason: string;
+}
+
+export interface ContractPaymentTerm {
   id: string;
   description: string;
+  value_mode: PaymentTermValueMode;
+  percentage: number | null;
   amount: number;
   notes: string;
+  receipts: ContractReceipt[];
 }
+
+export type ContractPaymentTermInput = Omit<
+  ContractPaymentTerm,
+  "receipts"
+>;
 
 export interface GmeaExpenseOptions {
   suppliers: string[];
@@ -46,23 +72,47 @@ export interface GmeaProject {
   created_at: string;
   updated_at: string;
   expenses: Expense[];
-  collections: ContractCollection[];
+  payment_terms: ContractPaymentTerm[];
   partners: Partner[];
 }
 
-export type ProjectInput = Pick<
+export type ProjectDetailsInput = Pick<
   GmeaProject,
   | "name"
   | "client"
   | "location"
-  | "contract_amount"
   | "duration"
 >;
 
+export interface ContractTermsInput {
+  contract_amount: number;
+  payment_terms: ContractPaymentTermInput[];
+}
+
+export interface CreateProjectInput {
+  details: ProjectDetailsInput;
+  contract: ContractTermsInput;
+}
+
 export type GmeaMutation =
-  | { kind: "project"; value: ProjectInput }
+  | { kind: "create_project"; value: CreateProjectInput }
+  | { kind: "project_details"; value: ProjectDetailsInput }
+  | { kind: "contract_terms"; value: ContractTermsInput }
+  | {
+      kind: "record_receipt";
+      value: Pick<
+        ContractReceipt,
+        | "id"
+        | "term_id"
+        | "amount"
+        | "received_date"
+        | "method"
+        | "reference_number"
+        | "notes"
+      >;
+    }
+  | { kind: "void_receipt"; receipt_id: string; reason: string }
   | { kind: "expense"; value: Expense }
-  | { kind: "collections"; value: ContractCollection[] }
   | { kind: "partners"; value: Partner[] }
   | { kind: "delete_project" }
   | { kind: "delete"; entity: "expense"; id: string };

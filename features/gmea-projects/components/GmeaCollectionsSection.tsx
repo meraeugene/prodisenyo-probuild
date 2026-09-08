@@ -4,8 +4,12 @@ import { useState } from "react";
 import { Eye, Pencil } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { buttonClass } from "../utils/gmeaConstants";
-import { formatMoney, sumMoney } from "../utils/gmeaCalculations";
+import {
+  contractCollectionSummary,
+  formatMoney,
+} from "../utils/gmeaCalculations";
 import GmeaCollectionForm from "./GmeaCollectionForm";
+import GmeaPaymentTermRow from "./GmeaPaymentTermRow";
 
 export default function GmeaCollectionsSection({
   project,
@@ -15,32 +19,33 @@ export default function GmeaCollectionsSection({
   canEdit: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const collections = project.collections ?? [];
-  const collected = sumMoney(collections.map((item) => item.amount));
-  const balance = Math.max(0, project.contract_amount - collected);
+  const terms = project.payment_terms ?? [];
+  const summary = contractCollectionSummary(project);
   const ActionIcon = canEdit ? Pencil : Eye;
 
   return (
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">Contract collections</h2>
+          <h2 className="text-xl font-semibold">
+            Payment schedule and collections
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Contract collection schedule based on the 80% down payment and 20%
-            completion balance.
+            Contract-specific milestones with structured partial-payment
+            history.
           </p>
         </div>
         <button className={buttonClass} onClick={() => setOpen(true)}>
           <ActionIcon size={17} />
-          {canEdit ? "Edit schedule" : "View schedule"}
+          {canEdit ? "Edit contract terms" : "View contract terms"}
         </button>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
           ["Contract amount", project.contract_amount],
-          ["Scheduled collections", collected],
-          ["Balance", balance],
+          ["Received", summary.received],
+          ["Outstanding", summary.outstanding],
         ].map(([name, value]) => (
           <div
             key={String(name)}
@@ -55,37 +60,49 @@ export default function GmeaCollectionsSection({
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-[680px] text-left text-sm">
+        <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="p-3">Description</th>
-              <th className="w-48 p-3">Amount</th>
-              <th className="p-3">Notes</th>
+              <th className="p-3">Basis</th>
+              <th className="p-3">Scheduled</th>
+              <th className="p-3">Received</th>
+              <th className="p-3">Balance</th>
+              <th className="p-3">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {collections.map((item) => (
-              <tr key={item.id}>
-                <td className="p-3 font-medium">{item.description}</td>
-                <td className="p-3 font-semibold">
-                  {formatMoney(item.amount)}
-                </td>
-                <td className="p-3 text-slate-600">{item.notes || "—"}</td>
-              </tr>
+            {terms.map((term) => (
+              <GmeaPaymentTermRow
+                key={term.id}
+                project={project}
+                term={term}
+                canEdit={canEdit}
+              />
             ))}
-            {!collections.length && (
+            {!terms.length && (
               <tr>
-                <td colSpan={3} className="p-8 text-center text-slate-500">
-                  Save the 80/20 contract collection schedule.
+                <td colSpan={6} className="p-8 text-center text-slate-500">
+                  Add the contract payment schedule.
                 </td>
               </tr>
             )}
           </tbody>
-          {!!collections.length && (
+          {!!terms.length && (
             <tfoot className="border-t border-emerald-300 bg-emerald-100 text-emerald-950">
               <tr>
-                <td className="p-3 text-right font-semibold">Total</td>
-                <td className="p-3 font-bold">{formatMoney(collected)}</td>
+                <td colSpan={2} className="p-3 text-right font-semibold">
+                  Total
+                </td>
+                <td className="p-3 font-bold">
+                  {formatMoney(summary.scheduled)}
+                </td>
+                <td className="p-3 font-bold">
+                  {formatMoney(summary.received)}
+                </td>
+                <td className="p-3 font-bold">
+                  {formatMoney(summary.outstanding)}
+                </td>
                 <td />
               </tr>
             </tfoot>

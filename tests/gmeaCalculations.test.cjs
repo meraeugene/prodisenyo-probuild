@@ -1,19 +1,25 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const load = require("./helpers/loadGmeaModule.cjs");
-const { money, vatBreakdown, projectSummary } = load(
-  "features/gmea-projects/utils/gmeaCalculations.ts",
-);
+const {
+  contractCollectionSummary,
+  money,
+  paymentTermSummary,
+  projectSummary,
+  vatBreakdown,
+} = load("features/gmea-projects/utils/gmeaCalculations.ts");
 const { normalizeMutation } = load(
   "features/gmea-projects/utils/gmeaValidation.ts",
 );
 
 const id = "11111111-1111-4111-8111-111111111111";
+const secondId = "22222222-2222-4222-8222-222222222222";
 
 function project(contractAmount, expenses = []) {
   return {
     contract_amount: contractAmount,
     expenses,
+    payment_terms: [],
     partners: [
       { id: "a", name: "Eng. Ruel Dumaguit", percentage: 50 },
       { id: "b", name: "Sir Edward", percentage: 50 },
@@ -66,36 +72,44 @@ test("invalid amounts and VAT rates are rejected", () => {
   assert.throws(() => vatBreakdown(10, "inclusive", -12));
 });
 
-test("project validation keeps only the workbook project fields", () => {
+test("project validation separates details from contract terms", () => {
   const result = normalizeMutation({
-    kind: "project",
+    kind: "create_project",
     value: {
-      name: " CCTV Installation ",
-      client: " ",
-      location: " Corrales Ave ",
-      contract_amount: 78950,
-      duration: " 7 Days ",
-      description: "removed",
-      start_date: "2026-01-01",
+      details: {
+        name: " CCTV Installation ",
+        client: " ",
+        location: " Corrales Ave ",
+        duration: " 7 Days ",
+        description: "removed",
+      },
+      contract: {
+        contract_amount: 78950,
+        payment_terms: [
+          {
+            id,
+            description: "Full payment",
+            value_mode: "fixed",
+            percentage: null,
+            amount: 78950,
+            notes: "",
+          },
+        ],
+      },
     },
   });
-  assert.deepEqual(result.value, {
+  assert.deepEqual(result.value.details, {
     name: "CCTV Installation",
     client: "",
     location: "Corrales Ave",
-    contract_amount: 78950,
     duration: "7 Days",
   });
+  assert.equal(result.value.contract.contract_amount, 78950);
+  assert.equal(result.value.contract.payment_terms.length, 1);
   assert.throws(() =>
     normalizeMutation({
-      kind: "project",
-      value: {
-        name: "Missing contract",
-        client: "",
-        location: "CDO",
-        contract_amount: 0,
-        duration: "7 days",
-      },
+      kind: "contract_terms",
+      value: { contract_amount: 0, payment_terms: [] },
     }),
   );
 });
@@ -124,27 +138,98 @@ test("expense identifiers stay strings and VAT is counted once", () => {
   assert.equal(projectSummary(project(1000, [result.value])).expenses, 112);
 });
 
-test("contract collections keep the workbook row simple", () => {
+test("contract terms support mixed percentage and fixed values", () => {
   const result = normalizeMutation({
-    kind: "collections",
-    value: [
-      {
-        id,
-        description: "Down payment of the contract 80%",
-        amount: 200000,
-        notes: "Paid · Cheque · 2335307 · Aug 07, 2026 · Deposited",
-      },
-      {
-        id: "22222222-2222-4222-8222-222222222222",
-        description: "Completion and final turn over 20%",
-        amount: 50000,
-        notes: "",
-      },
-    ],
+    kind: "contract_terms",
+    value: {
+      contract_amount: 175000,
+      payment_terms: [
+        {
+          id,
+          description: "Down payment of the contract",
+          value_mode: "percentage",
+          percentage: 75,
+          amount: 0,
+          notes: "Legacy detail retained",
+        },
+        {
+          id: secondId,
+          description: "Completion and turnover",
+          value_mode: "fixed",
+          percentage: null,
+          amount: 43750,
+          notes: "",
+        },
+      ],
+    },
   });
-  assert.equal(result.value.length, 2);
-  assert.equal(result.value[0].description, "Down payment of the contract 80%");
-  assert.equal(result.value[1].description, "Completion and final turn over 20%");
+  assert.equal(result.value.payment_terms.length, 2);
+  assert.equal(result.value.payment_terms[0].amount, 131250);
+  assert.equal(result.value.payment_terms[1].amount, 43750);
+  assert.throws(() =>
+    normalizeMutation({
+      kind: "contract_terms",
+      value: {
+        contract_amount: 175000,
+        payment_terms: [{ ...result.value.payment_terms[0], percentage: 50 }],
+      },
+    }),
+  );
+});
+
+test("receipt totals produce unpaid, partial, paid, and outstanding states", () => {
+  const term = {
+    id,
+    description: "Down payment",
+    value_mode: "percentage",
+    percentage: 75,
+    amount: 131250,
+    notes: "",
+    receipts: [],
+  };
+  assert.equal(paymentTermSummary(term).status, "unpaid");
+  term.receipts.push({ amount: 130000, status: "posted" });
+  assert.deepEqual(paymentTermSummary(term), {
+    received: 130000,
+    balance: 1250,
+    status: "partial",
+  });
+  term.receipts.push({ amount: 1250, status: "posted" });
+  assert.equal(paymentTermSummary(term).status, "paid");
+  term.receipts.push({ amount: 500, status: "voided" });
+  const p = project(175000);
+  p.payment_terms = [
+    term,
+    { ...term, id: secondId, amount: 43750, receipts: [] },
+  ];
+  assert.deepEqual(contractCollectionSummary(p), {
+    scheduled: 175000,
+    received: 131250,
+    outstanding: 43750,
+  });
+});
+
+test("receipts validate amount, identifiers, and date", () => {
+  const result = normalizeMutation({
+    kind: "record_receipt",
+    value: {
+      id,
+      term_id: secondId,
+      amount: 1250,
+      received_date: "2026-09-07",
+      method: " Bank transfer ",
+      reference_number: " 00059 ",
+      notes: "",
+    },
+  });
+  assert.equal(result.value.amount, 1250);
+  assert.equal(result.value.reference_number, "00059");
+  assert.throws(() =>
+    normalizeMutation({
+      ...result,
+      value: { ...result.value, received_date: "2999-01-01" },
+    }),
+  );
 });
 
 test("partner validation requires unique rows totaling 100 percent", () => {
@@ -163,9 +248,6 @@ test("expense and project deletion commands are supported", () => {
   );
   assert.throws(() =>
     normalizeMutation({ kind: "delete", entity: "receipt", id }),
-  );
-  assert.throws(() =>
-    normalizeMutation({ kind: "delete", entity: "collection", id }),
   );
   assert.deepEqual(normalizeMutation({ kind: "delete_project" }), {
     kind: "delete_project",

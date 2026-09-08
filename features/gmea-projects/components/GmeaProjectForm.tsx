@@ -1,9 +1,15 @@
 ﻿"use client";
 import { useState } from "react";
-import type { GmeaProject, ProjectInput } from "../types";
+import type {
+  ContractPaymentTermInput,
+  GmeaProject,
+  ProjectDetailsInput,
+} from "../types";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
+import { buildPaymentTerms, recalculatePercentageTerms } from "../utils/paymentTerms";
 import GmeaDialog from "./GmeaDialog";
 import { MoneyField, TextField } from "./GmeaFields";
+import GmeaPaymentTermsEditor from "./GmeaPaymentTermsEditor";
 
 export default function GmeaProjectForm({
   project,
@@ -12,19 +18,27 @@ export default function GmeaProjectForm({
   project?: GmeaProject;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState<ProjectInput>(
-    project ?? {
+  const [form, setForm] = useState<ProjectDetailsInput>(
+    project ? {
+      name: project.name,
+      client: project.client,
+      location: project.location,
+      duration: project.duration,
+    } : {
       name: "",
       client: "",
       location: "",
-      contract_amount: 0,
       duration: "",
     },
   );
+  const [contractAmount, setContractAmount] = useState(0);
+  const [terms, setTerms] = useState<ContractPaymentTermInput[]>(() =>
+    project ? [] : buildPaymentTerms("80-20", 0),
+  );
   const save = useGmeaMutation(project);
-  function update<K extends keyof ProjectInput>(
+  function update<K extends keyof ProjectDetailsInput>(
     key: K,
-    value: ProjectInput[K],
+    value: ProjectDetailsInput[K],
   ) {
     setForm((current) => ({ ...current, [key]: value }));
   }
@@ -33,7 +47,21 @@ export default function GmeaProjectForm({
       title={project ? "Edit project" : "New GMEA project"}
       description="Enter the contract details shown in the project monitoring workbook."
       onClose={onClose}
-      onSave={() => save({ kind: "project", value: form })}
+      onSave={() =>
+        project
+          ? save({ kind: "project_details", value: form })
+          : save({
+              kind: "create_project",
+              value: {
+                details: form,
+                contract: {
+                  contract_amount: contractAmount,
+                  payment_terms: terms,
+                },
+              },
+            })
+      }
+      wide={!project}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
@@ -56,12 +84,6 @@ export default function GmeaProjectForm({
           value={form.location}
           onChange={(e) => update("location", e.target.value)}
         />
-        <MoneyField
-          label="Contract amount (PHP) *"
-          required
-          value={form.contract_amount}
-          onValueChange={(value) => update("contract_amount", value)}
-        />
         <TextField
           label="Project duration *"
           required
@@ -71,6 +93,24 @@ export default function GmeaProjectForm({
           onChange={(e) => update("duration", e.target.value)}
         />
       </div>
+      {!project && (
+        <div className="space-y-4 border-t border-slate-200 pt-5">
+          <MoneyField
+            label="Contract amount (PHP) *"
+            required
+            value={contractAmount}
+            onValueChange={(value) => {
+              setContractAmount(value);
+              setTerms((current) => recalculatePercentageTerms(current, value));
+            }}
+          />
+          <GmeaPaymentTermsEditor
+            contractAmount={contractAmount}
+            terms={terms}
+            onChange={setTerms}
+          />
+        </div>
+      )}
     </GmeaDialog>
   );
 }
