@@ -21,7 +21,7 @@ export function useGmeaMutation(project?: GmeaProject) {
       return id;
     }
     if (project) await mutate(["gmea-project", project.id]);
-    else await mutate("gmea-projects:list");
+    await mutate("gmea-projects:list");
     toast.success("Saved successfully.");
     if (!project) router.push("/gmea-projects/" + id);
     router.refresh();

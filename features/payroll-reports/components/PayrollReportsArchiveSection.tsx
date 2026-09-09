@@ -70,12 +70,23 @@ export default function PayrollReportsArchiveSection({
 }) {
   return (
     <>
-      <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
-        <div className="mb-4">
+      <section className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_12px_36px_-28px_rgba(15,23,42,.35)] sm:p-6">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-slate-950">
+              Payroll review queue
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Open a report to verify its employees, attendance logs, and totals.
+            </p>
+          </div>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={12} />
             {pendingReportsCount.toLocaleString("en-PH")} pending
           </span>
+          {refreshing ? (
+            <span className="sr-only" role="status">Refreshing payroll reports</span>
+          ) : null}
         </div>
 
         {reports.length === 0 ? (
@@ -83,7 +94,7 @@ export default function PayrollReportsArchiveSection({
             No payroll reports are waiting for review.
           </p>
         ) : (
-          <div className="overflow-x-auto overflow-y-visible rounded-xl border border-apple-mist">
+          <div className="overflow-x-auto overflow-y-visible rounded-xl border border-slate-200">
             <table className="min-w-[980px] w-full table-fixed text-sm">
               <colgroup>
                 <col className="w-[19%]" />
@@ -117,7 +128,7 @@ export default function PayrollReportsArchiveSection({
               </thead>
               <tbody className="divide-y divide-apple-mist">
                 {reports.map((report) => (
-                  <tr key={report.id} className="bg-white">
+                  <tr key={report.id} className="bg-white transition hover:bg-slate-50/70">
                     <td className="px-4 py-4 text-apple-smoke">
                       {formatPayrollReportDateTime(
                         report.submitted_at ?? report.created_at,

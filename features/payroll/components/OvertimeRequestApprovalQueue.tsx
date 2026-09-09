@@ -132,16 +132,19 @@ export default function OvertimeRequestApprovalQueue({
 
   return (
     <section className="flex flex-col">
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
+      <div className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
-            Staff requests
+            Staff request forms
           </h2>
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={14} />
             {pendingCount} pending
           </span>
         </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Review submitted reasons, requested hours, and estimated pay.
+        </p>
       </div>
 
       <div className="mt-4">
@@ -154,7 +157,7 @@ export default function OvertimeRequestApprovalQueue({
             sortedRequests.map((request) => (
               <article
                 key={request.id}
-                className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]"
+                className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_14px_36px_-28px_rgba(15,23,42,.35)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_42px_-28px_rgba(15,23,42,.42)] sm:p-6"
               >
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">

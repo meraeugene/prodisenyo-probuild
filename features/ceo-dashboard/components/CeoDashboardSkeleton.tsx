@@ -10,6 +10,15 @@ export default function CeoDashboardSkeleton() {
         </div>
       </header>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{Array.from({ length: 5 }, (_, i) => <SkeletonPanel key={i} className="p-4"><div className="flex items-center justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-8 w-8 shrink-0" /></div><Block className="mt-2 h-8 w-20" /><Block className="mt-2 h-4 w-36" />{i === 2 && <Block className="mt-3 h-1.5 w-full" />}</SkeletonPanel>)}</div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        {[0, 1, 2].map((index) => (
+          <SkeletonPanel key={index} className="min-w-0 p-5">
+            <Block className="h-5 w-36" />
+            <Block className={index === 1 ? "mx-auto mt-6 h-40 w-40 rounded-full" : "mt-6 h-48 w-full rounded-xl"} />
+            {index === 1 && <Block className="mt-4 h-10 w-full" />}
+          </SkeletonPanel>
+        ))}
+      </div>
       <SkeletonPanel className="mt-5 p-0 overflow-hidden">
         <div className="px-5 py-5"><Block className="h-6 w-36" /><Block className="mt-1 h-4 w-64" /></div>
         <div className="hidden h-10 border-y border-slate-100 bg-slate-50 lg:block" />

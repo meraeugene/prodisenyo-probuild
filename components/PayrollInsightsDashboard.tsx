@@ -186,11 +186,12 @@ function ChartCard({
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl shadow-apple-xs border bg-apple-snow  border-apple-mist p-4 sm:p-5   shadow-[0_8px_18px_rgba(7,109,105,0.06)] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] ">
-      <p className="text-[11px] text-white/65 font-semibold uppercase tracking-wider ">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-5">
+      <span className="absolute inset-y-0 left-0 w-1 bg-teal-600" />
+      <p className="text-[11px] font-medium text-slate-500">
         {label}
       </p>
-      <p className="mt-2 text-lg text-white font-bold tracking-tight  sm:text-xl">
+      <p className="mt-2 break-words text-xl font-bold tracking-tight text-slate-950 tabular-nums sm:text-2xl">
         {value}
       </p>
     </div>
@@ -261,7 +262,7 @@ export default function PayrollInsightsDashboard({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-3xl border border-apple-mist bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_12px_36px_-28px_rgba(15,23,42,.3)]">
         <div className="border-b border-apple-mist px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-apple-steel">
@@ -270,7 +271,7 @@ export default function PayrollInsightsDashboard({
           </div>
 
           <h2 className="text-xl font-bold tracking-tight text-apple-charcoal sm:text-2xl">
-            Payroll Insights Dashboard
+            Payroll insights
           </h2>
 
           <p className="mt-1 text-sm text-apple-steel">

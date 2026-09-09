@@ -8,7 +8,6 @@ import {
   FolderKanban,
   MapPin,
   PauseCircle,
-  Plus,
   Search,
 } from "lucide-react";
 import type { ProjectRecord, ProjectStatus } from "@/features/projects/types";
@@ -17,6 +16,7 @@ import {
   formatProjectCurrency,
   getProjectStatusPresentation,
 } from "@/features/projects/utils/projectPresentation";
+import ProjectsPortfolioHero from "./ProjectsPortfolioHero";
 
 type Filter = "all" | ProjectStatus;
 
@@ -65,19 +65,11 @@ export default function CeoProjectsOverview({
 
   return (
     <section className="space-y-7">
-      <header className="flex flex-col justify-between gap-6 rounded-3xl bg-[#075e5b] p-6 text-white sm:flex-row sm:items-center sm:p-8">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Prodisenyo Projects</h1>
-          <p className="mt-3 text-sm text-teal-50/80">Projects, budgets, and delivery.</p>
-        </div>
-        <button
-          type="button"
-          onClick={onCreateProject}
-          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 text-sm font-semibold text-[#076d69] transition hover:bg-teal-50 focus-visible:ring-2 focus-visible:ring-white"
-        >
-          <Plus size={17} /> New project
-        </button>
-      </header>
+      <ProjectsPortfolioHero
+        eyebrow="Executive project portfolio"
+        description="Projects, budgets, delivery progress, and assigned teams in one clear view."
+        onCreate={onCreateProject}
+      />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -116,7 +108,7 @@ export default function CeoProjectsOverview({
         ].map(([label, value, helper, Icon]) => {
           const MetricIcon = Icon as typeof FolderKanban;
           return (
-            <article key={String(label)} className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_-20px_rgba(15,23,42,.25)]">
+            <article key={String(label)} className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-slate-500">{String(label)}</p>
                 <span className={"grid h-9 w-9 place-items-center rounded-xl " + (label === "Pending estimates" ? "bg-amber-50 text-amber-700" : label === "Total projects" ? "bg-sky-50 text-sky-700" : "bg-teal-50 text-teal-700")}><MetricIcon size={18} aria-hidden="true" /></span>

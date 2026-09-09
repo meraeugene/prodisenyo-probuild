@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollInsightsDashboard from "@/components/PayrollInsightsDashboard";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import { PayrollAnalyticsLoadingState } from "./PayrollAnalyticsLoadingState";
+import PayrollAnalyticsHero from "./PayrollAnalyticsHero";
 
 export default function PayrollAnalyticsPageClient() {
   const searchParams = useSearchParams();
@@ -22,6 +22,9 @@ export default function PayrollAnalyticsPageClient() {
   const dailyPaidPoints = data?.payrollDailyPaidPoints ?? [];
   const periodOptions = data?.periodOptions ?? [];
   const hasPayrollAnalyticsData = payrollRows.length > 0;
+  const selectedPeriodLabel = periodOptions.find(
+    (option) => option.key === selectedPeriodKey,
+  );
 
   useEffect(() => {
     if (!runIdFromQuery) return;
@@ -30,23 +33,21 @@ export default function PayrollAnalyticsPageClient() {
   }, [runIdFromQuery, selectedPeriodKey, setSelectedPeriodKey]);
 
   return (
-    <div className="space-y-4 p-0 sm:p-6">
-      <DashboardPageHero
-        eyebrow="Data Analytics"
-        title="Payroll Analytics"
+    <div className="min-h-full space-y-4 bg-[#f5f8f9] p-4 sm:p-6 lg:p-8">
+      <PayrollAnalyticsHero
+        periodLabel={selectedPeriodLabel ? `${selectedPeriodLabel.label} · ${selectedPeriodLabel.siteName}` : undefined}
       />
       {periodOptions.length > 0 ? (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm font-semibold text-apple-charcoal">
-              Payroll Period
-            </p>
+        <section className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><p className="text-sm font-bold text-slate-950">Payroll period</p><p className="mt-1 text-xs text-slate-500">Choose a saved run to update every chart below.</p></div>
             <select
+              aria-label="Payroll period"
               value={selectedPeriodKey ?? ""}
               onChange={(event) =>
                 setSelectedPeriodKey(event.target.value || null)
               }
-              className="h-11 min-w-[260px] rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition hover:border-teal-400 focus:border-teal-600 focus:ring-2 focus:ring-teal-100 sm:w-auto sm:min-w-[320px]"
             >
               {periodOptions.map((option) => (
                 <option key={option.key} value={option.key}>

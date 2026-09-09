@@ -10,14 +10,14 @@ export default function SettingsPageClient() {
 
   return (
     <>
-      <div className="min-h-full space-y-7 bg-[#f6f8f8] p-4 sm:p-6 lg:p-8">
-        <header className="rounded-3xl bg-[#075e5b] p-6 text-white sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">Account</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Settings</h1>
-          <p className="mt-3 text-sm text-teal-50/80">Your profile and account security.</p>
+      <div className="min-h-screen space-y-7 bg-[#f5f7f9] p-4 sm:p-6 lg:p-8">
+        <header className="px-1 pt-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#08746f]">Account</p>
+          <h1 className="mt-2 text-[34px] font-bold leading-tight tracking-[-0.04em] text-slate-950">Settings</h1>
+          <p className="mt-1 text-sm text-slate-500">Manage your profile and account security.</p>
         </header>
 
-        <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,1fr)]">
           <SettingsProfileSection
             fileInputRef={state.fileInputRef}
             profile={state.profile}

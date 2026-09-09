@@ -56,16 +56,19 @@ export default function PayrollApprovalQueue({
 
   return (
     <section className="flex flex-col">
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
+      <div className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
-            Payroll overtime
+            Payroll adjustments
           </h2>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={14} />
             {state.pendingCount} pending
           </span>
         </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Verify attendance-derived overtime before it reaches payroll.
+        </p>
       </div>
 
       <div className="mt-4">

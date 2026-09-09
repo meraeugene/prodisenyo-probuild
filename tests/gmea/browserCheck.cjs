@@ -53,7 +53,7 @@ async function main() {
         {
           name: "isolated-app-adapters",
           setup(b) {
-            b.onResolve({ filter: /^next\/(navigation|link)$/ }, (a) => ({
+            b.onResolve({ filter: /^next\/(navigation|link|image)$/ }, (a) => ({
               path: a.path,
               namespace: "mocks",
             }));
@@ -71,6 +71,8 @@ async function main() {
                     ? "import React from 'react';" +
                       nav +
                       "export default function Link({href,children,...props}){return <a href={href} {...props} onClick={e=>{e.preventDefault();navigate(href)}}>{children}</a>;}"
+                    : a.path === "next/image"
+                      ? "import React from 'react';export default function Image({fill,priority,...props}){return <img {...props}/>;}"
                     : "const options={suppliers:['B.S. Electrical','Solarfy Corporation'],methods:['Cash','Cheque','Bank transfer','GCash'],invoiceNames:['GMEA MARKETING CORP.','Prodisenyo Builders Corp.']};export async function getGmeaProjectsDataAction(){return fetch('/state').then(r=>r.json())}export async function getGmeaProjectDataAction(id){const projects=await getGmeaProjectsDataAction();return {project:projects.find(p=>p.id===id)||null,expenseOptions:options}}export async function saveGmeaProjectAction(projectId,version,command){const response=await fetch('/mutation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,version,command})});const result=await response.json();if(!response.ok)throw new Error(result.error);return result.id;}export async function markGmeaExpenseViewedAction(projectId,expenseId){const response=await fetch('/view-expense',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,expenseId})});if(!response.ok)throw new Error('Unable to mark expense viewed');}",
               resolveDir: process.cwd(),
             }));
@@ -154,6 +156,12 @@ async function main() {
     }
     server = http.createServer(async (req, res) => {
       try {
+        if (req.url === "/gmea-portfolio-architecture.png") {
+          res.setHeader("Content-Type", "image/png");
+          return res.end(
+            fs.readFileSync("public/gmea-portfolio-architecture.png"),
+          );
+        }
         if (req.url === "/bundle.js") {
           res.setHeader("Content-Type", "application/javascript");
           return res.end(js);
@@ -413,6 +421,17 @@ async function main() {
         .isDisabled(),
       true,
     );
+    if (process.env.GMEA_QA_SCREENSHOT) {
+      await page.setViewportSize({ width: 1220, height: 900 });
+      await page.goto(url);
+      await page
+        .getByRole("heading", { name: "Project portfolio", exact: true })
+        .waitFor();
+      await page.screenshot({
+        path: process.env.GMEA_QA_SCREENSHOT,
+        fullPage: true,
+      });
+    }
     assert.deepEqual(errors, []);
     console.log(
       "PASS: workbook project fields, contract collections, expense dropdowns, expense persistence, contract summary, reload, stale-save recovery, modal focus, mobile width, and CEO read-only controls.",

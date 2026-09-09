@@ -8,7 +8,7 @@ function SkeletonBlock({ className }: { className: string }) {
 
 export function PayrollAnalyticsLoadingState() {
   return (
-    <section role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-3xl border border-apple-mist bg-white shadow-sm">
+    <section role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-sm">
       <div className="border-b border-apple-mist px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
         <SkeletonBlock className="h-3 w-24 rounded-full" />
         <SkeletonBlock className="mt-1 h-7 w-80 sm:h-8" />
@@ -20,10 +20,10 @@ export function PayrollAnalyticsLoadingState() {
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-4 shadow-[0_8px_18px_rgba(7,109,105,0.06)] sm:p-5"
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(7,109,105,0.06)] sm:p-5"
             >
-              <SkeletonBlock className="h-3 w-24 rounded-full bg-white/20" />
-              <SkeletonBlock className="mt-2 h-7 w-32 rounded-full bg-white/20" />
+              <SkeletonBlock className="h-3 w-24 rounded-full" />
+              <SkeletonBlock className="mt-2 h-7 w-32 rounded-full" />
             </div>
           ))}
         </div>

@@ -9,6 +9,7 @@ import {
 import ProjectThumbnail from "./ProjectThumbnail";
 import type { ProjectRecord, ProjectStatus } from "../types";
 import { getProjectStatusPresentation } from "../utils/projectPresentation";
+import ProjectsPortfolioHero from "./ProjectsPortfolioHero";
 
 type SortOption = "updated" | "progress_high" | "progress_low" | "name";
 
@@ -102,15 +103,16 @@ export default function EngineerProjectPortfolio({
 
   return (
     <section className="space-y-5" aria-labelledby="engineer-projects-heading">
-      <header className="rounded-3xl bg-[#075e5b] p-6 text-white sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">Project portfolio</p>
-        <h1 id="engineer-projects-heading" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Prodisenyo Projects</h1>
-        <p className="mt-3 text-sm text-teal-50/80">Your assigned projects and estimates.</p>
-      </header>
+      <div id="engineer-projects-heading">
+        <ProjectsPortfolioHero
+          eyebrow="Engineer project portfolio"
+          description="Your assigned construction projects, cost estimates, deadlines, and progress."
+        />
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map(({ key, label, helper }) => (
-          <article key={key} className="rounded-2xl border border-slate-200 bg-white p-5">
+          <article key={key} className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)]">
             <p className="text-xs font-medium text-slate-500">{label}</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">{counts[key]}</p>
             <p className="mt-1 text-xs text-slate-500">{helper}</p>
