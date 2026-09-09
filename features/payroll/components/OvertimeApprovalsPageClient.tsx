@@ -20,7 +20,7 @@ export default function OvertimeApprovalsPageClient({
       .length;
 
   return (
-    <div className="min-h-full bg-[#f5f8f9] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full bg-white p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-[1560px] space-y-4">
         <OvertimeApprovalsHero pending={pending} />
         <OvertimeApprovalSummary

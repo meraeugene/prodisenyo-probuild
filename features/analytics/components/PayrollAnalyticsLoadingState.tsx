@@ -9,12 +9,6 @@ function SkeletonBlock({ className }: { className: string }) {
 export function PayrollAnalyticsLoadingState() {
   return (
     <section role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-sm">
-      <div className="border-b border-apple-mist px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
-        <SkeletonBlock className="h-3 w-24 rounded-full" />
-        <SkeletonBlock className="mt-1 h-7 w-80 sm:h-8" />
-        <SkeletonBlock className="mt-1 h-5 w-[36rem]" />
-      </div>
-
       <div className="space-y-10 px-5 py-6 sm:px-8 sm:py-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (

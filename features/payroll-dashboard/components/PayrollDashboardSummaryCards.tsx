@@ -42,7 +42,7 @@ export default function PayrollDashboardSummaryCards({
         return (
           <article
             key={card.label}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_6px_18px_rgba(15,23,42,0.035)]"
+            className="rounded-[22px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl"
           >
             <div className="flex items-start gap-3">
               <div

@@ -1,5 +1,4 @@
-import DashboardPageHero from "@/components/DashboardPageHero";
-import { PayrollAnalyticsLoadingState } from "@/features/analytics/components/PayrollAnalyticsLoadingState";
+import PayrollAnalyticsHero from "@/features/analytics/components/PayrollAnalyticsHero";
 export default function Loading() {
-  return <div role="status" aria-label="Loading payroll analytics" className="space-y-4 p-0 sm:p-6"><DashboardPageHero eyebrow="Data Analytics" title="Payroll Analytics" /><PayrollAnalyticsLoadingState /></div>;
+  return <div role="status" aria-label="Opening payroll analytics" className="bg-white p-4 sm:p-6 lg:p-8"><PayrollAnalyticsHero /></div>;
 }

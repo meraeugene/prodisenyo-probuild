@@ -10,10 +10,10 @@ function TableRows({ columns, minWidth }: { columns: number; minWidth: string })
 
 export default function PayrollDashboardSkeleton() {
   return (
-    <main role="status" aria-label="Loading payroll dashboard" className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div><Block className="h-8 w-72 sm:h-9" /><Block className="mt-1 h-5 w-96" /></div>
-        <Block className="h-10 w-44 shrink-0 rounded-lg" />
+    <main role="status" aria-label="Loading payroll dashboard" className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <header className="mb-5 flex min-h-[210px] flex-col justify-center gap-4 rounded-[22px] bg-[#075e5b] p-8 sm:flex-row sm:items-center sm:justify-between">
+        <div><Block light className="h-3 w-32" /><Block light className="mt-3 h-9 w-72" /><Block light className="mt-3 h-5 w-96" /></div>
+        <Block light className="h-11 w-44 shrink-0 rounded-xl" />
       </header>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[0,1,2,3].map(i => <SkeletonPanel key={i} className="rounded-xl p-4"><div className="flex items-start gap-3"><Block className="h-10 w-10 shrink-0" /><div><Block className="h-4 w-32" /><Block className="mt-1 h-7 w-24" /></div></div></SkeletonPanel>)}

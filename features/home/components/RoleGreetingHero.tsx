@@ -16,36 +16,22 @@ export default function RoleGreetingHero({
 }) {
   return (
     <section
-      className={`relative overflow-visible rounded-none bg-[linear-gradient(140deg,#114023,#076d69,#2e8b57)] p-4 text-white shadow-[0_16px_34px_rgba(7,109,105,0.2)] sm:rounded-[18px] sm:px-6 sm:p-6 ${className}`}
+      className={`relative isolate min-h-[210px] overflow-hidden rounded-[22px] bg-[#075e5b] p-6 text-white shadow-[0_20px_55px_rgba(7,83,80,0.16)] sm:p-8 ${className}`}
     >
-      <div className="pointer-events-none absolute -bottom-16 -left-[118px] w-full">
-        <Image
-          src="/login-robot.png"
-          alt="Workflow robot"
-          width={420}
-          height={420}
-          priority
-          className="object-contain drop-shadow-[0_14px_26px_rgba(0,0,0,0.22)]"
-        />
-      </div>
+      <Image src="/gmea-portfolio-architecture.png" alt="" fill priority sizes="(min-width:1024px) calc(100vw - 320px), 100vw" className="-z-20 object-cover object-right" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,79,76,.98)_0%,rgba(3,91,87,.9)_42%,rgba(3,79,76,.48)_78%,rgba(3,68,65,.62)_100%)]" />
 
-      <div className="pl-[122px] sm:pl-[170px]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60 sm:text-[11px]">
+      <div className="max-w-2xl">
+        <p className="text-[10px] font-bold uppercase tracking-[0.26em] text-white/[0.65] sm:text-[11px]">
           {dateLabel}
         </p>
-        <h1 className="mt-1 text-[24px] font-semibold leading-tight tracking-[-0.035em] text-white sm:text-4xl">
+        <h1 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.04em] text-white sm:text-[38px]">
           {title}
         </h1>
 
-        <div className="relative mt-2 h-[78px] max-w-lg overflow-hidden rounded-[18px] bg-white px-3 py-2 text-apple-charcoal shadow-[0_10px_22px_rgba(15,23,42,0.15)] sm:h-[82px] sm:px-4 sm:py-3">
-          <span
-            aria-hidden="true"
-            className="absolute -left-1 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 bg-white"
-          />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-teal-700/80">
-            Prody
-          </p>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-apple-steel sm:text-sm">
+        <div className="relative mt-5 min-h-[68px] max-w-xl overflow-hidden rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white shadow-inner backdrop-blur-xl">
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/60">Today&apos;s focus</p>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/[0.85] sm:text-sm">
             <RoleHintTypewriter messages={messages} />
           </p>
         </div>

@@ -16,7 +16,7 @@ export default function EngineerDashboardSummary({
       {ITEMS.map(({ key, label, icon: Icon, tone }) => (
         <article
           key={key}
-          className="flex min-h-28 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,0.04)]"
+          className="flex min-h-28 items-center gap-4 rounded-[22px] border border-white/80 bg-white/80 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl"
         >
           <div
             className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${

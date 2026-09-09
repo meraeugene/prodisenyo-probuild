@@ -195,6 +195,7 @@ export default function DashboardShell({
               <SidebarTooltip active={collapsed} label="Settings">
                 <Link
                   href="/settings"
+                  prefetch
                   className={cn(
                     "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
                     collapsed && "justify-center px-2.5",

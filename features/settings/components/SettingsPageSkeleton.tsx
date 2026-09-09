@@ -6,11 +6,11 @@ function Field() {
 
 export default function SettingsPageSkeleton() {
   return (
-    <div role="status" aria-label="Loading settings" className="min-h-screen space-y-7 bg-[#f5f7f9] p-4 sm:p-6 lg:p-8">
-      <header className="px-1 pt-1">
-        <Block className="h-3 w-16" />
-        <Block className="mt-2 h-10 w-36" />
-        <Block className="mt-1 h-5 w-64 max-w-full" />
+    <div role="status" aria-label="Loading settings" className="min-h-screen space-y-7 bg-white p-4 sm:p-6 lg:p-8">
+      <header className="rounded-[22px] bg-[#075e5b] px-6 py-8 sm:px-9">
+        <Block light className="h-3 w-16" />
+        <Block light className="mt-3 h-10 w-36" />
+        <Block light className="mt-3 h-5 w-64 max-w-full" />
       </header>
       <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,1fr)]">
         <SkeletonPanel className="p-5 sm:p-6">

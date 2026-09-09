@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import useSWR from "swr";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, MapPin, UserRound } from "lucide-react";
 import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
@@ -41,7 +42,7 @@ export default function GmeaProjectWorkspace({
   const expenseOptions = data?.expenseOptions ?? initialExpenseOptions;
   const save = useGmeaMutation(project);
   return (
-    <div className="min-h-full space-y-7 bg-[#f6f8f8] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full space-y-7 bg-white p-4 sm:p-6 lg:p-8">
       <Link
         href="/gmea-projects"
         className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
@@ -49,25 +50,27 @@ export default function GmeaProjectWorkspace({
         <ArrowLeft size={16} />
         GMEA projects
       </Link>
-      <header className="flex flex-wrap items-center justify-between gap-6 rounded-3xl bg-[#075e5b] p-6 text-white sm:p-8">
+      <header className="relative isolate flex min-h-[230px] flex-wrap items-center justify-between gap-6 overflow-hidden rounded-[22px] bg-[#075e5b] p-6 text-white shadow-[0_20px_55px_rgba(7,83,80,0.16)] sm:p-8">
+        <Image src="/gmea-portfolio-architecture.png" alt="" fill priority sizes="(min-width:1024px) calc(100vw - 320px), 100vw" className="-z-20 object-cover object-right" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,79,76,.98)_0%,rgba(3,91,87,.9)_42%,rgba(3,79,76,.48)_78%,rgba(3,68,65,.62)_100%)]" />
         <div className="min-w-0 flex-1 basis-72">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/70">
             GMEA Marketing Corporation
           </p>
           <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight sm:text-4xl">
             {project.name}
           </h1>
-          <p className="mt-4 flex items-center gap-2 text-sm text-teal-50/80">
+          <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
             <MapPin size={14} className="shrink-0" aria-hidden="true" />
             {project.location}
           </p>
-          <p className="mt-2 flex items-center gap-2 text-sm text-teal-50/80">
+          <p className="mt-2 flex items-center gap-2 text-sm text-white/80">
             <UserRound size={14} aria-hidden="true" />
             {project.client || "Client not set"}
           </p>
         </div>
         {canEdit && (
-          <div className="flex flex-wrap gap-2 rounded-2xl bg-white p-2 text-slate-900">
+          <div className="flex flex-wrap gap-2 rounded-2xl border border-white/20 bg-white/10 p-2 text-slate-900 shadow-inner backdrop-blur-xl">
             <button className={secondaryClass + " border-transparent bg-slate-50 text-[#076d69]"} onClick={() => setEdit(true)}>
               Edit project
             </button>

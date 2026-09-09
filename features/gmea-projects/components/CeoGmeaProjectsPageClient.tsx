@@ -5,12 +5,11 @@ import useSWR from "swr";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getGmeaProjectsDataAction } from "@/actions/gmeaProjects";
 import type { GmeaProject } from "../types";
-import { buildCeoPortfolio, getCollectionStatus, selectCeoActivity } from "../utils/ceoPortfolio";
+import { buildCeoPortfolio, getCollectionStatus } from "../utils/ceoPortfolio";
 import { filterPortfolioProjects, selectPortfolioClients } from "../utils/gmeaPortfolioFilters";
 import CeoGmeaSummary from "./CeoGmeaSummary";
 import CeoGmeaCharts from "./CeoGmeaCharts";
 import CeoGmeaProjectCard from "./CeoGmeaProjectCard";
-import CeoGmeaActivity from "./CeoGmeaActivity";
 import GmeaPortfolioHero from "./GmeaPortfolioHero";
 
 const tabs = ["All Projects", "Uncollected", "Partially collected", "Fully collected"] as const;
@@ -27,7 +26,6 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
   const [sort, setSort] = useState("latest");
   const [showFilters, setShowFilters] = useState(false);
   const data = useMemo(() => buildCeoPortfolio(liveProjects, months), [liveProjects, months]);
-  const activity = useMemo(() => selectCeoActivity(liveProjects), [liveProjects]);
   const clients = useMemo(() => selectPortfolioClients(liveProjects), [liveProjects]);
   const visible = useMemo(() => filterPortfolioProjects(liveProjects, query, filter)
     .filter((project) => tab === "All Projects" || getCollectionStatus(project) === tab)
@@ -36,7 +34,7 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
   const filtered = query.trim() || filter !== "all" || tab !== "All Projects";
 
   return (
-    <div className="min-h-screen bg-[#f5f8f9] p-4 sm:p-6">
+    <div className="min-h-screen bg-white p-4 sm:p-6">
       <div className="mx-auto max-w-[1600px] space-y-4">
         <GmeaPortfolioHero canEdit={false} />
         <CeoGmeaSummary count={liveProjects.length} contract={data.contract} expenses={data.expenses} outstanding={data.outstanding} />
@@ -63,12 +61,9 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
           <div className="my-3 flex items-center gap-3 text-[11px] text-slate-500" aria-live="polite">{visible.length} of {liveProjects.length} projects
             {filtered && <button className="rounded text-teal-700 underline focus-visible:ring-2 focus-visible:ring-teal-700" onClick={() => { setTab("All Projects"); setQuery(""); setFilter("all"); }}>Clear filters</button>}
           </div>
-          <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
-            <div className="grid gap-4 md:grid-cols-2">
-              {visible.map((project) => <CeoGmeaProjectCard key={project.id} project={project} />)}
-              {!visible.length && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center md:col-span-2"><h2 className="text-sm font-semibold text-slate-800">No projects found</h2><p className="mt-2 text-xs text-slate-500">{liveProjects.length ? "Try changing your search or filters." : "GMEA projects will appear here once added."}</p></div>}
-            </div>
-            <CeoGmeaActivity events={activity} />
+          <div className="grid gap-4 md:grid-cols-2">
+            {visible.map((project) => <CeoGmeaProjectCard key={project.id} project={project} />)}
+            {!visible.length && <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center md:col-span-2"><h2 className="text-sm font-semibold text-slate-800">No projects found</h2><p className="mt-2 text-xs text-slate-500">{liveProjects.length ? "Try changing your search or filters." : "GMEA projects will appear here once added."}</p></div>}
           </div>
         </section>
       </div>

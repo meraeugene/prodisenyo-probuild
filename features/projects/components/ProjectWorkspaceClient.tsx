@@ -258,8 +258,8 @@ export default function ProjectWorkspaceClient({
   }
 
   return (
-    <div className="min-h-full space-y-5 bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <div className="sticky top-0 z-40 -mx-4 -mt-5 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-7 lg:px-8">
+    <div className="min-h-full space-y-5 bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <div className="sticky top-0 z-40 -mx-4 -mt-5 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:-mt-7 lg:px-8">
         <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
           <ArrowLeft size={15} /> Back to Projects
         </Link>

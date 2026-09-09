@@ -34,7 +34,7 @@ export default function PurchaserDashboardSummary({ summary }: { summary: Summar
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <article key={card.label} className="flex min-h-28 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.035)]">
+          <article key={card.label} className="flex min-h-28 items-center gap-4 rounded-[22px] border border-white/80 bg-white/80 p-5 shadow-[0_14px_38px_rgba(15,23,42,.06)] backdrop-blur-xl">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
               <Icon size={25} strokeWidth={1.8} />
             </div>

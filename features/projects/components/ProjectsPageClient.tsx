@@ -126,7 +126,7 @@ export default function ProjectsPageClient({
   }
 
   return (
-    <div className="min-h-full space-y-4 bg-[#f5f8f9] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8">
       {role === "ceo" ? (
         <CeoProjectsOverview
           projects={projects}

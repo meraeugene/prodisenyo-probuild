@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { BadgeDollarSign, Download, FileCheck2, LoaderCircle, Pencil, Search, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
+import DashboardPageHero from "@/components/DashboardPageHero";
+import PurchasingRecordsSkeleton from "@/features/purchasing-approvals/components/PurchasingRecordsSkeleton";
 import {
   getPurchasingRecordsAction,
   getPurchaseReceiptDownloadUrlAction,
@@ -81,16 +84,10 @@ export default function PurchasingWorkspace() {
   }
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-apple-steel">Procurement</p>
-          <h1 className="mt-1 text-2xl font-semibold text-apple-charcoal">Purchasing</h1>
-        </div>
-        <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700">
+    <div className="min-h-full space-y-4 bg-white p-4 sm:p-6">
+      <DashboardPageHero eyebrow="Procurement" title="Purchasing" description="Manage supplier pricing, purchase orders, delivery progress, and receipt records." actions={<span className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#076d69] shadow-sm sm:w-auto">
           <BadgeDollarSign size={14} /> Purchase value: {money(total)}
-        </span>
-      </div>
+        </span>} />
 
       <div className="relative max-w-sm">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver" />
@@ -100,7 +97,7 @@ export default function PurchasingWorkspace() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><LoaderCircle className="animate-spin text-teal-700" /></div>
+        <PurchasingRecordsSkeleton />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-apple-mist py-16 text-center text-sm text-apple-smoke">
           No approved material purchases are assigned yet.
@@ -108,7 +105,7 @@ export default function PurchasingWorkspace() {
       ) : (
         <div className="space-y-3">
           {filtered.map((record) => (
-            <article key={record.id} className="rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(7,109,105,0.03)]">
+            <article key={record.id} className="rounded-[22px] border border-white/80 bg-white/80 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl">
               <div className="flex flex-col justify-between gap-4 sm:flex-row">
                 <div>
                   <p className="text-xs font-semibold uppercase text-apple-steel">{record.projectName}</p>
@@ -146,9 +143,9 @@ export default function PurchasingWorkspace() {
         </div>
       )}
 
-      {editing ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
-          <form action={save} className="w-full max-w-lg space-y-4 rounded-2xl border border-apple-mist bg-white p-6 shadow-2xl">
+      {editing ? createPortal(
+        <div className="fixed inset-0 z-[100] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6">
+          <form action={save} className="h-[80dvh] max-h-[80dvh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-[24px] border border-white/80 bg-white p-5 shadow-[0_30px_90px_rgba(15,23,42,0.35)] sm:p-7">
             <input type="hidden" name="id" value={editing.id} />
             <div><h2 className="text-lg font-bold text-apple-charcoal">Update purchase</h2><p className="text-xs text-apple-smoke">{editing.itemName}</p></div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -172,7 +169,8 @@ export default function PurchasingWorkspace() {
               <button disabled={isPending} className={cn("flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-sm font-semibold text-white", isPending && "opacity-60")}>{isPending ? <LoaderCircle size={14} className="animate-spin" /> : null}Save</button>
             </div>
           </form>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </div>
   );

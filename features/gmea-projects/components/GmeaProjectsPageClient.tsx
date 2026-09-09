@@ -51,7 +51,7 @@ export default function GmeaProjectsPageClient({
   const expenseTotal = sumMoney(summaries.map((summary) => summary.expenses));
 
   return (
-    <div className="min-h-full bg-[#f5f7f8] px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
+    <div className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-4">
         <GmeaPortfolioHero canEdit={canEdit} onCreate={() => setCreate(true)} />
         <GmeaPortfolioStats

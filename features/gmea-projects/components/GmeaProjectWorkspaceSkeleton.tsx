@@ -1,6 +1,6 @@
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 export default function GmeaProjectWorkspaceSkeleton() {
-  return <div role="status" aria-label="Loading GMEA project" className="min-h-full space-y-7 bg-[#f6f8f8] p-4 sm:p-6 lg:p-8">
+  return <div role="status" aria-label="Loading GMEA project" className="min-h-full space-y-7 bg-white p-4 sm:p-6 lg:p-8">
     <Block className="h-5 w-32" />
     <header className="rounded-3xl bg-[#075e5b] p-6 sm:p-8"><Block light className="h-4 w-64" /><Block light className="mt-3 h-9 w-80 sm:h-10" /><Block light className="mt-4 h-5 w-52" /><Block light className="mt-2 h-5 w-40" /></header>
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[0,1,2,3].map(i => <SkeletonPanel key={i} className="p-5 sm:p-6"><div className="flex justify-between gap-3"><Block className="h-4 w-28" /><Block className="h-9 w-9" /></div><Block className="mt-4 h-8 w-40" /></SkeletonPanel>)}</div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Upload } from "lucide-react";
+import DashboardPageHero from "@/components/DashboardPageHero";
 import AttendanceBatchesPanel from "@/features/payroll-dashboard/components/AttendanceBatchesPanel";
 import PayrollApprovalsPanel from "@/features/payroll-dashboard/components/PayrollApprovalsPanel";
 import PayrollDashboardSummaryCards from "@/features/payroll-dashboard/components/PayrollDashboardSummaryCards";
@@ -14,25 +15,15 @@ export default function PayrollDashboardPage({
   data: PayrollDashboardData;
 }) {
   return (
-    <main className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-[-0.035em] text-slate-950 sm:text-3xl">
-            Payroll Dashboard
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Review attendance, prepare payroll, and track approvals.
-          </p>
-        </div>
-        <Link
+    <main className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <DashboardPageHero eyebrow="Payroll workspace" title="Payroll Dashboard" description="Review attendance, prepare payroll, and track approvals." actions={<Link
           href="/upload-attendance"
-          className="inline-flex h-10 w-fit items-center gap-2 rounded-lg bg-[#076d69] px-4 text-sm font-bold text-white transition hover:bg-[#055f5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#076d69] shadow-sm transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-fit"
         >
           <Upload size={16} /> Upload Attendance
-        </Link>
-      </header>
+        </Link>} />
 
-      <PayrollDashboardSummaryCards summary={data.summary} />
+      <div className="mt-5"><PayrollDashboardSummaryCards summary={data.summary} /></div>
 
       {data.returnedSubmissions.length ? (
         <div className="mt-4">

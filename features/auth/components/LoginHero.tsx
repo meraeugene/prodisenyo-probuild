@@ -22,7 +22,7 @@ export default function LoginHero() {
             height={92}
             className="h-[92px] w-[112px] object-contain"
           />
-          <p className="mt-1 text-[24px] font-semibold tracking-[0.01em] text-[#086864]">
+          <p className="text-[24px] font-semibold tracking-[0.01em] text-[#086864]">
             Prodisenyo ProBuild
           </p>
           <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.42em] text-[#3e8a87]">

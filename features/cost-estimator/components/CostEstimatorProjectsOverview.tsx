@@ -6,6 +6,7 @@ import {
   FileText,
   Send,
 } from "lucide-react";
+import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorOverviewMetric from "@/features/cost-estimator/components/CostEstimatorOverviewMetric";
 import CostEstimatorOverviewProjectCard from "@/features/cost-estimator/components/CostEstimatorOverviewProjectCard";
 import type {
@@ -50,15 +51,12 @@ export default function CostEstimatorProjectsOverview({
   ).length;
 
   return (
-    <div className="space-y-5 p-0 sm:p-6">
-      <section className="rounded-none bg-[#076d69] px-6 py-9 text-white shadow-[0_16px_34px_rgba(7,109,105,0.18)] sm:rounded-[14px] sm:px-10 sm:py-10">
-        <h1 className="text-[34px] font-semibold tracking-[-0.035em] sm:text-[40px]">
-          Cost Estimator
-        </h1>
-        <p className="mt-2 text-base text-white/90 sm:text-[18px]">
-          Prepare and manage Bill of Quantities for projects assigned to you.
-        </p>
-      </section>
+    <div className="space-y-5 bg-white p-4 sm:p-6">
+      <DashboardPageHero
+        eyebrow="Engineer workspace"
+        title="Cost Estimator"
+        description="Prepare and manage Bill of Quantities for projects assigned to you."
+      />
 
       <section aria-label="Estimate summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CostEstimatorOverviewMetric icon={BriefcaseBusiness} value={queueCount} label="Projects" tone="teal" />

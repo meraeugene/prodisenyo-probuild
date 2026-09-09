@@ -25,19 +25,19 @@ export type EditableProfile = Pick<
   "full_name" | "username" | "email" | "avatar_path" | "role"
 >;
 
-export function useSettingsPage() {
+export function useSettingsPage(initialProfile: EditableProfile | null = null) {
   const router = useRouter();
   const { handleReset } = useAppState();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profile, setProfile] = useState<EditableProfile | null>(null);
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [profile, setProfile] = useState<EditableProfile | null>(initialProfile);
+  const [fullName, setFullName] = useState(initialProfile?.full_name ?? "");
+  const [username, setUsername] = useState(initialProfile?.username ?? "");
+  const [email, setEmail] = useState(initialProfile?.email ?? "");
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(!initialProfile);
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -69,6 +69,8 @@ export function useSettingsPage() {
   }, [avatarPreviewUrl]);
 
   useEffect(() => {
+    if (initialProfile) return;
+
     let cancelled = false;
     async function loadProfile() {
       setLoadingProfile(true);
@@ -110,7 +112,7 @@ export function useSettingsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialProfile]);
 
   async function handleAvatarFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

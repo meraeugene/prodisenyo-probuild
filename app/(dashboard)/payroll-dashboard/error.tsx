@@ -9,7 +9,7 @@ export default function PayrollDashboardError({
   reset: () => void;
 }) {
   return (
-    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50/40 px-4 py-10">
+    <main className="flex min-h-[70vh] items-center justify-center bg-white px-4 py-10">
       <section className="w-full max-w-lg rounded-2xl border border-rose-100 bg-white p-8 text-center shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-700">
           <AlertTriangle size={22} />

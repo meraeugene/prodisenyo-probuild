@@ -29,7 +29,9 @@ export default function GmeaConfirmButton({
               (danger
                 ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-900")
-            : secondaryClass + (danger ? " text-rose-700" : "")
+            : danger
+              ? "inline-flex items-center justify-center rounded-xl border border-rose-500 bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:border-rose-600 hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 disabled:opacity-50"
+              : secondaryClass
         }
         onClick={() => setOpen(true)}
       >

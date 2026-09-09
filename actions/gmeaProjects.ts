@@ -20,9 +20,12 @@ export async function getGmeaProjectsDataAction() {
 
 export async function getGmeaProjectDataAction(projectId: string) {
   validId(projectId);
+  const { profile } = await requireGmeaAccess();
   const [[project], expenseOptions] = await Promise.all([
     getGmeaProjects(projectId),
-    getGmeaExpenseOptions(),
+    profile.role === APP_ROLES.GMEA
+      ? getGmeaExpenseOptions()
+      : Promise.resolve({ suppliers: [], methods: [], invoiceNames: [] }),
   ]);
   return { project: project ?? null, expenseOptions };
 }

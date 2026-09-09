@@ -20,7 +20,9 @@ export default async function Page({
   }
   const [[project], expenseOptions] = await Promise.all([
     getGmeaProjects(projectId),
-    getGmeaExpenseOptions(),
+    profile.role === "gmea"
+      ? getGmeaExpenseOptions()
+      : Promise.resolve({ suppliers: [], methods: [], invoiceNames: [] }),
   ]);
   if (!project) notFound();
   return (

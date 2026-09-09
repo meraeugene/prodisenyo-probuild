@@ -63,7 +63,7 @@ export default function PlanningProjectWorkspaceClient({
   }
 
   return (
-    <div className="min-h-full space-y-5 bg-[#f6f8f8] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <div className="min-h-full space-y-5 bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <div className="py-1">
         <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
           <ArrowLeft size={15} /> Back to Projects

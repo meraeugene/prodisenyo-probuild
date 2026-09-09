@@ -121,6 +121,7 @@ function renderSidebarLink(params: {
     <SidebarTooltip key={item.href} active={collapsed} label={item.label}>
     <Link
       href={item.href}
+      prefetch
       onClick={onNavigate}
       className={cn(
         "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
