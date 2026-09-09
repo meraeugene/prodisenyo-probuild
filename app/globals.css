@@ -137,6 +137,10 @@ body {
 }
 
 /* Custom scrollbar */
+html {
+  scrollbar-color: #9ca3af transparent;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -147,12 +151,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--apple-silver));
+  background: #9ca3af;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--apple-steel));
+  background: #6b7280;
 }
 
 .sidebar-scrollbar {

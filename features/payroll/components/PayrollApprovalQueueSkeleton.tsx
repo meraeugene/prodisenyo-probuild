@@ -3,13 +3,13 @@
 export default function PayrollApprovalQueueSkeleton() {
   return (
     <div
-      className="mt-4 grid items-stretch gap-3 md:grid-cols-2 "
+      className="mt-4 grid grid-cols-1 items-start gap-4"
       aria-hidden="true"
     >
       {Array.from({ length: 2 }).map((_, index) => (
         <div
           key={`approval-skeleton-${index}`}
-          className="h-full rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)]"
+          className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]"
         >
           <div className="flex h-full flex-col animate-pulse">
             <div className="min-w-0 space-y-3">

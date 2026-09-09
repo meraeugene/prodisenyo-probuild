@@ -115,9 +115,11 @@ export default function CeoProjectOverview({
 function OverviewCard({ title, icon: Icon, children }: { title: string; icon: typeof CircleCheckBig; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
-      <div className="mb-5 flex items-center gap-2">
-        <Icon size={17} className="text-teal-700" />
-        <h2 className="font-bold text-slate-950">{title}</h2>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="font-semibold tracking-tight text-slate-950">{title}</h2>
+        <span className={"grid h-9 w-9 shrink-0 place-items-center rounded-xl " + (title === "Budget Summary" ? "bg-sky-50 text-sky-700" : title === "Project Information" ? "bg-violet-50 text-violet-700" : "bg-teal-50 text-teal-700")}>
+          <Icon size={18} aria-hidden="true" />
+        </span>
       </div>
       {children}
     </section>

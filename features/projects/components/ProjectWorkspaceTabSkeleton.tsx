@@ -1,3 +1,7 @@
+import ProjectOverviewSkeleton from "./ProjectOverviewSkeleton";
+import ProjectContentSkeleton from "./ProjectContentSkeleton";
+import CostTrackingSkeleton from "@/features/project-cost-tracking/components/CostTrackingSkeleton";
+
 type WorkspaceTab =
   | "overview"
   | "activities"
@@ -13,6 +17,8 @@ export default function ProjectWorkspaceTabSkeleton({
 }: {
   tab: WorkspaceTab;
 }) {
+  if (tab === "materials" || tab === "documents" || tab === "activity-log") return <ProjectContentSkeleton tab={tab} />;
+  if (tab === "overview") return <div role="status" aria-label="Loading project overview"><ProjectOverviewSkeleton /></div>;
   if (tab === "estimates") {
     return (
       <div
@@ -52,24 +58,7 @@ export default function ProjectWorkspaceTabSkeleton({
     );
   }
 
-  if (tab === "overview" || tab === "cost-tracking") {
-    return (
-      <div aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((item) => (
-            <div
-              key={item}
-              className="rounded-xl border border-slate-200 bg-white p-5"
-            >
-              <Skeleton className="h-3 w-28" />
-              <Skeleton className="mt-3 h-7 w-24" strong />
-            </div>
-          ))}
-        </div>
-        <ListSkeleton rows={tab === "overview" ? 5 : 6} />
-      </div>
-    );
-  }
+  if (tab === "cost-tracking") return <CostTrackingSkeleton />;
 
   return (
     <div aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">

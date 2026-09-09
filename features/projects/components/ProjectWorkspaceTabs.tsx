@@ -12,7 +12,7 @@ export default function ProjectWorkspaceTabs<Tab extends string>({
   onSelect: (tab: Tab) => void;
 }) {
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-slate-200">
+    <nav aria-label="Project sections" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5">
       {tabs.map((item) => {
         const isActive = activeTab === item;
         return (
@@ -22,11 +22,11 @@ export default function ProjectWorkspaceTabs<Tab extends string>({
             onClick={() => onSelect(item)}
             aria-current={isActive ? "page" : undefined}
             disabled={disabled}
-            className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize transition ${
+            className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold capitalize transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
               isActive
-                ? "border-teal-700 text-teal-800"
-                : "border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-950"
-            } disabled:cursor-wait`}
+                ? "bg-[#076d69] text-white"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+            } cursor-pointer disabled:cursor-default`}
           >
             {item}
           </button>

@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import LandingSectionHeading from "@/features/landing-page/components/LandingSectionHeading";
 import { landingTourSlides } from "@/features/landing-page/utils/landingContent";
@@ -57,33 +55,12 @@ export default function ProductTour() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-700">
               {activeSlide.label}
             </p>
-            <h3 className="mt-4 text-balance text-2xl font-bold leading-tight tracking-[-0.035em] text-[#103d39] sm:text-3xl">
+            <h3 className="mt-4 line-clamp-2 whitespace-pre-line text-balance text-2xl font-bold leading-tight tracking-[-0.035em] text-[#103d39] sm:text-3xl">
               {activeSlide.title}
             </h3>
-            <p className="mt-4 text-sm leading-7 text-slate-600">
+            <p className="mt-4 truncate text-sm leading-7 text-slate-600">
               {activeSlide.description}
             </p>
-            <ul className="mt-6 space-y-3">
-              {activeSlide.bullets.map((bullet) => (
-                <li
-                  key={bullet}
-                  className="flex items-start gap-3 text-sm font-medium text-slate-700"
-                >
-                  <CheckCircle2
-                    className="mt-0.5 h-4 w-4 shrink-0 text-teal-700"
-                    strokeWidth={2}
-                  />
-                  {bullet}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/auth/login?switch=1"
-              className="mt-8 inline-flex w-fit items-center gap-2 text-sm font-bold text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4"
-            >
-              Open ProBuild
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
           </div>
 
           <div className="flex items-center bg-[#eaf2ee] p-4 sm:p-7 lg:p-8">

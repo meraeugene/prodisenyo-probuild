@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import useSWR from "swr";
 import {
   ArrowLeft,
@@ -42,20 +42,15 @@ import CeoProjectOverview from "./CeoProjectOverview";
 import ProjectEstimateReviewSection from "./ProjectEstimateReviewSection";
 import ProjectWorkspaceHeader from "./ProjectWorkspaceHeader";
 import ProjectWorkspaceTabs from "./ProjectWorkspaceTabs";
+import ProjectTabPanel from "./ProjectTabPanel";
 import ProjectReturnEstimateDialog from "./ProjectReturnEstimateDialog";
-import ProjectWorkspaceTabSkeleton from "./ProjectWorkspaceTabSkeleton";
+import { useProjectWorkspaceTabs } from "../hooks/useProjectWorkspaceTabs";
 import type { ImportedProgressActivity } from "../utils/engineeringProgressImport";
 import type { EngineeringProgressActivityRecord } from "../utils/engineeringWorkspace";
 import type {
   ProjectEstimateItemRow,
   ReviewProjectEstimateRow,
 } from "@/features/cost-estimator/types";
-import {
-  CEO_PROJECT_WORKSPACE_TABS,
-  ENGINEER_PROJECT_WORKSPACE_TABS,
-  resolveProjectWorkspaceTab,
-  type ProjectWorkspaceTab,
-} from "../utils/workspaceTabs";
 import type { ProjectRecord } from "../types";
 
 type Activity = {
@@ -139,14 +134,7 @@ export default function ProjectWorkspaceClient({
   materialReceipts: ProjectMaterialReceipt[];
 }) {
   const router = useRouter();
-  const params = useSearchParams();
-  const tabs: readonly ProjectWorkspaceTab[] = canReviewEstimates
-    ? CEO_PROJECT_WORKSPACE_TABS
-    : ENGINEER_PROJECT_WORKSPACE_TABS;
-  const selected = params.get("tab");
-  const tab = resolveProjectWorkspaceTab(selected, tabs);
-  const [pendingTab, setPendingTab] = useState<ProjectWorkspaceTab | null>(null);
-  const [isTabPending, startTabTransition] = useTransition();
+  const { tabs, tab, switchTab } = useProjectWorkspaceTabs(project.id, canReviewEstimates, canCreateEstimate);
   const [isSubmittingProgress, setIsSubmittingProgress] = useState(false);
   const [pendingEstimateAction, setPendingEstimateAction] = useState<{
     id: string;
@@ -187,39 +175,6 @@ export default function ProjectWorkspaceClient({
   const activeEstimateItems = activeEstimate
     ? liveEstimateItems.filter((item) => item.estimate_id === activeEstimate.id)
     : [];
-
-  useEffect(() => {
-    if (tab === "estimates" && canCreateEstimate && !canReviewEstimates) {
-      router.replace(`/cost-estimator?projectId=${project.id}`);
-    }
-  }, [canCreateEstimate, canReviewEstimates, project.id, router, tab]);
-
-  useEffect(() => {
-    if (selected !== "purchasing") return;
-    const nextParams = new URLSearchParams(params.toString());
-    nextParams.set("tab", "materials");
-    router.replace(`/projects/${project.id}?${nextParams.toString()}`, {
-      scroll: false,
-    });
-  }, [params, project.id, router, selected]);
-
-  useEffect(() => {
-    if (!isTabPending) setPendingTab(null);
-  }, [isTabPending]);
-
-  function switchTab(nextTab: ProjectWorkspaceTab) {
-    if (nextTab === tab || isTabPending) return;
-
-    const href =
-      nextTab === "estimates" && canCreateEstimate && !canReviewEstimates
-        ? `/cost-estimator?projectId=${project.id}`
-        : `/projects/${project.id}?tab=${nextTab}`;
-
-    setPendingTab(nextTab);
-    startTabTransition(() => {
-      router.push(href);
-    });
-  }
 
   function submitProgress(nextActivities: ImportedProgressActivity[]) {
     if (!canUpdateProgress) return;
@@ -312,17 +267,13 @@ export default function ProjectWorkspaceClient({
       <ProjectWorkspaceHeader project={project} />
       <ProjectWorkspaceTabs
         tabs={tabs}
-        activeTab={pendingTab ?? tab}
-        disabled={isTabPending}
+        activeTab={tab}
+        disabled={false}
         onSelect={switchTab}
       />
 
-      {isTabPending ? (
-        <ProjectWorkspaceTabSkeleton tab={pendingTab ?? tab} />
-      ) : null}
-
-      {!isTabPending && tab === "overview" ? (
-        canReviewEstimates ? (
+      <ProjectTabPanel key={project.id + "-overview"} active={tab === "overview"}>
+{canReviewEstimates ? (
           <CeoProjectOverview
             project={project}
             budgetItems={liveBudgetItems}
@@ -340,21 +291,21 @@ export default function ProjectWorkspaceClient({
             onUpdateProgress={() => switchTab("progress-updates")}
             onOpenMaterials={() => switchTab("materials")}
           />
-        )
-      ) : null}
+        )}
+      </ProjectTabPanel>
 
 
-      {!isTabPending && tab === "activities" ? (
-        <EngineeringProgressWorksheet
+      <ProjectTabPanel key={project.id + "-activities"} active={tab === "activities"}>
+<EngineeringProgressWorksheet
           activities={activityRows}
           readOnly={!canUpdateProgress}
           isSubmitting={isSubmittingProgress}
           onSubmitProgress={submitProgress}
         />
-      ) : null}
+      </ProjectTabPanel>
 
-      {!isTabPending && tab === "progress-updates" ? (
-        <ProjectProgressUpdatesPanel
+      <ProjectTabPanel key={project.id + "-progress-updates"} active={tab === "progress-updates"}>
+<ProjectProgressUpdatesPanel
           projectId={project.id}
           updates={liveProgressUpdates}
           canSubmit={canUpdateProgress}
@@ -373,9 +324,9 @@ export default function ProjectWorkspaceClient({
             );
           }}
         />
-      ) : null}
-      {!isTabPending && tab === "estimates" && canReviewEstimates ? (
-        <ProjectEstimateReviewSection
+      </ProjectTabPanel>
+      <ProjectTabPanel key={project.id + "-estimates"} active={tab === "estimates" && canReviewEstimates}>
+<ProjectEstimateReviewSection
           estimates={liveEstimates}
           projectBudget={project.budget}
           pendingAction={pendingEstimateAction}
@@ -383,10 +334,10 @@ export default function ProjectWorkspaceClient({
           onReturn={setReturnEstimateId}
           onApprove={approveEstimate}
         />
-      ) : null}
+      </ProjectTabPanel>
 
-      {!isTabPending && tab === "materials" ? (
-        canReviewEstimates ? (
+      <ProjectTabPanel key={project.id + "-materials"} active={tab === "materials"}>
+{canReviewEstimates ? (
           <MaterialApprovalsPageClient
             projectName={project.name}
             requestedBy={project.engineer}
@@ -403,10 +354,10 @@ export default function ProjectWorkspaceClient({
             plannedMaterials={plannedMaterials}
             purchaseOrders={livePurchaseOrders}
           />
-        )
-      ) : null}
-      {!isTabPending && tab === "documents" ? (
-        <ProjectDocumentsPanel
+        )}
+      </ProjectTabPanel>
+      <ProjectTabPanel key={project.id + "-documents"} active={tab === "documents"}>
+<ProjectDocumentsPanel
           projectId={project.id}
           documents={liveDocuments}
           canUpload={canUpdateProgress}
@@ -442,25 +393,25 @@ export default function ProjectWorkspaceClient({
             );
           }}
         />
-      ) : null}
-      {!isTabPending && tab === "activity-log" ? (
-        <ProjectActivityLogPanel
+      </ProjectTabPanel>
+      <ProjectTabPanel key={project.id + "-activity-log"} active={tab === "activity-log"}>
+<ProjectActivityLogPanel
           engineerName={project.engineer}
           progressUpdates={liveProgressUpdates}
           progressSubmissions={liveProgressSubmissions}
           materialRequests={liveMaterialRequests}
           documents={liveDocuments}
         />
-      ) : null}
-      {!isTabPending && tab === "cost-tracking" ? (
-        <ProjectCostTrackingPanel
+      </ProjectTabPanel>
+      <ProjectTabPanel key={project.id + "-cost-tracking"} active={tab === "cost-tracking"}>
+<ProjectCostTrackingPanel
           startingBudget={project.budget}
           materialRequests={liveMaterialRequests}
           purchaseOrders={livePurchaseOrders}
           materialReceipts={liveMaterialReceipts}
           expenses={liveProjectExpenses}
         />
-      ) : null}
+      </ProjectTabPanel>
 
       {activeEstimate ? (
         <EstimateReportModal

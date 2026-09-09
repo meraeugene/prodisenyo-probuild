@@ -21,7 +21,10 @@ export default function GmeaProfitSection({
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Contract cost summary</h2>
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">Contract cost summary</h2>
+          <p className="mt-1 text-sm text-slate-500">Project returns and partner allocations.</p>
+        </div>
         {canEdit && (
           <button className={secondaryClass} onClick={() => setEdit(true)}>
             Edit partners
@@ -29,16 +32,16 @@ export default function GmeaProfitSection({
         )}
       </header>
       <div className="grid gap-6 lg:grid-cols-2">
-        <dl className="divide-y divide-slate-100 rounded-2xl border border-slate-200 px-5">
+        <dl className="h-fit divide-y divide-slate-200/70 rounded-2xl bg-slate-50 px-6">
           {lines.map(([label, value]) => (
             <div
               key={label}
-              className="flex flex-wrap justify-between gap-2 py-4"
+              className="flex flex-wrap items-center justify-between gap-3 py-6"
             >
               <dt className="text-sm text-slate-600">{label}</dt>
               <dd
                 className={
-                  "font-semibold " +
+                  "text-xl font-semibold tracking-tight tabular-nums " +
                   (value !== null && value < 0
                     ? "text-rose-700"
                     : "text-slate-900")
@@ -57,7 +60,7 @@ export default function GmeaProfitSection({
           {s.partners.map((p) => (
             <div
               key={p.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-teal-100 bg-teal-50/40 p-5"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white p-5"
             >
               <div>
                 <h3 className="font-semibold">{p.name}</h3>
@@ -65,7 +68,7 @@ export default function GmeaProfitSection({
                   {p.percentage}% share
                 </p>
               </div>
-              <strong>{formatMoney(p.amount)}</strong>
+              <strong className="text-lg font-semibold tracking-tight text-[#076d69] tabular-nums">{formatMoney(p.amount)}</strong>
             </div>
           ))}
         </div>

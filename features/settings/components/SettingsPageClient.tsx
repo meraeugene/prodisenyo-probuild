@@ -1,6 +1,5 @@
 "use client";
 
-import DashboardPageHero from "@/components/DashboardPageHero";
 import SettingsPasswordSection from "@/features/settings/components/SettingsPasswordSection";
 import SettingsProfileSection from "@/features/settings/components/SettingsProfileSection";
 import SettingsResetWorkspaceModal from "@/features/settings/components/SettingsResetWorkspaceModal";
@@ -11,14 +10,14 @@ export default function SettingsPageClient() {
 
   return (
     <>
-      <div className="space-y-4 p-0 sm:p-6">
-        <DashboardPageHero
-          eyebrow="Account"
-          title="Settings"
-          description="Edit your profile, update your password, and manage locally stored payroll workspace data."
-        />
+      <div className="min-h-full space-y-7 bg-[#f6f8f8] p-4 sm:p-6 lg:p-8">
+        <header className="rounded-3xl bg-[#075e5b] p-6 text-white sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">Account</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Settings</h1>
+          <p className="mt-3 text-sm text-teal-50/80">Your profile and account security.</p>
+        </header>
 
-        <section className="grid items-stretch gap-4 2xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <SettingsProfileSection
             fileInputRef={state.fileInputRef}
             profile={state.profile}

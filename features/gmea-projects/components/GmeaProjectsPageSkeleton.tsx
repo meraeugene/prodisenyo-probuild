@@ -1,32 +1,9 @@
-function Pulse({ className }: { className: string }) {
-  return <div className={"animate-pulse rounded-lg bg-slate-100 " + className} />;
-}
-
+import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 export default function GmeaProjectsPageSkeleton() {
-  return (
-    <div role="status" aria-label="Loading GMEA projects" className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <header className="flex items-start justify-between gap-4">
-        <div className="space-y-3">
-          <Pulse className="h-3 w-56" /><Pulse className="h-9 w-72" /><Pulse className="h-4 w-[28rem] max-w-full" />
-        </div>
-        <Pulse className="h-10 w-32" />
-      </header>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="space-y-3 rounded-2xl border border-slate-200 p-5"><Pulse className="h-3 w-28" /><Pulse className="h-8 w-40" /></div>
-        ))}
-      </div>
-      <Pulse className="h-10 w-full sm:max-w-md" />
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
-            <Pulse className="h-6 w-6" /><Pulse className="h-6 w-3/4" /><Pulse className="h-4 w-1/2" /><Pulse className="h-4 w-2/3" />
-            <div className="grid grid-cols-2 gap-3 border-y border-slate-100 py-4"><Pulse className="h-12 w-full" /><Pulse className="h-12 w-full" /></div>
-            <Pulse className="h-10 w-48" />
-          </div>
-        ))}
-      </div>
-      <span className="sr-only">Loading…</span>
-    </div>
-  );
+  return <div role="status" aria-label="Loading GMEA projects" className="min-h-full space-y-7 bg-[#f6f8f8] p-4 sm:p-6 lg:p-8">
+    <header className="flex flex-wrap items-center justify-between gap-6 rounded-3xl bg-[#075e5b] p-6 sm:p-8"><div><Block light className="h-4 w-64" /><Block light className="mt-3 h-9 w-72 sm:h-10" /><Block light className="mt-3 h-5 w-72" /></div></header>
+    <div className="grid gap-4 sm:grid-cols-3">{[0,1,2].map(i => <SkeletonPanel key={i} className="p-6"><div className="flex justify-between gap-3"><Block className="h-5 w-28" /><Block className="h-9 w-9" /></div><Block className="mt-4 h-8 w-44" /></SkeletonPanel>)}</div>
+    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><Block className="h-7 w-28" /><Block className="mt-1 h-4 w-36" /></div><Block className="h-11 w-full sm:max-w-md" /></div>
+    <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{[0,1,2].map(i => <SkeletonPanel key={i} className="overflow-hidden p-6"><Block className="h-11 w-11 rounded-xl" /><Block className="mt-5 h-7 w-48" /><Block className="mt-1 h-5 w-32" /><Block className="mt-3 h-4 w-40" /><div className="my-6 grid gap-4 border-t border-slate-100 pt-5"><div><Block className="h-4 w-28" /><Block className="mt-1 h-8 w-48" /></div><div><Block className="h-4 w-20" /><Block className="mt-1 h-5 w-32" /></div></div><div className="-mx-6 -mb-6 flex justify-between border-t border-slate-100 bg-slate-50/60 px-6 py-4"><Block className="h-5 w-28" /><Block className="h-5 w-16" /></div></SkeletonPanel>)}</div>
+  </div>;
 }

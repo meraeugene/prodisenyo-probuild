@@ -27,17 +27,17 @@ export default function CeoDashboardProjectsPanel({
   projects: CeoDashboardProject[];
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_30px_-24px_rgba(15,23,42,.7)]">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
         <div>
-          <h2 className="font-bold text-slate-950">Project Overview</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Latest persisted project health</p>
+          <h2 className="font-bold text-slate-950">Project portfolio</h2>
+          <p className="mt-1 text-xs text-slate-500">Health, spend, and delivery status at a glance</p>
         </div>
         <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950">
           View all <ArrowRight size={13} />
         </Link>
       </div>
-      <div className="hidden grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] gap-4 border-b border-slate-100 bg-slate-50/60 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500 lg:grid">
+      <div className="hidden grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] gap-4 border-b border-slate-100 bg-slate-50/80 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500 lg:grid">
         <span>Project</span><span>Progress</span><span>Budget used</span><span>Schedule</span><span>Status</span>
       </div>
       <div className="divide-y divide-slate-100">
@@ -45,7 +45,7 @@ export default function CeoDashboardProjectsPanel({
           <Link
             key={project.id}
             href={"/projects/" + project.id}
-            className="grid gap-4 px-5 py-4 transition hover:bg-slate-50/70 lg:grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] lg:items-center"
+            className="grid gap-4 px-5 py-4 transition hover:bg-teal-50/30 focus-visible:bg-teal-50/40 focus-visible:outline-none lg:grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] lg:items-center"
           >
             <div className="flex min-w-0 items-center gap-3">
               <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-14 w-20 shrink-0 rounded-lg object-cover" />

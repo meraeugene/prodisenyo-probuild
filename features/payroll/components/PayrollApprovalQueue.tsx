@@ -55,11 +55,11 @@ export default function PayrollApprovalQueue({
   if (!roleLoading && role !== "ceo") return null;
 
   return (
-    <section className="flex h-full min-h-0 flex-col">
-      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#075f5b] shadow-[0_8px_20px_rgba(7,109,105,0.04)] sm:rounded-[14px] sm:p-6">
+    <section className="flex flex-col">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="mt-1 text-xl font-bold text-[#075f5b]">
-            Pending Overtime Requests
+          <h2 className="text-lg font-semibold tracking-tight text-slate-950">
+            Payroll overtime
           </h2>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={14} />
@@ -68,14 +68,14 @@ export default function PayrollApprovalQueue({
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1  ">
-        <div className="min-h-0 h-full overflow-hidden">
+      <div className="mt-4">
+        <div className="min-w-0">
           {!state.hasRequests ? (
             <p className="text-sm text-apple-steel">
               No overtime requests are waiting for approval.
             </p>
           ) : (
-            <div className="grid h-full min-h-0 grid-cols-1 gap-3 overflow-y-auto sm:pr-2">
+            <div className="grid grid-cols-1 gap-4">
               {state.pendingRequests.map((request) => (
                 <PayrollApprovalQueueCard
                   key={request.id}

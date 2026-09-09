@@ -44,7 +44,7 @@ export default function PayrollApprovalQueueCard({
   const notes = parseOvertimeRequestNotes(request.notes).displayNotes;
 
   return (
-    <div className="group flex h-full w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all">
+    <div className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]">
       <div className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
@@ -93,7 +93,7 @@ export default function PayrollApprovalQueueCard({
             Requested {formatRequestedAt(request.created_at)}
           </p>
           {notes ? (
-            <div className="relative rounded-xl border border-apple-mist/50 bg-blue-50 px-3.5 py-2.5 text-xs italic shadow-sm">
+            <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 break-words">
               &quot;{notes}&quot;
             </div>
           ) : null}
@@ -118,17 +118,17 @@ export default function PayrollApprovalQueueCard({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-apple-mist bg-white p-4 shadow-sm">
+      <div className="mt-6 rounded-xl bg-slate-50 p-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-apple-steel/80">
           Overtime Pay
         </p>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-2xl font-black tracking-tight text-apple-charcoal">
+          <span className="text-2xl font-semibold tracking-tight text-apple-charcoal">
             {formatMoney(request.amount)}
           </span>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500" />
+          
           {request.quantity.toLocaleString("en-PH")} total hr
           {request.quantity === 1 ? "" : "s"}
         </div>

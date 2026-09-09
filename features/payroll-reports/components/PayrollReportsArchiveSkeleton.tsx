@@ -1,66 +1,7 @@
-"use client";
-
-function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <div className={`animate-pulse rounded-2xl bg-[#ccfbf1] ${className}`} />
-  );
-}
-
+import { SkeletonBlock as Block } from "@/components/LoadingSkeleton";
 export default function PayrollReportsArchiveSkeleton() {
-  return (
-    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
-      <div
-        className="flex items-start justify-between gap-3"
-        aria-hidden="true"
-      >
-        <div className="space-y-2">
-          <SkeletonBlock className="h-3 w-24" />
-          <SkeletonBlock className="h-7 w-80 max-w-full" />
-          <SkeletonBlock className="h-4 w-[28rem] max-w-full" />
-        </div>
-        <SkeletonBlock className="h-7 w-24 rounded-full" />
-      </div>
-
-      <div
-        className="mt-4 overflow-hidden rounded-xl border border-apple-mist bg-white"
-        aria-hidden="true"
-      >
-        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] gap-3 border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2">
-          <SkeletonBlock className="h-3 w-20 rounded-full" />
-          <SkeletonBlock className="h-3 w-16 rounded-full" />
-          <SkeletonBlock className="h-3 w-20 rounded-full" />
-          <SkeletonBlock className="h-3 w-24 rounded-full" />
-          <SkeletonBlock className="ml-auto h-3 w-14 rounded-full" />
-          <SkeletonBlock className="mx-auto h-3 w-16 rounded-full" />
-          <SkeletonBlock className="mx-auto h-3 w-16 rounded-full" />
-        </div>
-
-        <div className="divide-y divide-apple-mist">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={`payroll-report-row-skeleton-${index}`}
-              className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] items-center gap-3 px-3 py-4"
-            >
-              <div className="space-y-2">
-                <SkeletonBlock className="h-4 w-32 rounded-full" />
-                <SkeletonBlock className="h-3 w-24 rounded-full" />
-              </div>
-              <SkeletonBlock className="h-4 w-20 rounded-full" />
-              <SkeletonBlock className="h-4 w-28 rounded-full" />
-              <SkeletonBlock className="h-4 w-32 rounded-full" />
-              <SkeletonBlock className="ml-auto h-4 w-24 rounded-full" />
-              <div className="flex justify-center">
-                <SkeletonBlock className="h-4 w-24 rounded-full" />
-              </div>
-              <div className="flex justify-center">
-                <div className="rounded-xl border border-[#ccfbf1] bg-[#f0fdfa] p-2">
-                  <SkeletonBlock className="h-4 w-4 rounded-md" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <section aria-label="Loading payroll reports" className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
+    <Block className="mb-4 h-7 w-28 rounded-full" />
+    <div className="overflow-hidden rounded-xl border border-apple-mist"><div className="min-w-[980px]"><div className="grid grid-cols-[19fr_26fr_18fr_16fr_11fr_10fr] gap-3 bg-slate-50 px-3 py-2">{[0,1,2,3,4,5].map(i => <Block key={i} className="h-4 w-24" />)}</div>{[0,1,2,3].map(i => <div key={i} className="grid grid-cols-[19fr_26fr_18fr_16fr_11fr_10fr] items-center gap-3 border-t border-slate-100 px-3 py-4">{[0,1,2,3,4,5].map(j => <div key={j}><Block className={j === 5 ? "h-9 w-9" : "h-4 w-28"} />{j < 2 && <Block className="mt-2 h-3 w-20" />}</div>)}</div>)}</div></div>
+  </section>;
 }

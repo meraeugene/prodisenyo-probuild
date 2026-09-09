@@ -47,7 +47,10 @@ export default function GmeaExpensesSection({
   return (
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Expenses</h2>
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">Expenses</h2>
+          <p className="mt-1 text-sm text-slate-500">Project spending and payment records.</p>
+        </div>
         {canEdit && (
           <button className={buttonClass} onClick={() => setEditor({})}>
             New expense
@@ -66,7 +69,7 @@ export default function GmeaExpensesSection({
             <option key={c}>{c}</option>
           ))}
         </select>
-        <div className="text-sm">
+        <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-900 tabular-nums">
           <span className="text-slate-500">Total expenses </span>
           <strong>{formatMoney(sumMoney(amounts.map((a) => a.gross)))}</strong>
           <span className="ml-4 text-slate-500">Input VAT </span>
@@ -81,7 +84,7 @@ export default function GmeaExpensesSection({
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full min-w-[1120px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs text-slate-500">
+          <thead className="bg-slate-50 text-xs font-semibold text-slate-600 [&_th]:py-4">
             <tr>
               {[
                 "Date",
@@ -100,7 +103,7 @@ export default function GmeaExpensesSection({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
             {visible.map((e) => {
               const a = vatBreakdown(e.amount, e.vat_mode, e.vat_rate);
               return (

@@ -13,7 +13,7 @@ export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
     <main className="min-h-screen bg-[#f7f9fb] lg:grid lg:grid-cols-[51.8%_48.2%]">
       <LoginHero />
 
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-5 py-8 sm:px-8 lg:translate-y-5 lg:px-[7%] lg:py-10">
+      <section className="relative flex min-h-screen flex-col items-center justify-center px-5 py-8 sm:px-8 lg:px-[7%] lg:py-10">
         <div className="mb-8 flex items-center gap-3 lg:hidden">
           <Image
             src="/prodisenyo-building-mark.png"
@@ -52,10 +52,14 @@ export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
             <span className="h-px flex-1 bg-[#dce1e7]" />
           </div>
 
-          <div className="mt-8 flex items-center justify-center gap-2.5 text-center text-[15px] font-medium text-[#076966]">
+          <a
+            href="mailto:andrewvillalon.dev@gmail.com"
+            aria-label="Contact administrator at andrewvillalon.dev@gmail.com"
+            className="mt-8 flex items-center justify-center gap-2.5 text-center text-[15px] font-medium text-[#076966] hover:underline"
+          >
             <Headphones className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span>Contact Administrator</span>
-          </div>
+          </a>
         </div>
 
         <p className="mt-10 text-center text-sm text-[#8a93a2] lg:mt-[6vh]">

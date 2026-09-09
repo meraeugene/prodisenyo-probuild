@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Info, Search } from "lucide-react";
+import { CalendarDays, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import CostTrackingBoard from "@/features/project-cost-tracking/components/CostTrackingBoard";
 import CostTrackingSummary from "@/features/project-cost-tracking/components/CostTrackingSummary";
@@ -76,16 +76,6 @@ export default function ProjectCostTrackingPanel({
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-slate-950">Cost tracking</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          A read-only view of material commitments and project expenses against the approved budget.
-        </p>
-      </div>
-
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-100/70 px-4 py-3 text-sm leading-6 text-slate-600">
-        <Info size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-        <p>
-          Pending and approved material costs stay in Upcoming. Ordered purchases move to Ongoing. Accepted materials and approved project expenses appear in Completed automatically.
-        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)]">

@@ -27,12 +27,11 @@ export default function GmeaCollectionsSection({
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
             Payment schedule and collections
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Contract-specific milestones with structured partial-payment
-            history.
+            Milestones, receipts, and remaining balances.
           </p>
         </div>
         <button className={buttonClass} onClick={() => setOpen(true)}>
@@ -49,10 +48,10 @@ export default function GmeaCollectionsSection({
         ].map(([name, value]) => (
           <div
             key={String(name)}
-            className="rounded-xl border border-slate-200 p-4"
+            className="min-w-0 rounded-xl bg-slate-50 p-5"
           >
             <p className="text-xs text-slate-500">{name}</p>
-            <p className="mt-2 text-lg font-semibold">
+            <p className="mt-2 break-words text-xl font-semibold tracking-tight text-slate-950 tabular-nums">
               {formatMoney(Number(value))}
             </p>
           </div>
@@ -61,7 +60,7 @@ export default function GmeaCollectionsSection({
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full min-w-[900px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs text-slate-500">
+          <thead className="bg-slate-50 text-xs font-semibold text-slate-600 [&_th]:py-4">
             <tr>
               <th className="p-3">Description</th>
               <th className="p-3">Basis</th>
@@ -71,7 +70,7 @@ export default function GmeaCollectionsSection({
               <th className="p-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
             {terms.map((term) => (
               <GmeaPaymentTermRow
                 key={term.id}
@@ -89,7 +88,7 @@ export default function GmeaCollectionsSection({
             )}
           </tbody>
           {!!terms.length && (
-            <tfoot className="border-t border-teal-300 bg-teal-100 text-teal-950">
+            <tfoot className="border-t border-slate-200 bg-slate-50 text-slate-950 tabular-nums [&_td]:py-4">
               <tr>
                 <td colSpan={2} className="p-3 text-right font-semibold">
                   Total

@@ -55,9 +55,6 @@ export default function CostTrackingSummary({ summary }: { summary: Summary }) {
           ))}
         </div>
 
-        <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50 p-4 text-sm leading-6 text-teal-900">
-          Totals are calculated automatically from material purchases, accepted receipts, and project-expense approvals.
-        </div>
       </section>
     </aside>
   );

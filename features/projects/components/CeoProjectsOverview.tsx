@@ -64,18 +64,18 @@ export default function CeoProjectsOverview({
   ];
 
   return (
-    <section className="space-y-5">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="space-y-7">
+      <header className="flex flex-col justify-between gap-6 rounded-3xl bg-[#075e5b] p-6 text-white sm:flex-row sm:items-center sm:p-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-[-0.035em] text-slate-950">PRODISENYO Projects</h1>
-          <p className="mt-1 text-sm text-slate-500">Overview of all construction projects.</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Prodisenyo Projects</h1>
+          <p className="mt-3 text-sm text-teal-50/80">Projects, budgets, and delivery.</p>
         </div>
         <button
           type="button"
           onClick={onCreateProject}
-          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white transition hover:bg-teal-900"
+          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 text-sm font-semibold text-[#076d69] transition hover:bg-teal-50 focus-visible:ring-2 focus-visible:ring-white"
         >
-          <Plus size={17} /> Create New Project
+          <Plus size={17} /> New project
         </button>
       </header>
 
@@ -88,7 +88,7 @@ export default function CeoProjectsOverview({
               onClick={() => setFilter(item.value)}
               className={`h-10 shrink-0 rounded-xl px-4 text-sm font-semibold transition ${
                 filter === item.value
-                  ? "bg-teal-800 text-white"
+                  ? "bg-[#076d69] text-white"
                   : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -101,7 +101,7 @@ export default function CeoProjectsOverview({
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search projects"
+            aria-label="Search projects" placeholder="Search projects"
             className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-teal-700 focus:ring-2 focus:ring-teal-100"
           />
         </label>
@@ -116,35 +116,35 @@ export default function CeoProjectsOverview({
         ].map(([label, value, helper, Icon]) => {
           const MetricIcon = Icon as typeof FolderKanban;
           return (
-            <article key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5">
+            <article key={String(label)} className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_-20px_rgba(15,23,42,.25)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-slate-500">{String(label)}</p>
-                <MetricIcon size={16} className="text-teal-700" />
+                <span className={"grid h-9 w-9 place-items-center rounded-xl " + (label === "Pending estimates" ? "bg-amber-50 text-amber-700" : label === "Total projects" ? "bg-sky-50 text-sky-700" : "bg-teal-50 text-teal-700")}><MetricIcon size={18} aria-hidden="true" /></span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-slate-950">{String(value)}</p>
+              <p className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">{String(value)}</p>
               <p className="mt-1 text-sm text-slate-500">{String(helper)}</p>
             </article>
           );
         })}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-        <div className="divide-y divide-slate-100">
+      <div>
+        <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           {filteredProjects.map((project) => {
             const status = getProjectStatusPresentation(project);
             return (
               <article
                 key={project.id}
-                className="grid gap-4 p-4 md:grid-cols-[minmax(260px,1.4fr)_minmax(180px,.8fr)_minmax(150px,.65fr)_minmax(190px,.75fr)_auto] md:items-center"
+                className="relative isolate flex min-w-0 flex-col gap-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)] transition-shadow hover:shadow-[0_16px_40px_-24px_rgba(15,23,42,.35)]"
               >
-                <div className="flex min-w-0 items-center gap-4">
+                <div className="flex min-w-0 flex-col gap-4">
                   <ProjectThumbnail
                     src={project.imageUrl}
                     name={project.name}
-                    className="h-20 w-32 shrink-0 rounded-xl object-cover"
+                    className="h-40 w-full rounded-xl object-cover"
                   />
-                  <div className="min-w-0">
-                    <h2 className="truncate font-bold text-slate-950">{project.name}</h2>
+                  <div className="min-w-0 w-full">
+                    <h2 className="break-words text-xl font-semibold tracking-tight text-slate-950">{project.name}</h2>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
                       <MapPin size={13} /> <span className="truncate">{project.location}</span>
                     </p>
@@ -158,15 +158,15 @@ export default function CeoProjectsOverview({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">{project.status === "planning" ? "Workflow" : "Progress"}</p>
-                  {project.status === "planning" ? <p className="mt-1 text-sm font-bold text-amber-700">Cost estimate first</p> : <><p className="mt-1 text-sm font-bold text-slate-950">{project.progress}%</p><div className="mt-2 h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} /></div></>}
+                  {project.status === "planning" ? <p className="mt-1 text-sm font-bold text-amber-700">Estimate pending</p> : <><p className="mt-1 text-sm font-bold text-slate-950">{project.progress}%</p><div className="mt-2 h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} /></div></>}
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Budget</p>
                   <p className="mt-1 text-sm font-bold text-slate-950">{formatProjectCurrency(project.spent)} <span className="font-normal text-slate-500">/ {formatProjectCurrency(project.budget)}</span></p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                  <span className={`inline-flex h-10 w-40 items-center justify-center whitespace-nowrap rounded-xl border px-3 text-xs font-bold ${STATUS_CLASSES[status.tone]}`}>{status.label}</span>
-                  <button type="button" onClick={() => onOpenProject(project.id)} className="inline-flex h-10 w-40 items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                  <span className={`inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-semibold ${STATUS_CLASSES[status.tone]}`}>{status.label}</span>
+                  <button type="button" onClick={() => onOpenProject(project.id)} aria-label={`Open project: ${project.name}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#076d69] after:absolute after:inset-0 after:z-10 after:cursor-pointer after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-teal-700">
                     {project.status === "planning" ? "Review Estimate" : "View Details"} <ArrowRight size={13} />
                   </button>
                 </div>

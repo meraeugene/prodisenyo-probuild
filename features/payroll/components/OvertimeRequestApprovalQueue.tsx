@@ -131,11 +131,11 @@ export default function OvertimeRequestApprovalQueue({
   }
 
   return (
-    <section className="flex h-full min-h-0 flex-col">
-      <div className="rounded-none border border-apple-mist bg-white p-5 text-[#075f5b] shadow-[0_8px_20px_rgba(7,109,105,0.04)] sm:rounded-[14px] sm:p-6">
+    <section className="flex flex-col">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="mt-1 text-xl font-bold text-[#075f5b]">
-            Overtime Request Forms
+          <h2 className="text-lg font-semibold tracking-tight text-slate-950">
+            Staff requests
           </h2>
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock3 size={14} />
@@ -144,8 +144,8 @@ export default function OvertimeRequestApprovalQueue({
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1  ">
-        <div className="min-h-0 h-full space-y-3 overflow-y-auto sm:pr-2">
+      <div className="mt-4">
+        <div className="space-y-4">
           {sortedRequests.length === 0 ? (
             <p className="text-sm text-apple-steel">
               No overtime request forms are waiting for approval.
@@ -154,7 +154,7 @@ export default function OvertimeRequestApprovalQueue({
             sortedRequests.map((request) => (
               <article
                 key={request.id}
-                className="group flex h-fit w-full max-w-full flex-col sm:rounded-2xl border border-apple-mist bg-[rgb(var(--apple-snow))] p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all"
+                className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]"
               >
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -205,7 +205,7 @@ export default function OvertimeRequestApprovalQueue({
                   ) : null}
 
                   {request.reason ? (
-                    <div className="relative rounded-xl border border-apple-mist/50 bg-blue-50 px-3.5 py-2.5 text-xs italic text-apple-smoke shadow-sm">
+                    <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 break-words">
                       &quot;{request.reason}&quot;
                     </div>
                   ) : null}
@@ -225,12 +225,12 @@ export default function OvertimeRequestApprovalQueue({
                 </div>
 
                 {shouldShowOvertimePay(request.requester_role) ? (
-                  <div className="mt-5 rounded-2xl border border-apple-mist bg-white p-4 shadow-sm">
+                  <div className="mt-5 rounded-xl bg-slate-50 p-4">
                     <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-apple-steel/80">
                       Overtime Pay
                     </p>
                     <div className="mt-1 flex items-baseline gap-1">
-                      <span className="text-2xl font-black tracking-tight text-apple-charcoal">
+                      <span className="text-2xl font-semibold tracking-tight text-apple-charcoal">
                         ₱
                         {request.amount.toLocaleString("en-PH", {
                           minimumFractionDigits: 2,
@@ -239,7 +239,7 @@ export default function OvertimeRequestApprovalQueue({
                       </span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-                      <span className="flex h-1.5 w-1.5 rounded-full bg-teal-500" />
+                      
                       {request.overtime_hours.toLocaleString("en-PH", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,

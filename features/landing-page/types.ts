@@ -40,5 +40,4 @@ export interface LandingTourSlide {
   imageAlt: string;
   imageWidth: number;
   imageHeight: number;
-  bullets: string[];
 }

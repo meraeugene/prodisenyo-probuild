@@ -102,10 +102,10 @@ export default function EngineerProjectPortfolio({
 
   return (
     <section className="space-y-5" aria-labelledby="engineer-projects-heading">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Project portfolio</p>
-        <h1 id="engineer-projects-heading" className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-slate-950">PRODISENYO Projects</h1>
-        <p className="mt-1 text-sm text-slate-500">Prepare assigned estimates and manage projects after CEO activation.</p>
+      <header className="rounded-3xl bg-[#075e5b] p-6 text-white sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">Project portfolio</p>
+        <h1 id="engineer-projects-heading" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Prodisenyo Projects</h1>
+        <p className="mt-3 text-sm text-teal-50/80">Your assigned projects and estimates.</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

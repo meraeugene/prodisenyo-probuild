@@ -17,11 +17,11 @@ export default function CeoBudgetSnapshot({
     : 0;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
+    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_-24px_rgba(15,23,42,.7)]">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold text-slate-950">Cost & Budget Summary</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Across all live projects</p>
+          <h2 className="font-bold text-slate-950">Budget health</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Combined project spend</p>
         </div>
         <Link href="/budget-tracker" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800">
           Details <ArrowRight size={13} />
@@ -34,7 +34,7 @@ export default function CeoBudgetSnapshot({
           ["Actual spent", totalSpent],
           ["Remaining", remaining],
         ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-xl bg-slate-50/70 p-3">
+          <div key={String(label)} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
             <div>
               <p className="text-[11px] text-slate-500">{label}</p>
               <p className="mt-0.5 text-sm font-bold text-slate-950">{formatCeoCurrency(Number(value))}</p>
@@ -45,7 +45,7 @@ export default function CeoBudgetSnapshot({
       <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
         <div className="h-full rounded-full bg-teal-700" style={{ width: percentage + "%" }} />
       </div>
-      <p className="mt-2 text-xs text-slate-500">{percentage}% of the combined budget ceiling has been recorded as spent.</p>
+      <div className="mt-2 flex items-center justify-between gap-3 text-xs"><span className="text-slate-500">Budget consumed</span><span className="font-bold text-teal-700">{percentage}%</span></div>
     </section>
   );
 }
