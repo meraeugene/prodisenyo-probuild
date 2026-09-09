@@ -21,6 +21,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { AppRole } from "@/types/database";
 import RoleGreetingHero from "@/features/home/components/RoleGreetingHero";
+import EmployeeHomePage from "./EmployeeHomePage";
 
 type FeatureCard = {
   href: string;
@@ -268,6 +269,8 @@ export default function RoleHomePage({
   const dateLabel = getDateLabel();
   const roleHints = getRoleHints(role);
   const featureCards = ROLE_FEATURES[role];
+
+  if (role === "employee") return <EmployeeHomePage fullName={fullName} username={username} />;
 
   return (
     <main className="space-y-6 p-0 sm:p-6">

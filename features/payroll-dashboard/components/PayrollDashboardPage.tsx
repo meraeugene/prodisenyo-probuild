@@ -48,7 +48,7 @@ export default function PayrollDashboardPage({
         />
       </div>
 
-      <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-4">
         <PayrollApprovalsPanel approvals={data.awaitingApprovals} />
         <PayrollRecentActivityPanel items={data.recentActivity} />
       </div>

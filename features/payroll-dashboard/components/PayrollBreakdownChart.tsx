@@ -20,13 +20,7 @@ export default function PayrollBreakdownChart({
     { name: "Deductions", value: deductions },
   ].filter((item) => item.value > 0);
 
-  if (!data.length) {
-    return (
-      <div className="flex h-44 items-center justify-center rounded-xl bg-slate-50 text-center text-xs text-slate-500">
-        Payroll composition will appear after an approved run has item details.
-      </div>
-    );
-  }
+  if (!data.length) return null;
 
   return (
     <div className="h-44 w-full" aria-label="Approved payroll composition chart">

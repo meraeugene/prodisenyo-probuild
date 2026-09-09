@@ -22,6 +22,7 @@ export default function PayrollOverviewPanel({
     { label: "Overtime & holiday", value: overview.overtimePay + overview.holidayPay, color: "bg-amber-500" },
     { label: "Deductions", value: overview.deductions, color: "bg-rose-600" },
   ];
+  const hasBreakdown = chartRows.some((row) => row.value > 0);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
@@ -65,7 +66,7 @@ export default function PayrollOverviewPanel({
         })}
       </div>
 
-      <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]">
+      <div className={hasBreakdown ? "mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]" : "mt-4"}>
         <PayrollBreakdownChart
           regularPay={overview.regularPay}
           supplementalPay={overview.overtimePay + overview.holidayPay}
