@@ -19,6 +19,7 @@ function loadTypeScriptModule(relativePath) {
 
 const {
   getLatestProgressUpdatePercentage,
+  getManilaDateInputValue,
   normalizeProgressUpdateInput,
   selectLatestProgressUpdate,
 } = loadTypeScriptModule("../features/projects/utils/progressUpdates.ts");
@@ -29,11 +30,13 @@ test("normalizes a separate overall progress update", () => {
     overallPercent: 48.126,
     completedWorkSummary: " Footing completed. ",
     remarks: " Next: columns. ",
+    progressDate: "2026-08-28",
   }), {
     projectId: "project-1",
     overallPercent: 48.13,
     completedWorkSummary: "Footing completed.",
     remarks: "Next: columns.",
+    progressDate: "2026-08-28",
   });
 });
 
@@ -44,6 +47,27 @@ test("rejects invalid percentage and missing completed-work summary", () => {
 
 test("stores blank remarks as null", () => {
   assert.equal(normalizeProgressUpdateInput({ projectId: "p1", overallPercent: 0, completedWorkSummary: "Mobilization", remarks: " " }).remarks, null);
+});
+test("validates and defaults the progress date", () => {
+  assert.equal(
+    normalizeProgressUpdateInput({
+      projectId: "p1",
+      overallPercent: 10,
+      completedWorkSummary: "Mobilization",
+      progressDate: "2026-09-10",
+    }).progressDate,
+    "2026-09-10",
+  );
+  assert.throws(
+    () => normalizeProgressUpdateInput({
+      projectId: "p1",
+      overallPercent: 10,
+      completedWorkSummary: "Mobilization",
+      progressDate: "2026-02-30",
+    }),
+    /valid progress date/,
+  );
+  assert.match(getManilaDateInputValue(new Date("2026-09-09T16:30:00Z")), /^2026-09-10$/);
 });
 test("uses the newest persisted progress update for the CEO overview", () => {
   const updates = [

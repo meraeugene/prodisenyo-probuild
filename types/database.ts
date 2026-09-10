@@ -629,6 +629,7 @@ export interface Database {
           overall_percent: number;
           completed_work_summary: string;
           remarks: string | null;
+          progress_date: string;
           created_at: string;
         };
         Insert: {
@@ -638,12 +639,14 @@ export interface Database {
           overall_percent: number;
           completed_work_summary: string;
           remarks?: string | null;
+          progress_date?: string;
           created_at?: string;
         };
         Update: {
           overall_percent?: number;
           completed_work_summary?: string;
           remarks?: string | null;
+          progress_date?: string;
         };
       };
       project_progress_activities: {

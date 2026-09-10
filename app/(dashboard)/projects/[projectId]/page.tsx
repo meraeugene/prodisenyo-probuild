@@ -102,8 +102,9 @@ export default async function Page({
       .limit(100),
     db
       .from("project_progress_updates")
-      .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,created_at")
+      .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,progress_date,created_at")
       .eq("project_id", projectId)
+      .order("progress_date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(20),
     db

@@ -7,11 +7,26 @@ create table if not exists public.project_progress_updates (
   overall_percent numeric(5,2) not null check (overall_percent >= 0 and overall_percent <= 100),
   completed_work_summary text not null check (char_length(trim(completed_work_summary)) between 1 and 1000),
   remarks text check (remarks is null or char_length(remarks) <= 600),
+  progress_date date not null default (timezone('Asia/Manila', now()))::date,
   created_at timestamptz not null default timezone('utc', now())
 );
 
+alter table public.project_progress_updates
+  add column if not exists progress_date date;
+
+update public.project_progress_updates
+set progress_date = (timezone('Asia/Manila', created_at))::date
+where progress_date is null;
+
+alter table public.project_progress_updates
+  alter column progress_date set default (timezone('Asia/Manila', now()))::date,
+  alter column progress_date set not null;
+
 create index if not exists project_progress_updates_project_created_idx
   on public.project_progress_updates(project_id, created_at desc);
+
+create index if not exists project_progress_updates_project_date_idx
+  on public.project_progress_updates(project_id, progress_date desc, created_at desc);
 
 alter table public.project_progress_updates enable row level security;
 

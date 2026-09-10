@@ -168,8 +168,9 @@ export async function getProjectWorkspaceDataAction(projectId: string) {
         .limit(100),
       database
         .from("project_progress_updates")
-        .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,created_at")
+        .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,progress_date,created_at")
         .eq("project_id", normalizedProjectId)
+        .order("progress_date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(20),
       database
@@ -305,10 +306,11 @@ export async function createProjectProgressUpdateAction(input: {
   overallPercent: number;
   completedWorkSummary: string;
   remarks?: string;
+  progressDate?: string;
 }) {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
   const database = createSupabaseAdminClient() as any;
-  const { projectId, overallPercent, completedWorkSummary, remarks } =
+  const { projectId, overallPercent, completedWorkSummary, remarks, progressDate } =
     normalizeProgressUpdateInput(input);
 
   const { data: project } = await database
@@ -328,10 +330,85 @@ export async function createProjectProgressUpdateAction(input: {
       overall_percent: overallPercent,
       completed_work_summary: completedWorkSummary,
       remarks,
+      progress_date: progressDate,
     })
-    .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,created_at")
+    .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,progress_date,created_at")
     .single();
   if (error) throw new Error(`Failed to submit progress update. ${error.message}`);
   revalidatePath(`/projects/${projectId}`);
   return data;
+}
+
+export async function updateProjectProgressUpdateAction(input: {
+  updateId: string;
+  projectId: string;
+  overallPercent: number;
+  completedWorkSummary: string;
+  remarks?: string;
+  progressDate?: string;
+}) {
+  const { user } = await requireRole(APP_ROLES.ENGINEER);
+  const database = createSupabaseAdminClient() as any;
+  const updateId = input.updateId.trim();
+  if (!updateId) throw new Error("Progress update is required.");
+
+  const { projectId, overallPercent, completedWorkSummary, remarks, progressDate } =
+    normalizeProgressUpdateInput(input);
+  const { data: project } = await database
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .eq("assigned_engineer_id", user.id)
+    .in("status", ["active", "on_hold"])
+    .maybeSingle();
+  if (!project) throw new Error("Only the assigned site engineer can edit this progress update.");
+
+  const { data, error } = await database
+    .from("project_progress_updates")
+    .update({
+      overall_percent: overallPercent,
+      completed_work_summary: completedWorkSummary,
+      remarks,
+      progress_date: progressDate,
+    })
+    .eq("id", updateId)
+    .eq("project_id", projectId)
+    .select("id,project_id,submitted_by,overall_percent,completed_work_summary,remarks,progress_date,created_at")
+    .maybeSingle();
+  if (error) throw new Error(`Failed to update progress update. ${error.message}`);
+  if (!data) throw new Error("Progress update not found.");
+  revalidatePath(`/projects/${projectId}`);
+  return data;
+}
+
+export async function deleteProjectProgressUpdateAction(input: {
+  updateId: string;
+  projectId: string;
+}) {
+  const { user } = await requireRole(APP_ROLES.ENGINEER);
+  const database = createSupabaseAdminClient() as any;
+  const updateId = input.updateId.trim();
+  const projectId = input.projectId.trim();
+  if (!updateId || !projectId) throw new Error("Progress update is required.");
+
+  const { data: project } = await database
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .eq("assigned_engineer_id", user.id)
+    .in("status", ["active", "on_hold"])
+    .maybeSingle();
+  if (!project) throw new Error("Only the assigned site engineer can delete this progress update.");
+
+  const { data, error } = await database
+    .from("project_progress_updates")
+    .delete()
+    .eq("id", updateId)
+    .eq("project_id", projectId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(`Failed to delete progress update. ${error.message}`);
+  if (!data) throw new Error("Progress update not found.");
+  revalidatePath(`/projects/${projectId}`);
+  return updateId;
 }

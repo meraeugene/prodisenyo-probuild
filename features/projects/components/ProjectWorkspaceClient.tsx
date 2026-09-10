@@ -323,6 +323,38 @@ export default function ProjectWorkspaceClient({
               false,
             );
           }}
+          onUpdated={(updatedUpdate) => {
+            void workspaceState.mutate(
+              (current) => ({
+                activities: current?.activities ?? liveActivities,
+                estimates: current?.estimates ?? liveEstimates,
+                estimateItems: current?.estimateItems ?? liveEstimateItems,
+                budgetItems: current?.budgetItems ?? liveBudgetItems,
+                progressSubmissions: current?.progressSubmissions ?? liveProgressSubmissions,
+                materialRequests: current?.materialRequests ?? liveMaterialRequests,
+                progressUpdates: (current?.progressUpdates ?? liveProgressUpdates).map((update) =>
+                  update.id === updatedUpdate.id ? updatedUpdate : update,
+                ),
+              }),
+              false,
+            );
+          }}
+          onDeleted={(updateId) => {
+            void workspaceState.mutate(
+              (current) => ({
+                activities: current?.activities ?? liveActivities,
+                estimates: current?.estimates ?? liveEstimates,
+                estimateItems: current?.estimateItems ?? liveEstimateItems,
+                budgetItems: current?.budgetItems ?? liveBudgetItems,
+                progressSubmissions: current?.progressSubmissions ?? liveProgressSubmissions,
+                materialRequests: current?.materialRequests ?? liveMaterialRequests,
+                progressUpdates: (current?.progressUpdates ?? liveProgressUpdates).filter(
+                  (update) => update.id !== updateId,
+                ),
+              }),
+              false,
+            );
+          }}
         />
       </ProjectTabPanel>
       <ProjectTabPanel key={project.id + "-estimates"} active={tab === "estimates" && canReviewEstimates}>
