@@ -18,8 +18,7 @@ export default function CeoGmeaCharts({ data, count, months, onMonthsChange }: {
             <option value={6}>Last 6 months</option><option value={12}>Last 12 months</option>
           </select>
         </div>
-        <p className="mt-2 text-[10px] text-slate-400">Contracts by creation month · expenses by expense date</p>
-        <div className="mt-2 flex gap-3 text-[10px] text-slate-500"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-700" />Contract amount</span><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-slate-300" />Expenses</span></div>
+        <div className="mt-3 flex gap-3 text-[10px] text-slate-500"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-700" />Contract amount</span><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-slate-300" />Expenses</span></div>
         <div className="mt-3 h-44" role="img" aria-label="Monthly contract amounts and expenses">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.trend} margin={{ left: 0, right: 0, bottom: 0, top: 5 }}>

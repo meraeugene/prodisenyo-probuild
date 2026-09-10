@@ -9,12 +9,16 @@ export default function GmeaConfirmButton({
   onConfirm,
   danger = false,
   triggerIcon,
+  triggerLabel,
+  compactTrigger = false,
 }: {
   label: string;
   description: string;
   onConfirm: () => Promise<unknown>;
   danger?: boolean;
   triggerIcon?: ReactNode;
+  triggerLabel?: string;
+  compactTrigger?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -24,7 +28,9 @@ export default function GmeaConfirmButton({
         aria-label={label}
         title={triggerIcon ? label : undefined}
         className={
-          triggerIcon
+          compactTrigger
+            ? "inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-semibold transition-colors " + (danger ? "text-rose-600 hover:bg-rose-50" : "text-slate-600 hover:bg-slate-100")
+            : triggerIcon
             ? "inline-flex size-9 items-center justify-center rounded-lg transition-colors " +
               (danger
                 ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
@@ -35,7 +41,7 @@ export default function GmeaConfirmButton({
         }
         onClick={() => setOpen(true)}
       >
-        {triggerIcon ?? label}
+        {triggerIcon ?? triggerLabel ?? label}
       </button>
       {open && (
         <GmeaDialog

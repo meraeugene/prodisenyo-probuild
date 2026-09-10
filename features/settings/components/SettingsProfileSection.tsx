@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, RefObject } from "react";
-import { Camera, Upload, LoaderCircle, Mail, Save, UserRound } from "lucide-react";
+import { Camera, Upload, LoaderCircle, Mail, UserRound } from "lucide-react";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { roleLabel } from "@/features/settings/utils/settingsHelpers";
 import type { EditableProfile } from "@/features/settings/hooks/useSettingsPage";
@@ -42,7 +42,7 @@ export default function SettingsProfileSection({
   onSaveProfile,
 }: SettingsProfileSectionProps) {
   return (
-    <div className="flex min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_36px_-28px_rgba(15,23,42,.2)] sm:p-6">
+    <div className="flex min-w-0 flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold tracking-tight text-slate-900">
@@ -62,9 +62,7 @@ export default function SettingsProfileSection({
             >
               {savingProfile ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
+              ) : null}
               Save Changes
             </button>
           </div>

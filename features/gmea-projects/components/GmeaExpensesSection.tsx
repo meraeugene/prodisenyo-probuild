@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
-import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { Expense, GmeaExpenseOptions, GmeaProject } from "../types";
 import {
   buttonClass,
@@ -137,16 +136,17 @@ export default function GmeaExpensesSection({
                         type="button"
                         aria-label={canEdit ? "Edit expense" : "Details"}
                         title={canEdit ? "Edit expense" : "View expense details"}
-                        className="inline-flex size-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-semibold text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-900"
                         onClick={() => openExpense(e)}
                       >
-                        {canEdit ? <Pencil size={17} /> : <Eye size={17} />}
+                        {canEdit ? "Edit" : "Details"}
                       </button>
                       {canEdit && (
                         <GmeaConfirmButton
                           label="Delete expense"
+                          triggerLabel="Delete"
+                          compactTrigger
                           danger
-                          triggerIcon={<Trash2 size={17} />}
                           description="Remove this expense and recalculate the project totals?"
                           onConfirm={() =>
                             save({

@@ -18,7 +18,7 @@ export default function SettingsPageClient({
 
   return (
     <>
-      <div className="min-h-screen space-y-7 bg-white p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen space-y-7 bg-[#f7f9fc] p-4 sm:p-6 lg:p-8">
         <SettingsHero />
 
         <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,1fr)]">

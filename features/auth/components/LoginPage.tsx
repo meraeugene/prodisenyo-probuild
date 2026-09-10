@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { Headphones } from "lucide-react";
 import LoginForm from "@/features/auth/components/LoginForm";
 import LoginHero from "@/features/auth/components/LoginHero";
 
@@ -55,10 +54,9 @@ export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
           <a
             href="mailto:andrewvillalon.dev@gmail.com"
             aria-label="Contact administrator at andrewvillalon.dev@gmail.com"
-            className="mt-8 flex items-center justify-center gap-2.5 text-center text-[15px] font-medium text-[#076966] hover:underline"
+            className="mt-8 block text-center text-[15px] font-medium text-[#076966] hover:underline"
           >
-            <Headphones className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span>Contact Administrator</span>
+            Contact Administrator
           </a>
         </div>
 

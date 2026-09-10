@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Pencil } from "lucide-react";
 import type { GmeaProject } from "../types";
-import { buttonClass } from "../utils/gmeaConstants";
+import { secondaryClass } from "../utils/gmeaConstants";
 import {
   contractCollectionSummary,
   formatMoney,
 } from "../utils/gmeaCalculations";
 import GmeaCollectionForm from "./GmeaCollectionForm";
 import GmeaPaymentTermRow from "./GmeaPaymentTermRow";
+import GmeaPaymentTermForm from "./GmeaPaymentTermForm";
+import type { ContractPaymentTerm } from "../types";
 
 export default function GmeaCollectionsSection({
   project,
@@ -19,36 +20,35 @@ export default function GmeaCollectionsSection({
   canEdit: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [editingTerm, setEditingTerm] = useState<ContractPaymentTerm | null>(null);
   const terms = project.payment_terms ?? [];
   const summary = contractCollectionSummary(project);
-  const ActionIcon = canEdit ? Pencil : Eye;
 
   return (
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-950">
             Payment schedule and collections
           </h2>
           <p className="mt-1 text-sm text-slate-500">
             Milestones, receipts, and remaining balances.
           </p>
         </div>
-        <button className={buttonClass} onClick={() => setOpen(true)}>
-          <ActionIcon size={17} />
+        <button className={secondaryClass + " gap-2 bg-white shadow-sm"} onClick={() => setOpen(true)}>
           {canEdit ? "Edit contract terms" : "View contract terms"}
         </button>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Contract amount", project.contract_amount],
-          ["Received", summary.received],
-          ["Outstanding", summary.outstanding],
-        ].map(([name, value]) => (
+          ["Contract amount", project.contract_amount, "bg-slate-50"],
+          ["Received", summary.received, "bg-teal-50/80"],
+          ["Outstanding", summary.outstanding, "bg-rose-50/80"],
+        ].map(([name, value, tone]) => (
           <div
             key={String(name)}
-            className="min-w-0 rounded-xl bg-slate-50 p-5"
+            className={`min-w-0 rounded-xl p-5 ${tone}`}
           >
             <p className="text-xs text-slate-500">{name}</p>
             <p className="mt-2 break-words text-xl font-semibold tracking-tight text-slate-950 tabular-nums">
@@ -62,26 +62,30 @@ export default function GmeaCollectionsSection({
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-slate-50 text-xs font-semibold text-slate-600 [&_th]:py-4">
             <tr>
+              <th className="w-12 p-3 text-center">#</th>
               <th className="p-3">Description</th>
               <th className="p-3">Basis</th>
               <th className="p-3">Scheduled</th>
               <th className="p-3">Received</th>
               <th className="p-3">Balance</th>
               <th className="p-3">Status</th>
+              <th className="w-20 p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
-            {terms.map((term) => (
+            {terms.map((term, index) => (
               <GmeaPaymentTermRow
                 key={term.id}
                 project={project}
                 term={term}
                 canEdit={canEdit}
+                index={index}
+                onEdit={() => setEditingTerm(term)}
               />
             ))}
             {!terms.length && (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-500">
+                <td colSpan={8} className="p-8 text-center text-slate-500">
                   Add the contract payment schedule.
                 </td>
               </tr>
@@ -90,7 +94,7 @@ export default function GmeaCollectionsSection({
           {!!terms.length && (
             <tfoot className="border-t border-slate-200 bg-slate-50 text-slate-950 tabular-nums [&_td]:py-4">
               <tr>
-                <td colSpan={2} className="p-3 text-right font-semibold">
+                <td colSpan={3} className="p-3 text-right font-semibold">
                   Total
                 </td>
                 <td className="p-3 font-bold">
@@ -102,7 +106,7 @@ export default function GmeaCollectionsSection({
                 <td className="p-3 font-bold">
                   {formatMoney(summary.outstanding)}
                 </td>
-                <td />
+                <td /><td />
               </tr>
             </tfoot>
           )}
@@ -116,6 +120,7 @@ export default function GmeaCollectionsSection({
           onClose={() => setOpen(false)}
         />
       )}
+      {editingTerm && <GmeaPaymentTermForm project={project} term={editingTerm} onClose={() => setEditingTerm(null)} />}
     </section>
   );
 }

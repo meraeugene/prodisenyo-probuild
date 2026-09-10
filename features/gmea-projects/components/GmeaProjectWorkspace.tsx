@@ -14,7 +14,13 @@ import GmeaExpensesSection from "./GmeaExpensesSection";
 import GmeaCollectionsSection from "./GmeaCollectionsSection";
 import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
-const tabs = ["Payment Schedule", "Expenses", "Contract Cost Summary"] as const;
+import GmeaProjectSidebar from "./GmeaProjectSidebar";
+const tabs = [
+  "Payment Schedule",
+  "Expenses",
+  "Contract Cost Summary",
+] as const;
+type WorkspaceTab = (typeof tabs)[number];
 export default function GmeaProjectWorkspace({
   project: initialProject,
   expenseOptions: initialExpenseOptions,
@@ -24,7 +30,7 @@ export default function GmeaProjectWorkspace({
   expenseOptions: GmeaExpenseOptions;
   canEdit: boolean;
 }) {
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Payment Schedule"),
+  const [tab, setTab] = useState<WorkspaceTab>("Payment Schedule"),
     [edit, setEdit] = useState(false);
   const { data } = useSWR(
     ["gmea-project", initialProject.id],
@@ -42,7 +48,7 @@ export default function GmeaProjectWorkspace({
   const expenseOptions = data?.expenseOptions ?? initialExpenseOptions;
   const save = useGmeaMutation(project);
   return (
-    <div className="min-h-full space-y-7 bg-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full space-y-5 bg-white p-4 sm:p-6 lg:p-8">
       <Link
         href="/gmea-projects"
         className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
@@ -88,36 +94,31 @@ export default function GmeaProjectWorkspace({
         aria-label="Project sections"
         className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5"
       >
-        {tabs.map((t) => (
+        {tabs.map((label) => (
           <button
-            key={t}
-            aria-current={tab === t ? "page" : undefined}
-            onClick={() => setTab(t)}
+            key={label}
+            aria-current={tab === label ? "page" : undefined}
+            onClick={() => setTab(label)}
             className={
-              "whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 " +
-              (tab === t
+              "whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 " +
+              (tab === label
                 ? "bg-[#076d69] text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")
             }
           >
-            {t}
+            {label}
           </button>
         ))}
       </nav>
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)] sm:p-7">
-        {tab === "Expenses" && (
-          <GmeaExpensesSection
-            project={project}
-            expenseOptions={expenseOptions}
-            canEdit={canEdit}
-          />
-        )}
-        {tab === "Payment Schedule" && (
-          <GmeaCollectionsSection project={project} canEdit={canEdit} />
-        )}
-        {tab === "Contract Cost Summary" && (
-          <GmeaProfitSection project={project} canEdit={canEdit} />
-        )}
+      <div className={tab === "Contract Cost Summary" ? "grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]" : "block"}>
+        <div className="min-w-0 rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+          {tab === "Expenses" && (
+            <GmeaExpensesSection project={project} expenseOptions={expenseOptions} canEdit={canEdit} />
+          )}
+          {tab === "Payment Schedule" && <GmeaCollectionsSection project={project} canEdit={canEdit} />}
+          {tab === "Contract Cost Summary" && <GmeaProfitSection project={project} canEdit={canEdit} />}
+        </div>
+        {tab === "Contract Cost Summary" && <GmeaProjectSidebar project={project} canEdit={canEdit} onEdit={() => setEdit(true)} />}
       </div>
       {edit && (
         <GmeaProjectForm project={project} onClose={() => setEdit(false)} />

@@ -4,6 +4,7 @@ export interface EngineerDashboardProject {
   id: string;
   name: string;
   location: string;
+  imageUrl: string | null;
   status: EngineerProjectStatus;
   progress: number;
   budget: number;

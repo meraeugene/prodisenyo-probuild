@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, LoaderCircle, LockKeyhole, Shield } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 
 import { getPasswordStrength } from "../utils/passwordStrength";
 
@@ -31,15 +31,10 @@ export default function SettingsPasswordSection({
 }: SettingsPasswordSectionProps) {
   const strength = getPasswordStrength(newPassword);
   return (
-    <section className="flex min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_12px_36px_-28px_rgba(15,23,42,.2)] sm:p-6">
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#e3f8f3] text-[#08746f]">
-          <Shield size={22} aria-hidden="true" />
-        </span>
-        <div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">Security</h2>
-          <p className="mt-0.5 text-xs leading-5 text-slate-500">Keep your account secure with a strong password.</p>
-        </div>
+    <section className="flex min-w-0 flex-col rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)] sm:p-6">
+      <div>
+        <h2 className="text-lg font-bold tracking-tight text-slate-900">Security</h2>
+        <p className="mt-0.5 text-xs leading-5 text-slate-500">Keep your account secure with a strong password.</p>
       </div>
 
       <div className="mt-5 flex flex-1 flex-col">
@@ -120,17 +115,6 @@ export default function SettingsPasswordSection({
         </div>
 
         <div className="mt-5">
-          <aside className="rounded-lg bg-[#e9f8f5] p-4">
-            <h3 className="flex items-center gap-2 text-xs font-semibold text-[#096d67]">
-              <Shield size={16} aria-hidden="true" /> Password Tips
-            </h3>
-            <ul className="ml-9 mt-2 list-disc space-y-1 text-xs leading-5 text-slate-500">
-              <li>Use at least 8 characters</li>
-              <li>Include a mix of letters, numbers, and symbols</li>
-              <li>Avoid using common words</li>
-            </ul>
-          </aside>
-
           <button
             type="button"
             onClick={onChangePassword}
@@ -139,9 +123,7 @@ export default function SettingsPasswordSection({
           >
             {changingPassword ? (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <LockKeyhole className="mr-2 h-4 w-4" />
-            )}
+            ) : null}
             Update Password
           </button>
         </div>
