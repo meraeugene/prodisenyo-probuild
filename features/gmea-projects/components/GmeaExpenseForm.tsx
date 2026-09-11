@@ -15,12 +15,9 @@ import {
 import type { Expense, GmeaExpenseOptions, GmeaProject } from "../types";
 import { EXPENSE_CATEGORIES, inputClass, today } from "../utils/gmeaConstants";
 import { formatMoney, vatBreakdown } from "../utils/gmeaCalculations";
-import {
-  normalizeExpenseDescriptions,
-  parseExpenseDescriptions,
-} from "../utils/expenseDescriptions";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
+import GmeaExpenseItemsField from "./GmeaExpenseItemsField";
 import { MoneyField, SearchableSelect, TextField, VatFields } from "./GmeaFields";
 
 export default function GmeaExpenseForm({
@@ -58,7 +55,6 @@ export default function GmeaExpenseForm({
         },
   );
   const save = useGmeaMutation(project);
-  const descriptionItems = parseExpenseDescriptions(form.description);
 
   function update<K extends keyof Expense>(key: K, value: Expense[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -89,16 +85,7 @@ export default function GmeaExpenseForm({
           <section className="grid content-start gap-x-5 gap-y-5 sm:grid-cols-2">
             <TextField label="Expense date *" type="date" required value={form.date} leadingIcon={<CalendarDays size={18} />} onChange={(event) => update("date", event.target.value)} />
 
-            <div className="space-y-1.5 text-sm font-medium text-slate-700">
-              <label htmlFor="expense-description" className="block">Description / items *</label>
-              <input id="expense-description" className={inputClass} required maxLength={2000} placeholder="e.g. Cement, sand, delivery fee" value={form.description} onChange={(event) => update("description", event.target.value)} onBlur={() => update("description", normalizeExpenseDescriptions(form.description))} />
-              <p className="text-xs font-normal text-slate-400">Separate multiple items with commas.</p>
-              {!!descriptionItems.length && (
-                <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Expense items">
-                  {descriptionItems.map((item, index) => <span key={`${item}-${index}`} className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-800">{item}</span>)}
-                </div>
-              )}
-            </div>
+            <GmeaExpenseItemsField value={form.description} onChange={(value) => update("description", value)} />
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
               <label htmlFor={categoryId} className="block">Category</label>

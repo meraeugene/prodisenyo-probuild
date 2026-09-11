@@ -5,6 +5,6 @@ export function parseExpenseDescriptions(value: string) {
     .filter(Boolean);
 }
 
-export function normalizeExpenseDescriptions(value: string) {
-  return parseExpenseDescriptions(value).join(", ");
+export function serializeExpenseDescriptions(items: string[]) {
+  return items.map((item) => item.trim()).filter(Boolean).join(", ");
 }

@@ -112,13 +112,13 @@ export default function GmeaExpensesSection({
                 <tr key={e.id}>
                   <td className="whitespace-nowrap p-3">{e.date}</td>
                   <td className="max-w-64 p-3">
-                    <div className="flex flex-wrap gap-1.5">
+                    <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-800 marker:font-semibold marker:text-teal-700">
                       {parseExpenseDescriptions(e.description).map((item, index) => (
-                        <span key={`${item}-${index}`} className="rounded-full border border-teal-100 bg-teal-50 px-2 py-1 text-xs font-medium text-teal-800">
+                        <li key={`${item}-${index}`} className="pl-1 leading-5">
                           {item}
-                        </span>
+                        </li>
                       ))}
-                    </div>
+                    </ol>
                     {e.is_new && (
                       <span className="mt-1 inline-flex rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-800">
                         New
