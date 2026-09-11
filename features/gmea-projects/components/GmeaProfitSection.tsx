@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -26,8 +27,8 @@ export default function GmeaProfitSection({
           <p className="mt-1 text-sm text-slate-500">Project returns and partner allocations.</p>
         </div>
         {canEdit && (
-          <button className={secondaryClass} onClick={() => setEdit(true)}>
-            Edit partners
+          <button className={secondaryClass + " gap-2"} onClick={() => setEdit(true)}>
+            <Pencil size={15} aria-hidden="true" /> Edit partners
           </button>
         )}
       </header>

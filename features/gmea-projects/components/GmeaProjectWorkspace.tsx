@@ -3,7 +3,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, MapPin, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChartPie, MapPin, Pencil, ReceiptText, Trash2, UserRound } from "lucide-react";
 import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
 import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -16,11 +16,11 @@ import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
 import GmeaProjectSidebar from "./GmeaProjectSidebar";
 const tabs = [
-  "Payment Schedule",
-  "Expenses",
-  "Contract Cost Summary",
+  { label: "Payment Schedule", icon: CalendarDays },
+  { label: "Expenses", icon: ReceiptText },
+  { label: "Contract Cost Summary", icon: ChartPie },
 ] as const;
-type WorkspaceTab = (typeof tabs)[number];
+type WorkspaceTab = (typeof tabs)[number]["label"];
 export default function GmeaProjectWorkspace({
   project: initialProject,
   expenseOptions: initialExpenseOptions,
@@ -77,11 +77,13 @@ export default function GmeaProjectWorkspace({
         </div>
         {canEdit && (
           <div className="flex flex-wrap gap-2 rounded-2xl border border-white/20 bg-white/10 p-2 text-slate-900 shadow-inner backdrop-blur-xl">
-            <button className={secondaryClass + " border-transparent bg-slate-50 text-[#076d69]"} onClick={() => setEdit(true)}>
-              Edit project
+            <button className={secondaryClass + " gap-2 border-transparent bg-slate-50 text-[#076d69]"} onClick={() => setEdit(true)}>
+              <Pencil size={15} aria-hidden="true" /> Edit project
             </button>
             <GmeaConfirmButton
               label="Delete project"
+              triggerLabel="Delete project"
+              triggerIcon={<Trash2 size={15} aria-hidden="true" />}
               danger
               description="Permanently delete this project and all of its expenses and contract cost records?"
               onConfirm={() => save({ kind: "delete_project" })}
@@ -94,7 +96,7 @@ export default function GmeaProjectWorkspace({
         aria-label="Project sections"
         className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5"
       >
-        {tabs.map((label) => (
+        {tabs.map(({ label, icon: Icon }) => (
           <button
             key={label}
             aria-current={tab === label ? "page" : undefined}
@@ -106,7 +108,7 @@ export default function GmeaProjectWorkspace({
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")
             }
           >
-            {label}
+            <span className="inline-flex items-center gap-2"><Icon size={15} aria-hidden="true" />{label}</span>
           </button>
         ))}
       </nav>

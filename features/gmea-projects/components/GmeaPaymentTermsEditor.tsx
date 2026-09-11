@@ -75,7 +75,7 @@ export default function GmeaPaymentTermsEditor({
         </Field>
         <button
           type="button"
-          className={secondaryClass}
+          className={secondaryClass + " gap-2"}
           disabled={terms.length >= 30}
           onClick={() =>
             onChange([

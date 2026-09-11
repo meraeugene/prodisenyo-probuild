@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, type ReactNode, type FormEvent } from "react";
 import { Dialog } from "radix-ui";
-import { LoaderCircle, X } from "lucide-react";
+import { LoaderCircle, Save, Trash2, X } from "lucide-react";
 import { buttonClass, secondaryClass } from "../utils/gmeaConstants";
 
 export default function GmeaDialog({
@@ -116,10 +116,10 @@ export default function GmeaDialog({
                   <button
                     type="button"
                     disabled={pending}
-                    className={secondaryClass}
+                    className={secondaryClass + " gap-2"}
                     onClick={onClose}
                   >
-                    Cancel
+                    <X size={15} aria-hidden="true" /> Cancel
                   </button>
                   <button
                     type="submit"
@@ -133,6 +133,7 @@ export default function GmeaDialog({
                     {pending && (
                       <LoaderCircle className="animate-spin" size={16} />
                     )}
+                    {!pending && (danger ? <Trash2 size={16} aria-hidden="true" /> : <Save size={16} aria-hidden="true" />)}
                     {pending ? "Saving…" : saveLabel}
                   </button>
                 </div>

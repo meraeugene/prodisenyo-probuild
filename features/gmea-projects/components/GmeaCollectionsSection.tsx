@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CircleDollarSign, Eye, Landmark, Pencil, WalletCards } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
 import {
@@ -9,8 +10,6 @@ import {
 } from "../utils/gmeaCalculations";
 import GmeaCollectionForm from "./GmeaCollectionForm";
 import GmeaPaymentTermRow from "./GmeaPaymentTermRow";
-import GmeaPaymentTermForm from "./GmeaPaymentTermForm";
-import type { ContractPaymentTerm } from "../types";
 
 export default function GmeaCollectionsSection({
   project,
@@ -20,7 +19,6 @@ export default function GmeaCollectionsSection({
   canEdit: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [editingTerm, setEditingTerm] = useState<ContractPaymentTerm | null>(null);
   const terms = project.payment_terms ?? [];
   const summary = contractCollectionSummary(project);
 
@@ -36,24 +34,29 @@ export default function GmeaCollectionsSection({
           </p>
         </div>
         <button className={secondaryClass + " gap-2 bg-white shadow-sm"} onClick={() => setOpen(true)}>
+          {canEdit ? <Pencil size={15} aria-hidden="true" /> : <Eye size={15} aria-hidden="true" />}
           {canEdit ? "Edit contract terms" : "View contract terms"}
         </button>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Contract amount", project.contract_amount, "bg-slate-50"],
-          ["Received", summary.received, "bg-teal-50/80"],
-          ["Outstanding", summary.outstanding, "bg-rose-50/80"],
-        ].map(([name, value, tone]) => (
+          { name: "Contract amount", value: project.contract_amount, caption: "Total contract value", icon: WalletCards, tone: "text-teal-700" },
+          { name: "Received", value: summary.received, caption: "Payments collected", icon: CircleDollarSign, tone: "text-sky-600" },
+          { name: "Outstanding", value: summary.outstanding, caption: "Balance remaining", icon: Landmark, tone: "text-rose-600" },
+        ].map(({ name, value, caption, icon: Icon, tone }) => (
           <div
-            key={String(name)}
-            className={`min-w-0 rounded-xl p-5 ${tone}`}
+            key={name}
+            className="min-h-28 min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)]"
           >
-            <p className="text-xs text-slate-500">{name}</p>
-            <p className="mt-2 break-words text-xl font-semibold tracking-tight text-slate-950 tabular-nums">
-              {formatMoney(Number(value))}
+            <div className="flex items-center gap-2">
+              <Icon size={14} className={`shrink-0 ${tone}`} aria-hidden="true" />
+              <p className="text-sm font-medium text-slate-500">{name}</p>
+            </div>
+            <p className="mt-1 break-words text-2xl font-semibold tracking-tight text-slate-950 tabular-nums">
+              {formatMoney(value)}
             </p>
+            <p className="mt-1 text-xs text-slate-400">{caption}</p>
           </div>
         ))}
       </div>
@@ -69,7 +72,7 @@ export default function GmeaCollectionsSection({
               <th className="p-3">Received</th>
               <th className="p-3">Balance</th>
               <th className="p-3">Status</th>
-              <th className="w-20 p-3 text-right">Actions</th>
+              <th className="w-56 p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
@@ -80,7 +83,6 @@ export default function GmeaCollectionsSection({
                 term={term}
                 canEdit={canEdit}
                 index={index}
-                onEdit={() => setEditingTerm(term)}
               />
             ))}
             {!terms.length && (
@@ -120,7 +122,6 @@ export default function GmeaCollectionsSection({
           onClose={() => setOpen(false)}
         />
       )}
-      {editingTerm && <GmeaPaymentTermForm project={project} term={editingTerm} onClose={() => setEditingTerm(null)} />}
     </section>
   );
 }

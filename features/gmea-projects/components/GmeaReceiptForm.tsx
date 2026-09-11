@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ContractPaymentTerm, GmeaProject } from "../types";
-import { paymentTermSummary } from "../utils/gmeaCalculations";
+import { formatMoney, paymentTermSummary } from "../utils/gmeaCalculations";
 import { today } from "../utils/gmeaConstants";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
@@ -38,6 +38,12 @@ export default function GmeaReceiptForm({
       saveLabel="Record payment"
       compact
     >
+      <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3">
+        <p className="text-xs font-medium text-teal-700">Remaining balance</p>
+        <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950 tabular-nums">
+          {formatMoney(balance)}
+        </p>
+      </div>
       <MoneyField
         label="Amount received (PHP) *"
         required
@@ -53,21 +59,9 @@ export default function GmeaReceiptForm({
         onChange={(event) => setForm((current) => ({ ...current, received_date: event.target.value }))}
       />
       <TextField
-        label="Payment method"
-        maxLength={100}
-        placeholder="Cash, cheque, bank transfer…"
-        value={form.method}
-        onChange={(event) => setForm((current) => ({ ...current, method: event.target.value }))}
-      />
-      <TextField
-        label="Reference number"
-        maxLength={100}
-        value={form.reference_number}
-        onChange={(event) => setForm((current) => ({ ...current, reference_number: event.target.value }))}
-      />
-      <TextField
-        label="Notes"
+        label="Reference or note (optional)"
         maxLength={1000}
+        placeholder="Cheque number, bank reference, or short note"
         value={form.notes}
         onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
       />
