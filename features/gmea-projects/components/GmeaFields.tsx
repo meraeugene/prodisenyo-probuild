@@ -33,12 +33,22 @@ export function Field({
 }
 export function TextField({
   label,
+  leadingIcon,
   ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & { label: string; leadingIcon?: ReactNode }) {
+  const id = useId();
   return (
-    <Field label={label}>
-      <input className={inputClass} {...props} />
-    </Field>
+    <div className="space-y-1.5 text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="block">{label}</label>
+      <div className="relative">
+        {leadingIcon && (
+          <span className="pointer-events-none absolute inset-y-px left-px grid w-12 place-items-center rounded-l-[11px] border-r border-slate-100 bg-slate-50 text-slate-500" aria-hidden="true">
+            {leadingIcon}
+          </span>
+        )}
+        <input id={id} className={inputClass + (leadingIcon ? " pl-14" : "")} {...props} />
+      </div>
+    </div>
   );
 }
 
@@ -56,11 +66,13 @@ export function MoneyField({
   value,
   onValueChange,
   required,
+  leadingIcon,
 }: {
   label: string;
   value: number;
   onValueChange: (value: number) => void;
   required?: boolean;
+  leadingIcon?: ReactNode;
 }) {
   const [display, setDisplay] = useState(() => formatAmount(value));
   const focused = useRef(false);
@@ -89,6 +101,7 @@ export function MoneyField({
     <TextField
       label={label}
       required={required}
+      leadingIcon={leadingIcon}
       inputMode="decimal"
       value={display}
       onFocus={() => {
@@ -110,6 +123,7 @@ export function SearchableSelect({
   placeholder,
   required,
   maxLength,
+  leadingIcon,
   onChange,
 }: {
   label: string;
@@ -118,6 +132,7 @@ export function SearchableSelect({
   placeholder?: string;
   required?: boolean;
   maxLength?: number;
+  leadingIcon?: ReactNode;
   onChange: (value: string) => void;
 }) {
   const id = useId();
@@ -148,7 +163,7 @@ export function SearchableSelect({
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={open}
-          className={inputClass + " pr-10"}
+          className={inputClass + (leadingIcon ? " pl-14 pr-10" : " pr-10")}
           required={required}
           maxLength={maxLength}
           placeholder={placeholder}
@@ -159,6 +174,11 @@ export function SearchableSelect({
             setOpen(true);
           }}
         />
+        {leadingIcon && (
+          <span className="pointer-events-none absolute inset-y-px left-px grid w-12 place-items-center rounded-l-[11px] border-r border-slate-100 bg-slate-50 text-slate-500" aria-hidden="true">
+            {leadingIcon}
+          </span>
+        )}
         <button
           type="button"
           aria-label={"Show " + label.toLowerCase() + " options"}

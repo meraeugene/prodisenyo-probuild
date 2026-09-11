@@ -103,12 +103,11 @@ export default function GmeaPaymentTermsEditor({
               <p className="mt-0.5 text-xs text-slate-400">Set the milestone and scheduled value.</p>
             </div>
             <div className="flex items-center gap-1">
-              <button type="button" aria-label="Move payment term up" title="Move up" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={!index} onClick={() => move(index, -1)}><ArrowUp size={15} aria-hidden="true" /></button>
-              <button type="button" aria-label="Move payment term down" title="Move down" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={index === terms.length - 1} onClick={() => move(index, 1)}><ArrowDown size={15} aria-hidden="true" /></button>
+              <button type="button" aria-label="Move payment term up" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={!index} onClick={() => move(index, -1)}><ArrowUp size={15} aria-hidden="true" /></button>
+              <button type="button" aria-label="Move payment term down" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={index === terms.length - 1} onClick={() => move(index, 1)}><ArrowDown size={15} aria-hidden="true" /></button>
               <button
                 type="button"
                 aria-label="Remove payment term"
-                title={protectedTerms.has(term.id) ? "Terms with receipt history cannot be removed." : "Remove term"}
                 className="inline-flex size-9 items-center justify-center rounded-lg border border-rose-100 text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-35"
                 disabled={protectedTerms.has(term.id)}
                 onClick={() => onChange(terms.filter((_, rowIndex) => rowIndex !== index))}

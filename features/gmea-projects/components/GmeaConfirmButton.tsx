@@ -26,7 +26,6 @@ export default function GmeaConfirmButton({
       <button
         type="button"
         aria-label={label}
-        title={triggerIcon ? label : undefined}
         className={
           compactTrigger
             ? "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-colors " + (danger ? "text-rose-600 hover:bg-rose-50" : "text-slate-600 hover:bg-slate-100")

@@ -9,6 +9,7 @@ import {
   EXPENSE_CATEGORIES,
 } from "../utils/gmeaConstants";
 import { formatMoney, sumMoney, vatBreakdown } from "../utils/gmeaCalculations";
+import { parseExpenseDescriptions } from "../utils/expenseDescriptions";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaExpenseForm from "./GmeaExpenseForm";
 import GmeaConfirmButton from "./GmeaConfirmButton";
@@ -44,6 +45,11 @@ export default function GmeaExpensesSection({
   const amounts = visible.map((e) =>
     vatBreakdown(e.amount, e.vat_mode, e.vat_rate),
   );
+  const expenseStats = [
+    { label: "Total expenses", value: sumMoney(amounts.map((amount) => amount.gross)) },
+    { label: "Input VAT", value: sumMoney(amounts.map((amount) => amount.vat)) },
+    { label: "Refunded Sir Edward", value: sumMoney(visible.map((expense) => expense.refunded_amount ?? 0)) },
+  ];
   return (
     <section className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -69,17 +75,13 @@ export default function GmeaExpensesSection({
             <option key={c}>{c}</option>
           ))}
         </select>
-        <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-900 tabular-nums">
-          <span className="text-slate-500">Total expenses </span>
-          <strong>{formatMoney(sumMoney(amounts.map((a) => a.gross)))}</strong>
-          <span className="ml-4 text-slate-500">Input VAT </span>
-          <strong>{formatMoney(sumMoney(amounts.map((a) => a.vat)))}</strong>
-          <span className="ml-4 text-slate-500">Refunded Sir Edward </span>
-          <strong>
-            {formatMoney(
-              sumMoney(visible.map((expense) => expense.refunded_amount ?? 0)),
-            )}
-          </strong>
+        <div className="grid w-full gap-2 sm:grid-cols-3 lg:w-auto">
+          {expenseStats.map((stat) => (
+            <div key={stat.label} className="min-w-48 rounded-xl border border-slate-200/70 bg-slate-50 px-4 py-3 tabular-nums">
+              <p className="text-xs font-medium text-slate-500">{stat.label}</p>
+              <p className="mt-1 text-base font-semibold text-slate-950">{formatMoney(stat.value)}</p>
+            </div>
+          ))}
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -110,7 +112,13 @@ export default function GmeaExpensesSection({
                 <tr key={e.id}>
                   <td className="whitespace-nowrap p-3">{e.date}</td>
                   <td className="max-w-64 p-3">
-                    <p className="font-medium">{e.description}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {parseExpenseDescriptions(e.description).map((item, index) => (
+                        <span key={`${item}-${index}`} className="rounded-full border border-teal-100 bg-teal-50 px-2 py-1 text-xs font-medium text-teal-800">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                     {e.is_new && (
                       <span className="mt-1 inline-flex rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-800">
                         New
@@ -136,7 +144,6 @@ export default function GmeaExpensesSection({
                       <button
                         type="button"
                         aria-label={canEdit ? "Edit expense" : "Details"}
-                        title={canEdit ? "Edit expense" : "View expense details"}
                         className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-900"
                         onClick={() => openExpense(e)}
                       >

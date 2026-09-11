@@ -1,58 +1,50 @@
-# Progress Updates Design QA
+# Design QA — GMEA Expense Modal
 
-- Source visual truth: `design-references/progress-updates-reference.png`
-- Source dimensions: 1672 × 941 px
-- Implementation target: project workspace, Progress Updates tab
-- Intended viewport: desktop, matching the 1672 × 941 source composition
-- State: populated engineer view with the update form closed, followed by the form-open state
+- Source visual truth: user-provided expense-details reference image in the conversation
 - Implementation screenshot: unavailable
-- Browser-rendered evidence: unavailable because the in-app browser runtime could not start in the current Windows sandbox
-- Density normalization: not performed because an implementation capture is unavailable
+- Intended viewport: desktop, approximately 1268 × 652 reference pixels
+- CSS viewport and density normalization: unavailable because the local browser surface could not be connected
+- State: New/Edit Expense modal open
 
-**Findings**
+## Full-view comparison evidence
 
-- [P0] Rendered comparison is blocked
-  Location: Progress Updates tab.
-  Evidence: the supplied reference is available, but no browser-rendered implementation screenshot can be captured through the required in-app browser.
-  Impact: typography, spacing, responsive behavior, colors, icon alignment, content wrapping, and interaction states cannot be approved from source code alone.
-  Fix: capture the implementation at the matching desktop viewport, test the Add Progress Update open/close behavior and form controls, then compare the reference and implementation together.
+The source image was available as the implementation target. The local application compiled successfully, but a browser-rendered implementation screenshot could not be captured because neither the connected browser nor the in-app browser was available.
 
-**Required fidelity surfaces**
+## Focused region comparison evidence
 
-- Fonts and typography: blocked pending a rendered capture.
-- Spacing and layout rhythm: blocked pending a rendered capture.
-- Colors and visual tokens: blocked pending a rendered capture.
-- Image quality and asset fidelity: the screen uses no content imagery; the supplied ProBuild icon library remains in use. Final rendered confirmation is blocked.
-- Copy and content: source review confirms the production UI uses only existing progress-update fields and actions; rendered wrapping and density remain blocked.
-- Responsiveness and accessibility: semantic labels and focus styles are present in code; browser verification remains blocked.
+Blocked. The form fields, VAT panel, and notes panel could not be compared against a rendered capture.
 
-**Full-view comparison evidence**
+## Findings
 
-- Source image inspected from the supplied reference.
-- Matching implementation capture unavailable.
+- [P1] Visual fidelity is not browser-verified.
+  - Location: GMEA New Expense and Edit Expense modal.
+  - Evidence: source reference is available, but no rendered implementation screenshot could be captured.
+  - Impact: spacing, responsive fit, and precise visual matching remain unconfirmed.
+  - Fix: open the local GMEA project, launch the expense modal, capture it at the reference viewport, and compare it with the supplied image.
 
-**Focused region comparison evidence**
+## Required fidelity surfaces
 
-- Not possible without a browser-rendered implementation capture.
+- Fonts and typography: implemented to match the existing app and reference hierarchy; browser comparison blocked.
+- Spacing and layout rhythm: two-column details/VAT composition implemented; browser comparison blocked.
+- Colors and visual tokens: white form surface with light cyan VAT panel and slate borders implemented; browser comparison blocked.
+- Image quality and asset fidelity: no raster imagery is present in the target; library icons are used.
+- Copy and content: Expense details, VAT calculation, notes, and field labels follow the supplied reference while preserving app-specific fields.
 
-**Primary interactions tested**
+## Primary interactions checked
 
-- Automated browser interaction is blocked. Repository tests, lint, TypeScript, and production build checks are separate and do not substitute for visual verification.
+- Static type checking passed.
+- Browser interaction testing was blocked before the modal could be opened.
+- Console errors could not be checked.
 
-**Console errors checked**
+## Implementation checklist
 
-- Blocked because the in-app browser runtime could not start.
+- Capture the New Expense modal in a connected browser.
+- Check input alignment, modal height, and responsive stacking.
+- Verify typable payment-method suggestions and comma-separated description chips visually.
+- Compare the VAT and Notes cards with the reference.
 
-**Comparison history**
+## Comparison history
 
-- Initial pass: blocked before visual comparison because the required browser runtime failed to initialize.
-
-**Implementation checklist**
-
-- Capture the Progress Updates tab at 1672 × 941.
-- Verify the update list and sticky summary/sidebar proportions.
-- Open and close the existing Add Progress Update form.
-- Check range and number inputs, text fields, disabled submit state, and responsive stacking.
-- Compare the source and implementation in one visual review and fix any P0/P1/P2 issues.
+- Initial implementation completed; browser evidence unavailable, so no visual iteration could be performed.
 
 final result: blocked

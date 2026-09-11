@@ -71,10 +71,10 @@ export default function GmeaPaymentTermRow({
         <td className="p-3">
           {canEdit && (
             <div className="flex flex-nowrap items-center justify-end gap-1">
-              <button type="button" disabled={summary.balance <= 0} title={summary.balance <= 0 ? "This payment term is fully paid." : undefined} onClick={() => setRecording(true)} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-35">
+              <button type="button" disabled={summary.balance <= 0} onClick={() => setRecording(true)} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-35">
                 <CreditCard size={14} aria-hidden="true" /> Record payment
               </button>
-              <button type="button" disabled={term.receipts.length > 0 || project.payment_terms.length <= 1} title={term.receipts.length ? "Terms with receipt history cannot be deleted." : project.payment_terms.length <= 1 ? "A schedule needs at least one payment term." : undefined} onClick={() => setDeleting(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-35">
+              <button type="button" disabled={term.receipts.length > 0 || project.payment_terms.length <= 1} onClick={() => setDeleting(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-35">
                 <Trash2 size={14} aria-hidden="true" /> Delete
               </button>
             </div>

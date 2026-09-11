@@ -13,6 +13,7 @@ export interface Expense {
   vat_mode: VatMode;
   vat_rate: number;
   method: string;
+  notes: string;
   is_new?: boolean;
 }
 

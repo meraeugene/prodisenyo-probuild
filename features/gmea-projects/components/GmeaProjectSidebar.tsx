@@ -33,7 +33,7 @@ export default function GmeaProjectSidebar({ project, canEdit, onEdit }: {
           {project.payment_terms.slice(0, 4).map((term) => {
             const summary = paymentTermSummary(term);
             const paid = summary.status === "paid";
-            return <div key={term.id} className="flex items-center gap-3 text-sm">{paid ? <CheckCircle2 size={19} className="shrink-0 text-teal-600" /> : <Circle size={19} className="shrink-0 fill-slate-100 text-slate-200" />}<span className={`min-w-0 flex-1 truncate ${paid ? "font-medium text-slate-800" : "text-slate-500"}`}>{term.description}</span><span className="text-xs capitalize text-slate-500">{summary.status}</span></div>;
+            return <div key={term.id} className="flex items-center gap-3 text-sm">{paid ? <CheckCircle2 size={19} className="shrink-0 text-teal-600" /> : <Circle size={19} className="shrink-0 fill-slate-100 text-slate-200" />}<span className={`min-w-0 flex-1 truncate ${paid ? "font-medium text-slate-800" : "text-slate-500"}`}>{term.description}</span><span className={paid ? "rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold capitalize text-teal-700" : "text-xs capitalize text-slate-500"}>{summary.status}</span></div>;
           })}
         </div>
       </section>

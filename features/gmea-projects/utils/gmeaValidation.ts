@@ -203,6 +203,7 @@ export function normalizeMutation(input: unknown): GmeaMutation {
         ),
         ...vat(value),
         method: text(value.method, "Payment method", true, 100),
+        notes: text(value.notes, "Notes", false, 1000),
       },
     };
   }
