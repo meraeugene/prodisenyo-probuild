@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import type { ContractPaymentTermInput } from "../types";
 import { PAYMENT_TERM_TEMPLATES, inputClass, secondaryClass } from "../utils/gmeaConstants";
 import { formatMoney, sumMoney } from "../utils/gmeaCalculations";
@@ -75,7 +75,7 @@ export default function GmeaPaymentTermsEditor({
         </Field>
         <button
           type="button"
-          className={secondaryClass + " gap-2"}
+          className={secondaryClass}
           disabled={terms.length >= 30}
           onClick={() =>
             onChange([
@@ -91,38 +91,41 @@ export default function GmeaPaymentTermsEditor({
             ])
           }
         >
-          <Plus size={16} /> Add term
+          Add term
         </button>
       </div>
 
       {terms.map((term, index) => (
-        <div key={term.id} className="space-y-4 rounded-xl border border-slate-200 p-4">
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <TextField
-                label={`Payment term ${index + 1} *`}
-                required
-                maxLength={300}
-                value={term.description}
-                onChange={(event) => update(index, { description: event.target.value })}
-              />
+        <div key={term.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_24px_-22px_rgba(15,23,42,.35)]">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-teal-700">Payment term {index + 1}</p>
+              <p className="mt-0.5 text-xs text-slate-400">Set the milestone and scheduled value.</p>
             </div>
-            <div className="flex pt-7">
-              <button type="button" aria-label="Move term up" className={secondaryClass} disabled={!index} onClick={() => move(index, -1)}><ArrowUp size={15} /></button>
-              <button type="button" aria-label="Move term down" className={secondaryClass} disabled={index === terms.length - 1} onClick={() => move(index, 1)}><ArrowDown size={15} /></button>
+            <div className="flex items-center gap-1">
+              <button type="button" aria-label="Move payment term up" title="Move up" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={!index} onClick={() => move(index, -1)}><ArrowUp size={15} aria-hidden="true" /></button>
+              <button type="button" aria-label="Move payment term down" title="Move down" className="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35" disabled={index === terms.length - 1} onClick={() => move(index, 1)}><ArrowDown size={15} aria-hidden="true" /></button>
               <button
                 type="button"
                 aria-label="Remove payment term"
-                className={secondaryClass + " text-rose-700"}
+                title={protectedTerms.has(term.id) ? "Terms with receipt history cannot be removed." : "Remove term"}
+                className="inline-flex size-9 items-center justify-center rounded-lg border border-rose-100 text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-35"
                 disabled={protectedTerms.has(term.id)}
-                title={protectedTerms.has(term.id) ? "Terms with receipt history cannot be removed." : undefined}
                 onClick={() => onChange(terms.filter((_, rowIndex) => rowIndex !== index))}
               >
-                <Trash2 size={15} />
+                <Trash2 size={15} aria-hidden="true" />
               </button>
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+
+          <div className="grid items-start gap-4 lg:grid-cols-[minmax(260px,1.7fr)_170px_190px]">
+            <TextField
+              label="Description *"
+              required
+              maxLength={300}
+              value={term.description}
+              onChange={(event) => update(index, { description: event.target.value })}
+            />
             <Field label="Value type">
               <select
                 className={inputClass}
@@ -155,20 +158,24 @@ export default function GmeaPaymentTermsEditor({
                 onValueChange={(amount) => update(index, { amount })}
               />
             )}
-            <div className="rounded-xl bg-cyan-50 px-4 py-3 text-sm text-cyan-950">
-              <p className="text-xs font-medium text-cyan-700">Scheduled amount</p>
-              <p className="mt-1 font-semibold">{formatMoney(term.amount)}</p>
-              {protectedAmounts[term.id] > 0 && (
-                <p className="mt-1 text-xs">Received: {formatMoney(protectedAmounts[term.id])}</p>
-              )}
+          </div>
+
+          <div className="mt-4 grid items-end gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <TextField
+              label="Notes (optional)"
+              maxLength={1000}
+              placeholder="Add a short note"
+              value={term.notes}
+              onChange={(event) => update(index, { notes: event.target.value })}
+            />
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">Scheduled amount</p>
+              <div className="flex min-h-[42px] items-center rounded-xl border border-teal-100 bg-teal-50/70 px-3 text-sm font-semibold text-teal-900 tabular-nums">
+                {formatMoney(term.amount)}
+                {protectedAmounts[term.id] > 0 && <span className="ml-auto text-xs font-medium text-teal-700">Received {formatMoney(protectedAmounts[term.id])}</span>}
+              </div>
             </div>
           </div>
-          <TextField
-            label="Contract notes"
-            maxLength={1000}
-            value={term.notes}
-            onChange={(event) => update(index, { notes: event.target.value })}
-          />
         </div>
       ))}
 

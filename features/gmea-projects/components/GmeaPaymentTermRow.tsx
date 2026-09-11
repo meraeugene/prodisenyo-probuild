@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Ban, CreditCard, Eye, Trash2 } from "lucide-react";
+import { CreditCard, Eye, Trash2 } from "lucide-react";
 import type { ContractPaymentTerm, ContractReceipt, GmeaProject } from "../types";
 import { formatMoney, paymentTermSummary } from "../utils/gmeaCalculations";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -94,8 +94,8 @@ export default function GmeaPaymentTermRow({
                   {receipt.status === "voided" && <p className="mt-1 text-xs text-rose-700 no-underline">Voided: {receipt.void_reason}</p>}
                 </div>
                 {canEdit && receipt.status === "posted" && (
-                  <button type="button" className={secondaryClass + " gap-2 text-rose-700"} onClick={() => { setHistoryOpen(false); setVoiding(receipt); }}>
-                    <Ban size={14} aria-hidden="true" /> Void
+                  <button type="button" className={secondaryClass + " text-rose-700"} onClick={() => { setHistoryOpen(false); setVoiding(receipt); }}>
+                    Void
                   </button>
                 )}
               </div>

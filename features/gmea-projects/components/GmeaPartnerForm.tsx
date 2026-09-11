@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
 import { sumMoney } from "../utils/gmeaCalculations";
@@ -72,19 +71,19 @@ export default function GmeaPartnerForm({
           />
           <button
             type="button"
-            className={secondaryClass + " gap-2 text-rose-700"}
+            className={secondaryClass + " text-rose-700"}
             onClick={() =>
               setRows(rows.filter((_, itemIndex) => itemIndex !== index))
             }
           >
-            <Trash2 size={15} aria-hidden="true" /> Remove
+            Remove
           </button>
         </div>
       ))}
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
-          className={secondaryClass + " gap-2"}
+          className={secondaryClass}
           onClick={() =>
             setRows([
               ...rows,
@@ -92,7 +91,7 @@ export default function GmeaPartnerForm({
             ])
           }
         >
-          <Plus size={15} aria-hidden="true" /> Add partner
+          Add partner
         </button>
         <strong className="text-sm">Total: {total ?? "Invalid"}%</strong>
       </div>
