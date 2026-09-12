@@ -1,4 +1,3 @@
-import { CalendarDays, CircleCheckBig, WalletCards } from "lucide-react";
 import ProjectProgressUpdatesPanel from "./ProjectProgressUpdatesPanel";
 import type { ProjectProgressUpdateRecord } from "../progressUpdateTypes";
 import type { ProjectRecord } from "@/features/projects/types";
@@ -43,7 +42,7 @@ export default function CeoProjectOverview({
   return (
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-3">
-        <OverviewCard title="Project Progress" icon={CircleCheckBig}>
+        <OverviewCard title="Project Progress">
           <div className="flex items-end gap-3">
             <p className="text-3xl font-bold text-slate-950">{currentProgress}%</p>
             <p className="pb-1 text-xs text-slate-500">
@@ -62,7 +61,7 @@ export default function CeoProjectOverview({
           </div>
         </OverviewCard>
 
-        <OverviewCard title="Budget Summary" icon={WalletCards}>
+        <OverviewCard title="Budget Summary">
           <div className="grid gap-4 text-sm">
             <InfoRow label="Budget Limit" value={formatProjectCurrency(project.budget)} />
             <InfoRow label="Actual Spent" value={formatProjectCurrency(spent)} />
@@ -72,7 +71,7 @@ export default function CeoProjectOverview({
           </div>
         </OverviewCard>
 
-        <OverviewCard title="Project Information" icon={CalendarDays}>
+        <OverviewCard title="Project Information">
           <div className="grid gap-4 text-sm">
             <InfoRow label="Engineer / PM" value={project.engineer} />
             <InfoRow label="Estimate Engineer" value={project.estimateEngineer || project.engineer} />
@@ -112,14 +111,11 @@ export default function CeoProjectOverview({
   );
 }
 
-function OverviewCard({ title, icon: Icon, children }: { title: string; icon: typeof CircleCheckBig; children: React.ReactNode }) {
+function OverviewCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
-      <div className="mb-6 flex items-center justify-between gap-3">
+      <div className="mb-6">
         <h2 className="font-semibold tracking-tight text-slate-950">{title}</h2>
-        <span className={"grid h-9 w-9 shrink-0 place-items-center rounded-xl " + (title === "Budget Summary" ? "bg-sky-50 text-sky-700" : title === "Project Information" ? "bg-violet-50 text-violet-700" : "bg-teal-50 text-teal-700")}>
-          <Icon size={18} aria-hidden="true" />
-        </span>
       </div>
       {children}
     </section>

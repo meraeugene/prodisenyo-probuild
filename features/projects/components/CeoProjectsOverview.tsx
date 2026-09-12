@@ -108,13 +108,17 @@ export default function CeoProjectsOverview({
         ].map(([label, value, helper, Icon]) => {
           const MetricIcon = Icon as typeof FolderKanban;
           return (
-            <article key={String(label)} className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)]">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-medium text-slate-500">{String(label)}</p>
-                <span className={"grid h-9 w-9 place-items-center rounded-xl " + (label === "Pending estimates" ? "bg-amber-50 text-amber-700" : label === "Total projects" ? "bg-sky-50 text-sky-700" : "bg-teal-50 text-teal-700")}><MetricIcon size={18} aria-hidden="true" /></span>
+            <article key={String(label)} className="min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]">
+              <div className="flex min-w-0 items-center gap-2">
+                <MetricIcon
+                  size={15}
+                  aria-hidden="true"
+                  className={label === "Pending estimates" ? "shrink-0 text-amber-700" : label === "Total projects" ? "shrink-0 text-sky-700" : "shrink-0 text-teal-700"}
+                />
+                <p className="truncate text-xs font-medium text-slate-500">{String(label)}</p>
               </div>
-              <p className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">{String(value)}</p>
-              <p className="mt-1 text-sm text-slate-500">{String(helper)}</p>
+              <p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{String(value)}</p>
+              <p className="mt-1 text-[11px] leading-4 text-slate-500">{String(helper)}</p>
             </article>
           );
         })}
@@ -127,36 +131,38 @@ export default function CeoProjectsOverview({
             return (
               <article
                 key={project.id}
-                className="relative isolate flex min-w-0 flex-col gap-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)] transition-shadow hover:shadow-[0_16px_40px_-24px_rgba(15,23,42,.35)]"
+                className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_28px_-22px_rgba(15,23,42,.28)] transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(15,23,42,.34)]"
               >
                 <div className="flex min-w-0 flex-col gap-4">
                   <ProjectThumbnail
                     src={project.imageUrl}
                     name={project.name}
-                    className="h-40 w-full rounded-xl object-cover"
+                    className="h-36 w-full rounded-none object-cover"
                   />
-                  <div className="min-w-0 w-full">
-                    <h2 className="break-words text-xl font-semibold tracking-tight text-slate-950">{project.name}</h2>
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="min-w-0 w-full px-5">
+                    <h2 className="break-words text-lg font-semibold tracking-[-0.02em] text-slate-950">{project.name}</h2>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
                       <MapPin size={13} /> <span className="truncate">{project.location}</span>
                     </p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs text-slate-500">{project.status === "planning" ? "Estimate Engineer" : "Project Engineer"}</p>
-                  <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-800">
-                    <span className="truncate">{project.status === "planning" ? project.estimateEngineer : project.engineer}</span>
-                  </p>
-                </div>
-                <div>
+                <div className="px-5 pt-5">
                   <p className="text-xs text-slate-500">{project.status === "planning" ? "Workflow" : "Progress"}</p>
-                  {project.status === "planning" ? <p className="mt-1 text-sm font-bold text-amber-700">Estimate pending</p> : <><p className="mt-1 text-sm font-bold text-slate-950">{project.progress}%</p><div className="mt-2 h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} /></div></>}
+                  {project.status === "planning" ? <p className="text-sm font-bold text-amber-700">Estimate pending</p> : <><p className="text-sm font-bold text-slate-950">{project.progress}%</p><div className="h-1.5 rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} /></div></>}
                 </div>
-                <div>
+                <div className="grid gap-4 px-5 pb-4 pt-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-slate-500">{project.status === "planning" ? "Estimate Engineer" : "Project Engineer"}</p>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <span className="truncate">{project.status === "planning" ? project.estimateEngineer : project.engineer}</span>
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
                   <p className="text-xs text-slate-500">Budget</p>
                   <p className="mt-1 text-sm font-bold text-slate-950">{formatProjectCurrency(project.spent)} <span className="font-normal text-slate-500">/ {formatProjectCurrency(project.budget)}</span></p>
+                  </div>
                 </div>
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/50 px-5 py-3.5">
                   <span className={`inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-semibold ${STATUS_CLASSES[status.tone]}`}>{status.label}</span>
                   <button type="button" onClick={() => onOpenProject(project.id)} aria-label={`Open project: ${project.name}`} className="inline-flex items-center gap-2 text-sm font-semibold text-[#076d69] after:absolute after:inset-0 after:z-10 after:cursor-pointer after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-teal-700">
                     {project.status === "planning" ? "Review Estimate" : "View Details"} <ArrowRight size={13} />

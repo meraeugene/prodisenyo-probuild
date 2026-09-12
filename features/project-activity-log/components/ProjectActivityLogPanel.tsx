@@ -1,15 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  CalendarDays,
-  ClipboardCheck,
-  FileUp,
-  ListChecks,
-  PackagePlus,
-  Search,
-  TrendingUp,
-} from "lucide-react";
+import { CalendarDays, ClipboardCheck, FileUp, ListChecks, PackagePlus, Search, TrendingUp } from "lucide-react";
 import type { ProjectDocumentRecord } from "@/features/project-documents/types";
 import type { ProjectProgressUpdateRecord } from "@/features/projects/progressUpdateTypes";
 import type { ProjectActivityEvent, ProjectActivityType } from "../types";
@@ -86,7 +78,7 @@ export default function ProjectActivityLogPanel({
       </section>
 
       <aside className="space-y-5">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h3 className="font-semibold text-slate-950">Activity Summary</h3><div className="mt-4 grid grid-cols-2 divide-x divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100"><Summary icon={ListChecks} label="Total Activities" value={events.length} tone="emerald" /><Summary icon={CalendarDays} label="Today" value={todayCount} tone="blue" /><Summary icon={ClipboardCheck} label="Activity Types" value={activeTypes} tone="violet" /><Summary icon={TrendingUp} label="Progress Updates" value={typeCounts["progress-update"]} tone="amber" /></div></section>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h3 className="font-semibold text-slate-950">Activity Summary</h3><div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200"><Summary icon={ListChecks} label="Total Activities" value={events.length} /><Summary icon={CalendarDays} label="Today" value={todayCount} /><Summary icon={ClipboardCheck} label="Activity Types" value={activeTypes} /><Summary icon={TrendingUp} label="Progress Updates" value={typeCounts["progress-update"]} /></div></section>
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h3 className="font-semibold text-slate-950">Activity Types</h3><div className="mt-3 divide-y divide-slate-100">{Object.entries(TYPE_META).map(([key, meta]) => { const Icon = meta.icon; return <button type="button" key={key} onClick={() => setType(key as ProjectActivityType)} className="flex w-full items-center justify-between gap-3 py-3 text-sm text-slate-600 hover:text-teal-800"><span className="inline-flex items-center gap-2"><Icon size={15} />{meta.label}</span><strong className="text-slate-900">{typeCounts[key as ProjectActivityType]}</strong></button>; })}</div><div className="mt-2 flex justify-between border-t border-slate-200 pt-4 text-sm font-semibold"><span>Total</span><span>{events.length}</span></div></section>
       </aside>
     </div>
@@ -99,8 +91,7 @@ function ActivityRow({ event }: { event: ProjectActivityEvent }) {
   return <article className="relative grid gap-3 bg-white py-4 pl-7 sm:grid-cols-[110px_150px_180px_minmax(0,1fr)] sm:items-start"><span className="absolute left-0 top-6 h-3.5 w-3.5 rounded-full border-4 border-white bg-slate-400 ring-1 ring-slate-200" /><div><p className="text-xs font-medium text-slate-600">{formatDate(event.createdAt)}</p><p className="mt-1 text-xs text-slate-400">{formatTime(event.createdAt)}</p></div><p className="text-sm font-semibold text-slate-700">{event.actor}</p><span className={`inline-flex w-fit items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold ${meta.badge}`}><Icon size={14} />{meta.label}</span><div><p className="text-sm font-semibold text-slate-800">{event.title}</p><p className="mt-1 text-sm leading-5 text-slate-500">{event.description}</p></div></article>;
 }
 
-function Summary({ icon: Icon, label, value, tone }: { icon: typeof ListChecks; label: string; value: number; tone: "emerald" | "blue" | "violet" | "amber" }) {
-  const colors = { emerald: "bg-teal-50 text-teal-700", blue: "bg-blue-50 text-blue-700", violet: "bg-violet-50 text-violet-700", amber: "bg-amber-50 text-amber-700" };
-  return <div className="p-4"><div className={`flex h-9 w-9 items-center justify-center rounded-full ${colors[tone]}`}><Icon size={17} /></div><p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div>;
+function Summary({ icon: Icon, label, value }: { icon: typeof ListChecks; label: string; value: number }) {
+  return <div className="min-h-28 bg-white p-4"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-50 text-teal-700"><Icon size={17} /></div><p className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-xs font-medium text-slate-500">{label}</p></div>;
 }
 

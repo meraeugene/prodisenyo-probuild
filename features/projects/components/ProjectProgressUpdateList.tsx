@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  CalendarDays,
   ClipboardList,
   Eye,
   MoreVertical,
@@ -34,10 +33,7 @@ export default function ProjectProgressUpdateList({
       className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,.04)] ${className ?? ""}`}
     >
       <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-            <CalendarDays size={18} aria-hidden="true" />
-          </span>
+        <div className="flex min-w-0 items-start">
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-slate-950 sm:text-lg">
               Daily Progress Updates
