@@ -131,7 +131,7 @@ export default function CeoProjectsOverview({
             return (
               <article
                 key={project.id}
-                className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_28px_-22px_rgba(15,23,42,.28)] transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(15,23,42,.34)]"
+                className="relative isolate flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_28px_-22px_rgba(15,23,42,.28)] transition-shadow duration-200 hover:shadow-[0_16px_34px_-22px_rgba(15,23,42,.34)]"
               >
                 <div className="flex min-w-0 flex-col gap-4">
                   <ProjectThumbnail

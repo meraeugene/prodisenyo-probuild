@@ -137,6 +137,6 @@ export default function ProjectMaterialsPanel({
 }
 
 function StatCard({ icon: Icon, label, value, helper, tone }: { icon: typeof ClipboardList; label: string; value: number; helper: string; tone: "emerald" | "amber" | "sky" }) {
-  const colors = { emerald: "bg-teal-50 text-teal-700", amber: "bg-amber-50 text-amber-600", sky: "bg-sky-50 text-sky-700" };
-  return <article className="flex min-h-32 items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${colors[tone]}`}><Icon size={21} /></div><div><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">{value}</p><p className="mt-1 text-xs text-slate-500">{helper}</p></div></article>;
+  const colors = { emerald: "text-teal-700", amber: "text-amber-600", sky: "text-sky-700" };
+  return <article className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]"><div className="flex min-w-0 items-center gap-2"><Icon size={15} className={`shrink-0 ${colors[tone]}`} aria-hidden="true" /><p className="truncate text-xs font-medium text-slate-500">{label}</p></div><p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p></article>;
 }

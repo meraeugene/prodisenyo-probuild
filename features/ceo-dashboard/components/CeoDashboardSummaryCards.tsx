@@ -38,15 +38,19 @@ export default function CeoDashboardSummaryCards({ data }: { data: CeoDashboardD
   return (
     <section aria-label="Executive summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
       {cards.map(({ label, value, helper, icon: Icon, accent }) => (
-        <article key={label} className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]">
-          <div className="flex min-w-0 items-center gap-2">
-            <Icon size={15} className={`shrink-0 ${accent.split(" ")[1]}`} aria-hidden="true" />
-            <p className="truncate text-xs font-medium text-slate-500">{label}</p>
+        <article key={label} className="relative min-h-36 min-w-0 overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,.055)]">
+          <div className="relative z-10 flex min-w-0 items-start gap-4">
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${accent}`}>
+              <Icon size={26} strokeWidth={1.9} aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-500">{label}</p>
+              <p className="mt-1 text-4xl font-semibold tracking-[-0.045em] text-slate-950 tabular-nums">{value}</p>
+              <p className="mt-1 text-xs text-slate-400">{helper}</p>
+            </div>
           </div>
-          <p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p>
-          <p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p>
           {label === "Budget used" ? (
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div className="relative z-10 mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full bg-teal-700" style={{ width: `${budgetPercent}%` }} />
             </div>
           ) : null}

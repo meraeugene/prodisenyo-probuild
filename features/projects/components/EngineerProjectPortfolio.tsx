@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 import {
   ArrowDownUp,
+  BriefcaseBusiness,
+  CircleCheckBig,
+  FileText,
+  FolderKanban,
   MapPin,
   Search,
 } from "lucide-react";
@@ -14,10 +18,10 @@ import ProjectsPortfolioHero from "./ProjectsPortfolioHero";
 type SortOption = "updated" | "progress_high" | "progress_low" | "name";
 
 const summaryCards = [
-  { key: "total", label: "Assigned records", helper: "All assignments" },
-  { key: "planning", label: "Cost estimates", helper: "Awaiting activation" },
-  { key: "active", label: "On going", helper: "Operational projects" },
-  { key: "completed", label: "Completed", helper: "Successfully completed" },
+  { key: "total", label: "Assigned records", helper: "All assignments", icon: FolderKanban, tone: "text-sky-700" },
+  { key: "planning", label: "Cost estimates", helper: "Awaiting activation", icon: FileText, tone: "text-amber-700" },
+  { key: "active", label: "On going", helper: "Operational projects", icon: BriefcaseBusiness, tone: "text-teal-700" },
+  { key: "completed", label: "Completed", helper: "Successfully completed", icon: CircleCheckBig, tone: "text-teal-700" },
 ] as const;
 
 function formatDate(value: string) {
@@ -111,11 +115,14 @@ export default function EngineerProjectPortfolio({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map(({ key, label, helper }) => (
-          <article key={key} className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)]">
-            <p className="text-xs font-medium text-slate-500">{label}</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{counts[key]}</p>
-            <p className="mt-1 text-xs text-slate-500">{helper}</p>
+        {summaryCards.map(({ key, label, helper, icon: Icon, tone }) => (
+          <article key={key} className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]">
+            <div className="flex min-w-0 items-center gap-2">
+              <Icon size={15} className={`shrink-0 ${tone}`} aria-hidden="true" />
+              <p className="truncate text-xs font-medium text-slate-500">{label}</p>
+            </div>
+            <p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{counts[key]}</p>
+            <p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p>
           </article>
         ))}
       </div>

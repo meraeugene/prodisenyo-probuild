@@ -34,7 +34,7 @@ export default function EmployeeHomePage({ fullName, username }: { fullName: str
         <h2 id="employee-quick-access" className="text-lg font-semibold tracking-tight text-slate-950">Quick access</h2>
         <div className="grid gap-5 md:grid-cols-2">
           {actions.map(({ href, title, description, action, icon: Icon, tone }) => (
-            <Link key={href} href={href} className="group flex min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/80 bg-white/80 shadow-[0_16px_42px_-28px_rgba(15,23,42,.3)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-[0_20px_46px_-26px_rgba(15,23,42,.38)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">
+            <Link key={href} href={href} className="group flex min-w-0 flex-col overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/80 shadow-[0_8px_24px_-20px_rgba(15,23,42,.18)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-20px_rgba(15,23,42,.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">
               <div className="flex-1 p-6">
                 <span className={`grid h-11 w-11 place-items-center rounded-xl ${tone}`}><Icon size={21} aria-hidden="true" /></span>
                 <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950 group-hover:text-[#076d69]">{title}</h3>

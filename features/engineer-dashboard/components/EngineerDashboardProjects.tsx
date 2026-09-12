@@ -84,7 +84,7 @@ function ProjectCard({ project }: { project: EngineerDashboardProject }) {
   const dotTone = isPlanning ? "bg-amber-500" : project.status === "on_hold" ? "bg-rose-500" : "bg-teal-600";
 
   return (
-    <article className="group overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_34px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.1)]">
+    <article className="group overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_12px_34px_rgba(15,23,42,0.06)] transition-shadow duration-200 hover:shadow-[0_18px_42px_rgba(15,23,42,0.1)]">
       <div className="relative h-36 overflow-hidden bg-slate-100">
         <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]" />
         <span className={`absolute left-4 top-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold shadow-sm ${statusTone}`}><span className={`h-2 w-2 rounded-full ${dotTone}`} />{STATUS_LABELS[project.status]}</span>
@@ -101,7 +101,7 @@ function ProjectCard({ project }: { project: EngineerDashboardProject }) {
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
         <span className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${statusTone}`}>{isPlanning ? <FileText size={16} /> : <BarChart3 size={16} />}{isPlanning ? "Pending Cost Estimate" : STATUS_LABELS[project.status]}</span>
-        <Link href={href} className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 hover:text-blue-700">{isPlanning ? "Review Estimate" : "View Details"}<ArrowRight size={17} /></Link>
+        <Link href={href} className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 hover:text-teal-800">{isPlanning ? "Review Estimate" : "View Details"}<ArrowRight size={17} /></Link>
       </div>
     </article>
   );

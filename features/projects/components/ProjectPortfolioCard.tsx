@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   ArrowRight,
   Calendar,
   CheckCircle,
@@ -42,7 +41,6 @@ export default function ProjectPortfolioCard({
         {budgetWarning ? (
           <div className="absolute left-4 top-4 flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-rose-700 shadow-sm">
-              <AlertTriangle size={11} />
               Budget
             </span>
           </div>

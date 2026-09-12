@@ -17,18 +17,14 @@ export default function EngineerDashboardSummary({
       {ITEMS.map(({ key, label, caption, icon: Icon, tone }) => (
         <article
           key={key}
-          className="relative min-h-36 overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.055)]"
+          className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]"
         >
-          <div className="relative z-10 flex items-start gap-4">
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${tone === "blue" ? "bg-blue-50 text-blue-600" : tone === "amber" ? "bg-amber-50 text-amber-600" : "bg-teal-50 text-teal-700"}`}>
-              <Icon size={26} strokeWidth={1.9} aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-500">{label}</p>
-              <p className="mt-1 text-4xl font-semibold tracking-[-0.045em] text-slate-950">{values[key]}</p>
-              <p className="mt-1 text-xs text-slate-400">{caption}</p>
-            </div>
+          <div className="flex min-w-0 items-center gap-2">
+            <Icon size={15} className={`shrink-0 ${tone === "blue" ? "text-blue-600" : tone === "amber" ? "text-amber-600" : "text-teal-700"}`} aria-hidden="true" />
+            <p className="truncate text-xs font-medium text-slate-500">{label}</p>
           </div>
+          <p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{values[key]}</p>
+          <p className="mt-1 text-[11px] leading-4 text-slate-500">{caption}</p>
         </article>
       ))}
     </section>
