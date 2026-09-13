@@ -250,10 +250,6 @@ export default function DashboardNavigation({
               pathname,
               collapsed,
               onNavigate: onNavigate,
-              badgeCount:
-                item.href === "/gmea-projects"
-                  ? notificationCounts.gmeaExpenses
-                  : 0,
             }),
           )}
 

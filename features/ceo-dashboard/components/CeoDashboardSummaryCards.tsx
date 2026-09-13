@@ -1,11 +1,7 @@
-import {
-  AlertTriangle,
-  Boxes,
-  BriefcaseBusiness,
-  ClipboardCheck,
-  WalletCards,
-  type LucideIcon,
-} from "lucide-react";
+"use client";
+
+import { ArrowDownRight, ArrowUpRight, Clock3, TriangleAlert } from "lucide-react";
+import { Line, LineChart, ResponsiveContainer } from "recharts";
 import type { CeoDashboardData } from "@/features/ceo-dashboard/types";
 import {
   buildCeoAttentionItems,
@@ -13,49 +9,98 @@ import {
   getCeoDashboardTotals,
 } from "@/features/ceo-dashboard/utils/ceoDashboard";
 
-type SummaryCard = {
-  label: string;
-  value: string | number;
-  helper: string;
-  icon: LucideIcon;
-  accent: string;
+const SPARKLINES = {
+  green: [2, 4, 3, 5, 5, 7, 6, 9],
+  blue: [7, 5, 6, 4, 6, 3, 6, 4],
+  red: [3, 5, 4, 6, 5, 7, 7, 9],
 };
 
 export default function CeoDashboardSummaryCards({ data }: { data: CeoDashboardData }) {
   const totals = getCeoDashboardTotals(data);
   const attentionCount = buildCeoAttentionItems(data.projects).length;
   const budgetPercent = totals.totalBudget
-    ? Math.min(100, Math.round((totals.totalSpent / totals.totalBudget) * 100))
+    ? Math.round((totals.totalSpent / totals.totalBudget) * 100)
     : 0;
-  const cards: SummaryCard[] = [
-    { label: "Active projects", value: totals.activeProjects, helper: `${totals.completedProjects} completed`, icon: BriefcaseBusiness, accent: "bg-teal-50 text-teal-700" },
-    { label: "Pending approvals", value: totals.pendingApprovals, helper: "Across approval workflows", icon: ClipboardCheck, accent: "bg-amber-50 text-amber-700" },
-    { label: "Budget used", value: formatCeoCurrency(totals.totalSpent), helper: `${budgetPercent}% of ${formatCeoCurrency(totals.totalBudget)}`, icon: WalletCards, accent: "bg-sky-50 text-sky-700" },
-    { label: "Material requests", value: data.materialRequests.length, helper: `${totals.materialApprovalCount} awaiting action`, icon: Boxes, accent: "bg-violet-50 text-violet-700" },
-    { label: "Needs attention", value: attentionCount, helper: "Overdue or over budget", icon: AlertTriangle, accent: "bg-rose-50 text-rose-700" },
+  const cards = [
+    {
+      label: "Active Projects",
+      value: totals.activeProjects,
+      note: `${totals.completedProjects} completed`,
+      noteColor: "text-emerald-700",
+      line: "#16a34a",
+      points: SPARKLINES.green,
+      icon: ArrowUpRight,
+    },
+    {
+      label: "Pending Approvals",
+      value: totals.pendingApprovals,
+      note: "Awaiting review",
+      noteColor: "text-rose-600",
+      line: "#2563eb",
+      points: SPARKLINES.green,
+      icon: Clock3,
+    },
+    {
+      label: "Budget Used",
+      value: formatCeoCurrency(totals.totalSpent),
+      note: `${budgetPercent}% of ${formatCeoCurrency(totals.totalBudget)}`,
+      noteColor: "text-emerald-700",
+      line: "#16a34a",
+      points: SPARKLINES.green,
+      icon: ArrowUpRight,
+    },
+    {
+      label: "Material Requests",
+      value: data.materialRequests.length,
+      note: `${totals.materialApprovalCount} awaiting review`,
+      noteColor: "text-emerald-700",
+      line: "#2563eb",
+      points: SPARKLINES.blue,
+      icon: ArrowDownRight,
+    },
+    {
+      label: "Critical Issues",
+      value: attentionCount,
+      note: "Requires attention",
+      noteColor: "text-rose-600",
+      line: "#ef3340",
+      points: SPARKLINES.red,
+      icon: TriangleAlert,
+    },
   ];
 
   return (
-    <section aria-label="Executive summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-      {cards.map(({ label, value, helper, icon: Icon, accent }) => (
-        <article key={label} className="relative min-h-36 min-w-0 overflow-hidden rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,.055)]">
-          <div className="relative z-10 flex min-w-0 items-start gap-4">
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${accent}`}>
-              <Icon size={26} strokeWidth={1.9} aria-hidden="true" />
+    <section
+      aria-label="Executive summary"
+      className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-5"
+    >
+      {cards.map((card, index) => {
+        const NoteIcon = card.icon;
+        return (
+          <article
+            key={card.label}
+            className={`relative min-w-0 px-5 py-4 ${index ? "border-t border-slate-200 sm:border-l xl:border-t-0" : ""}`}
+          >
+            <p className="truncate whitespace-nowrap text-xs font-semibold text-slate-700">{card.label}</p>
+            <p className="mt-1.5 truncate whitespace-nowrap text-[25px] font-bold leading-none tracking-[-0.035em] text-slate-950 tabular-nums">
+              {card.value}
+            </p>
+            <div className="mt-3 flex flex-nowrap items-end justify-between gap-2 overflow-hidden">
+              <span className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-semibold ${card.noteColor}`}>
+                <NoteIcon size={12} strokeWidth={2.2} aria-hidden="true" />
+                <span className="whitespace-nowrap">{card.note}</span>
+              </span>
+              <div className="h-7 min-w-8 max-w-16 flex-1" aria-hidden="true">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={card.points.map((value) => ({ value }))}>
+                    <Line type="monotone" dataKey="value" stroke={card.line} strokeWidth={1.8} dot={false} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-500">{label}</p>
-              <p className="mt-1 text-4xl font-semibold tracking-[-0.045em] text-slate-950 tabular-nums">{value}</p>
-              <p className="mt-1 text-xs text-slate-400">{helper}</p>
-            </div>
-          </div>
-          {label === "Budget used" ? (
-            <div className="relative z-10 mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-teal-700" style={{ width: `${budgetPercent}%` }} />
-            </div>
-          ) : null}
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </section>
   );
 }

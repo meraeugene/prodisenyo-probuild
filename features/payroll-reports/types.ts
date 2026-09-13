@@ -10,10 +10,15 @@ export type PayrollRunRow = Pick<
   | "period_start"
   | "period_end"
   | "status"
+  | "gross_total"
   | "net_total"
   | "created_at"
   | "submitted_at"
->;
+> & {
+  employee_count: number;
+  hours_worked: number;
+  deductions_total: number;
+};
 
 export type PayrollRunItemRow = Pick<
   Database["public"]["Tables"]["payroll_run_items"]["Row"],

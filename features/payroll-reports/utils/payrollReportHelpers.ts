@@ -64,6 +64,18 @@ export function formatPayrollReportDateTime(value: string | null): string {
   });
 }
 
+export function formatPayrollReportCompactDateTime(value: string | null): string {
+  if (!value) return "Not submitted";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Not submitted";
+  return date.toLocaleString("en-PH", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function formatPayrollReportPeso(value: number): string {
   return `${PESO_SIGN} ${formatPayrollNumber(value)}`;
 }

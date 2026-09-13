@@ -18,11 +18,11 @@ export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
   );
 
   return (
-    <form action={formAction} className="space-y-7">
+    <form action={formAction} className="space-y-5">
       <input type="hidden" name="next" value={nextPath ?? ""} />
 
-      <div className="space-y-2.5">
-        <label htmlFor="username" className="block text-[15px] font-medium text-[#172238]">
+      <div className="space-y-2">
+        <label htmlFor="username" className="block text-[13px] font-medium text-[#172238]">
           Username
         </label>
         <input
@@ -32,12 +32,12 @@ export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
           autoComplete="username"
           placeholder="Enter your username"
           required
-          className="h-[62px] w-full rounded-[9px] border border-[#cfd5dd] bg-white px-5 text-[15px] text-[#172238] outline-none transition placeholder:text-[#8b95a7] hover:border-[#aab5c2] focus:border-[#08726f] focus:ring-4 focus:ring-[#08726f]/10"
+          className="h-11 w-full rounded-md border border-[#cfd5dd] bg-white px-3.5 text-sm text-[#172238] outline-none transition placeholder:text-[#8b95a7] hover:border-[#aab5c2] focus:border-[#08726f] focus:ring-2 focus:ring-[#08726f]/10"
         />
       </div>
 
-      <div className="space-y-2.5">
-        <label htmlFor="password" className="block text-[15px] font-medium text-[#172238]">
+      <div className="space-y-2">
+        <label htmlFor="password" className="block text-[13px] font-medium text-[#172238]">
           Password
         </label>
         <div className="relative">
@@ -48,21 +48,21 @@ export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
             autoComplete="current-password"
             placeholder="Enter your password"
             required
-            className="h-[62px] w-full rounded-[9px] border border-[#cfd5dd] bg-white px-5 pr-14 text-[15px] text-[#172238] outline-none transition placeholder:text-[#8b95a7] hover:border-[#aab5c2] focus:border-[#08726f] focus:ring-4 focus:ring-[#08726f]/10"
+            className="h-11 w-full rounded-md border border-[#cfd5dd] bg-white px-3.5 pr-11 text-sm text-[#172238] outline-none transition placeholder:text-[#8b95a7] hover:border-[#aab5c2] focus:border-[#08726f] focus:ring-2 focus:ring-[#08726f]/10"
           />
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
             aria-label={showPassword ? "Hide password" : "Show password"}
             aria-pressed={showPassword}
-            className="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-[#78859a] transition hover:bg-[#eef4f4] hover:text-[#075f5d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#08726f] focus-visible:ring-offset-2"
+            className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#78859a] transition hover:bg-[#eef4f4] hover:text-[#075f5d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#08726f] focus-visible:ring-offset-1"
           >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
           </button>
         </div>
       </div>
 
-      <div className="flex min-h-7 items-center gap-2 text-sm text-[#677286]">
+      <div className="flex min-h-5 items-center gap-2 text-xs text-[#677286]">
         <ShieldCheck className="h-4 w-4 text-[#08726f]" aria-hidden="true" />
         <span>Use your authorized company account</span>
       </div>
@@ -76,7 +76,7 @@ export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-[57px] w-full items-center justify-center gap-2 rounded-[7px] bg-[#076d69] px-5 text-base font-semibold text-white shadow-[0_10px_24px_rgba(7,109,105,0.16)] transition hover:bg-[#055f5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-65"
+        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#055f5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-65"
       >
         {pending ? (
           <>

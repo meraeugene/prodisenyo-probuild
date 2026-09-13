@@ -7,7 +7,6 @@ import {
   CreditCard,
   FileText,
   Package,
-  Percent,
   PhilippinePeso,
   RotateCcw,
   UserRound,
@@ -18,7 +17,7 @@ import { formatMoney, vatBreakdown } from "../utils/gmeaCalculations";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import GmeaExpenseItemsField from "./GmeaExpenseItemsField";
-import { MoneyField, SearchableSelect, TextField, VatFields } from "./GmeaFields";
+import { MoneyField, SearchableSelect, TextField } from "./GmeaFields";
 
 export default function GmeaExpenseForm({
   project,
@@ -81,11 +80,12 @@ export default function GmeaExpenseForm({
       saveLabel={expense ? "Save changes" : "Add expense"}
     >
       <fieldset disabled={readOnly} className="min-w-0">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="grid content-start gap-x-5 gap-y-5 sm:grid-cols-2">
+        <div className="grid gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
             <TextField label="Expense date *" type="date" required value={form.date} leadingIcon={<CalendarDays size={18} />} onChange={(event) => update("date", event.target.value)} />
 
-            <GmeaExpenseItemsField value={form.description} onChange={(value) => update("description", value)} />
+            <div className="sm:col-span-1 lg:col-span-2">
+              <GmeaExpenseItemsField value={form.description} onChange={(value) => update("description", value)} />
+            </div>
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
               <label htmlFor={categoryId} className="block">Category</label>
@@ -103,28 +103,35 @@ export default function GmeaExpenseForm({
             <TextField label="OR / invoice number" maxLength={100} value={form.invoice_number} leadingIcon={<FileText size={18} />} onChange={(event) => update("invoice_number", event.target.value)} />
             <SearchableSelect label="Invoice issued to" options={expenseOptions.invoiceNames} maxLength={200} value={form.invoice_name} leadingIcon={<UserRound size={18} />} onChange={(value) => update("invoice_name", value)} />
             <MoneyField label="Refunded Sir Edward (PHP)" value={form.refunded_amount} leadingIcon={<RotateCcw size={18} />} onValueChange={(value) => update("refunded_amount", value)} />
-          </section>
 
-          <div className="space-y-4">
-            <aside className="rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4">
-              <div className="mb-5 flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-100 text-teal-700"><Percent size={20} aria-hidden="true" /></span>
-                <div><h3 className="text-lg font-semibold text-slate-950">VAT calculation</h3><p className="mt-1 text-xs leading-5 text-slate-500">Automatically calculated from the amount and VAT treatment.</p></div>
-              </div>
-              <VatFields mode={form.vat_mode} onChange={(vat_mode, vat_rate) => setForm((current) => ({ ...current, vat_mode, vat_rate }))} />
-              <div className="mt-4 rounded-xl border border-slate-200/80 bg-white p-4 text-sm">
-                <p className="flex justify-between gap-3 text-slate-500"><span>{amountLabel}</span><strong className="text-slate-900">{formatMoney((form.vat_mode === "exclusive" ? totals?.base : totals?.gross) ?? null)}</strong></p>
-                <p className="mt-4 flex justify-between gap-3 text-slate-500"><span>VAT amount ({form.vat_rate}%)</span><strong className="text-slate-900">{formatMoney(totals?.vat ?? null)}</strong></p>
-                <p className="mt-4 flex justify-between gap-3 text-slate-500"><span>VAT-excluded amount</span><strong className="text-slate-900">{formatMoney(totals?.base ?? null)}</strong></p>
-                <p className="mt-4 flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-base font-semibold text-slate-950"><span>Total expense</span><strong>{formatMoney(totals?.gross ?? null)}</strong></p>
-              </div>
-            </aside>
+            <div className="space-y-1.5 text-sm font-medium text-slate-700">
+              <label htmlFor={`${categoryId}-vat`} className="block">VAT treatment</label>
+              <select
+                id={`${categoryId}-vat`}
+                className={inputClass}
+                value={form.vat_mode}
+                onChange={(event) => {
+                  const vat_mode = event.target.value as Expense["vat_mode"];
+                  setForm((current) => ({ ...current, vat_mode, vat_rate: vat_mode === "off" ? 0 : 12 }));
+                }}
+              >
+                <option value="off">No VAT</option>
+                <option value="inclusive">12% VAT included</option>
+                <option value="exclusive">Add 12% VAT</option>
+              </select>
+            </div>
 
-            <section className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
-              <label htmlFor={notesId} className="flex items-center gap-2 text-sm font-semibold text-slate-800"><FileText size={17} aria-hidden="true" /> Notes <span className="font-normal text-slate-400">(optional)</span></label>
-              <textarea id={notesId} className={inputClass + " mt-3 min-h-24 resize-y"} maxLength={1000} placeholder="Add a note about this expense..." value={form.notes} onChange={(event) => update("notes", event.target.value)} />
+            <div className="space-y-1.5 text-sm font-medium text-slate-700">
+              <label htmlFor={notesId} className="block">Notes <span className="font-normal text-slate-400">(optional)</span></label>
+              <input id={notesId} className={inputClass} maxLength={1000} placeholder="Add a short note" value={form.notes} onChange={(event) => update("notes", event.target.value)} />
+            </div>
+
+            <section className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 sm:col-span-2 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-4">
+              <div><p className="text-[11px] text-slate-500">{amountLabel}</p><p className="mt-1 text-sm font-semibold text-slate-900">{formatMoney((form.vat_mode === "exclusive" ? totals?.base : totals?.gross) ?? null)}</p></div>
+              <div><p className="text-[11px] text-slate-500">VAT ({form.vat_rate}%)</p><p className="mt-1 text-sm font-semibold text-slate-900">{formatMoney(totals?.vat ?? null)}</p></div>
+              <div><p className="text-[11px] text-slate-500">VAT excluded</p><p className="mt-1 text-sm font-semibold text-slate-900">{formatMoney(totals?.base ?? null)}</p></div>
+              <div><p className="text-[11px] font-medium text-slate-600">Total expense</p><p className="mt-1 text-base font-bold text-slate-950">{formatMoney(totals?.gross ?? null)}</p></div>
             </section>
-          </div>
         </div>
       </fieldset>
     </GmeaDialog>

@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
+import CeoBannerStatusCard from "@/components/CeoBannerStatusCard";
 
 export default function CeoDashboardBanner({ name, approvals, href }: {
   name: string; approvals: number; href: string;
@@ -15,11 +15,13 @@ export default function CeoDashboardBanner({ name, approvals, href }: {
           <h1 className="mt-3 text-[34px] font-bold leading-tight tracking-[-0.045em] sm:text-[42px]">Executive dashboard</h1>
           <p className="mt-3 text-sm text-white/85">Good day, {name}. Your projects, finances, and decisions in one place.</p>
         </div>
-        <Link href={href} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/70 bg-white px-4 py-3 text-xs font-bold text-[#076d69] shadow-sm transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-          Review approvals
-          {approvals > 0 && <span className="rounded-full bg-teal-50 px-2 py-0.5">{approvals}</span>}
-          <ArrowUpRight size={16} />
-        </Link>
+        <CeoBannerStatusCard
+          icon={ClipboardCheck}
+          label="Awaiting review"
+          value={approvals}
+          href={href}
+          ariaLabel={`Review ${approvals} pending approvals`}
+        />
       </div>
     </header>
   );

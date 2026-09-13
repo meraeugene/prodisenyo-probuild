@@ -1,69 +1,32 @@
-import { Banknote, Building2, CheckCircle2, FileClock } from "lucide-react";
+"use client";
+
+import { Line, LineChart, ResponsiveContainer } from "recharts";
 import type { PayrollRunRow } from "../types";
 import { formatPayrollReportPeso } from "../utils/payrollReportHelpers";
+import { buildPayrollApprovalAnalytics } from "../utils/payrollApprovalAnalytics";
 
-export default function PayrollApprovalSummary({
-  reports,
-}: {
-  reports: PayrollRunRow[];
-}) {
+export default function PayrollApprovalSummary({ reports }: { reports: PayrollRunRow[] }) {
   const pending = reports.filter((report) => report.status === "submitted");
   const approved = reports.filter((report) => report.status === "approved");
-  const pendingValue = pending.reduce(
-    (total, report) => total + Number(report.net_total || 0),
-    0,
-  );
+  const pendingValue = pending.reduce((sum, report) => sum + Number(report.net_total || 0), 0);
   const sites = new Set(reports.map((report) => report.site_name).filter(Boolean));
-  const cards = [
-    {
-      label: "Pending payrolls",
-      value: pending.length,
-      helper: "Waiting for a CEO decision",
-      icon: FileClock,
-      tone: "bg-amber-50 text-amber-700",
-    },
-    {
-      label: "Pending value",
-      value: formatPayrollReportPeso(pendingValue),
-      helper: "Combined net payroll for review",
-      icon: Banknote,
-      tone: "bg-teal-50 text-teal-700",
-    },
-    {
-      label: "Approved payrolls",
-      value: approved.length,
-      helper: "Visible in the current archive",
-      icon: CheckCircle2,
-      tone: "bg-sky-50 text-sky-700",
-    },
-    {
-      label: "Project sites",
-      value: sites.size,
-      helper: "Represented in payroll reports",
-      icon: Building2,
-      tone: "bg-violet-50 text-violet-700",
-    },
+  const trend = buildPayrollApprovalAnalytics(reports).trend;
+  const entries = [
+    { label: "Pending Payrolls", value: pending.length, note: "Awaiting CEO review", color: "#1673ea", points: trend.map((item) => ({ value: item.net })) },
+    { label: "Pending Value", value: formatPayrollReportPeso(pendingValue), note: "Net payroll for review", color: "#1673ea", points: trend.map((item) => ({ value: item.net })) },
+    { label: "Approved Payrolls", value: approved.length, note: "Approved payroll runs", color: "#159447", points: trend.map((item) => ({ value: item.gross })) },
+    { label: "Project Sites", value: sites.size, note: "With payroll records", color: "#1673ea", points: trend.map((item, index) => ({ value: item.net ? index + 1 : 0 })) },
   ];
 
   return (
-    <section
-      aria-label="Payroll approval summary"
-      className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4"
-    >
-      {cards.map(({ label, value, helper, icon: Icon, tone }) => (
-        <article
-          key={label}
-          className="flex min-w-0 items-start gap-4 rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)]"
-        >
-          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${tone}`}>
-            <Icon size={20} aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xs font-medium text-slate-500">{label}</h2>
-            <p className="mt-1.5 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">
-              {value}
-            </p>
-            <p className="mt-1 text-[10px] leading-4 text-slate-400">{helper}</p>
+    <section aria-label="Payroll approval summary" className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-4">
+      {entries.map((entry, index) => (
+        <article key={entry.label} className={`min-w-0 px-5 py-4 ${index ? "border-t border-slate-200 sm:border-l xl:border-t-0" : ""}`}>
+          <p className="truncate whitespace-nowrap text-xs font-semibold text-slate-700">{entry.label}</p>
+          <p className="mt-1.5 truncate whitespace-nowrap text-[25px] font-bold leading-none tracking-[-0.035em] text-slate-950 tabular-nums">{entry.value}</p>
+          <div className="mt-3 flex flex-nowrap items-end justify-between gap-2 overflow-hidden">
+            <span className="shrink-0 whitespace-nowrap text-[10px] font-medium text-slate-500">{entry.note}</span>
+            <div className="h-7 min-w-10 flex-1" aria-hidden="true"><ResponsiveContainer width="100%" height="100%"><LineChart data={entry.points.length ? entry.points : [{ value: 0 }]}><Line type="monotone" dataKey="value" stroke={entry.color} strokeWidth={1.8} dot={false} isAnimationActive={false} /></LineChart></ResponsiveContainer></div>
           </div>
         </article>
       ))}

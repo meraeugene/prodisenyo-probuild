@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { CheckCircle2, Clock3 } from "lucide-react";
+import CeoBannerStatusCard from "@/components/CeoBannerStatusCard";
 
 export default function PayrollApprovalsHero({ pending }: { pending: number }) {
   return (
@@ -22,21 +23,14 @@ export default function PayrollApprovalsHero({ pending }: { pending: number }) {
             Payroll approvals
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/82">
-            Review payroll totals, inspect attendance details, and release each
-            pay period with confidence.
+            Review and approve payroll runs across all project sites.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/12 px-4 py-3 backdrop-blur-sm">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/15">
-            {pending ? <Clock3 size={20} /> : <CheckCircle2 size={20} />}
-          </span>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
-              Awaiting review
-            </p>
-            <p className="mt-0.5 text-2xl font-bold tabular-nums">{pending}</p>
-          </div>
-        </div>
+        <CeoBannerStatusCard
+          icon={pending ? Clock3 : CheckCircle2}
+          label="Awaiting review"
+          value={pending}
+        />
       </div>
     </header>
   );

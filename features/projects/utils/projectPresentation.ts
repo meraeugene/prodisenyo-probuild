@@ -10,6 +10,15 @@ export function formatProjectCurrency(value: number) {
   }).format(value);
 }
 
+export function formatCompactProjectCurrency(value: number) {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 export function getProjectStatusPresentation(project: ProjectRecord): {
   label: string;
   tone: ProjectStatusTone;

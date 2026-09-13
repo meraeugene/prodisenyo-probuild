@@ -1,87 +1,62 @@
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ProjectThumbnail from "@/features/projects/components/ProjectThumbnail";
 import type { CeoDashboardProject } from "@/features/ceo-dashboard/types";
-import {
-  formatCeoCurrency,
-  formatCeoDate,
-} from "@/features/ceo-dashboard/utils/ceoDashboard";
+import { formatCeoCurrency, formatCeoDate } from "@/features/ceo-dashboard/utils/ceoDashboard";
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-teal-50 text-teal-700",
-  completed: "bg-sky-50 text-sky-700",
-  planning: "bg-amber-50 text-amber-700",
-  on_hold: "bg-rose-50 text-rose-700",
+  active: "text-emerald-700",
+  completed: "text-blue-700",
+  planning: "text-amber-700",
+  on_hold: "text-rose-700",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  active: "Active",
+  active: "On Track",
   completed: "Completed",
   planning: "Planning",
-  on_hold: "On Hold",
+  on_hold: "At Risk",
 };
 
-export default function CeoDashboardProjectsPanel({
-  projects,
-}: {
-  projects: CeoDashboardProject[];
-}) {
+export default function CeoDashboardProjectsPanel({ projects }: { projects: CeoDashboardProject[] }) {
+  const onTrack = projects.filter((project) => project.status === "active" || project.status === "completed").length;
+  const atRisk = projects.filter((project) => project.status === "on_hold").length;
+
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_30px_-24px_rgba(15,23,42,.7)]">
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
-        <div>
-          <h2 className="font-bold text-slate-950">Project portfolio</h2>
-          <p className="mt-1 text-xs text-slate-500">Health, spend, and delivery status at a glance</p>
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+        <h2 className="text-base font-bold tracking-tight text-slate-950">Project Portfolio</h2>
+        <div className="flex items-center gap-5 text-xs font-medium text-slate-500">
+          <Link href="/projects" className="border-b-2 border-emerald-600 pb-2 font-semibold text-slate-900">All Projects ({projects.length})</Link>
+          <span>On Track ({onTrack})</span>
+          <span>At Risk ({atRisk})</span>
         </div>
-        <Link href="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950">
-          View all <ArrowRight size={13} />
-        </Link>
       </div>
-      <div className="hidden grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] gap-4 border-b border-slate-100 bg-slate-50/80 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-500 lg:grid">
-        <span>Project</span><span>Progress</span><span>Budget used</span><span>Schedule</span><span>Status</span>
+      <div className="hidden grid-cols-[minmax(190px,1.35fr)_minmax(105px,.75fr)_minmax(125px,.8fr)_minmax(110px,.75fr)_minmax(90px,.6fr)_minmax(100px,.7fr)_28px] gap-3 border-b border-slate-100 bg-slate-50/40 px-5 py-2 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400 lg:grid">
+        <span>Project</span><span>Progress</span><span>Budget Used</span><span>Schedule</span><span>Status</span><span>PM</span><span />
       </div>
       <div className="divide-y divide-slate-100">
         {projects.slice(0, 5).map((project) => (
-          <Link
-            key={project.id}
-            href={"/projects/" + project.id}
-            className="grid gap-4 px-5 py-4 transition hover:bg-teal-50/30 focus-visible:bg-teal-50/40 focus-visible:outline-none lg:grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] lg:items-center"
-          >
+          <Link key={project.id} href={`/projects/${project.id}`} className="grid gap-3 px-5 py-3 transition hover:bg-slate-50/70 lg:grid-cols-[minmax(190px,1.35fr)_minmax(105px,.75fr)_minmax(125px,.8fr)_minmax(110px,.75fr)_minmax(90px,.6fr)_minmax(100px,.7fr)_28px] lg:items-center">
             <div className="flex min-w-0 items-center gap-3">
-              <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-14 w-20 shrink-0 rounded-lg object-cover" />
+              <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-10 w-12 shrink-0 rounded-md object-cover" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-slate-950">{project.name}</p>
-                <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
-                  <MapPin size={11} /> {project.location}
-                </p>
-                <p className="mt-1 truncate text-[11px] text-slate-400">{project.engineer}</p>
+                <p className="truncate text-xs font-semibold text-slate-900">{project.name}</p>
+                <p className="mt-0.5 truncate text-[10px] text-slate-400">{project.location}</p>
               </div>
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-950">{project.progress}%</p>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-teal-700" style={{ width: project.progress + "%" }} />
-              </div>
-              <p className="mt-1 text-[10px] text-slate-400">
-                {project.latestProgressAt ? "Updated " + formatCeoDate(project.latestProgressAt) : "No progress update"}
-              </p>
+              <p className="text-xs font-semibold text-slate-800">{project.progress}%</p>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-emerald-600" style={{ width: `${project.progress}%` }} /></div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-slate-950">{formatCeoCurrency(project.spent)}</p>
-              <p className="mt-1 text-[11px] text-slate-500">of {formatCeoCurrency(project.budget)}</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-800">{formatCeoDate(project.endDate)}</p>
-              <p className="mt-1 text-[11px] text-slate-500">Target completion</p>
-            </div>
-            <span className={"w-fit rounded-full px-2.5 py-1 text-[11px] font-bold " + (STATUS_STYLES[project.status] || STATUS_STYLES.planning)}>
-              {STATUS_LABELS[project.status] || project.status}
-            </span>
+            <div><p className="text-xs font-semibold text-slate-900">{formatCeoCurrency(project.spent)}</p><p className="mt-0.5 text-[10px] text-slate-400">of {formatCeoCurrency(project.budget)}</p></div>
+            <p className="text-[11px] text-slate-500">{formatCeoDate(project.endDate)}</p>
+            <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${STATUS_STYLES[project.status] || STATUS_STYLES.planning}`}><i className="h-1.5 w-1.5 rounded-full bg-current" />{STATUS_LABELS[project.status] || project.status}</span>
+            <p className="truncate text-[11px] text-slate-600">{project.engineer}</p>
+            <ArrowRight size={14} className="text-slate-400" />
           </Link>
         ))}
-        {!projects.length ? (
-          <p className="px-5 py-12 text-center text-sm text-slate-500">No project records are available.</p>
-        ) : null}
+        {!projects.length ? <p className="px-5 py-12 text-center text-sm text-slate-500">No project records are available.</p> : null}
       </div>
     </section>
   );

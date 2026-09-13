@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type KeyboardEvent } from "react";
+import { Plus, X } from "lucide-react";
 import { inputClass } from "../utils/gmeaConstants";
 import {
   parseExpenseDescriptions,
@@ -32,26 +33,24 @@ export default function GmeaExpenseItemsField({
     requestAnimationFrame(() => inputs.current[afterIndex + 1]?.focus());
   }
 
+  function removeItem(index: number) {
+    if (items.length === 1) return;
+    updateItems(items.filter((_, itemIndex) => itemIndex !== index));
+  }
+
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>, index: number) {
     if (event.key !== "Enter") return;
     event.preventDefault();
     addItem(index);
   }
 
-  function removeItem(index: number) {
-    if (items.length === 1) return;
-    const nextItems = items.filter((_, itemIndex) => itemIndex !== index);
-    updateItems(nextItems);
-    requestAnimationFrame(() => inputs.current[Math.max(0, index - 1)]?.focus());
-  }
-
   return (
-    <div className="space-y-2 text-sm font-medium text-slate-700">
+    <div className="space-y-1.5 text-sm font-medium text-slate-700">
       <label htmlFor="expense-item-0" className="block">Description / items *</label>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {items.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-sm font-semibold text-teal-700" aria-hidden="true">
+            <span className="w-5 shrink-0 text-center text-xs font-semibold text-teal-700" aria-hidden="true">
               {index + 1}.
             </span>
             <input
@@ -60,25 +59,32 @@ export default function GmeaExpenseItemsField({
               className={inputClass}
               required={index === 0}
               maxLength={300}
-              placeholder={index === 0 ? "Enter the first expense item" : "Enter another item"}
+              placeholder={index === 0 ? "Enter an expense item" : "Add another item"}
               value={item}
               onChange={(event) => updateItems(items.map((current, itemIndex) => itemIndex === index ? event.target.value : current))}
               onKeyDown={(event) => handleKeyDown(event, index)}
             />
-            {items.length > 1 && (
-              <button type="button" aria-label={`Remove item ${index + 1}`} className="shrink-0 rounded-lg px-2 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50" onClick={() => removeItem(index)}>
-                Remove
+            {items.length > 1 ? (
+              <button
+                type="button"
+                aria-label={`Remove item ${index + 1}`}
+                className="grid size-8 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                onClick={() => removeItem(index)}
+              >
+                <X size={15} aria-hidden="true" />
               </button>
-            )}
+            ) : null}
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between gap-3 pl-12">
-        <p className="text-xs font-normal text-slate-400">Press Enter to add the next numbered item.</p>
-        <button type="button" className="shrink-0 text-xs font-semibold text-teal-700 hover:text-teal-900" onClick={() => addItem()}>
-          Add item
-        </button>
-      </div>
+      <button
+        type="button"
+        className="ml-7 inline-flex items-center gap-1 text-xs font-semibold text-teal-700 hover:text-teal-900"
+        onClick={() => addItem()}
+      >
+        <Plus size={14} aria-hidden="true" />
+        Add another item
+      </button>
     </div>
   );
 }

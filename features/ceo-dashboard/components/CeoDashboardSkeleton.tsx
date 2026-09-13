@@ -1,30 +1,36 @@
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 
+function MetricStripSkeleton() {
+  return (
+    <div className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-5">
+      {Array.from({ length: 5 }, (_, index) => (
+        <div key={index} className={`min-h-[116px] px-5 py-4 ${index ? "border-t border-slate-100 sm:border-l xl:border-t-0" : ""}`}>
+          <Block className="h-3 w-24" />
+          <Block className="mt-2 h-7 w-20" />
+          <div className="mt-3 flex justify-between gap-3"><Block className="h-3 w-20" /><Block className="h-7 w-16" /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CeoDashboardSkeleton() {
   return (
-    <main role="status" aria-label="Loading dashboard" className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <header className="mb-6 rounded-3xl bg-[#075e5b] px-5 py-6 sm:px-7 sm:py-7">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0"><Block light className="mb-3 h-6 w-28 rounded-full" /><Block light className="h-9 w-96 sm:h-10" /><Block light className="mt-2 h-5 w-[32rem]" /></div>
-          <Block light className="h-10 w-44 shrink-0 rounded-xl" />
-        </div>
+    <main role="status" aria-label="Loading dashboard" className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <header className="rounded-[22px] bg-[#075e5b] px-6 py-8 sm:px-9">
+        <Block light className="h-3 w-44" /><Block light className="mt-3 h-10 w-80" /><Block light className="mt-3 h-4 w-96 max-w-full" />
       </header>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{Array.from({ length: 5 }, (_, i) => <SkeletonPanel key={i} className="p-4"><div className="flex items-center justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-8 w-8 shrink-0" /></div><Block className="mt-2 h-8 w-20" /><Block className="mt-2 h-4 w-36" />{i === 2 && <Block className="mt-3 h-1.5 w-full" />}</SkeletonPanel>)}</div>
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        {[0, 1, 2].map((index) => (
-          <SkeletonPanel key={index} className="min-w-0 p-5">
-            <Block className="h-5 w-36" />
-            <Block className={index === 1 ? "mx-auto mt-6 h-40 w-40 rounded-full" : "mt-6 h-48 w-full rounded-xl"} />
-            {index === 1 && <Block className="mt-4 h-10 w-full" />}
-          </SkeletonPanel>
-        ))}
+      <div className="mt-4 space-y-4">
+        <MetricStripSkeleton />
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,.95fr)]">
+          <SkeletonPanel className="h-[390px] rounded-xl p-5"><Block className="h-5 w-44" /><Block className="mt-5 h-64 w-full" /><Block className="mt-4 h-16 w-full" /></SkeletonPanel>
+          <SkeletonPanel className="h-[390px] rounded-xl p-5"><Block className="h-5 w-36" /><div className="mt-5 space-y-5">{Array.from({ length: 5 }, (_, index) => <Block key={index} className="h-8 w-full" />)}</div></SkeletonPanel>
+        </div>
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
+          <SkeletonPanel className="h-[330px] rounded-xl p-5"><Block className="h-5 w-40" /><div className="mt-6 space-y-5">{Array.from({ length: 4 }, (_, index) => <Block key={index} className="h-11 w-full" />)}</div></SkeletonPanel>
+          <SkeletonPanel className="h-[330px] rounded-xl p-5"><Block className="h-5 w-48" /><div className="mt-6 space-y-5">{Array.from({ length: 4 }, (_, index) => <Block key={index} className="h-10 w-full" />)}</div></SkeletonPanel>
+        </div>
       </div>
-      <SkeletonPanel className="mt-5 p-0 overflow-hidden">
-        <div className="px-5 py-5"><Block className="h-6 w-36" /><Block className="mt-1 h-4 w-64" /></div>
-        <div className="hidden h-10 border-y border-slate-100 bg-slate-50 lg:block" />
-        {Array.from({ length: 5 }, (_, i) => <div key={i} className="grid gap-4 border-b border-slate-100 px-5 py-4 lg:grid-cols-[minmax(220px,1.3fr)_minmax(110px,.65fr)_minmax(135px,.7fr)_minmax(120px,.65fr)_auto] lg:items-center"><div className="flex items-center gap-3"><Block className="h-14 w-20 shrink-0" /><div><Block className="h-4 w-32" /><Block className="mt-2 h-3 w-24" /></div></div>{Array.from({ length: 4 }, (_, j) => <Block key={j} className="h-8 w-24" />)}</div>)}
-      </SkeletonPanel>
-      <SkeletonPanel className="mt-6"><Block className="h-6 w-36" /><div className="mt-5 grid grid-cols-2 gap-3">{[0,1,2,3].map(j => <Block key={j} className="h-16 w-full" />)}</div></SkeletonPanel>
     </main>
   );
 }

@@ -5,7 +5,6 @@ import PayrollApprovalQueue from "@/features/payroll/components/PayrollApprovalQ
 import type { OvertimeRequestRecord } from "@/features/overtime-requests/types";
 import type { PendingOvertimeRequest } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 import OvertimeApprovalsHero from "./OvertimeApprovalsHero";
-import OvertimeApprovalSummary from "./OvertimeApprovalSummary";
 
 export default function OvertimeApprovalsPageClient({
   initialRequests,
@@ -23,10 +22,6 @@ export default function OvertimeApprovalsPageClient({
     <div className="min-h-full bg-white p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-[1560px] space-y-4">
         <OvertimeApprovalsHero pending={pending} />
-        <OvertimeApprovalSummary
-          payrollRequests={initialRequests}
-          staffRequests={initialOvertimeRequests}
-        />
 
         <div className="grid items-start gap-5 pt-1 xl:grid-cols-2">
           <div className="min-w-0">

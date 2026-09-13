@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BarChart3 } from "lucide-react";
+import CeoBannerStatusCard from "@/components/CeoBannerStatusCard";
 
 export default function PayrollAnalyticsHero({ periodLabel }: { periodLabel?: string }) {
   return (
@@ -12,10 +13,12 @@ export default function PayrollAnalyticsHero({ periodLabel }: { periodLabel?: st
           <h1 className="mt-3 text-[34px] font-bold leading-tight tracking-[-0.045em] sm:text-[42px]">Payroll analytics</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/82">Follow payroll costs, workforce distribution, overtime, and project spending across every saved pay period.</p>
         </div>
-        <div className="flex max-w-full shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/12 px-4 py-3 backdrop-blur-sm">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15"><BarChart3 size={20} aria-hidden="true" /></span>
-          <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">Selected period</p><p className="mt-1 max-w-64 truncate text-xs font-bold">{periodLabel || "No saved period"}</p></div>
-        </div>
+        <CeoBannerStatusCard
+          icon={BarChart3}
+          label="Selected period"
+          value={periodLabel || "No saved period"}
+          valueClassName="max-w-64 text-xs"
+        />
       </div>
     </header>
   );

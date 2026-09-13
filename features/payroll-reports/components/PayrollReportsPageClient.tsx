@@ -6,6 +6,7 @@ import { usePayrollReportsPage } from "@/features/payroll-reports/hooks/usePayro
 import type { PayrollRunRow } from "@/features/payroll-reports/types";
 import PayrollApprovalsHero from "./PayrollApprovalsHero";
 import PayrollApprovalSummary from "./PayrollApprovalSummary";
+import PayrollApprovalAnalytics from "./PayrollApprovalAnalytics";
 
 export default function PayrollReportsPageClient({
   initialData,
@@ -19,11 +20,11 @@ export default function PayrollReportsPageClient({
       <div className="mx-auto max-w-[1560px] space-y-4">
         <PayrollApprovalsHero pending={state.pendingReportsCount} />
         <PayrollApprovalSummary reports={state.sortedReports} />
+        <PayrollApprovalAnalytics reports={state.sortedReports} />
 
         <PayrollReportsArchiveSection
           reports={state.sortedReports}
           refreshing={state.refreshing}
-          pendingReportsCount={state.pendingReportsCount}
           deletingRunId={state.deletingRunId}
           pendingDecisionRunId={state.pendingDecisionRunId}
           pendingDecisionAction={state.pendingDecisionAction}

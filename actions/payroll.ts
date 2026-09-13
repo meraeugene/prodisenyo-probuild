@@ -159,7 +159,7 @@ async function loadPayrollReportsData(
   const { data, error } = await database
     .from("payroll_runs")
     .select(
-      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at",
+      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, gross_total, net_total, created_at, submitted_at",
     )
     .neq("status", "draft")
     .order("submitted_at", { ascending: false })
@@ -169,8 +169,42 @@ async function loadPayrollReportsData(
     throw new Error(`Unable to load payroll reports. ${error.message}`);
   }
 
+  const runs = data ?? [];
+  const runIds = runs.map((run: { id: string }) => run.id);
+  const { data: itemRows, error: itemsError } = runIds.length
+    ? await database
+        .from("payroll_run_items")
+        .select("payroll_run_id, hours_worked, deductions_total")
+        .in("payroll_run_id", runIds)
+    : { data: [], error: null };
+
+  if (itemsError) {
+    throw new Error(`Unable to load payroll report totals. ${itemsError.message}`);
+  }
+
+  const totalsByRun = new Map<string, { employees: number; hours: number; deductions: number }>();
+  for (const item of itemRows ?? []) {
+    const current = totalsByRun.get(item.payroll_run_id) ?? {
+      employees: 0,
+      hours: 0,
+      deductions: 0,
+    };
+    current.employees += 1;
+    current.hours += Number(item.hours_worked || 0);
+    current.deductions += Number(item.deductions_total || 0);
+    totalsByRun.set(item.payroll_run_id, current);
+  }
+
   return {
-    reports: (data ?? []) as PayrollRunRow[],
+    reports: runs.map((run: Omit<PayrollRunRow, "employee_count" | "hours_worked" | "deductions_total">) => {
+      const totals = totalsByRun.get(run.id);
+      return {
+        ...run,
+        employee_count: totals?.employees ?? 0,
+        hours_worked: totals?.hours ?? 0,
+        deductions_total: totals?.deductions ?? 0,
+      };
+    }),
   };
 }
 
@@ -184,7 +218,7 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
   const { data: report, error: reportError } = await database
     .from("payroll_runs")
     .select(
-      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, net_total, created_at, submitted_at",
+      "id, attendance_import_id, site_name, period_label, period_start, period_end, status, gross_total, net_total, created_at, submitted_at",
     )
     .eq("id", runId)
     .single();

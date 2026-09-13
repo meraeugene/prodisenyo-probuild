@@ -1,10 +1,9 @@
-import Link from "next/link";
 import CeoDashboardBanner from "./CeoDashboardBanner";
 import CeoDashboardCharts from "./CeoDashboardCharts";
-import { ArrowRight } from "lucide-react";
-import CeoBudgetSnapshot from "@/features/ceo-dashboard/components/CeoBudgetSnapshot";
+import CeoDashboardApprovalQueue from "@/features/ceo-dashboard/components/CeoDashboardApprovalQueue";
 import CeoDashboardProjectsPanel from "@/features/ceo-dashboard/components/CeoDashboardProjectsPanel";
 import CeoDashboardSummaryCards from "@/features/ceo-dashboard/components/CeoDashboardSummaryCards";
+import CeoRecentProgressPanel from "@/features/ceo-dashboard/components/CeoRecentProgressPanel";
 import type { CeoDashboardData } from "@/features/ceo-dashboard/types";
 import {
   buildCeoApprovalQueue,
@@ -25,28 +24,21 @@ export default function CeoDashboardPage({
   const reviewApprovalsHref = getCeoReviewApprovalsHref(approvalQueue);
 
   return (
-    <main className="min-h-full space-y-4 bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <main className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <CeoDashboardBanner name={displayName} approvals={totals.pendingApprovals} href={reviewApprovalsHref} />
 
-      <CeoDashboardSummaryCards data={data} />
-      <CeoDashboardCharts projects={data.projects} />
+      <div className="mt-4 space-y-4">
+        <CeoDashboardSummaryCards data={data} />
 
-      <div className="mt-5">
-        <CeoDashboardProjectsPanel projects={data.projects} />
-      </div>
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,.95fr)]">
+          <CeoDashboardCharts projects={data.projects} />
+          <CeoDashboardApprovalQueue items={approvalQueue} />
+        </div>
 
-      <div className="mt-6">
-        <CeoBudgetSnapshot
-          totalBudget={totals.totalBudget}
-          estimatedCost={totals.estimatedCost}
-          totalSpent={totals.totalSpent}
-        />
-      </div>
-
-      <div className="mt-5 flex justify-end">
-        <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-800 hover:text-teal-950">
-          Open project portfolio <ArrowRight size={14} />
-        </Link>
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
+          <CeoDashboardProjectsPanel projects={data.projects} />
+          <CeoRecentProgressPanel updates={data.progressUpdates} />
+        </div>
       </div>
     </main>
   );

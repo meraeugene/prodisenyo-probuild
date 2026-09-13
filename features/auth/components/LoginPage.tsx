@@ -9,10 +9,10 @@ interface LoginPageProps {
 
 export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
   return (
-    <main className="min-h-screen bg-[#f7f9fb] lg:grid lg:grid-cols-[51.8%_48.2%]">
+    <main className="min-h-screen bg-[#f7f9fb] lg:grid lg:grid-cols-[58%_42%]">
       <LoginHero />
 
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-5 py-8 sm:px-8 lg:px-[7%] lg:py-10">
+      <section className="relative flex min-h-screen flex-col items-center justify-center bg-white px-5 py-8 sm:px-8 lg:px-[9%] lg:py-10">
         <div className="mb-8 flex items-center gap-3 lg:hidden">
           <Image
             src="/prodisenyo-building-mark.png"
@@ -31,36 +31,36 @@ export default function LoginPage({ nextPath, initialError }: LoginPageProps) {
           </div>
         </div>
 
-        <div className="w-full max-w-[578px] rounded-[12px] border border-[#e1e5e9] bg-white px-6 py-10 shadow-[0_18px_55px_rgba(35,50,67,0.08)] sm:px-12 sm:py-14 lg:min-h-[696px] lg:px-[50px] lg:py-[56px]">
-          <header className="text-center">
-            <h2 className="text-[32px] font-semibold tracking-[-0.035em] text-[#162238] sm:text-[36px]">
+        <div className="w-full max-w-[440px] py-6">
+          <header>
+            <h2 className="text-[28px] font-semibold tracking-[-0.035em] text-[#162238] sm:text-[30px]">
               Welcome back
             </h2>
-            <p className="mt-2.5 text-[16px] text-[#7a8496] sm:text-[17px]">
+            <p className="mt-1.5 text-sm text-[#7a8496]">
               Sign in to continue to Prodisenyo ProBuild
             </p>
           </header>
 
-          <div className="mt-11">
+          <div className="mt-8">
             <LoginForm nextPath={nextPath} initialError={initialError} />
           </div>
 
-          <div className="mt-9 flex items-center gap-5" aria-hidden="true">
+          <div className="mt-7 flex items-center gap-4" aria-hidden="true">
             <span className="h-px flex-1 bg-[#dce1e7]" />
-            <span className="text-sm text-[#8791a1]">or</span>
+            <span className="text-xs text-[#8791a1]">or</span>
             <span className="h-px flex-1 bg-[#dce1e7]" />
           </div>
 
           <a
             href="mailto:andrewvillalon.dev@gmail.com"
             aria-label="Contact administrator at andrewvillalon.dev@gmail.com"
-            className="mt-8 block text-center text-[15px] font-medium text-[#076966] hover:underline"
+            className="mt-6 block text-center text-sm font-medium text-[#076966] hover:underline"
           >
             Contact Administrator
           </a>
         </div>
 
-        <p className="mt-10 text-center text-sm text-[#8a93a2] lg:mt-[6vh]">
+        <p className="mt-8 text-center text-xs text-[#8a93a2] lg:mt-[5vh]">
           {"\u00A9"} {new Date().getFullYear()} Prodisenyo ProBuild. All rights reserved.
         </p>
       </section>
