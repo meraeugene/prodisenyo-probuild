@@ -3,7 +3,6 @@ import LandingFooter from "@/features/landing-page/components/LandingFooter";
 import LandingHeader from "@/features/landing-page/components/LandingHeader";
 import LandingHero from "@/features/landing-page/components/LandingHero";
 import ModuleGrid from "@/features/landing-page/components/ModuleGrid";
-import ProductTour from "@/features/landing-page/components/ProductTour";
 import RolesSection from "@/features/landing-page/components/RolesSection";
 import WorkflowSection from "@/features/landing-page/components/WorkflowSection";
 
@@ -14,7 +13,6 @@ export default function LandingPage() {
       <LandingHero />
       <ModuleGrid />
       <WorkflowSection />
-      <ProductTour />
       <RolesSection />
       <LandingCta />
       <LandingFooter />

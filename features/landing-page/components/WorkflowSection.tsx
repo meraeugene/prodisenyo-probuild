@@ -1,41 +1,18 @@
-import { ArrowRight } from "lucide-react";
-import LandingIcon from "@/features/landing-page/components/LandingIcon";
 import LandingSectionHeading from "@/features/landing-page/components/LandingSectionHeading";
 import { landingWorkflow } from "@/features/landing-page/utils/landingContent";
 
 export default function WorkflowSection() {
   return (
-    <section
-      id="workflow"
-      className="scroll-mt-24 border-y border-teal-950/10 bg-[#f4f8f6] py-20 sm:py-24"
-    >
-      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-10">
-        <LandingSectionHeading
-          eyebrow="How ProBuild works"
-          title="From assignment to close"
-          description="Move each project forward with clear ownership and approvals."
-        />
-
-        <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6 lg:gap-2">
+    <section id="workflow" className="scroll-mt-24 bg-[#076d69] bg-[url('/landing/prodisenyo-building-blocks-login-teal.png')] bg-cover bg-center py-20 sm:py-24">
+      <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
+        <LandingSectionHeading eyebrow="How ProBuild works" title="From assignment to close" description="Move each project forward with clear ownership and approvals." inverse />
+        <ol className="mt-12 grid gap-y-8 sm:grid-cols-2 lg:grid-cols-6 lg:gap-0">
           {landingWorkflow.map((step, index) => (
-            <li key={step.label} className="relative">
-              <article className="h-full rounded-2xl border border-teal-950/10 bg-white px-5 py-6 text-center">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-teal-700/20 bg-teal-50 text-teal-800">
-                  <LandingIcon name={step.icon} className="h-5 w-5" />
-                </span>
-                <p className="mt-4 text-sm font-bold text-[#103d39]">
-                  {index + 1}. {step.label}
-                </p>
-                <p className="mt-2 text-xs leading-5 text-slate-500">
-                  {step.description}
-                </p>
-              </article>
-              {index < landingWorkflow.length - 1 ? (
-                <ArrowRight
-                  className="absolute -right-3 top-1/2 z-10 hidden h-4 w-4 -translate-y-1/2 text-teal-700 lg:block"
-                  aria-hidden="true"
-                />
-              ) : null}
+            <li key={step.label} className="relative px-3 text-center">
+              {index < landingWorkflow.length - 1 ? <span className="absolute left-[62%] top-5 hidden h-px w-[76%] bg-white/45 lg:block" aria-hidden="true" /> : null}
+              <span className="relative z-10 mx-auto grid size-10 place-items-center rounded-full border border-teal-100/70 bg-[#076d69] text-sm font-bold text-white">{index + 1}</span>
+              <h3 className="mt-4 text-sm font-bold text-white">{step.label}</h3>
+              <p className="mt-2 text-xs leading-5 text-teal-50/70">{step.description}</p>
             </li>
           ))}
         </ol>

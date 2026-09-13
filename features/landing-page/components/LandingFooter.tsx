@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export default function LandingFooter() {
   return (
-    <footer className="bg-[#083e39] text-white">
-      <div className="mx-auto grid max-w-[1320px] gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.7fr_0.7fr] lg:px-10">
+    <footer className="bg-[#076d69] text-white">
+      <div className="mx-auto grid max-w-[1320px] gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-[1.35fr_0.65fr_0.8fr_0.65fr] lg:px-10">
         <div className="max-w-[430px]">
           <div className="flex items-center gap-3">
             <Image
@@ -33,7 +33,18 @@ export default function LandingFooter() {
           <nav className="mt-4 flex flex-col gap-3 text-sm text-teal-50/70">
             <a href="#modules" className="hover:text-white">Modules</a>
             <a href="#workflow" className="hover:text-white">How it works</a>
-            <a href="#product-tour" className="hover:text-white">Product tour</a>
+          </nav>
+        </div>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-200">
+            Workflows
+          </p>
+          <nav className="mt-4 flex flex-col gap-3 text-sm text-teal-50/70">
+            <a href="#modules" className="hover:text-white">Project management</a>
+            <a href="#modules" className="hover:text-white">Cost estimation</a>
+            <a href="#workflow" className="hover:text-white">Procurement</a>
+            <a href="#workflow" className="hover:text-white">Payroll</a>
           </nav>
         </div>
 
@@ -44,6 +55,9 @@ export default function LandingFooter() {
           <div className="mt-4 flex flex-col gap-3 text-sm">
             <Link href="/auth/login?switch=1" className="text-teal-50/70 hover:text-white">
               Sign In
+            </Link>
+            <Link href="/auth/login?switch=1" className="text-teal-50/70 hover:text-white">
+              Open ProBuild
             </Link>
             <a href="#roles" className="text-teal-50/70 hover:text-white">
               Role workspaces

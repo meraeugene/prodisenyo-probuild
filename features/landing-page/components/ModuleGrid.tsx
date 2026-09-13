@@ -1,38 +1,16 @@
-import LandingIcon from "@/features/landing-page/components/LandingIcon";
 import LandingSectionHeading from "@/features/landing-page/components/LandingSectionHeading";
 import { landingModules } from "@/features/landing-page/utils/landingContent";
 
 export default function ModuleGrid() {
   return (
     <section id="modules" className="scroll-mt-24 bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-10">
-        <LandingSectionHeading
-          eyebrow="Core modules"
-          title="One platform for every project"
-          description="Keep work, approvals, and costs together."
-        />
-
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
+        <LandingSectionHeading eyebrow="Core modules" title="One platform for every project" description="Keep work, approvals, and costs together." />
+        <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-3">
           {landingModules.map((module) => (
-            <article
-              key={module.title}
-              className="group rounded-2xl border border-teal-950/10 bg-[#f8fffd] p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-teal-700/25 hover:shadow-[0_18px_40px_rgba(14,61,55,0.08)]"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
-                <LandingIcon name={module.icon} className="h-5 w-5" />
-              </div>
-              <h3 className="mt-5 text-lg font-bold tracking-[-0.025em] text-[#103d39]">
-                {module.title}
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                {module.description}
-              </p>
-              <a
-                href="#product-tour"
-                className="mt-5 inline-flex text-xs font-bold text-teal-700 transition-colors hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4"
-              >
-                View in product tour
-              </a>
+            <article key={module.title} className="bg-white p-7">
+              <h3 className="text-base font-bold tracking-[-0.02em] text-slate-950">{module.title}</h3>
+              <p className="mt-2 max-w-[280px] text-sm leading-6 text-slate-500">{module.description}</p>
             </article>
           ))}
         </div>

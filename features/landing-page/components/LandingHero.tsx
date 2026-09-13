@@ -1,91 +1,30 @@
-import Image from "next/image";
 import Link from "next/link";
-import { AppWindow, ArrowRight } from "lucide-react";
+
+const capabilities = [
+  ["Project control", "Assignments and progress"],
+  ["Estimate to buy", "BOQs and procurement"],
+  ["Payroll ready", "Attendance and approval"],
+  ["Budget visibility", "Committed and actual costs"],
+];
 
 export default function LandingHero() {
   return (
-    <section className="overflow-hidden bg-[#f8fbf9]">
-      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 pb-14 pt-16 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:px-10 lg:pb-20 lg:pt-20">
-        <div>
-          <p className="mb-5 inline-flex rounded-full border border-teal-800/15 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.17em] text-teal-800">
-            Construction, connected
-          </p>
-          <h1 className="max-w-[620px] text-balance text-[42px] font-bold leading-[1.02] tracking-[-0.055em] text-[#103d39] sm:text-[54px] lg:text-[64px]">
-            Construction work, in one place
-          </h1>
-          <p className="mt-6 max-w-[590px] text-[17px] leading-8 text-slate-600">
-            Manage projects, costs, materials, progress, and payroll in one system.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/auth/login?switch=1"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#075f55] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_26px_rgba(7,95,85,0.2)] transition-colors hover:bg-[#064d46] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4"
-            >
-              Sign In to ProBuild
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <a
-              href="#modules"
-              className="inline-flex items-center justify-center rounded-lg border border-teal-800/25 bg-white px-6 py-3.5 text-sm font-bold text-teal-900 transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4"
-            >
-              Explore Modules
-            </a>
-          </div>
-
-        </div>
-
-        <div className="relative">
-          <div className="overflow-hidden rounded-[22px] border border-teal-950/10 bg-white p-2 shadow-[0_28px_70px_rgba(14,61,55,0.15)] sm:p-3">
-            <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2.5 sm:px-4">
-              <AppWindow
-                className="h-4 w-4 text-teal-700"
-                strokeWidth={1.7}
-                aria-hidden="true"
-              />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Project dashboard
-              </span>
-            </div>
-            <Image
-              src="/landing/ceo-dashboard.png"
-              alt="Prodisenyo ProBuild executive dashboard showing projects, approvals, budgets, and progress"
-              width={1672}
-              height={941}
-              priority
-              sizes="(min-width: 1024px) 58vw, 94vw"
-              className="h-auto w-full rounded-b-[14px]"
-            />
-          </div>
-          <div className="absolute -bottom-5 left-5 hidden rounded-xl border border-teal-950/10 bg-white px-4 py-3 shadow-[0_14px_34px_rgba(14,61,55,0.16)] sm:block">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">
-              One connected system
-            </p>
-            <p className="mt-1 text-sm font-bold text-slate-900">
-              From estimate to close
-            </p>
-          </div>
+    <section className="flex min-h-screen flex-col bg-[#076d69] bg-[url('/landing/prodisenyo-building-blocks-login-teal.png')] bg-cover bg-center pt-[62px] text-white">
+      <div className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col items-center justify-center px-5 py-12 text-center sm:px-8 sm:py-16">
+        <p className="text-[10px] font-bold uppercase tracking-[0.38em] text-teal-100/80 sm:text-xs">Construction, connected</p>
+        <h1 className="mt-5 max-w-[820px] text-balance text-[44px] font-bold leading-[0.98] tracking-[-0.055em] sm:text-[62px] lg:text-[72px]">Construction work,<br className="hidden sm:block" /> in one place.</h1>
+        <p className="mt-6 max-w-[680px] text-[15px] leading-7 text-teal-50/85 sm:text-lg">Manage projects, costs, materials, progress, and payroll in one system.</p>
+        <div className="mt-8 flex w-full max-w-md flex-col justify-center gap-3 sm:flex-row">
+          <Link href="/auth/login?switch=1" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg bg-white px-5 text-sm font-bold text-[#076966] transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#076d69]">Sign In to ProBuild</Link>
+          <a href="#modules" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/70 bg-[#044f4c]/35 px-5 text-sm font-bold text-white transition-colors hover:bg-[#044f4c]/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#076d69]">Explore Modules</a>
         </div>
       </div>
-
-      <div className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-10">
-        <div className="grid overflow-hidden rounded-2xl border border-teal-950/10 bg-white sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["Project control", "Assignments and progress"],
-            ["Estimate to buy", "BOQs and procurement"],
-            ["Payroll ready", "Attendance and approval"],
-            ["Budget visibility", "Committed and actual costs"],
-          ].map(([title, description], index) => (
-            <div
-              key={title}
-              className={[
-                "px-6 py-5",
-                index > 0 ? "border-t border-teal-950/10 sm:border-l sm:border-t-0" : "",
-                index === 2 ? "sm:border-l-0 lg:border-l" : "",
-              ].join(" ")}
-            >
-              <p className="text-sm font-bold text-[#103d39]">{title}</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+      <div className="border-t border-white/15 bg-[#055f5b]/80">
+        <div className="mx-auto grid max-w-[1120px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4">
+          {capabilities.map(([title, description], index) => (
+            <div key={title} className={`py-5 text-center ${index % 2 ? "border-l border-white/15" : ""} ${index > 1 ? "border-t border-white/15 lg:border-t-0" : ""} ${index > 0 ? "lg:border-l lg:border-white/15" : ""}`}>
+              <p className="text-sm font-semibold">{title}</p>
+              <p className="mt-1 hidden text-[11px] text-teal-50/60 sm:block">{description}</p>
             </div>
           ))}
         </div>

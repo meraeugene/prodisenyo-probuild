@@ -1,7 +1,6 @@
 import type {
   LandingModule,
   LandingRole,
-  LandingTourSlide,
   LandingWorkflowStep,
 } from "@/features/landing-page/types";
 
@@ -94,50 +93,3 @@ export const landingRoles: LandingRole[] = [
   },
 ];
 
-export const landingTourSlides: LandingTourSlide[] = [
-  {
-    label: "Executive view",
-    title: "Know every\nproject.",
-    description: "Projects, budgets, approvals, and progress.",
-    image: "/landing/ceo-dashboard.png",
-    imageAlt: "Prodisenyo ProBuild CEO dashboard",
-    imageWidth: 1672,
-    imageHeight: 941,
-  },
-  {
-    label: "Planning",
-    title: "Build clear, reviewable BOQs.",
-    description: "Build BOQs and costs for CEO review.",
-    image: "/landing/cost-estimator.png",
-    imageAlt: "Prodisenyo ProBuild cost estimator",
-    imageWidth: 1672,
-    imageHeight: 941,
-  },
-  {
-    label: "Project delivery",
-    title: "Keep engineers focused on assigned work.",
-    description: "Track projects, requests, and alerts.",
-    image: "/landing/engineer-dashboard.png",
-    imageAlt: "Prodisenyo ProBuild engineer dashboard",
-    imageWidth: 1672,
-    imageHeight: 941,
-  },
-  {
-    label: "Procurement",
-    title: "Move approved materials to delivery.",
-    description: "Manage quotes, orders, and receipts.",
-    image: "/landing/purchaser-dashboard.png",
-    imageAlt: "Prodisenyo ProBuild purchaser dashboard",
-    imageWidth: 1672,
-    imageHeight: 941,
-  },
-  {
-    label: "Payroll",
-    title: "Turn attendance into approved payroll.",
-    description: "Review attendance, payroll, and approvals.",
-    image: "/landing/payroll-dashboard.png",
-    imageAlt: "Prodisenyo ProBuild payroll dashboard",
-    imageWidth: 1536,
-    imageHeight: 1024,
-  },
-];
