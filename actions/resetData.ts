@@ -28,6 +28,14 @@ const TABLES_TO_CLEAR = [
   "audit_logs",
 ] as const;
 
+const PAYROLL_TABLES_TO_PRESERVE = new Set<string>([
+  "attendance_imports",
+  "payroll_run_items",
+  "payroll_run_daily_totals",
+  "payroll_runs",
+  "payroll_adjustments",
+]);
+
 async function clearTable(database: any, table: string) {
   const { error } = await database.from(table).delete().not("id", "is", null);
 
@@ -36,11 +44,21 @@ async function clearTable(database: any, table: string) {
   }
 }
 
-export async function resetWorkspaceDataAction() {
+export async function resetWorkspaceDataAction({
+  preservePayroll = false,
+}: {
+  preservePayroll?: boolean;
+} = {}) {
   await requireRole(APP_ROLES.ADMIN);
   const database = createSupabaseAdminClient() as any;
+  const shouldPreservePayroll = preservePayroll === true;
+  const tablesToClear = shouldPreservePayroll
+    ? TABLES_TO_CLEAR.filter(
+        (table) => !PAYROLL_TABLES_TO_PRESERVE.has(table),
+      )
+    : TABLES_TO_CLEAR;
 
-  for (const table of TABLES_TO_CLEAR) {
+  for (const table of tablesToClear) {
     await clearTable(database, table);
   }
 
@@ -60,6 +78,7 @@ export async function resetWorkspaceDataAction() {
   revalidatePath("/estimate-approvals");
 
   return {
-    clearedTables: TABLES_TO_CLEAR.length,
+    clearedTables: tablesToClear.length,
+    preservedPayroll: shouldPreservePayroll,
   };
 }

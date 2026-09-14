@@ -9,22 +9,21 @@ export default function UserAccountForm({
   errors,
   editingUserId,
   isPending,
-  resetForm,
   updateField,
   handleSubmit,
   currentUserId,
+  onClose,
 }: Pick<
   ReturnType<typeof useUserManagementPage>,
   | "form"
   | "errors"
   | "editingUserId"
   | "isPending"
-  | "resetForm"
   | "updateField"
   | "handleSubmit"
-> & { currentUserId: string }) {
+> & { currentUserId: string; onClose: () => void }) {
   return (
-    <div className="min-w-0 rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[22px] sm:p-6">
+    <div className="min-w-0 rounded-[18px] border border-apple-mist bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.2)] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -34,15 +33,14 @@ export default function UserAccountForm({
             {editingUserId ? "Update account details" : "Add a new user"}
           </h2>
         </div>
-        {editingUserId ? (
-          <button
-            type="button"
-            onClick={resetForm}
-            className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 sm:w-auto"
-          >
-            Cancel edit
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isPending}
+          className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:bg-apple-mist/40 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancel
+        </button>
       </div>
 
       <div className="mt-6 grid gap-5">

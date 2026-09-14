@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   createAppUserAction,
@@ -11,8 +11,13 @@ import { EMPTY_FORM, type FormErrors } from "../utils/userManagementForm";
 export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
   const [users, setUsers] = useState(initialUsers);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<{
     userId: string;
@@ -29,6 +34,29 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
           left.username.localeCompare(right.username),
       ),
     [users],
+  );
+  const filteredUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return sortedUsers.filter((user) => {
+      const matchesQuery =
+        !query ||
+        user.full_name?.toLowerCase().includes(query) ||
+        user.username.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query);
+      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" ? user.is_active : !user.is_active);
+
+      return matchesQuery && matchesRole && matchesStatus;
+    });
+  }, [roleFilter, searchQuery, sortedUsers, statusFilter]);
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const paginatedUsers = filteredUsers.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
   );
 
   const deleteTarget =
@@ -60,6 +88,14 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [openMenu]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, roleFilter, statusFilter]);
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
 
   function validateForm() {
     const nextErrors: FormErrors = {};
@@ -110,11 +146,22 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
     }));
   }
 
-  function resetForm() {
+  const resetForm = useCallback(() => {
     setForm(EMPTY_FORM);
     setErrors({});
     setEditingUserId(null);
+  }, []);
+
+  function handleAddUser() {
+    resetForm();
+    setFormOpen(true);
   }
+
+  const closeForm = useCallback(() => {
+    if (isPending) return;
+    setFormOpen(false);
+    resetForm();
+  }, [isPending, resetForm]);
 
   function handleEditUser(user: ManagedUserRow) {
     setOpenMenu(null);
@@ -128,6 +175,7 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
       role: user.role,
       isActive: user.is_active,
     });
+    setFormOpen(true);
   }
 
   function handleSubmit() {
@@ -164,10 +212,12 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
             role: form.role,
           });
           setUsers((current) => [response.user, ...current]);
+          setPage(1);
           toast.success("User account created.");
         }
 
         resetForm();
+        setFormOpen(false);
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to save user.",
@@ -214,14 +264,28 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
 
   return {
     form,
+    formOpen,
     errors,
     editingUserId,
     isPending,
     sortedUsers,
+    filteredUsers,
+    paginatedUsers,
+    searchQuery,
+    roleFilter,
+    statusFilter,
+    page,
+    totalPages,
     deleteTarget,
     openMenu,
     openMenuUser,
     resetForm,
+    handleAddUser,
+    closeForm,
+    setSearchQuery,
+    setRoleFilter,
+    setStatusFilter,
+    setPage,
     updateField,
     handleSubmit,
     handleConfirmDelete,
