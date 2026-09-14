@@ -2,6 +2,9 @@
 const nextConfig = {
   turbopack: {},
   experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
     // Keep visited and prefetched dashboard routes in the client router cache.
     // Server actions still invalidate affected routes through revalidatePath.
     staleTimes: {

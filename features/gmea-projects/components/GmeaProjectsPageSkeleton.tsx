@@ -1,9 +1,23 @@
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
+
 export default function GmeaProjectsPageSkeleton() {
-  return <div role="status" aria-label="Loading GMEA projects" className="min-h-full space-y-7 bg-white p-4 sm:p-6 lg:p-8">
-    <header className="flex flex-wrap items-center justify-between gap-6 rounded-3xl bg-[#075e5b] p-6 sm:p-8"><div><Block light className="h-4 w-64" /><Block light className="mt-3 h-9 w-72 sm:h-10" /><Block light className="mt-3 h-5 w-72" /></div></header>
-    <div className="grid gap-4 sm:grid-cols-3">{[0,1,2].map(i => <SkeletonPanel key={i} className="p-6"><div className="flex justify-between gap-3"><Block className="h-5 w-28" /><Block className="h-9 w-9" /></div><Block className="mt-4 h-8 w-44" /></SkeletonPanel>)}</div>
-    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><Block className="h-7 w-28" /><Block className="mt-1 h-4 w-36" /></div><Block className="h-11 w-full sm:max-w-md" /></div>
-    <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{[0,1,2].map(i => <SkeletonPanel key={i} className="overflow-hidden p-6"><Block className="h-11 w-11 rounded-xl" /><Block className="mt-5 h-7 w-48" /><Block className="mt-1 h-5 w-32" /><Block className="mt-3 h-4 w-40" /><div className="my-6 grid gap-4 border-t border-slate-100 pt-5"><div><Block className="h-4 w-28" /><Block className="mt-1 h-8 w-48" /></div><div><Block className="h-4 w-20" /><Block className="mt-1 h-5 w-32" /></div></div><div className="-mx-6 -mb-6 flex justify-between border-t border-slate-100 bg-slate-50/60 px-6 py-4"><Block className="h-5 w-28" /><Block className="h-5 w-16" /></div></SkeletonPanel>)}</div>
-  </div>;
+  return (
+    <div role="status" aria-label="Loading GMEA projects" className="min-h-full bg-slate-50/40 p-4 sm:p-6">
+      <div className="mx-auto max-w-[1600px] space-y-4">
+        <CeoPageHeroSkeleton action="none" />
+        <section className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, index) => <div key={index} className={`px-5 py-4 ${index ? "border-t border-slate-200 sm:border-l xl:border-t-0" : ""}`}><Block className="h-3 w-32" /><Block className="mt-2 h-7 w-28" /><div className="mt-3 flex items-end justify-between gap-3"><Block className="h-3 w-28" /><Block className="h-7 w-20" /></div></div>)}
+        </section>
+        <section className="grid gap-3 xl:grid-cols-[1.35fr_.85fr]">
+          <SkeletonPanel className="h-[350px] rounded-xl p-5"><div className="flex justify-between gap-4"><div><Block className="h-5 w-48" /><Block className="mt-3 h-3 w-52" /></div><Block className="h-9 w-28" /></div><Block className="mt-5 h-64 w-full" /></SkeletonPanel>
+          <SkeletonPanel className="h-[350px] rounded-xl p-5"><Block className="h-5 w-36" /><div className="mt-6 grid grid-cols-[160px_1fr] items-center gap-5"><div className="h-40 w-40 rounded-full border-[22px] border-slate-200/70" /><div className="space-y-5">{Array.from({ length: 3 }, (_, index) => <Block key={index} className="h-5 w-full" />)}</div></div></SkeletonPanel>
+        </section>
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="flex flex-col gap-3 px-4 py-3 xl:flex-row xl:justify-between"><div className="flex gap-2">{Array.from({ length: 4 }, (_, index) => <Block key={index} className="h-10 w-28" />)}</div><div className="grid gap-2 sm:grid-cols-3"><Block className="h-10 w-64" /><Block className="h-10 w-40" /><Block className="h-10 w-40" /></div></div>
+          <div className="border-t border-slate-200"><div className="h-10 bg-slate-50" />{Array.from({ length: 4 }, (_, index) => <div key={index} className="grid grid-cols-8 gap-4 border-t border-slate-100 px-4 py-4">{Array.from({ length: 8 }, (_, cell) => <Block key={cell} className="h-4 w-full" />)}</div>)}</div>
+        </section>
+      </div>
+    </div>
+  );
 }

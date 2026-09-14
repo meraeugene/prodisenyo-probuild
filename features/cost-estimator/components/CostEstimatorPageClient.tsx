@@ -39,9 +39,7 @@ export default function CostEstimatorPageClient({
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showSaveDraftFirstConfirm, setShowSaveDraftFirstConfirm] =
     useState(false);
-  const [showProjectOverview, setShowProjectOverview] = useState(
-    estimates.length > 0 || assignedProjects.length > 0,
-  );
+  const [showProjectOverview, setShowProjectOverview] = useState(true);
   const [saveDraftNextAction, setSaveDraftNextAction] = useState<
     "overview" | null
   >(null);

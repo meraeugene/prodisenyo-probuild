@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import PayrollInsightsDashboard from "@/components/PayrollInsightsDashboard";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
-import { PayrollAnalyticsLoadingState } from "./PayrollAnalyticsLoadingState";
+import PayrollAnalyticsPageSkeleton from "./PayrollAnalyticsPageSkeleton";
 import PayrollAnalyticsHero from "./PayrollAnalyticsHero";
 
 export default function PayrollAnalyticsPageClient() {
@@ -32,6 +32,10 @@ export default function PayrollAnalyticsPageClient() {
     setSelectedPeriodKey(runIdFromQuery);
   }, [runIdFromQuery, selectedPeriodKey, setSelectedPeriodKey]);
 
+  if (loading && !data && !error) {
+    return <PayrollAnalyticsPageSkeleton />;
+  }
+
   return (
     <div className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8">
       <PayrollAnalyticsHero
@@ -58,9 +62,7 @@ export default function PayrollAnalyticsPageClient() {
           </div>
         </section>
       ) : null}
-      {loading && !data && !error ? (
-        <PayrollAnalyticsLoadingState />
-      ) : hasPayrollAnalyticsData ? (
+      {hasPayrollAnalyticsData ? (
         <PayrollInsightsDashboard
           payrollRows={payrollRows}
           attendanceRows={attendanceRows}

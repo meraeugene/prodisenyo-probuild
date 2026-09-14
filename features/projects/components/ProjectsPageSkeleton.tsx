@@ -1,11 +1,90 @@
-import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
+import {
+  SkeletonBlock as Block,
+  SkeletonPanel,
+} from "@/components/LoadingSkeleton";
 
 export default function ProjectsPageSkeleton() {
-  return <div role="status" aria-label="Loading projects" className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8"><section className="space-y-7">
-    <header className="flex flex-col justify-between gap-6 rounded-[22px] bg-[#075e5b] p-6 sm:flex-row sm:items-center sm:p-9"><div><Block light className="h-3 w-44" /><Block light className="mt-3 h-9 w-80 sm:h-10" /><Block light className="mt-3 h-5 w-96 max-w-full" /></div><Block light className="h-11 w-40" /></header>
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"><div className="flex gap-2 overflow-hidden pb-1">{["w-28","w-20","w-44","w-24","w-28"].map((width, i) => <Block key={i} className={`h-10 shrink-0 ${width}`} />)}</div><Block className="h-10 w-full lg:w-72" /></div>
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[0,1,2,3].map(i => <SkeletonPanel key={i} className="p-6"><div className="flex justify-between gap-3"><Block className="h-4 w-28" /><Block className="h-9 w-9" /></div><Block className="mt-4 h-9 w-16" /><Block className="mt-1 h-5 w-28" /></SkeletonPanel>)}</div>
-    <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{[0,1,2].map(i => <SkeletonPanel key={i} className="flex flex-col gap-5 p-6"><div><Block className="h-40 w-full rounded-xl" /><Block className="mt-4 h-7 w-44" /><Block className="mt-1 h-4 w-32" /></div>{[0,1,2].map(j => <div key={j}><Block className="h-4 w-24" /><Block className="mt-2 h-5 w-40" /></div>)}<div className="flex justify-between gap-3 border-t border-slate-100 pt-4"><Block className="h-7 w-28" /><Block className="h-5 w-28" /></div></SkeletonPanel>)}</div>
-    <Block className="h-4 w-40" />
-  </section></div>;
+  return (
+    <div
+      role="status"
+      aria-label="Loading projects"
+      className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8"
+    >
+      <CeoPageHeroSkeleton action="button" />
+
+      <section className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-5">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div
+            key={index}
+            className={`min-h-[92px] px-5 py-4 ${index ? "border-t border-slate-200 sm:border-l xl:border-t-0" : ""}`}
+          >
+            <Block className="h-3 w-28" />
+            <div className="mt-3 flex items-end gap-4">
+              <Block className="h-8 w-12" />
+              <Block className="h-3 w-24" />
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="grid gap-3 xl:grid-cols-[1.4fr_.8fr]">
+        <SkeletonPanel className="h-[350px] rounded-xl p-5">
+          <div className="flex justify-between gap-3">
+            <Block className="h-5 w-44" />
+            <Block className="h-9 w-28" />
+          </div>
+          <Block className="mt-5 h-56 w-full" />
+          <div className="mt-4 grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+            {[0, 1, 2].map((index) => (
+              <Block key={index} className="h-9 w-28" />
+            ))}
+          </div>
+        </SkeletonPanel>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          {[0, 1].map((index) => (
+            <SkeletonPanel key={index} className="h-[169px] rounded-xl p-4">
+              <Block className="h-5 w-32" />
+              <div className="mt-4 flex items-center gap-5">
+                <Block className="h-28 w-28 rounded-full" />
+                <div className="flex-1 space-y-3">
+                  {[0, 1, 2].map((row) => (
+                    <Block key={row} className="h-4 w-full" />
+                  ))}
+                </div>
+              </div>
+            </SkeletonPanel>
+          ))}
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="flex flex-col gap-3 px-4 py-3 xl:flex-row xl:justify-between">
+          <div className="flex gap-2">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <Block key={index} className="h-9 w-24" />
+            ))}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Block className="h-9 w-64" />
+            <Block className="h-9 w-36" />
+            <Block className="h-9 w-36" />
+          </div>
+        </div>
+        <div className="border-t border-slate-200">
+          <div className="h-10 bg-slate-50" />
+          {[0, 1, 2, 3].map((index) => (
+            <div
+              key={index}
+              className="grid grid-cols-7 gap-4 border-t border-slate-100 px-4 py-4"
+            >
+              {Array.from({ length: 7 }, (_, cell) => (
+                <Block key={cell} className="h-4 w-full" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 }

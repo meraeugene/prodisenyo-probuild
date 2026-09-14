@@ -11,6 +11,10 @@ import {
   PURCHASE_RECEIPT_ENTITY_TYPE,
 } from "@/features/purchasing-approvals/utils/receiptEvidence";
 
+const PROJECT_IMAGE_BUCKET = "project-images";
+const PROJECT_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const PROJECT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 export interface ProjectInput {
   name: string; location: string; subject?: string; lead?: string; client?: string;
   engineerId?: string | null; estimateEngineerId?: string | null; budget: number; startDate: string; endDate: string;
@@ -26,18 +30,88 @@ function validate(input: ProjectInput) {
   return { name, location, budget };
 }
 
-export async function createProjectAction(input: ProjectInput) {
+async function uploadProjectImage(
+  database: any,
+  userId: string,
+  uploadData?: FormData,
+) {
+  const image = uploadData?.get("projectImage");
+  if (!(image instanceof File) || image.size === 0) return null;
+
+  if (!PROJECT_IMAGE_TYPES.has(image.type)) {
+    throw new Error("Project image must be a JPG, PNG, or WebP file.");
+  }
+  if (image.size > PROJECT_IMAGE_MAX_BYTES) {
+    throw new Error("Project image must be 5 MB or smaller.");
+  }
+
+  const { data: existingBucket } = await database.storage.getBucket(
+    PROJECT_IMAGE_BUCKET,
+  );
+  if (!existingBucket) {
+    const { error: bucketError } = await database.storage.createBucket(
+      PROJECT_IMAGE_BUCKET,
+      {
+        public: true,
+        fileSizeLimit: PROJECT_IMAGE_MAX_BYTES,
+        allowedMimeTypes: [...PROJECT_IMAGE_TYPES],
+      },
+    );
+    if (bucketError && !/already exists/i.test(bucketError.message)) {
+      throw new Error(`Failed to prepare project image storage. ${bucketError.message}`);
+    }
+  }
+
+  const extension =
+    image.type === "image/png"
+      ? "png"
+      : image.type === "image/webp"
+        ? "webp"
+        : "jpg";
+  const storagePath = `${userId}/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await database.storage
+    .from(PROJECT_IMAGE_BUCKET)
+    .upload(storagePath, Buffer.from(await image.arrayBuffer()), {
+      contentType: image.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error(`Failed to upload project image. ${uploadError.message}`);
+  }
+
+  const { data } = database.storage
+    .from(PROJECT_IMAGE_BUCKET)
+    .getPublicUrl(storagePath);
+
+  return { publicUrl: data.publicUrl, storagePath };
+}
+
+export async function createProjectAction(
+  input: ProjectInput,
+  uploadData?: FormData,
+) {
   const { user } = await requireRole(APP_ROLES.CEO);
   const normalized = validate(input); const database = createSupabaseAdminClient() as any;
   if (!input.estimateEngineerId) throw new Error("Select a cost estimate engineer.");
+  if (!input.lead?.trim()) throw new Error("Select a project lead.");
+  const uploadedImage = await uploadProjectImage(database, user.id, uploadData);
   const { data, error } = await database.rpc("create_project_with_budget", {
     p_actor: user.id, p_name: normalized.name, p_location: normalized.location,
     p_subject: input.subject?.trim() || null, p_lead: input.lead?.trim() || null,
     p_engineer: null, p_estimate_engineer: input.estimateEngineerId, p_budget: normalized.budget,
     p_start: input.startDate, p_end: input.endDate, p_client: input.client?.trim() || null,
-    p_description: input.description?.trim() || null, p_image_url: input.imageUrl?.trim() || null,
+    p_description: input.description?.trim() || null,
+    p_image_url: uploadedImage?.publicUrl || input.imageUrl?.trim() || null,
   });
-  if (error) throw new Error(`Failed to create project. ${error.message}`);
+  if (error) {
+    if (uploadedImage) {
+      await database.storage
+        .from(PROJECT_IMAGE_BUCKET)
+        .remove([uploadedImage.storagePath]);
+    }
+    throw new Error(`Failed to create project. ${error.message}`);
+  }
   const createdProjectId = data?.id;
   if (!createdProjectId) throw new Error("Project was created without a valid identifier.");
   const { error: stageError } = await database

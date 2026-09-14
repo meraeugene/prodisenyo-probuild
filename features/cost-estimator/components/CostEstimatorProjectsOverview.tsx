@@ -99,10 +99,13 @@ export default function CostEstimatorProjectsOverview({
             ))}
           </div>
         ) : (
-          <div className="rounded-[14px] border border-dashed border-teal-200 bg-white px-5 py-14 text-center">
-            <p className="font-semibold text-slate-900">No estimating assignments yet</p>
-            <p className="mt-2 text-sm text-slate-500">
-              Projects assigned by the CEO for cost estimation will appear here.
+          <div className="rounded-[14px] border border-dashed border-teal-200 bg-teal-50/20 px-5 py-16 text-center">
+            <p className="text-lg font-semibold text-slate-900">
+              No projects assigned for cost estimation
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+              When the CEO assigns a planning-stage project to you, it will
+              appear here so you can prepare its Bill of Quantities.
             </p>
           </div>
         )}

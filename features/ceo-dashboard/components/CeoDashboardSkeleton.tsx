@@ -1,4 +1,5 @@
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
 
 function MetricStripSkeleton() {
   return (
@@ -17,9 +18,7 @@ function MetricStripSkeleton() {
 export default function CeoDashboardSkeleton() {
   return (
     <main role="status" aria-label="Loading dashboard" className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <header className="rounded-[22px] bg-[#075e5b] px-6 py-8 sm:px-9">
-        <Block light className="h-3 w-44" /><Block light className="mt-3 h-10 w-80" /><Block light className="mt-3 h-4 w-96 max-w-full" />
-      </header>
+      <CeoPageHeroSkeleton />
       <div className="mt-4 space-y-4">
         <MetricStripSkeleton />
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,.95fr)]">
