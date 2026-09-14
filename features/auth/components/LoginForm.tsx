@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { type AuthActionState, signInAction } from "@/actions/auth";
 
 interface LoginFormProps {
@@ -60,11 +60,6 @@ export default function LoginForm({ nextPath, initialError }: LoginFormProps) {
             {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
           </button>
         </div>
-      </div>
-
-      <div className="flex min-h-5 items-center gap-2 text-xs text-[#677286]">
-        <ShieldCheck className="h-4 w-4 text-[#08726f]" aria-hidden="true" />
-        <span>Use your authorized company account</span>
       </div>
 
       {state.error ? (
