@@ -4,8 +4,6 @@ import { useState, useTransition } from "react";
 import {
   Check,
   LoaderCircle,
-  LockKeyhole,
-  ShieldAlert,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -46,15 +44,12 @@ export default function ResetDataPageClient() {
       <DashboardPageHero
         eyebrow="CEO Admin"
         title="Reset Workspace Data"
-        description="Permanently clears operational records while preserving user accounts. This action cannot be undone."
+        description="Permanently clears records. User accounts are preserved."
       />
 
       <section className="overflow-hidden rounded-none border border-red-200 bg-white shadow-[0_16px_45px_rgba(127,29,29,0.08)] sm:rounded-[20px]">
         <div className="border-b border-red-100 bg-[linear-gradient(135deg,#fff7f7_0%,#fff_65%)] px-5 py-5 sm:px-7">
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-700">
-              <ShieldAlert size={21} />
-            </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-bold text-red-900">Danger Zone</h2>
@@ -78,9 +73,6 @@ export default function ResetDataPageClient() {
 
         <div className="mx-5 mt-5 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:mx-7 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#076d69] shadow-sm sm:flex">
-              <LockKeyhole size={17} />
-            </div>
             <div>
               <p className="text-sm font-bold text-apple-charcoal">
               Keep payroll data
