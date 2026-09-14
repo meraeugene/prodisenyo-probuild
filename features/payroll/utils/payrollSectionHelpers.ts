@@ -34,6 +34,7 @@ const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
 
 export interface GroupedEmployeePayrollRow {
   name: string;
+  employeeId: string | null;
   role: string;
   sites: PayrollRow[];
   totalHours: number;
@@ -151,12 +152,13 @@ export function groupByEmployee(
   const grouped = new Map<string, GroupedEmployeePayrollRow>();
 
   for (const row of rows) {
-    const key = normalizeEmployeeName(row.worker);
+    const key = row.employeeId ? `employee:${row.employeeId}` : `name:${normalizeEmployeeName(row.worker)}`;
     const existing = grouped.get(key);
 
     if (!existing) {
       grouped.set(key, {
         name: row.worker,
+        employeeId: row.employeeId ?? null,
         role: normalizeRoleCode(row.role) ?? "UNKNOWN",
         sites: [row],
         totalHours: row.hoursWorked,
@@ -170,7 +172,7 @@ export function groupByEmployee(
     existing.totalPay += row.totalPay;
     existing.role = pickPreferredRole(existing.role, row.role);
 
-    if (row.worker.length > existing.name.length) {
+    if (!row.employeeId && row.worker.length > existing.name.length) {
       existing.name = row.worker;
     }
   }
@@ -221,8 +223,7 @@ export function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string 
   const summary = new Map<string, { site: string }>();
 
   for (const row of rows) {
-    const normalizedSites = (row.site || "Unknown Site")
-      .split(",")
+    const normalizedSites = (row.sites?.length ? row.sites : [row.site || "Unknown Site"])
       .map((site) => extractSiteName(site))
       .filter((site) => site.length > 0);
 
@@ -243,12 +244,13 @@ export function buildGroupedEmployeeCompensation(
   payroll: UsePayrollStateResult,
 ) {
   const employeeKey = normalizeEmployeeName(employee.name);
-  const roleKey = employee.role;
   const hoursBySite = new Map<string, number>();
 
   payroll.payrollAttendanceInputs.forEach((record) => {
-    if (normalizeEmployeeName(record.name) !== employeeKey) return;
-    if ((normalizeRoleCode(record.role) ?? "UNKNOWN") !== roleKey) return;
+    const sameEmployee = employee.employeeId
+      ? record.employeeId === employee.employeeId
+      : normalizeEmployeeName(record.name) === employeeKey;
+    if (!sameEmployee) return;
 
     const siteName = extractSiteName(record.site) || record.site || "Unknown Site";
     hoursBySite.set(
@@ -309,7 +311,6 @@ function buildGroupedEmployeeLogMetrics(
   daysWorked: number;
 } {
   const employeeKey = normalizeEmployeeName(employee.name);
-  const roleKey = normalizeRoleCode(employee.role) ?? "UNKNOWN";
   const allowedSites = new Set(
     summarizeGroupedSites(employee.sites).map((entry) => entry.site),
   );
@@ -320,11 +321,12 @@ function buildGroupedEmployeeLogMetrics(
   for (const log of payroll.dailyRows) {
     const identity = parsePayrollIdentity(log.employee);
     const normalizedName = normalizeEmployeeName(identity.name);
-    const normalizedRole = normalizeRoleCode(identity.role) ?? "UNKNOWN";
     const normalizedSite = extractSiteName(log.site) || log.site || "Unknown Site";
 
-    if (normalizedName !== employeeKey) continue;
-    if (normalizedRole !== roleKey) continue;
+    const sameEmployee = employee.employeeId
+      ? log.employeeId === employee.employeeId
+      : normalizedName === employeeKey;
+    if (!sameEmployee) continue;
     if (allowedSites.size > 0 && !allowedSites.has(normalizedSite)) continue;
 
     const override = mergedLogOverrides[getLogOverrideKey(log)];

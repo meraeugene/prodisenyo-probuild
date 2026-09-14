@@ -3,7 +3,11 @@
 import { CalendarDays } from "lucide-react";
 import type { CutoffAttendanceDay } from "@/features/payroll/utils/payrollAttendanceEngine";
 import { secondsToDecimalHours } from "@/features/payroll/utils/payrollAttendanceEngine";
-import { toWeekLabel } from "@/features/payroll/utils/payrollFormatters";
+import {
+  extractSiteName,
+  formatLogTime,
+  toWeekLabel,
+} from "@/features/payroll/utils/payrollFormatters";
 
 interface CutoffAttendanceTableProps {
   days: CutoffAttendanceDay[];
@@ -24,6 +28,35 @@ function isSunday(date: string): boolean {
   return !Number.isNaN(parsed.getTime()) && parsed.getDay() === 0;
 }
 
+function PunchPair({
+  timeIn,
+  timeOut,
+  timeInSite,
+  timeOutSite,
+}: {
+  timeIn: string | null;
+  timeOut: string | null;
+  timeInSite?: string | null;
+  timeOutSite?: string | null;
+}) {
+  const inSite = timeInSite ? extractSiteName(timeInSite) : "";
+  const outSite = timeOutSite ? extractSiteName(timeOutSite) : "";
+
+  return (
+    <span className="inline-flex items-center whitespace-nowrap">
+      <span>{timeIn ? formatLogTime(timeIn) : "-"}</span>
+      {timeIn && inSite ? (
+        <span className="ml-1 text-[9px] text-slate-400">({inSite})</span>
+      ) : null}
+      <span className="mx-1.5 text-slate-300"></span>
+      <span>{timeOut ? formatLogTime(timeOut) : "-"}</span>
+      {timeOut && outSite ? (
+        <span className="ml-1 text-[9px] text-slate-400">({outSite})</span>
+      ) : null}
+    </span>
+  );
+}
+
 export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTableProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -38,10 +71,10 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
         <span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">{days.length} dates</span>
       </div>
       <div className="max-h-[440px] overflow-auto">
-        <table className="w-full min-w-[760px] text-xs">
+        <table className="w-full min-w-[900px] text-xs">
           <thead className="sticky top-0 z-10 bg-slate-50 text-[9px] uppercase tracking-[0.08em] text-slate-500">
             <tr>
-              {['Date/Week', 'Time In - Out', 'Raw', 'Classification', 'Regular', 'OT', 'Payable', 'Action'].map((label) => (
+              {['Date/Week', 'Time In - Out', 'OT In - Out', 'Raw', 'Classification', 'Regular', 'Payable', 'Action'].map((label) => (
                 <th key={label} className="px-3 py-2 text-left font-semibold">{label}</th>
               ))}
             </tr>
@@ -61,7 +94,27 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
                     ))
                   ) : (
                     <>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono text-[10px] text-slate-600">{day.biometricTimeIn ?? '-'} - {day.biometricTimeOut ?? '-'}</td>
+                      <td className="px-3 py-2 font-mono text-[10px] text-slate-600">
+                        <PunchPair
+                          timeIn={day.biometricTimeIn}
+                          timeOut={day.biometricTimeOut}
+                          timeInSite={day.biometricTime1InSite ?? day.biometricTime2InSite}
+                          timeOutSite={day.biometricTime2OutSite ?? day.biometricTime1OutSite}
+                        />
+                      </td>
+                      <td className="px-3 py-2 font-mono text-[10px] text-slate-600">
+                        <PunchPair
+                          timeIn={day.biometricOtIn}
+                          timeOut={day.biometricOtOut}
+                          timeInSite={day.biometricOtInSite}
+                          timeOutSite={day.biometricOtOutSite}
+                        />
+                        {day.approvedOvertimeSeconds > 0 ? (
+                          <span className="mt-0.5 block text-[9px] font-semibold text-teal-700">
+                            {secondsToDecimalHours(day.approvedOvertimeSeconds)} hrs approved
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.biometricWorkedSeconds)}</td>
                       <td className="px-3 py-2">
                         <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-bold ${badgeStyles[day.classification] ?? 'bg-slate-100 text-slate-700'}`}>
@@ -69,7 +122,6 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
                         </span>
                       </td>
                       <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedRegularSeconds)}</td>
-                      <td className="px-3 py-2 font-mono">{secondsToDecimalHours(day.approvedOvertimeSeconds)}</td>
                       <td className="px-3 py-2 font-mono font-bold">{secondsToDecimalHours(day.payableSeconds)}</td>
                       <td className="px-3 py-2">
                         <button type="button" onClick={() => onResolve(day)} className="h-7 rounded-md border border-teal-200 px-2.5 text-[10px] font-bold text-teal-700 hover:bg-teal-50">

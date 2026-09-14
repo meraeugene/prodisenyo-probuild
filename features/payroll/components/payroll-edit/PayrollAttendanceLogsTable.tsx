@@ -92,6 +92,10 @@ export function PayrollAttendanceLogsTable(
                 const biometric = buildPayrollLogBiometricBreakdown(log);
                 const timeIn = getPayrollLogTimeIn(log);
                 const timeOut = getPayrollLogTimeOut(log);
+                const sitePath = (log.sitePath?.length ? log.sitePath : [log.site])
+                  .map(extractSiteName)
+                  .filter(Boolean);
+                const isMultiBranch = new Set(sitePath).size > 1;
 
                 return (
                   <tr
@@ -101,13 +105,20 @@ export function PayrollAttendanceLogsTable(
                     <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
                       {toWeekLabel(log.date)}
                     </td>
-                    <td className="max-w-28 truncate px-3 py-2 text-slate-500">
-                      {extractSiteName(log.site) || "-"}
+                    <td className="max-w-56 px-3 py-2 text-slate-500">
+                      {isMultiBranch ? (
+                        <>
+                          <span className="inline-flex rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">MULTI BRANCH</span>
+                          <span className="mt-1 block whitespace-nowrap text-[10px]">{sitePath.join(" -> ")}</span>
+                        </>
+                      ) : sitePath[0] || "-"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px] text-slate-700">
                       {timeIn ? formatLogTime(timeIn) : "-"}
+                      {timeIn && log.timeInSite ? <span className="ml-1 text-[9px] text-slate-400">({extractSiteName(log.timeInSite)})</span> : null}
                       <span className="mx-1.5 text-slate-300">–</span>
                       {timeOut ? formatLogTime(timeOut) : "-"}
+                      {timeOut && log.timeOutSite ? <span className="ml-1 text-[9px] text-slate-400">({extractSiteName(log.timeOutSite)})</span> : null}
                     </td>
                     <td className="px-3 py-2 font-mono font-semibold text-slate-800">
                       {formatPayrollNumber(biometric.workedHours)}

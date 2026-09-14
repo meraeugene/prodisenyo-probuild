@@ -12,6 +12,20 @@ export interface CutoffBiometricDay {
   date: string;
   timeIn?: string | null;
   timeOut?: string | null;
+  time1In?: string | null;
+  time1Out?: string | null;
+  time2In?: string | null;
+  time2Out?: string | null;
+  otIn?: string | null;
+  otOut?: string | null;
+  time1InSite?: string | null;
+  time1OutSite?: string | null;
+  time2InSite?: string | null;
+  time2OutSite?: string | null;
+  otInSite?: string | null;
+  otOutSite?: string | null;
+  sitePath?: string[];
+  rawBiometricNames?: string[];
   rawWorkedSeconds: number;
   breakSeconds: number;
   calculatedRegularSeconds: number;
@@ -45,6 +59,20 @@ export interface CutoffAttendanceDay {
   isScheduledWorkday: boolean | null;
   biometricTimeIn: string | null;
   biometricTimeOut: string | null;
+  biometricTime1In: string | null;
+  biometricTime1Out: string | null;
+  biometricTime2In: string | null;
+  biometricTime2Out: string | null;
+  biometricOtIn: string | null;
+  biometricOtOut: string | null;
+  biometricTime1InSite: string | null;
+  biometricTime1OutSite: string | null;
+  biometricTime2InSite: string | null;
+  biometricTime2OutSite: string | null;
+  biometricOtInSite: string | null;
+  biometricOtOutSite: string | null;
+  biometricSitePath: string[];
+  rawBiometricNames: string[];
   biometricWorkedSeconds: number;
   breakSeconds: number;
   calculatedRegularSeconds: number;
@@ -245,6 +273,20 @@ export function buildCutoffAttendance(
       isScheduledWorkday: schedule ? schedule.isWorkday : null,
       biometricTimeIn: biometric?.timeIn ?? null,
       biometricTimeOut: biometric?.timeOut ?? null,
+      biometricTime1In: biometric?.time1In ?? null,
+      biometricTime1Out: biometric?.time1Out ?? null,
+      biometricTime2In: biometric?.time2In ?? null,
+      biometricTime2Out: biometric?.time2Out ?? null,
+      biometricOtIn: biometric?.otIn ?? null,
+      biometricOtOut: biometric?.otOut ?? null,
+      biometricTime1InSite: biometric?.time1InSite ?? null,
+      biometricTime1OutSite: biometric?.time1OutSite ?? null,
+      biometricTime2InSite: biometric?.time2InSite ?? null,
+      biometricTime2OutSite: biometric?.time2OutSite ?? null,
+      biometricOtInSite: biometric?.otInSite ?? null,
+      biometricOtOutSite: biometric?.otOutSite ?? null,
+      biometricSitePath: biometric?.sitePath ?? [],
+      rawBiometricNames: biometric?.rawBiometricNames ?? [],
       biometricWorkedSeconds: nonNegativeInteger(biometric?.rawWorkedSeconds ?? 0),
       breakSeconds: nonNegativeInteger(biometric?.breakSeconds ?? schedule?.breakSeconds ?? 0),
       calculatedRegularSeconds: nonNegativeInteger(

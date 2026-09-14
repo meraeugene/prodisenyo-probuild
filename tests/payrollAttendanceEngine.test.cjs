@@ -81,6 +81,16 @@ test("normal biometric workday preserves evidence and calculated payable time", 
       date: "2026-06-16",
       timeIn: "07:57",
       timeOut: "16:34",
+      time1In: "07:57",
+      time1Out: "12:00",
+      time2In: "13:00",
+      time2Out: "16:34",
+      otIn: "18:30",
+      otOut: "20:15",
+      time1InSite: "BAYANGA 0820-0826",
+      otOutSite: "CLIMB 0820-0826",
+      sitePath: ["BAYANGA 0820-0826", "CLIMB 0820-0826"],
+      rawBiometricNames: ["P Aidan T", "Aidan Tundag"],
       rawWorkedSeconds: 517 * 60,
       breakSeconds: 3600,
       calculatedRegularSeconds: 457 * 60,
@@ -90,6 +100,15 @@ test("normal biometric workday preserves evidence and calculated payable time", 
   assert.equal(day.classification, "WORKED");
   assert.equal(day.biometricWorkedSeconds, 517 * 60);
   assert.equal(day.approvedRegularSeconds, 457 * 60);
+  assert.equal(day.biometricOtIn, "18:30");
+  assert.equal(day.biometricOtOut, "20:15");
+  assert.equal(day.biometricTime1InSite, "BAYANGA 0820-0826");
+  assert.equal(day.biometricOtOutSite, "CLIMB 0820-0826");
+  assert.deepEqual(day.biometricSitePath, [
+    "BAYANGA 0820-0826",
+    "CLIMB 0820-0826",
+  ]);
+  assert.deepEqual(day.rawBiometricNames, ["P Aidan T", "Aidan Tundag"]);
 });
 
 test("no biometric remains reviewable and is not automatically absent", () => {

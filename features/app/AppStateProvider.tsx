@@ -26,6 +26,10 @@ import {
   type UsePayrollStateResult,
 } from "@/features/payroll/hooks/usePayrollState";
 import { buildDailyRows } from "@/features/attendance/utils/attendanceSelectors";
+import {
+  mapCanonicalAttendanceRecords,
+  type CanonicalAttendanceRecordRow,
+} from "@/features/attendance/utils/attendanceRecordMapper";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { calculateDailyWorkMinutes } from "@/lib/utils";
 
@@ -116,26 +120,6 @@ function isThemeMode(value: string): value is ThemeMode {
 function normalizeThemeMode(value: string | null): ThemeMode | null {
   if (!value || !isThemeMode(value)) return null;
   return value;
-}
-
-function mapAttendanceRecords(
-  rows: Array<{
-    employee_name: string;
-    log_date: string;
-    log_time: string;
-    log_type: "IN" | "OUT";
-    log_source: "Time1" | "Time2" | "OT";
-    site_name: string;
-  }>,
-): AttendanceRecord[] {
-  return rows.map((row) => ({
-    date: row.log_date,
-    employee: row.employee_name,
-    logTime: row.log_time,
-    type: row.log_type,
-    source: row.log_source,
-    site: row.site_name,
-  }));
 }
 
 function buildEmployeesFromRecords(records: AttendanceRecord[]): Employee[] {
@@ -292,7 +276,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const { data: attendanceRows, error: attendanceError } = await supabase
           .from("attendance_records")
           .select(
-            "employee_name, log_date, log_time, log_type, log_source, site_name",
+            "id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, log_type, log_source, site_name, employee:employees(full_name, default_role_code)",
           )
           .eq("import_id", latestImport.id)
           .order("log_date", { ascending: true })
@@ -300,15 +284,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
         if (attendanceError || cancelled) return;
 
-        const nextRecords = mapAttendanceRecords(
-          (attendanceRows ?? []) as Array<{
-            employee_name: string;
-            log_date: string;
-            log_time: string;
-            log_type: "IN" | "OUT";
-            log_source: "Time1" | "Time2" | "OT";
-            site_name: string;
-          }>,
+        const nextRecords = mapCanonicalAttendanceRecords(
+          (attendanceRows ?? []) as CanonicalAttendanceRecordRow[],
         );
 
         setCurrentAttendanceImportId(latestImport.id);

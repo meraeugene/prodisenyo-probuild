@@ -253,7 +253,7 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
     const { data: attendanceData, error: attendanceError } = await database
       .from("attendance_records")
       .select(
-        "id, employee_name, log_date, log_time, log_type, log_source, site_name",
+        "*, employee:employees(full_name)",
       )
       .eq("import_id", report.attendance_import_id)
       .order("log_date", { ascending: true })
@@ -265,8 +265,17 @@ async function loadPayrollReportDetails(database: any, payrollRunId: string) {
       );
     }
 
-    attendanceLogsData = (attendanceData ??
-      []) as Database["public"]["Tables"]["attendance_records"]["Row"][];
+    attendanceLogsData = ((attendanceData ?? []) as Array<
+      Database["public"]["Tables"]["attendance_records"]["Row"] & {
+        employee?: { full_name: string } | null;
+      }
+    >).map(({ employee, ...row }) => ({
+      ...row,
+      employee_name:
+        row.employee_id && employee?.full_name
+          ? employee.full_name
+          : row.employee_name,
+    }));
   }
 
   if (itemsError || totalsError) {
@@ -1472,7 +1481,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
 
   const payrollItemPayload = normalizedRowSnapshots.map((snapshot) => ({
     payroll_run_id: runId,
-    employee_id: null,
+    employee_id: snapshot.row.employeeId ?? null,
     employee_name: snapshot.row.worker,
     role_code: snapshot.row.role,
     site_name: snapshot.row.site,
@@ -1540,7 +1549,7 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
       payroll_run_id: runId,
       payroll_run_item_id: payrollRunItemId,
       attendance_import_id: input.attendanceImportId,
-      employee_id: null,
+      employee_id: snapshot.row.employeeId ?? null,
       employee_name: snapshot.row.worker,
       employee_name_key: normalizeEmployeeNameKey(snapshot.row.worker),
       role_code: snapshot.row.role,

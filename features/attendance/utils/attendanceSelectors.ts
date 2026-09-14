@@ -23,11 +23,22 @@ export interface BranchSummary {
 export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
   const grouped = new Map<string, DailyLogRow>();
 
-  for (const record of records) {
-    const key = `${record.date}|||${record.employee.trim().toLowerCase()}`;
+  const ordered = [...records].sort((a, b) =>
+    a.date.localeCompare(b.date) || a.logTime.localeCompare(b.logTime) || a.site.localeCompare(b.site),
+  );
+
+  for (const record of ordered) {
+    const identityKey = record.employeeId
+      ? `employee:${record.employeeId}`
+      : `raw:${(record.normalizedBiometricName ?? record.employee).trim().toLowerCase()}`;
+    const key = `${record.date}|||${identityKey}`;
     const current = grouped.get(key) ?? {
       date: record.date,
       employee: record.employee,
+      employeeId: record.employeeId ?? null,
+      rawBiometricNames: [],
+      matchStatus: record.employeeId ? "MATCHED" : record.matchStatus,
+      matchSource: record.matchSource ?? null,
       time1In: "",
       time1Out: "",
       time2In: "",
@@ -39,23 +50,37 @@ export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
       totalHours: 0,
       hours: 0,
       site: record.site,
+      sitePath: [],
+      timeInSite: null,
+      timeOutSite: null,
     };
 
+    const rawName = record.rawBiometricName ?? record.employee;
+    if (!current.rawBiometricNames?.includes(rawName)) current.rawBiometricNames = [...(current.rawBiometricNames ?? []), rawName];
+    if (record.site && current.sitePath?.at(-1) !== record.site) current.sitePath = [...(current.sitePath ?? []), record.site];
+    if (!current.employeeId && record.matchStatus === "NEEDS_REVIEW") {
+      current.matchStatus = "NEEDS_REVIEW";
+    }
     if (!current.site && record.site) current.site = record.site;
 
     if (record.source === "Time1" && record.type === "IN") {
-      current.time1In = earlierTime(current.time1In, record.logTime);
+      const next = earlierTime(current.time1In, record.logTime); if (next !== current.time1In) current.time1InSite = record.site; current.time1In = next;
     } else if (record.source === "Time1" && record.type === "OUT") {
-      current.time1Out = laterTime(current.time1Out, record.logTime);
+      const next = laterTime(current.time1Out, record.logTime); if (next !== current.time1Out) current.time1OutSite = record.site; current.time1Out = next;
     } else if (record.source === "Time2" && record.type === "IN") {
-      current.time2In = earlierTime(current.time2In, record.logTime);
+      const next = earlierTime(current.time2In, record.logTime); if (next !== current.time2In) current.time2InSite = record.site; current.time2In = next;
     } else if (record.source === "Time2" && record.type === "OUT") {
-      current.time2Out = laterTime(current.time2Out, record.logTime);
+      const next = laterTime(current.time2Out, record.logTime); if (next !== current.time2Out) current.time2OutSite = record.site; current.time2Out = next;
     } else if (record.source === "OT" && record.type === "IN") {
-      current.otIn = earlierTime(current.otIn, record.logTime);
+      const next = earlierTime(current.otIn, record.logTime); if (next !== current.otIn) current.otInSite = record.site; current.otIn = next;
     } else if (record.source === "OT" && record.type === "OUT") {
-      current.otOut = laterTime(current.otOut, record.logTime);
+      const next = laterTime(current.otOut, record.logTime); if (next !== current.otOut) current.otOutSite = record.site; current.otOut = next;
     }
+
+    const inTimes = [current.time1In, current.time2In, current.otIn].filter(Boolean).sort();
+    const outTimes = [current.time1Out, current.time2Out, current.otOut].filter(Boolean).sort().reverse();
+    if (record.type === "IN" && record.logTime === inTimes[0]) current.timeInSite = record.site;
+    if (record.type === "OUT" && record.logTime === outTimes[0]) current.timeOutSite = record.site;
 
     grouped.set(key, current);
   }

@@ -28,7 +28,7 @@ export default function UploadAttendancePage() {
 
     setCurrentAttendanceImportId(saveResult.importId);
     setCurrentPayrollRunMeta({ id: null, status: null });
-    handleParsed(result);
+    handleParsed(saveResult.resolvedResult);
     toast.success("Attendance reports ready for review.", {
       description: "Your uploaded files were processed and saved.",
     });

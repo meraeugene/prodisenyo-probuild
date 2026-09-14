@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { PayrollRow } from "@/lib/payrollEngine";
-import { ROLE_CODE_TO_NAME, type RoleCode } from "@/lib/payrollConfig";
 import {
   exportAllPayslipsToPdf,
   exportEmployeePayslipToPdf,
@@ -105,7 +104,7 @@ export default function PayrollSection({
         (employee) =>
           matchesGroupedEmployeeFilters(employee, {
             siteFilter: payroll.payrollSiteFilter,
-            roleFilter: payroll.payrollRoleFilter,
+            roleFilter: "ALL",
             nameFilter: payroll.payrollNameFilter,
             dateFilter: payroll.payrollDateFilter,
           }),
@@ -114,7 +113,6 @@ export default function PayrollSection({
       payroll.payrollRows,
       payroll.payrollSort,
       payroll.payrollSiteFilter,
-      payroll.payrollRoleFilter,
       payroll.payrollNameFilter,
       payroll.payrollDateFilter,
     ],
@@ -177,13 +175,11 @@ export default function PayrollSection({
   const activeMobileFilterCount = useMemo(() => {
     let count = 0;
     if (payroll.payrollSiteFilter !== "ALL") count += 1;
-    if (payroll.payrollRoleFilter !== "ALL") count += 1;
     if (payroll.payrollNameFilter.trim()) count += 1;
     if (payroll.payrollSort !== "name-asc") count += 1;
     return count;
   }, [
     payroll.payrollSiteFilter,
-    payroll.payrollRoleFilter,
     payroll.payrollNameFilter,
     payroll.payrollSort,
   ]);
@@ -378,7 +374,7 @@ export default function PayrollSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="relative w-full sm:hidden">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
@@ -429,24 +425,6 @@ export default function PayrollSection({
                 {availableSites.map((siteOption) => (
                   <option key={siteOption} value={siteOption}>
                     {siteOption}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={payroll.payrollRoleFilter}
-                onChange={(e) =>
-                  payroll.setPayrollRoleFilter(
-                    e.target.value as RoleCode | "ALL",
-                  )
-                }
-                className="hidden h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10 sm:block"
-              >
-                <option value="ALL">All Roles</option>
-
-                {payroll.roleCodes.map((role) => (
-                  <option key={role} value={role}>
-                    {role} - {ROLE_CODE_TO_NAME[role]}
                   </option>
                 ))}
               </select>
@@ -508,12 +486,11 @@ export default function PayrollSection({
                   )}
                 </div>
                 <div className="overflow-x-auto rounded-[14px] border border-[#e7ecef] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)] [-webkit-overflow-scrolling:touch]">
-                  <table className="w-full text-sm table-auto min-w-[1020px]">
+                  <table className="w-full text-sm table-auto min-w-[900px]">
                     <thead>
                       <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                         {[
                           "Employee",
-                          "Role",
                           "Site",
                           "Total Hours",
                           "Days Worked",
@@ -543,7 +520,7 @@ export default function PayrollSection({
                     <tbody>
                       {groupedPayrollPreviewRows.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="py-10">
+                          <td colSpan={7} className="py-10">
                             <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
                               <Search size={22} className="text-apple-silver" />
 
@@ -559,9 +536,7 @@ export default function PayrollSection({
                           </td>
                         </tr>
                       ) : (
-                        groupedPayrollPreviewRows.map((employee, index) => {
-                          const employeeNumber =
-                            groupedPayrollPreviewStart + index + 1;
+                        groupedPayrollPreviewRows.map((employee) => {
                           const representativeRow = pickRepresentativeRow(
                             employee.sites,
                           );
@@ -587,6 +562,9 @@ export default function PayrollSection({
                                   .map((rate) => formatPayrollNumber(rate / 8))
                                   .join(", ")}`
                               : undefined;
+                          const identityNeedsReview = employee.sites.some(
+                            (row) => row.matchStatus && row.matchStatus !== "MATCHED",
+                          );
 
                           return (
                             <tr
@@ -594,15 +572,9 @@ export default function PayrollSection({
                               className="border-b border-[#edf1f3] last:border-0 odd:bg-[#fbfcfd] transition hover:bg-[#f5f9fa]"
                             >
                               <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
-                                {highlight(
-                                  employee.name,
-                                  payroll.payrollNameFilter,
-                                )}
+                                <span>{highlight(employee.name, payroll.payrollNameFilter)}</span>
+                                {identityNeedsReview ? <span className="ml-2 inline-flex rounded bg-amber-50 px-1.5 py-0.5 align-middle text-[9px] font-bold uppercase text-amber-700">Needs Review</span> : null}
                               </td>
-                              <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
-                                {employee.role}
-                              </td>
-
                               <td className="px-4 py-3">
                                 <p className="text-sm font-semibold text-apple-charcoal">
                                   {siteBreakdown
@@ -688,7 +660,6 @@ export default function PayrollSection({
                         <td className="px-4 py-3" />
                         <td className="px-4 py-3" />
                         <td className="px-4 py-3" />
-                        <td className="px-4 py-3" />
                         <td className="px-4 py-3 text-right text-sm font-mono font-semibold text-white">
                           {formatPayrollNumber(groupedPayrollTotals.pay)}
                         </td>
@@ -705,7 +676,6 @@ export default function PayrollSection({
                     <tr className="border-b border-[#edf1f3] bg-[#fafbfc]">
                       {[
                         "Worker",
-                        "Role",
                         "Site",
                         "Date",
                         "Regular Hours",
@@ -727,7 +697,7 @@ export default function PayrollSection({
                     {payroll.payrollPreviewLogs.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={7}
+                          colSpan={6}
                           className="px-4 py-6 text-center text-sm text-apple-smoke"
                         >
                           No attendance logs match the selected filters.
@@ -741,9 +711,6 @@ export default function PayrollSection({
                         >
                           <td className="px-4 py-3 text-sm font-semibold text-apple-charcoal">
                             {record.name}
-                          </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-apple-charcoal">
-                            {record.role}
                           </td>
                           <td className="px-4 py-3 text-xs text-apple-smoke">
                             {extractSiteName(record.site)}
@@ -924,24 +891,6 @@ ${
                   </select>
 
                   <select
-                    value={payroll.payrollRoleFilter}
-                    onChange={(e) =>
-                      payroll.setPayrollRoleFilter(
-                        e.target.value as RoleCode | "ALL",
-                      )
-                    }
-                    className="h-11 w-full cursor-pointer rounded-[12px] border border-[#d9e2e6] bg-white px-3 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
-                  >
-                    <option value="ALL">Role</option>
-
-                    {payroll.roleCodes.map((role) => (
-                      <option key={role} value={role}>
-                        {role} - {ROLE_CODE_TO_NAME[role]}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
                     value={payroll.payrollSort}
                     onChange={(e) =>
                       payroll.setPayrollSort(e.target.value as Step2Sort)
@@ -1012,9 +961,16 @@ ${
                     ...representativeRow,
                     worker: selectedEmployee.name,
                     role: selectedEmployee.role,
-                    site: summarizeGroupedSites(selectedEmployee.sites)
+                      site: summarizeGroupedSites(selectedEmployee.sites)
                       .map((entry) => entry.site)
-                      .join(", "),
+                        .join(", "),
+                      sites: summarizeGroupedSites(selectedEmployee.sites).map((entry) => entry.site),
+                      rawBiometricNames: Array.from(new Set(selectedEmployee.sites.flatMap((entry) => entry.rawBiometricNames ?? []))),
+                      matchStatus: selectedEmployee.sites.some((entry) => entry.matchStatus === "NEEDS_REVIEW")
+                        ? "NEEDS_REVIEW"
+                        : selectedEmployee.sites.some((entry) => entry.matchStatus === "UNMATCHED")
+                          ? "UNMATCHED"
+                          : "MATCHED",
                     hoursWorked: metrics.paidRegularHours,
                     overtimeHours: selectedEmployee.sites.reduce(
                       (sum, row) => sum + row.overtimeHours,

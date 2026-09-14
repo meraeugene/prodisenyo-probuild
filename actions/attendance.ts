@@ -2,6 +2,7 @@
 
 import type { ParseResult } from "@/lib/parser";
 import type { Database } from "@/types/database";
+import { resolveBiometricIdentity } from "@/features/attendance/utils/biometricIdentity";
 import { requireRole } from "@/lib/auth";
 import {
   createSupabaseAdminClient,
@@ -12,8 +13,6 @@ const INSERT_CHUNK_SIZE = 500;
 
 type SiteRow = Database["public"]["Tables"]["sites"]["Row"];
 type SiteInsert = Database["public"]["Tables"]["sites"]["Insert"];
-type EmployeeInsert = Database["public"]["Tables"]["employees"]["Insert"];
-type EmployeeRow = Database["public"]["Tables"]["employees"]["Row"];
 type AttendanceImportInsert =
   Database["public"]["Tables"]["attendance_imports"]["Insert"];
 type AttendanceRecordInsert =
@@ -193,91 +192,6 @@ async function upsertSite(
   return data;
 }
 
-async function upsertEmployees(
-  supabase:
-    | Awaited<ReturnType<typeof createSupabaseServerClient>>
-    | ReturnType<typeof createSupabaseAdminClient>,
-  employees: ParseResult["employees"],
-  employeeSiteIdByName: Map<string, string | null>,
-) {
-  const existingQuery = (supabase as any)
-    .from("employees")
-    .select("id, full_name, site_id");
-
-  const { data: existingEmployees, error: existingError } = await existingQuery;
-
-  if (existingError) {
-    throw new Error(`Failed to load employees. ${existingError.message}`);
-  }
-
-  const normalizedExistingEmployees = (existingEmployees ?? []) as Array<
-    Pick<EmployeeRow, "id" | "full_name" | "site_id">
-  >;
-
-  const employeeByName = new Map(
-    normalizedExistingEmployees.map((employee) => [
-      employee.full_name.trim().toLowerCase(),
-      employee.id,
-    ]),
-  );
-
-  const missingEmployees = employees
-    .map((employee) => employee.name.trim())
-    .filter((name) => name.length > 0)
-    .reduce<Map<string, EmployeeInsert>>((map, fullName) => {
-      const normalizedName = fullName.toLowerCase();
-      if (employeeByName.has(normalizedName) || map.has(normalizedName)) {
-        return map;
-      }
-
-      map.set(normalizedName, {
-        full_name: fullName,
-        default_role_code: null,
-        site_id: employeeSiteIdByName.get(normalizedName) ?? null,
-      });
-      return map;
-    }, new Map())
-    .values();
-
-  const employeeInsertPayload = Array.from(missingEmployees);
-
-  if (employeeInsertPayload.length > 0) {
-    for (const chunk of chunkArray(employeeInsertPayload, INSERT_CHUNK_SIZE)) {
-      const { error: insertError } = await (supabase as any)
-        .from("employees")
-        .insert(chunk);
-
-      if (insertError) {
-        throw new Error(`Failed to save employees. ${insertError.message}`);
-      }
-    }
-
-    const refreshedQuery = (supabase as any)
-      .from("employees")
-      .select("id, full_name, site_id");
-
-    const { data: refreshedEmployees, error: refreshedError } =
-      await refreshedQuery;
-
-    if (refreshedError) {
-      throw new Error(`Failed to refresh employees. ${refreshedError.message}`);
-    }
-
-    const normalizedRefreshedEmployees = (refreshedEmployees ?? []) as Array<
-      Pick<EmployeeRow, "id" | "full_name" | "site_id">
-    >;
-
-    return new Map(
-      normalizedRefreshedEmployees.map((employee) => [
-        employee.full_name.trim().toLowerCase(),
-        employee.id,
-      ]),
-    );
-  }
-
-  return employeeByName;
-}
-
 export async function saveAttendanceImportAction({
   fileNames,
   result,
@@ -299,48 +213,39 @@ export async function saveAttendanceImportAction({
       .filter((site): site is NonNullable<typeof site> => Boolean(site))
       .map((site) => [site.name.trim().toLowerCase(), site]),
   );
-  const employeeSiteNamesByName = new Map<string, Set<string>>();
-
-  for (const record of result.records) {
-    const normalizedEmployeeName = record.employee.trim().toLowerCase();
-    if (!normalizedEmployeeName) continue;
-
-    const normalizedRecordSite = normalizeSiteName(record.site);
-    if (!normalizedRecordSite || /^Multiple Sites/i.test(normalizedRecordSite)) {
-      continue;
-    }
-
-    const siteNames =
-      employeeSiteNamesByName.get(normalizedEmployeeName) ?? new Set<string>();
-    siteNames.add(normalizedRecordSite);
-    employeeSiteNamesByName.set(normalizedEmployeeName, siteNames);
-  }
-
-  const employeeSiteIdByName = new Map<string, string | null>();
-  for (const employee of result.employees) {
-    const normalizedEmployeeName = employee.name.trim().toLowerCase();
-    const employeeSiteNames = employeeSiteNamesByName.get(normalizedEmployeeName);
-    if (!employeeSiteNames || employeeSiteNames.size !== 1) {
-      employeeSiteIdByName.set(normalizedEmployeeName, null);
-      continue;
-    }
-
-    const onlySiteName = Array.from(employeeSiteNames)[0];
-    employeeSiteIdByName.set(
-      normalizedEmployeeName,
-      siteByName.get(onlySiteName.trim().toLowerCase())?.id ?? null,
-    );
-  }
-
   const site =
     /^Multiple Sites/i.test(normalizedImportSite)
       ? null
       : siteByName.get(normalizedImportSite.trim().toLowerCase()) ?? null;
-  const employeeIdByName = await upsertEmployees(
-    database,
-    result.employees,
-    employeeSiteIdByName,
+  const { data: employeeRows, error: employeeError } = await database
+    .from("employees")
+    .select("id, full_name, default_role_code");
+  if (employeeError) throw new Error(`Failed to load employees. ${employeeError.message}`);
+  const { data: aliasRows, error: aliasError } = await database
+    .from("employee_biometric_aliases")
+    .select("employee_id, normalized_alias, confirmed, match_source");
+  if (aliasError) throw new Error(`Failed to load biometric aliases. ${aliasError.message}`);
+  const canonicalEmployees = (employeeRows ?? []) as Array<{ id: string; full_name: string; default_role_code: string | null }>;
+  const resolutions = new Map(
+    Array.from(new Set(result.records.map((record) => record.employee))).map((rawName) => [
+      rawName,
+      resolveBiometricIdentity(rawName, canonicalEmployees, aliasRows ?? []),
+    ]),
   );
+  const resolvedRecords = result.records.map((record) => {
+    const resolution = resolutions.get(record.employee)!;
+    const employee = canonicalEmployees.find((candidate) => candidate.id === resolution.employeeId);
+    return {
+      ...record,
+      employee: resolution.officialName ?? record.employee,
+      employeeId: resolution.employeeId,
+      role: employee?.default_role_code ?? undefined,
+      rawBiometricName: record.employee,
+      normalizedBiometricName: resolution.normalizedAlias,
+      matchStatus: resolution.status,
+      matchSource: resolution.source,
+    };
+  });
 
   const attendanceImportPayload: AttendanceImportInsert = {
     original_filename: fileLabel,
@@ -366,16 +271,20 @@ export async function saveAttendanceImportAction({
     );
   }
 
-  const recordPayload = result.records.map<AttendanceRecordInsert>((record) => ({
+  const recordPayload = resolvedRecords.map((record) => ({
     import_id: savedImport.id,
-    employee_id: employeeIdByName.get(record.employee.trim().toLowerCase()) ?? null,
+    employee_id: record.employeeId ?? null,
     employee_name: record.employee,
+    raw_biometric_name: record.rawBiometricName,
+    normalized_biometric_name: record.normalizedBiometricName,
+    match_status: record.matchStatus,
+    match_source: record.matchSource,
     log_date: record.date,
     log_time: record.logTime,
     log_type: record.type,
     log_source: record.source,
     site_name: normalizeSiteName(record.site),
-  }));
+  })) as AttendanceRecordInsert[];
 
   for (const chunk of chunkArray(recordPayload, INSERT_CHUNK_SIZE)) {
     if (chunk.length === 0) continue;
@@ -390,5 +299,6 @@ export async function saveAttendanceImportAction({
     importId: savedImport.id,
     siteName: normalizedImportSite,
     recordsSaved: recordPayload.length,
+    resolvedResult: { ...result, records: resolvedRecords },
   };
 }

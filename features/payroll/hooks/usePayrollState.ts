@@ -613,8 +613,12 @@ export function usePayrollState({
 
         return {
           name: identity.name,
-          role: identity.role,
+          employeeId: row.employeeId,
+          rawBiometricNames: row.rawBiometricNames,
+          matchStatus: row.matchStatus,
+          role: row.role ?? identity.role,
           site: row.site,
+          sitePath: row.sitePath,
           date: row.date,
           hours: regularHours,
           overtimeHours,

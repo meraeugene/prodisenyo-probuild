@@ -20,6 +20,10 @@ import {
   selectAvailableSites,
 } from "@/features/attendance/utils/attendanceSelectors";
 import { calculateDailyWorkMinutes } from "@/lib/utils";
+import {
+  mapCanonicalAttendanceRecords,
+  type CanonicalAttendanceRecordRow,
+} from "@/features/attendance/utils/attendanceRecordMapper";
 
 type AttendanceRecordRow =
   Database["public"]["Tables"]["attendance_records"]["Row"];
@@ -159,17 +163,6 @@ function formatMoney(value: number): string {
   })}`;
 }
 
-function mapAttendanceRecords(rows: AttendanceRecordRow[]): AttendanceRecord[] {
-  return rows.map((row) => ({
-    date: row.log_date,
-    employee: row.employee_name,
-    logTime: row.log_time,
-    type: row.log_type,
-    site: row.site_name,
-    source: row.log_source,
-  }));
-}
-
 function mapPayrollRows(
   runItems: PayrollRunItemRow[],
   runsById: Map<string, PayrollRunRow>,
@@ -219,8 +212,12 @@ function buildAttendanceInputs(
 
       return {
         name: parsedIdentity.name || row.employee,
+        employeeId: row.employeeId,
+        rawBiometricNames: row.rawBiometricNames,
+        matchStatus: row.matchStatus,
         role: knownRole,
         site: row.site,
+        sitePath: row.sitePath,
         date: row.date,
         hours: row.hours,
       };
@@ -573,12 +570,12 @@ export function useHistoricalDashboardData(
               ? supabase
                   .from("attendance_records")
                   .select(
-                    "id, import_id, employee_id, employee_name, log_date, log_time, log_type, log_source, site_name, created_at",
+                    "id, import_id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, log_type, log_source, site_name, created_at, employee:employees(full_name, default_role_code)",
                   )
                   .eq("import_id", effectiveImportId)
                   .order("log_date", { ascending: false })
                   .order("log_time", { ascending: false })
-              : Promise.resolve({ data: [] as AttendanceRecordRow[], error: null }),
+              : Promise.resolve({ data: [] as CanonicalAttendanceRecordRow[], error: null }),
             includePayrollItems && trackedRunIds.length > 0
               ? supabase
                   .from("payroll_run_items")
@@ -618,8 +615,8 @@ export function useHistoricalDashboardData(
         }
 
         const attendanceRows = (attendanceResult.data ??
-          []) as AttendanceRecordRow[];
-        const records = mapAttendanceRecords(attendanceRows);
+          []) as CanonicalAttendanceRecordRow[];
+        const records = mapCanonicalAttendanceRecords(attendanceRows);
         const trackedRunsById = new Map(dedupedTrackedRuns.map((run) => [run.id, run]));
         const payrollRows = mapPayrollRows(
           (payrollItemsResult.data ?? []) as PayrollRunItemRow[],
@@ -691,7 +688,7 @@ export function useHistoricalDashboardData(
             selectedAttendanceLogs: attendanceRows.map((row) => ({
               id: row.id,
               import_id: row.import_id,
-              employee_name: row.employee_name,
+              employee_name: row.employee?.full_name ?? row.employee_name,
               log_date: row.log_date,
               log_time: row.log_time,
               log_type: row.log_type,

@@ -1,50 +1,64 @@
-# Design QA — GMEA Expense Modal
+# Design QA
 
-- Source visual truth: user-provided expense-details reference image in the conversation
-- Implementation screenshot: unavailable
-- Intended viewport: desktop, approximately 1268 × 652 reference pixels
-- CSS viewport and density normalization: unavailable because the local browser surface could not be connected
-- State: New/Edit Expense modal open
+- Source visual truth: two attendance-review reference images attached in the current user request.
+- Implementation: `/generate-payroll` � employee action � Cutoff Attendance � Review/Resolve.
+- Intended viewport: desktop, approximately 1365 � 768 CSS pixels at device scale factor 1.
+- Source pixel dimensions: first reference 851 � 373; second reference 837 � 473.
+- Implementation screenshot: unavailable.
+- State: Cutoff Attendance summary plus the opened Review/Resolve attendance dialog.
 
 ## Full-view comparison evidence
 
-The source image was available as the implementation target. The local application compiled successfully, but a browser-rendered implementation screenshot could not be captured because neither the connected browser nor the in-app browser was available.
+Blocked. The in-app browser connection failed before the local page could be opened or captured. The production build and TypeScript checks pass, but those checks are not substitutes for browser-rendered evidence.
 
-## Focused region comparison evidence
+## Focused-region comparison evidence
 
-Blocked. The form fields, VAT panel, and notes panel could not be compared against a rendered capture.
+Blocked for the same reason. The intended focused regions are:
+
+1. The Cutoff Attendance columns, including the new OT In - Out cell.
+2. The opened DTR evidence table showing Time 1, Time 2, and Overtime In/Out.
+3. The classification, approved-hours, reason, Cancel, and Save controls.
 
 ## Findings
 
-- [P1] Visual fidelity is not browser-verified.
-  - Location: GMEA New Expense and Edit Expense modal.
-  - Evidence: source reference is available, but no rendered implementation screenshot could be captured.
-  - Impact: spacing, responsive fit, and precise visual matching remain unconfirmed.
-  - Fix: open the local GMEA project, launch the expense modal, capture it at the reference viewport, and compare it with the supplied image.
+- [P1] Browser-rendered comparison unavailable
+  - Location: local `/generate-payroll` Review/Resolve workflow.
+  - Evidence: source references are available, but no implementation screenshot could be captured because the in-app browser runtime failed to connect.
+  - Impact: responsive layout, clipping, and final visual fidelity cannot be certified.
+  - Fix: reconnect the in-app browser, open a generated payroll employee, click Review and Resolve, capture both states, and compare at the intended desktop viewport.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: implemented to match the existing app and reference hierarchy; browser comparison blocked.
-- Spacing and layout rhythm: two-column details/VAT composition implemented; browser comparison blocked.
-- Colors and visual tokens: white form surface with light cyan VAT panel and slate borders implemented; browser comparison blocked.
-- Image quality and asset fidelity: no raster imagery is present in the target; library icons are used.
-- Copy and content: Expense details, VAT calculation, notes, and field labels follow the supplied reference while preserving app-specific fields.
-
-## Primary interactions checked
-
-- Static type checking passed.
-- Browser interaction testing was blocked before the modal could be opened.
-- Console errors could not be checked.
-
-## Implementation checklist
-
-- Capture the New Expense modal in a connected browser.
-- Check input alignment, modal height, and responsive stacking.
-- Verify typable payment-method suggestions and comma-separated description chips visually.
-- Compare the VAT and Notes cards with the reference.
+- Fonts and typography: code uses the existing payroll typography and scale; browser verification blocked.
+- Spacing and layout rhythm: compact table and responsive two-column dialog implemented; browser verification blocked.
+- Colors and visual tokens: existing slate, teal, amber, and red semantic tokens reused; browser verification blocked.
+- Image quality and asset fidelity: no custom raster assets are present in the target; existing Lucide icons are used.
+- Copy and content: required Date/Week, Time In - Out, OT In - Out, Raw, Classification, Regular, Payable, and Action labels are implemented. Review/Resolve exposes Time 1, Time 2, OT, sites, aliases, approved hours, and reason.
 
 ## Comparison history
 
-- Initial implementation completed; browser evidence unavailable, so no visual iteration could be performed.
+- Initial implementation was split after code review because the dialog exceeded the repository's preferred component size.
+- Post-fix components are 226 and 203 lines and the production build passes.
+- No browser-rendered comparison iteration was possible.
+
+## Primary interactions checked
+
+- Automated/code-level: Review and Resolve share the existing open/save/close state path; Save preserves the existing attendance decision payload.
+- Browser interaction: blocked.
+- Console errors: not checked because the browser could not connect.
+
+## Implementation checklist
+
+- [x] Preserve distinct Time 1, Time 2, and OT punches.
+- [x] Preserve each punch's site, multi-site path, and raw biometric aliases.
+- [x] Add OT In - Out to Cutoff Attendance.
+- [x] Open detailed DTR evidence from both Review and Resolve.
+- [x] Preserve classification and approved-hour editing.
+- [x] Pass automated tests, TypeScript, and production build.
+- [ ] Capture and compare the browser-rendered states.
+
+## Follow-up polish
+
+- Reassess table width and small-screen wrapping after browser capture.
 
 final result: blocked

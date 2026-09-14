@@ -34,6 +34,9 @@ export interface PayrollCalculationWorkspaceProps {
   roleName: string;
   siteLabel: string;
   periodLabel: string | null;
+  matchStatus?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
+  rawAliases?: string[];
+  onResolveIdentity?: () => void;
   logs: DailyLogRow[];
   visibleLogs: DailyLogRow[];
   page: number;
@@ -109,6 +112,9 @@ export function PayrollCalculationWorkspace(
           roleName={props.roleName}
           siteLabel={props.siteLabel}
           periodLabel={props.periodLabel}
+          matchStatus={props.matchStatus}
+          rawAliases={props.rawAliases}
+          onResolveIdentity={props.onResolveIdentity}
           onClose={props.onClose}
         />
         <PayrollSummaryCards {...summaryProps} />

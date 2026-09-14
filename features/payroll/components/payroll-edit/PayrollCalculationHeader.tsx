@@ -7,6 +7,9 @@ interface PayrollCalculationHeaderProps {
   roleName: string;
   siteLabel: string;
   periodLabel: string | null;
+  matchStatus?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
+  rawAliases?: string[];
+  onResolveIdentity?: () => void;
   onClose: () => void;
 }
 
@@ -25,6 +28,9 @@ export function PayrollCalculationHeader({
   roleName,
   siteLabel,
   periodLabel,
+  matchStatus,
+  rawAliases = [],
+  onResolveIdentity,
   onClose,
 }: PayrollCalculationHeaderProps) {
   return (
@@ -49,6 +55,14 @@ export function PayrollCalculationHeader({
               <span className="mt-0.5 inline-flex max-w-full truncate rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-semibold text-teal-700">
                 {roleName}
               </span>
+              {matchStatus && matchStatus !== "MATCHED" ? (
+                <button type="button" onClick={onResolveIdentity} className="ml-1.5 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 hover:bg-amber-100">
+                  {matchStatus === "NEEDS_REVIEW" ? "Needs Review" : "Unmatched"} - Resolve
+                </button>
+              ) : null}
+              {rawAliases.length > 0 && rawAliases.some((alias) => alias !== employeeName) ? (
+                <p className="mt-1 max-w-44 truncate text-[9px] text-slate-400" title={rawAliases.join(", ")}>Biometric: {rawAliases.join(", ")}</p>
+              ) : null}
             </div>
           </div>
 

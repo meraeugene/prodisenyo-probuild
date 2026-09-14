@@ -73,6 +73,7 @@ import {
   type PayrollAdjustmentFieldKey,
 } from "@/features/payroll/components/payroll-edit/PayrollAdjustmentDialog";
 import { PayrollCalculationWorkspace } from "@/features/payroll/components/payroll-edit/PayrollCalculationWorkspace";
+import { BiometricIdentityResolutionDialog } from "@/features/attendance/components/BiometricIdentityResolutionDialog";
 import { AttendanceResolutionDialog } from "@/features/payroll/components/payroll-edit/AttendanceResolutionDialog";
 import { useCutoffAttendanceReview } from "@/features/payroll/hooks/useCutoffAttendanceReview";
 import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
@@ -94,6 +95,7 @@ export default function PayrollEditModal({
 
   const [activeAdjustmentForm, setActiveAdjustmentForm] =
     useState<AdjustmentFormType>(null);
+  const [resolveIdentityOpen, setResolveIdentityOpen] = useState(false);
   const [cashAdvanceInput, setCashAdvanceInput] = useState("");
   const [cashAdvanceNotes, setCashAdvanceNotes] = useState("");
   const [overtimeHoursInput, setOvertimeHoursInput] = useState("");
@@ -287,14 +289,17 @@ export default function PayrollEditModal({
   const loggedSites = Array.from(
     new Set(
       payroll.editingPayrollLogs
-        .map((log) => extractSiteName(log.site))
+        .flatMap((log) => log.sitePath?.length ? log.sitePath : [log.site])
+        .map((site) => extractSiteName(site))
         .filter((site) => site.length > 0),
     ),
   ).sort((a, b) => a.localeCompare(b));
 
   const loggedSitesLabel =
     loggedSites.length > 0
-      ? loggedSites.join(", ")
+      ? loggedSites.length > 1
+        ? `MULTI BRANCH - ${loggedSites.join(" -> ")}`
+        : loggedSites[0]
       : extractSiteName(editingPayrollRow.site) || "-";
   const primarySiteSource =
     payroll.editingPayrollLogs.find(
@@ -846,7 +851,10 @@ export default function PayrollEditModal({
   }
 
   if (allReportLogsPage >= 1) {
+    const identityRawAlias =
+      editingPayrollRow.rawBiometricNames?.[0] ?? editingPayrollRow.worker;
     return (
+      <>
       <PayrollCalculationWorkspace
         employeeName={editingPayrollRow.worker}
         roleName={
@@ -855,6 +863,9 @@ export default function PayrollEditModal({
         }
         siteLabel={loggedSitesLabel}
         periodLabel={primarySitePeriodLabel}
+        matchStatus={editingPayrollRow.matchStatus}
+        rawAliases={editingPayrollRow.rawBiometricNames}
+        onResolveIdentity={() => setResolveIdentityOpen(true)}
         logs={payroll.editingPayrollLogs}
         visibleLogs={
           showAllLogs ? payroll.editingPayrollLogs : visibleAllReportLogs
@@ -922,6 +933,8 @@ export default function PayrollEditModal({
         attendanceResolutionDialog={
           <AttendanceResolutionDialog
             day={attendanceReview.resolvingDay}
+            employeeName={editingPayrollRow.worker}
+            siteLabel={loggedSitesLabel}
             onClose={attendanceReview.closeResolution}
             onSave={attendanceReview.saveDecision}
           />
@@ -954,6 +967,14 @@ export default function PayrollEditModal({
           void handleSaveChanges();
         }}
       />
+      {resolveIdentityOpen ? (
+        <BiometricIdentityResolutionDialog
+          rawAlias={identityRawAlias}
+          dailyLogs={payroll.editingPayrollLogs}
+          onClose={() => setResolveIdentityOpen(false)}
+        />
+      ) : null}
+      </>
     );
   }
 

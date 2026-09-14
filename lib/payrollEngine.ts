@@ -35,8 +35,12 @@ export interface PayrollCalculation {
 
 export interface AttendanceRecordInput {
   name: string;
+  employeeId?: string | null;
+  rawBiometricNames?: string[];
+  matchStatus?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
   role: string;
   site: string;
+  sitePath?: string[];
   date: string;
   hours: number;
   overtimeHours?: number;
@@ -46,8 +50,12 @@ export interface AttendanceRecordInput {
 export interface PayrollRow {
   id: string;
   worker: string;
+  employeeId?: string | null;
+  rawBiometricNames?: string[];
+  matchStatus?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
   role: string;
   site: string;
+  sites?: string[];
   date: string;
   hoursWorked: number;
   overtimeHours: number;
@@ -70,8 +78,12 @@ export interface GeneratePayrollOptions {
 
 interface WorkerGroup {
   worker: string;
+  employeeId: string | null;
+  rawBiometricNames: Set<string>;
+  matchStatus: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED" | undefined;
   role: string;
   site: string;
+  sites: Set<string>;
   totalHours: number;
   dates: Set<string>;
 }
@@ -252,15 +264,21 @@ export function generatePayroll(
 
     const paidRegularHours = numericHours;
     const site = normalizeWhitespace(record.site) || "Unknown Site";
+    const sites = (record.sitePath?.length ? record.sitePath : [site]).filter(Boolean);
     const date = normalizeWhitespace(record.date);
-    const key = `${role}|||${workerName}|||${site}`;
+    const identityKey = record.employeeId ? `employee:${record.employeeId}` : `name:${workerName.toLowerCase()}`;
+    const key = `${role}|||${identityKey}|||${site}`;
 
     const existing = grouped.get(key);
     if (!existing) {
       grouped.set(key, {
         worker: workerName,
+        employeeId: record.employeeId ?? null,
+        rawBiometricNames: new Set(record.rawBiometricNames ?? [record.name]),
+        matchStatus: record.matchStatus,
         role,
         site,
+        sites: new Set(sites),
         totalHours: paidRegularHours,
         dates: new Set(date ? [date] : []),
       });
@@ -269,6 +287,9 @@ export function generatePayroll(
 
     existing.totalHours += paidRegularHours;
     if (date) existing.dates.add(date);
+    sites.forEach((entry) => existing.sites.add(entry));
+    (record.rawBiometricNames ?? [record.name]).forEach((entry) => existing.rawBiometricNames.add(entry));
+    if (record.matchStatus === "NEEDS_REVIEW") existing.matchStatus = "NEEDS_REVIEW";
   }
 
   const rows = Array.from(grouped.values()).map((group) => {
@@ -279,8 +300,12 @@ export function generatePayroll(
     const baseRow: PayrollRow = {
       id: `${group.role}|||${group.worker}|||${group.site}`,
       worker: group.worker,
+      employeeId: group.employeeId,
+      rawBiometricNames: Array.from(group.rawBiometricNames),
+      matchStatus: group.matchStatus,
       role: group.role,
       site: group.site,
+      sites: Array.from(group.sites),
       date: summarizeDates(group.dates),
       hoursWorked: group.totalHours,
       overtimeHours: 0,

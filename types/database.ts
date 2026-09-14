@@ -132,6 +132,45 @@ export interface Database {
           updated_at?: string;
         };
       };
+      employee_biometric_aliases: {
+        Row: {
+          id: string;
+          employee_id: string;
+          raw_alias: string;
+          normalized_alias: string;
+          match_source: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH";
+          confidence: number | null;
+          confirmed: boolean;
+          confirmed_by: string | null;
+          confirmed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          raw_alias: string;
+          normalized_alias: string;
+          match_source: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH";
+          confidence?: number | null;
+          confirmed?: boolean;
+          confirmed_by?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          employee_id?: string;
+          raw_alias?: string;
+          normalized_alias?: string;
+          match_source?: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH";
+          confidence?: number | null;
+          confirmed?: boolean;
+          confirmed_by?: string | null;
+          confirmed_at?: string | null;
+          updated_at?: string;
+        };
+      };
       attendance_imports: {
         Row: {
           id: string;
@@ -178,6 +217,10 @@ export interface Database {
           import_id: string;
           employee_id: string | null;
           employee_name: string;
+          raw_biometric_name: string;
+          normalized_biometric_name: string;
+          match_status: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
+          match_source: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date: string;
           log_time: string;
           log_type: "IN" | "OUT";
@@ -190,6 +233,10 @@ export interface Database {
           import_id: string;
           employee_id?: string | null;
           employee_name: string;
+          raw_biometric_name: string;
+          normalized_biometric_name: string;
+          match_status?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
+          match_source?: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date: string;
           log_time: string;
           log_type: "IN" | "OUT";
@@ -200,6 +247,10 @@ export interface Database {
         Update: {
           employee_id?: string | null;
           employee_name?: string;
+          raw_biometric_name?: string;
+          normalized_biometric_name?: string;
+          match_status?: "MATCHED" | "NEEDS_REVIEW" | "UNMATCHED";
+          match_source?: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date?: string;
           log_time?: string;
           log_type?: "IN" | "OUT";

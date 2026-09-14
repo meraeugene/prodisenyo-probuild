@@ -247,8 +247,12 @@ export function mapDailyRowsToAttendanceInputs(
 
       return {
         name: identity.name,
+        employeeId: row.employeeId,
+        rawBiometricNames: row.rawBiometricNames,
+        matchStatus: row.matchStatus,
         role: identity.role,
         site: row.site,
+        sitePath: row.sitePath,
         date: row.date,
         hours: regularHours,
         overtimeHours,
@@ -264,65 +268,51 @@ export function mapDailyRowsToAttendanceInputs(
 }
 
 interface EmployeeIdentityGroup {
+  employeeId: string | null;
   role: string;
   displayName: string;
   aliases: Set<string>;
-}
-
-function hasKnownRole(role: string): boolean {
-  const normalized = normalizeRoleCode(role);
-  return Boolean(normalized && normalized !== "UNKNOWN");
 }
 
 export function coalescePayrollAttendanceInputs(
   inputs: AttendanceRecordInput[],
 ): AttendanceRecordInput[] {
   const aliasToGroup = new Map<string, EmployeeIdentityGroup>();
-  const groups: EmployeeIdentityGroup[] = [];
+  const employeeIdToGroup = new Map<string, EmployeeIdentityGroup>();
 
   for (const record of inputs) {
     const name = record.name.trim();
     if (!name) continue;
 
     const alias = normalizeEmployeeNameKey(name);
-    let group = aliasToGroup.get(alias);
-
-    if (!group) {
-      group = groups.find((candidate) => {
-        if (!areLikelySameEmployeeName(candidate.displayName, name)) {
-          return false;
-        }
-
-        return hasKnownRole(candidate.role) !== hasKnownRole(record.role);
-      });
-    }
+    let group = record.employeeId
+      ? employeeIdToGroup.get(record.employeeId)
+      : aliasToGroup.get(alias);
 
     if (!group) {
       group = {
+        employeeId: record.employeeId ?? null,
         role: normalizeRoleCode(record.role) ?? "UNKNOWN",
         displayName: name,
         aliases: new Set([alias]),
       };
-      groups.push(group);
     } else {
       group.role = pickPreferredRoleCode(group.role, record.role);
-      group.displayName = pickPreferredEmployeeDisplayName(
-        group.displayName,
-        name,
-      );
+      if (!record.employeeId) {
+        group.displayName = pickPreferredEmployeeDisplayName(group.displayName, name);
+      }
       group.aliases.add(alias);
     }
 
     aliasToGroup.set(alias, group);
+    if (record.employeeId) employeeIdToGroup.set(record.employeeId, group);
   }
 
   return inputs.map((record) => {
     const alias = normalizeEmployeeNameKey(record.name);
-    const group =
-      aliasToGroup.get(alias) ??
-      groups.find((candidate) =>
-        areLikelySameEmployeeName(candidate.displayName, record.name),
-      );
+    const group = record.employeeId
+      ? employeeIdToGroup.get(record.employeeId)
+      : aliasToGroup.get(alias);
 
     if (!group) {
       return {
@@ -477,6 +467,7 @@ export function buildEditingPayrollLogs(
   if (!editingPayrollRow) return [];
 
   const matched = dailyRows.filter((row) => {
+    if (editingPayrollRow.employeeId) return row.employeeId === editingPayrollRow.employeeId;
     const identity = parsePayrollIdentity(row.employee);
     return areLikelySameEmployeeName(identity.name, editingPayrollRow.worker);
   });
