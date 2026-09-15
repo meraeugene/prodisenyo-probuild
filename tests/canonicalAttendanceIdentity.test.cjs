@@ -8,10 +8,13 @@ const { formatBiometricDisplayName, mapCanonicalAttendanceRecords } = load(
 const { buildDailyRows } = load(
   "features/attendance/utils/attendanceSelectors.ts",
 );
-const { coalescePayrollAttendanceInputs } = load(
+const {
+  allocateReviewedHoursAcrossPayrollRows,
+  coalescePayrollAttendanceInputs,
+} = load(
   "features/payroll/utils/payrollSelectors.ts",
 );
-const { groupByEmployee } = load(
+const { buildGroupedEmployeeCompensation, groupByEmployee } = load(
   "features/payroll/utils/payrollSectionHelpers.ts",
 );
 
@@ -27,6 +30,7 @@ function storedPunch(overrides = {}) {
     match_source: "EXISTING_ALIAS",
     log_date: "2026-02-27",
     log_time: "08:00:00",
+    is_next_day: false,
     log_type: "IN",
     log_source: "Time1",
     site_name: "BAYANGA",
@@ -79,6 +83,24 @@ test("confirmed aliases across sites merge into one canonical daily row", () => 
   assert.equal(rows[0].employeeId, "adam-id");
   assert.equal(rows[0].matchStatus, "MATCHED");
   assert.deepEqual(rows[0].sitePath, ["BAYANGA", "CLIMB"]);
+});
+
+test("next-day biometric punches stay on the work date and display with plus", () => {
+  const records = mapCanonicalAttendanceRecords([
+    storedPunch({ log_time: "07:44:00" }),
+    storedPunch({
+      id: "punch-next-day",
+      log_time: "00:32:00",
+      is_next_day: true,
+      log_type: "OUT",
+      log_source: "OT",
+    }),
+  ]);
+  const [row] = buildDailyRows(records);
+  assert.equal(row.date, "2026-02-27");
+  assert.equal(row.otOut, "00:32+");
+  assert.equal(row.regularHours, 8);
+  assert.equal(row.overtimeHours, 7.8);
 });
 
 test("an unconfirmed alias stays reviewable without contaminating canonical identity", () => {
@@ -152,4 +174,55 @@ test("payroll display groups different site rows by canonical employee ID", () =
   assert.equal(grouped.length, 1);
   assert.equal(grouped[0].name, "Adam Taer");
   assert.equal(grouped[0].sites.length, 2);
+});
+
+test("reviewed hours are distributed without duplicating multi-site totals", () => {
+  const allocation = allocateReviewedHoursAcrossPayrollRows(
+    [
+      { id: "brian-office", hoursWorked: 8 },
+      { id: "brian-branch", hoursWorked: 3.08 },
+    ],
+    19.08,
+    "brian-office",
+  );
+  assert.equal(
+    Math.round(
+      (allocation["brian-office"] + allocation["brian-branch"]) * 100,
+    ) / 100,
+    19.08,
+  );
+});
+
+test("grouped compensation uses reviewed payroll row hours instead of stale biometric hours", () => {
+  const reviewedRow = {
+    id: "brian-office",
+    worker: "Brian Louis Paisones",
+    employeeId: "brian-id",
+    role: "UNKNOWN",
+    site: "OFFICE",
+    date: "2026-08-20 to 2026-08-26",
+    hoursWorked: 19.08,
+    overtimeHours: 0,
+    defaultRate: 62.5,
+    customRate: null,
+    rate: 62.5,
+    regularPay: 1192.5,
+    overtimePay: 0,
+    totalPay: 1192.5,
+  };
+  const [employee] = groupByEmployee([reviewedRow], "name-asc");
+  const compensation = buildGroupedEmployeeCompensation(employee, {
+    employeeBranchRates: {},
+    payrollAttendanceInputs: [{
+      name: "Brian Louis Paisones",
+      employeeId: "brian-id",
+      role: "UNKNOWN",
+      site: "OFFICE",
+      date: "2026-08-20",
+      hours: 11.08,
+    }],
+  });
+
+  assert.equal(compensation.totalWorkedHours, 19.08);
+  assert.equal(compensation.totalBasePay, 1192.5);
 });

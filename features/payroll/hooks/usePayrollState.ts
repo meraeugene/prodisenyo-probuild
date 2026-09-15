@@ -5,7 +5,10 @@ import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import { calculatePayroll, roundPayrollCalculation } from "@/lib/payrollEngine";
 import { calculateDailyWorkMinutes } from "@/lib/utils";
 import { normalizeLegacyRawRegularHours } from "@/features/payroll/utils/payrollLogHours";
-import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
+import {
+  sumApprovedAttendanceOvertimeHours,
+  sumApprovedAttendanceRegularHours,
+} from "@/features/payroll/utils/payrollAttendanceEngine";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   DEFAULT_DAILY_RATE_BY_ROLE,
@@ -35,6 +38,7 @@ import {
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
 import {
+  allocateReviewedHoursAcrossPayrollRows,
   applyLogHourOverrides,
   buildEditingPayrollLogs,
   buildEditingPayrollSummary,
@@ -1480,12 +1484,19 @@ export function usePayrollState({
     if (!editingPayrollRow || !payrollEditDraft) return;
     const existingOverride = payrollOverrides[editingPayrollRow.id];
 
-    const nextHours = hasLogHourOverrides
+    const editedRegularHours = hasLogHourOverrides
       ? regularEditedLogHours
       : parseNonNegativeOrFallback(
           payrollEditDraft.hoursWorked,
           editingPayrollRow.hoursWorked,
         );
+    const hasReviewedAttendance =
+      Object.keys(adjustments?.attendanceDecisions ?? {}).length > 0;
+    const nextHours = hasReviewedAttendance
+      ? round2(
+          sumApprovedAttendanceRegularHours(adjustments?.attendanceDays),
+        )
+      : editedRegularHours;
 
     const nextOvertime = hasLogHourOverrides
       ? overtimeEditedLogHours
@@ -1578,11 +1589,39 @@ export function usePayrollState({
       nextBiometricHours = null;
     }
 
-    setPayrollOverrides((prev) => ({
-      ...prev,
-      [editingPayrollRow.id]: {
+    const relatedRows = payrollBaseComputedRows.filter((row) =>
+      editingPayrollRow.employeeId
+        ? row.employeeId === editingPayrollRow.employeeId
+        : normalizeEmployeeNameKey(row.worker) ===
+          normalizeEmployeeNameKey(editingPayrollRow.worker),
+    );
+    const allocationRows =
+      relatedRows.length > 0 ? relatedRows : [editingPayrollRow];
+    const reviewedHoursByRowId = allocateReviewedHoursAcrossPayrollRows(
+      allocationRows,
+      nextHours,
+      editingPayrollRow.id,
+    );
+
+    setPayrollOverrides((prev) => {
+      const next = { ...prev };
+
+      for (const row of allocationRows) {
+        const rowOverride = prev[row.id];
+        next[row.id] = {
+          ...rowOverride,
+          date: rowOverride?.date ?? normalizedPeriod ?? row.date,
+          hoursWorked: reviewedHoursByRowId[row.id] ?? row.hoursWorked,
+          overtimeHours: rowOverride?.overtimeHours ?? row.overtimeHours,
+          customRate: rowOverride?.customRate ?? row.customRate,
+        };
+      }
+
+      next[editingPayrollRow.id] = {
+        ...next[editingPayrollRow.id],
         date: normalizedPeriod ?? payrollEditDraft.date.trim(),
-        hoursWorked: nextHours,
+        hoursWorked:
+          reviewedHoursByRowId[editingPayrollRow.id] ?? nextHours,
         overtimeHours: nextOvertime,
         customRate: nextCustomRate,
         logHours: nextLogHours,
@@ -1605,8 +1644,10 @@ export function usePayrollState({
           {},
         attendanceDays:
           adjustments?.attendanceDays ?? existingOverride?.attendanceDays ?? [],
-      },
-    }));
+      };
+
+      return next;
+    });
 
     toast.success("Payroll edit saved", {
       description: `${editingPayrollRow.worker} updated successfully.`,

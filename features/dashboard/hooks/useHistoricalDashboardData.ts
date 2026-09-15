@@ -101,6 +101,7 @@ export type HistoricalDashboardAttendanceLog =
     | "employee_name"
     | "log_date"
     | "log_time"
+    | "is_next_day"
     | "log_type"
     | "log_source"
     | "site_name"
@@ -570,7 +571,7 @@ export function useHistoricalDashboardData(
               ? supabase
                   .from("attendance_records")
                   .select(
-                    "id, import_id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, log_type, log_source, site_name, created_at, employee:employees(full_name, default_role_code)",
+                    "id, import_id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, is_next_day, log_type, log_source, site_name, created_at, employee:employees(full_name, default_role_code)",
                   )
                   .eq("import_id", effectiveImportId)
                   .order("log_date", { ascending: false })
@@ -690,7 +691,10 @@ export function useHistoricalDashboardData(
               import_id: row.import_id,
               employee_name: row.employee?.full_name ?? row.employee_name,
               log_date: row.log_date,
-              log_time: row.log_time,
+              log_time: row.is_next_day
+                ? `${row.log_time.slice(0, 5)}+`
+                : row.log_time,
+              is_next_day: row.is_next_day,
               log_type: row.log_type,
               log_source: row.log_source,
               site_name: row.site_name,

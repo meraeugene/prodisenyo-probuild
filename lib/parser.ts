@@ -268,7 +268,7 @@ interface EmployeeAccumulator {
   activeDays: Set<string>;
 }
 
-interface TimeCell {
+export interface TimeCell {
   time: string;
   minutes: number;
   nextDay: boolean;
@@ -635,8 +635,8 @@ function processSlot(
   const rawIn = row[inCol];
   const rawOut = row[outCol];
 
-  const inCell = parseTimeCell(rawIn);
-  const outCell = parseTimeCell(rawOut);
+  const inCell = parseBiometricTimeCell(rawIn);
+  const outCell = parseBiometricTimeCell(rawOut);
 
   let removed = 0;
   if (!inCell && shouldCountAsRemoved(rawIn)) removed += 1;
@@ -654,6 +654,7 @@ function processSlot(
       date,
       employee,
       logTime: inCell.time,
+      nextDay: inCell.nextDay,
       type: "IN",
       site,
       source,
@@ -661,14 +662,14 @@ function processSlot(
   }
 
   if (outCell) {
-    const shouldMoveToNextDay =
+    const isNextDay =
       outCell.nextDay || (inCell ? outCell.minutes < inCell.minutes : false);
-    const outDate = shouldMoveToNextDay ? addDays(date, 1) : date;
 
     records.push({
-      date: outDate,
+      date,
       employee,
       logTime: outCell.time,
+      nextDay: isNextDay,
       type: "OUT",
       site,
       source,
@@ -691,10 +692,10 @@ function shouldCountAsRemoved(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   const text = String(value).trim();
   if (!text) return false;
-  return /^missed$/i.test(text) || !parseTimeCell(value);
+  return /^missed$/i.test(text) || !parseBiometricTimeCell(value);
 }
 
-function parseTimeCell(value: unknown): TimeCell | null {
+export function parseBiometricTimeCell(value: unknown): TimeCell | null {
   if (value === null || value === undefined) return null;
 
   if (value instanceof Date) {
@@ -704,19 +705,21 @@ function parseTimeCell(value: unknown): TimeCell | null {
   }
 
   if (typeof value === "number" && Number.isFinite(value)) {
+    const wholeDays = Math.floor(value);
     let fraction = value % 1;
     if (fraction < 0) fraction += 1;
     let minutes = Math.round(fraction * 24 * 60);
     if (minutes === 24 * 60) minutes = 0;
-    if (minutes === 0) return null;
-    return { time: minutesToTime(minutes), minutes, nextDay: false };
+    const nextDay = wholeDays >= 1;
+    if (minutes === 0 && !nextDay) return null;
+    return { time: minutesToTime(minutes), minutes, nextDay };
   }
 
   const text = String(value).trim();
   if (!text) return null;
   if (/^missed$/i.test(text)) return null;
 
-  const nextDay = /\+$/.test(text);
+  const explicitNextDay = /\+$/.test(text);
   const cleaned = text.replace(/\+/g, "").trim();
   const match = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (!match) return null;
@@ -724,10 +727,11 @@ function parseTimeCell(value: unknown): TimeCell | null {
   const hours = Number(match[1]);
   const mins = Number(match[2]);
   if (!Number.isInteger(hours) || !Number.isInteger(mins)) return null;
-  if (hours < 0 || hours > 23 || mins < 0 || mins > 59) return null;
+  if (hours < 0 || hours > 47 || mins < 0 || mins > 59) return null;
 
-  const minutes = hours * 60 + mins;
-  if (minutes === 0) return null;
+  const nextDay = explicitNextDay || hours >= 24;
+  const minutes = (hours % 24) * 60 + mins;
+  if (minutes === 0 && !nextDay) return null;
   return { time: minutesToTime(minutes), minutes, nextDay };
 }
 
@@ -791,13 +795,6 @@ function resolveDateByDay(day: number, range: DateRange | null): string {
 
   const now = new Date();
   return formatDate(new Date(now.getFullYear(), now.getMonth(), day));
-}
-
-function addDays(isoDate: string, days: number): string {
-  const parsed = parseDate(isoDate);
-  if (!parsed) return isoDate;
-  parsed.setDate(parsed.getDate() + days);
-  return formatDate(parsed);
 }
 
 function getAccumulator(
@@ -929,6 +926,7 @@ function dedupeRecords(records: AttendanceRecord[]): AttendanceRecord[] {
       record.date,
       record.employee.trim().toLowerCase(),
       record.logTime,
+      record.nextDay ? "next-day" : "same-day",
       record.type,
       record.source,
       record.site.trim().toLowerCase(),

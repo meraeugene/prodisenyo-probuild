@@ -48,6 +48,7 @@ export interface AttendanceLogRow {
   id: string;
   log_date: string;
   log_time: string;
+  is_next_day: boolean;
   log_type: "IN" | "OUT";
   log_source: "Time1" | "Time2" | "OT";
   site_name: string;
@@ -109,7 +110,10 @@ export function buildRequestDailyLogRows(
   const attendanceRecords: AttendanceRecord[] = logs.map((log) => ({
     date: log.log_date,
     employee: employeeName,
-    logTime: log.log_time,
+    logTime: log.is_next_day
+      ? `${log.log_time.slice(0, 5)}+`
+      : log.log_time,
+    nextDay: log.is_next_day,
     type: log.log_type,
     source: log.log_source,
     site: log.site_name,

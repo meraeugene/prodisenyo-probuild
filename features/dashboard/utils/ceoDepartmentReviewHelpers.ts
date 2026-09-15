@@ -67,13 +67,13 @@ export function formatLogTime(value: string | null): string {
 
 function toMinutes(value: string | null): number {
   if (!value) return -1;
-  const match = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  const match = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(\+)?$/);
   if (!match) return -1;
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
   if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return -1;
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1;
-  return hours * 60 + minutes;
+  return hours * 60 + minutes + (match[3] ? 24 * 60 : 0);
 }
 
 function pairHours(inTime: string | null, outTime: string | null): number {

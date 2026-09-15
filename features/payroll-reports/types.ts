@@ -43,6 +43,7 @@ export type AttendanceLogRow = Pick<
   | "employee_name"
   | "log_date"
   | "log_time"
+  | "is_next_day"
   | "log_type"
   | "log_source"
   | "site_name"

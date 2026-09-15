@@ -25,6 +25,7 @@ export interface AttendanceRecord {
   matchStatus?: BiometricMatchStatus;
   matchSource?: BiometricMatchSource | null;
   logTime: string;
+  nextDay?: boolean;
   type: LogType;
   site: string;
   source: LogSource;

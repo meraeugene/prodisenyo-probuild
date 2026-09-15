@@ -140,7 +140,7 @@ export function usePayrollApprovalQueue({
     const { start, end } = resolveRequestPeriod(request);
     let query = supabase
       .from("attendance_records")
-      .select("id, log_date, log_time, log_type, log_source, site_name")
+      .select("id, log_date, log_time, is_next_day, log_type, log_source, site_name")
       .eq("import_id", request.attendance_import_id)
       .eq("employee_name", request.employee_name);
 

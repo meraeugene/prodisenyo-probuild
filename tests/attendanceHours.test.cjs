@@ -28,7 +28,13 @@ function loadTypeScriptModule(relativePath, dependencies = {}) {
   return compiledModule.exports;
 }
 
-const { calculateDailyWorkMinutes } = loadTypeScriptModule("../lib/utils.ts");
+const {
+  calculateDailyWorkMinutes,
+  requiresBiometricReview,
+} = loadTypeScriptModule("../lib/utils.ts");
+const { parseBiometricTimeCell } = loadTypeScriptModule("../lib/parser.ts", {
+  "@/lib/utils": { calculateDailyWorkMinutes },
+});
 const { calculateRegularPay } = loadTypeScriptModule("../lib/payrollHours.ts");
 const {
   buildPayrollLogBiometricBreakdown,
@@ -184,6 +190,45 @@ test("does not calculate negative hours for incomplete or invalid regular punche
       totalMinutes: 0,
     },
   );
+});
+
+test("uses a lone OT OUT as reviewable end-of-day evidence", () => {
+  const result = calculateDailyWorkMinutes({
+    time1In: "07:44",
+    otOut: "23:18",
+  });
+  assert.deepEqual(result, {
+    rawRegularMinutes: 934,
+    lunchDeductionMinutes: 60,
+    regularMinutes: 480,
+    overtimeMinutes: 394,
+    totalMinutes: 874,
+  });
+  assert.equal(
+    requiresBiometricReview({ time1In: "07:44", otOut: "23:18" }),
+    true,
+  );
+});
+
+test("calculates next-day OT OUT values while retaining the Excel plus marker", () => {
+  assert.deepEqual(parseBiometricTimeCell("00:32+"), {
+    time: "00:32",
+    minutes: 32,
+    nextDay: true,
+  });
+  assert.deepEqual(parseBiometricTimeCell("24:32"), {
+    time: "00:32",
+    minutes: 32,
+    nextDay: true,
+  });
+
+  const result = calculateDailyWorkMinutes({
+    time1In: "07:44",
+    otOut: "00:32+",
+  });
+  assert.equal(result.rawRegularMinutes, 1008);
+  assert.equal(result.regularMinutes, 480);
+  assert.equal(result.overtimeMinutes, 468);
 });
 
 test("uses adjusted attendance hours directly for multi-day regular pay", () => {

@@ -76,7 +76,10 @@ import { PayrollCalculationWorkspace } from "@/features/payroll/components/payro
 import { BiometricIdentityResolutionDialog } from "@/features/attendance/components/BiometricIdentityResolutionDialog";
 import { AttendanceResolutionDialog } from "@/features/payroll/components/payroll-edit/AttendanceResolutionDialog";
 import { useCutoffAttendanceReview } from "@/features/payroll/hooks/useCutoffAttendanceReview";
-import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
+import {
+  sumApprovedAttendanceOvertimeHours,
+  sumApprovedAttendanceRegularHours,
+} from "@/features/payroll/utils/payrollAttendanceEngine";
 
 interface PayrollEditModalProps {
   payroll: UsePayrollStateResult;
@@ -349,14 +352,7 @@ export default function PayrollEditModal({
   const hasAttendanceDecisions =
     Object.keys(attendanceReview.decisions).length > 0;
   const regularWorkedHours = hasAttendanceDecisions
-    ? attendanceReview.days.reduce(
-        (sum, day) =>
-          day.classification === "REGULAR_HOLIDAY" ||
-          day.classification === "SPECIAL_NON_WORKING_HOLIDAY"
-            ? sum
-            : sum + day.approvedRegularSeconds / 3600,
-        0,
-      )
+    ? sumApprovedAttendanceRegularHours(attendanceReview.days)
     : biometricRegularWorkedHours;
   const sitePayBreakdown = loggedSites.map((site) => {
     const siteLogs = currentLogsForPay.filter(

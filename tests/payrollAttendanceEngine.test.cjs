@@ -117,6 +117,38 @@ test("no biometric remains reviewable and is not automatically absent", () => {
   assert.equal(day.needsReview, true);
 });
 
+test("incomplete long biometric day pays regular hours but remains reviewable", () => {
+  const day = oneDay({
+    biometricDays: [{
+      date: "2026-06-16",
+      time1In: "07:44",
+      otOut: "23:18",
+      rawWorkedSeconds: 934 * 60,
+      breakSeconds: 60 * 60,
+      calculatedRegularSeconds: 8 * 3600,
+      detectedOvertimeSeconds: 394 * 60,
+      needsReview: true,
+    }],
+  });
+  assert.equal(day.classification, "WORKED");
+  assert.equal(day.approvedRegularSeconds, 8 * 3600);
+  assert.equal(day.approvedOvertimeSeconds, 0);
+  assert.equal(day.payableSeconds, 8 * 3600);
+  assert.equal(day.needsReview, true);
+});
+
+test("reviewed regular hours sum payable days and exclude holiday bonus hours", () => {
+  assert.equal(
+    engine.sumApprovedAttendanceRegularHours([
+      { classification: "WORKED", approvedRegularSeconds: 3.08 * 3600 },
+      { classification: "MANUAL_ATTENDANCE", approvedRegularSeconds: 8 * 3600 },
+      { classification: "WORKED", approvedRegularSeconds: 8 * 3600 },
+      { classification: "REGULAR_HOLIDAY", approvedRegularSeconds: 8 * 3600 },
+    ]),
+    19.08,
+  );
+});
+
 test("absent and unpaid leave are explicitly unpaid", () => {
   for (const classification of ["ABSENT", "UNPAID_LEAVE"]) {
     const day = oneDay({

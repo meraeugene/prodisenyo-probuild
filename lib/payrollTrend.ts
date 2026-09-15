@@ -39,6 +39,7 @@ export interface PayrollTrendAttendanceLogInput {
   employee_name: string;
   log_date: string;
   log_time: string;
+  is_next_day?: boolean;
   log_type: "IN" | "OUT";
   log_source: "Time1" | "Time2" | "OT";
   site_name: string;
@@ -170,7 +171,10 @@ export function buildDailyPaidPointsFromPayrollRuns(
     records.push({
       date: row.log_date,
       employee: row.employee_name,
-      logTime: row.log_time,
+      logTime: row.is_next_day
+        ? `${row.log_time.slice(0, 5)}+`
+        : row.log_time,
+      nextDay: row.is_next_day,
       type: row.log_type,
       source: row.log_source,
       site: row.site_name,

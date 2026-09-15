@@ -30,6 +30,7 @@ export interface CutoffBiometricDay {
   breakSeconds: number;
   calculatedRegularSeconds: number;
   detectedOvertimeSeconds: number;
+  needsReview?: boolean;
 }
 
 export interface EmployeeScheduleDay {
@@ -177,6 +178,23 @@ export function sumApprovedAttendanceOvertimeHours(
   return approvedSeconds / SECONDS_PER_HOUR;
 }
 
+export function sumApprovedAttendanceRegularHours(
+  days?: Array<
+    Pick<CutoffAttendanceDay, "classification" | "approvedRegularSeconds">
+  >,
+): number {
+  const approvedSeconds = (days ?? []).reduce(
+    (sum, day) =>
+      day.classification === "REGULAR_HOLIDAY" ||
+      day.classification === "SPECIAL_NON_WORKING_HOLIDAY"
+        ? sum
+        : sum + nonNegativeInteger(day.approvedRegularSeconds),
+    0,
+  );
+
+  return approvedSeconds / SECONDS_PER_HOUR;
+}
+
 export function formatDurationSeconds(seconds: number) {
   const totalMinutes = Math.round(nonNegativeInteger(seconds) / 60);
   const hours = Math.floor(totalMinutes / 60);
@@ -265,7 +283,8 @@ export function buildCutoffAttendance(
         : 0;
     const needsReview =
       classification === "NO_BIOMETRIC" ||
-      (detectedOvertimeSeconds > 0 && !decision);
+      (!decision &&
+        (detectedOvertimeSeconds > 0 || Boolean(biometric?.needsReview)));
 
     rows.push({
       date,

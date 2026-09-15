@@ -243,19 +243,13 @@ export function buildGroupedEmployeeCompensation(
   employee: GroupedEmployeePayrollRow,
   payroll: UsePayrollStateResult,
 ) {
-  const employeeKey = normalizeEmployeeName(employee.name);
   const hoursBySite = new Map<string, number>();
 
-  payroll.payrollAttendanceInputs.forEach((record) => {
-    const sameEmployee = employee.employeeId
-      ? record.employeeId === employee.employeeId
-      : normalizeEmployeeName(record.name) === employeeKey;
-    if (!sameEmployee) return;
-
-    const siteName = extractSiteName(record.site) || record.site || "Unknown Site";
+  employee.sites.forEach((row) => {
+    const siteName = extractSiteName(row.site) || row.site || "Unknown Site";
     hoursBySite.set(
       siteName,
-      (hoursBySite.get(siteName) ?? 0) + record.hours,
+      (hoursBySite.get(siteName) ?? 0) + row.hoursWorked,
     );
   });
 

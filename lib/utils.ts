@@ -30,10 +30,24 @@ function matchesSearchText(value: string, query: string): boolean {
 }
 
 function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  if (!Number.isFinite(h) || !Number.isFinite(m)) return -1;
-  if (h < 0 || h > 23 || m < 0 || m > 59) return -1;
-  return h * 60 + m;
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?(\+)?$/);
+  if (!match) return -1;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 47 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return -1;
+  }
+
+  const isNextDay = Boolean(match[3]) || hours >= 24;
+  return (hours % 24) * 60 + minutes + (isNextDay ? 24 * 60 : 0);
 }
 
 const REGULAR_TIMEOUT_OT_IN_FALLBACK_START_MINUTES = 17 * 60 + 30;
@@ -43,6 +57,7 @@ const MISFILED_TIME1_OUT_IN_START_MINUTES = 10 * 60;
 const MISFILED_TIME1_OUT_IN_END_MINUTES = 12 * 60 + 59;
 const UNPAID_LUNCH_MINUTES = 60;
 const MAX_REGULAR_WORK_MINUTES = 8 * 60;
+const MAX_BIOMETRIC_SPAN_MINUTES = 24 * 60;
 
 interface DailyWorkTimeFields {
   time1In?: string | null;
@@ -147,16 +162,18 @@ function resolveRegularOutMinutes(
   time1Out: string,
   time2Out: string,
   otIn: string,
+  otOut: string,
 ): number | null {
   const regularOutMinutes = latestValidMinutes(time1Out, time2Out);
   if (regularOutMinutes !== null) return regularOutMinutes;
 
   const otInMinutes = timeToMinutes(otIn);
-  if (otInMinutes < REGULAR_TIMEOUT_OT_IN_FALLBACK_START_MINUTES) {
-    return null;
+  if (otInMinutes >= REGULAR_TIMEOUT_OT_IN_FALLBACK_START_MINUTES) {
+    return otInMinutes;
   }
 
-  return otInMinutes;
+  const otOutMinutes = timeToMinutes(otOut);
+  return otOutMinutes >= 0 ? otOutMinutes : null;
 }
 
 function calculateRegularSpan(times: {
@@ -165,18 +182,25 @@ function calculateRegularSpan(times: {
   time2In: string;
   time2Out: string;
   otIn: string;
+  otOut: string;
 }): { startMinutes: number; endMinutes: number; spanMinutes: number } | null {
   const regularInMinutes = earliestValidMinutes(times.time1In, times.time2In);
   const regularOutMinutes = resolveRegularOutMinutes(
     times.time1Out,
     times.time2Out,
     times.otIn,
+    times.otOut,
   );
 
   if (regularInMinutes === null || regularOutMinutes === null) return null;
 
   const regularSpanMinutes = regularOutMinutes - regularInMinutes;
-  if (regularSpanMinutes <= 0 || regularSpanMinutes > 16 * 60) return null;
+  if (
+    regularSpanMinutes <= 0 ||
+    regularSpanMinutes > MAX_BIOMETRIC_SPAN_MINUTES
+  ) {
+    return null;
+  }
 
   return {
     startMinutes: regularInMinutes,
@@ -208,6 +232,7 @@ function calculateDailyWorkMinutes(times: {
     time2In,
     time2Out,
     otIn,
+    otOut,
   });
   const rawRegularMinutes = regularSpan?.spanMinutes ?? 0;
   const lunchDeductionMinutes = Math.min(
@@ -246,6 +271,23 @@ function calculateDailyWorkMinutes(times: {
     overtimeMinutes,
     totalMinutes: regularMinutes + overtimeMinutes,
   };
+}
+
+function requiresBiometricReview(times: DailyWorkTimeFields): boolean {
+  const normalized = normalizeBiometricDailyTimes(times);
+  const hasRegularIn = Boolean(normalized.time1In || normalized.time2In);
+  const hasRegularOut = Boolean(normalized.time1Out || normalized.time2Out);
+  const hasOtIn = Boolean(normalized.otIn);
+  const hasOtOut = Boolean(normalized.otOut);
+  const hasAnyPunch = hasRegularIn || hasRegularOut || hasOtIn || hasOtOut;
+
+  if (!hasAnyPunch) return false;
+
+  return (
+    hasRegularIn !== hasRegularOut ||
+    hasOtIn !== hasOtOut ||
+    (hasRegularIn && !hasRegularOut && (hasOtIn || hasOtOut))
+  );
 }
 
 function computeSameDayOvertimeMinutes(inTime: string, outTime: string): number {
@@ -327,7 +369,9 @@ export {
   earlierTime,
   laterTime,
   pairMinutes,
+  timeToMinutes,
   calculateDailyWorkMinutes,
+  requiresBiometricReview,
   normalizeBiometricDailyTimes,
   computeSameDayOvertimeMinutes,
   computeNextDayCarryMinutes,

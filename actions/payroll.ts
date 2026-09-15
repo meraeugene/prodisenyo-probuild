@@ -1114,55 +1114,13 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
 
   for (const employeeSnapshots of snapshotsByEmployee.values()) {
     employeeSnapshots.forEach((snapshot) => {
-      const includedSites = new Set(splitSiteNames(snapshot.row.site));
-      const hoursBySite = new Map<string, number>();
-
-      input.payrollAttendanceInputs.forEach((record) => {
-        if (
-          normalizeEmployeeNameKey(record.name) !==
-          normalizeEmployeeNameKey(snapshot.row.worker)
-        ) {
-          return;
-        }
-        if (
-          (record.role ?? "").trim().toUpperCase() !==
-          snapshot.row.role.trim().toUpperCase()
-        ) {
-          return;
-        }
-
-        const siteName = normalizeSiteName(record.site);
-        if (includedSites.size > 0 && !includedSites.has(siteName)) {
-          return;
-        }
-
-        hoursBySite.set(
-          siteName,
-          round2((hoursBySite.get(siteName) ?? 0) + (record.hours ?? 0)),
-        );
-      });
-
-      const allocationEntries =
-        hoursBySite.size > 0
-          ? Array.from(hoursBySite.entries()).map(([site, hoursWorked]) => ({
-              site,
-              hoursWorked,
-              dailyRatePerDay:
-                input.employeeBranchRates[
-                  buildEmployeeBranchRateKey(
-                    snapshot.row.worker,
-                    snapshot.row.role,
-                    site,
-                  )
-                ]?.dailyRate ?? snapshot.ratePerDay,
-            }))
-          : [
-              {
-                site: snapshot.row.site,
-                hoursWorked: snapshot.row.hoursWorked,
-                dailyRatePerDay: snapshot.ratePerDay,
-              },
-            ];
+      const allocationEntries = [
+        {
+          site: snapshot.row.site,
+          hoursWorked: snapshot.row.hoursWorked,
+          dailyRatePerDay: snapshot.ratePerDay,
+        },
+      ];
 
       const allocation = allocateCombinedBranchPay(allocationEntries);
       allocatedBasePayByRowId.set(snapshot.row.id, allocation.totalBasePay);

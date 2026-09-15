@@ -76,6 +76,7 @@ type DashboardAttendanceLogRow = Pick<
   | "employee_name"
   | "log_date"
   | "log_time"
+  | "is_next_day"
   | "log_type"
   | "log_source"
   | "site_name"
@@ -357,7 +358,7 @@ export function useDashboardPage() {
           ? await supabase
               .from("attendance_records")
               .select(
-                "import_id, employee_name, log_date, log_time, log_type, log_source, site_name",
+                "import_id, employee_name, log_date, log_time, is_next_day, log_type, log_source, site_name",
               )
               .in("import_id", fallbackImportIds)
               .order("log_date", { ascending: true })
@@ -406,7 +407,10 @@ export function useDashboardPage() {
               import_id: row.import_id,
               employee_name: row.employee_name,
               log_date: row.log_date,
-              log_time: row.log_time,
+              log_time: row.is_next_day
+                ? `${row.log_time.slice(0, 5)}+`
+                : row.log_time,
+              is_next_day: row.is_next_day,
               log_type: row.log_type,
               log_source: row.log_source,
               site_name: row.site_name,

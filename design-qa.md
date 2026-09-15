@@ -1,64 +1,70 @@
 # Design QA
 
-- Source visual truth: two attendance-review reference images attached in the current user request.
-- Implementation: `/generate-payroll` � employee action � Cutoff Attendance � Review/Resolve.
-- Intended viewport: desktop, approximately 1365 � 768 CSS pixels at device scale factor 1.
-- Source pixel dimensions: first reference 851 � 373; second reference 837 � 473.
+- Source visual truth: `design-references/resolve-review.png`, supplied as `C:\Users\User\Downloads\resolve review.png`.
+- Source dimensions: 1680 � 940 pixels.
+- Implementation route and state: `/generate-payroll` � employee action � Cutoff Attendance � Review/Resolve.
+- Intended comparison viewport: 1440 � 900 CSS pixels, device scale factor 1.
 - Implementation screenshot: unavailable.
-- State: Cutoff Attendance summary plus the opened Review/Resolve attendance dialog.
+- State under review: opened attendance Review/Resolve modal with biometric DTR evidence and approval form.
 
 ## Full-view comparison evidence
 
-Blocked. The in-app browser connection failed before the local page could be opened or captured. The production build and TypeScript checks pass, but those checks are not substitutes for browser-rendered evidence.
+Blocked. The local application was started successfully, but the required in-app browser failed during connection because its Windows sandbox could not initialize read access. No browser-rendered implementation screenshot could be captured.
 
 ## Focused-region comparison evidence
 
-Blocked for the same reason. The intended focused regions are:
+Blocked for the same reason. The intended focused comparisons are:
 
-1. The Cutoff Attendance columns, including the new OT In - Out cell.
-2. The opened DTR evidence table showing Time 1, Time 2, and Overtime In/Out.
-3. The classification, approved-hours, reason, Cancel, and Save controls.
+1. Header hierarchy and employee/date context.
+2. DTR log table, Complete/Missing status, and six punch timeline entries.
+3. Site movement, raw alias, and detected-overtime cards.
+4. Classification, approved hours, reason, and footer actions.
 
 ## Findings
 
 - [P1] Browser-rendered comparison unavailable
-  - Location: local `/generate-payroll` Review/Resolve workflow.
-  - Evidence: source references are available, but no implementation screenshot could be captured because the in-app browser runtime failed to connect.
-  - Impact: responsive layout, clipping, and final visual fidelity cannot be certified.
-  - Fix: reconnect the in-app browser, open a generated payroll employee, click Review and Resolve, capture both states, and compare at the intended desktop viewport.
+  - Location: local Generate Payroll Review/Resolve workflow.
+  - Evidence: the local server is available, while the implementation could not be opened or captured through the required in-app browser.
+  - Impact: final responsive spacing, clipping, and pixel-level fidelity cannot be certified.
+  - Fix: restore the in-app browser connection, open Review and Resolve states at 1440 � 900, capture them, and compare against the source.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: code uses the existing payroll typography and scale; browser verification blocked.
-- Spacing and layout rhythm: compact table and responsive two-column dialog implemented; browser verification blocked.
-- Colors and visual tokens: existing slate, teal, amber, and red semantic tokens reused; browser verification blocked.
-- Image quality and asset fidelity: no custom raster assets are present in the target; existing Lucide icons are used.
-- Copy and content: required Date/Week, Time In - Out, OT In - Out, Raw, Classification, Regular, Payable, and Action labels are implemented. Review/Resolve exposes Time 1, Time 2, OT, sites, aliases, approved hours, and reason.
+- Fonts and typography: existing ProBuild font stack, weights, compact labels, and hierarchy are reused; browser verification blocked.
+- Spacing and layout rhythm: wide two-panel modal, contextual header, card spacing, scrollable evidence, and fixed footer are implemented; browser verification blocked.
+- Colors and visual tokens: existing slate, teal, amber, and red semantic tokens are used; browser verification blocked.
+- Image quality and asset fidelity: the target contains no required raster content inside the modal. Existing Lucide system icons are used rather than copying decorative reference icons.
+- Copy and content: Attendance Resolution, canonical employee/date context, Biometric DTR Logs, Time 1, Time 2, Overtime, statuses, Punch Timeline, Site Movement, Raw Biometric Aliases, detected OT, classification, approved hours, reason, Cancel, and Save are implemented.
 
 ## Comparison history
 
-- Initial implementation was split after code review because the dialog exceeded the repository's preferred component size.
-- Post-fix components are 226 and 203 lines and the production build passes.
-- No browser-rendered comparison iteration was possible.
+- The earlier compact modal was expanded to follow the supplied information hierarchy.
+- Canonical employee, site, date, and raw-hour context were added using actual payroll data.
+- DTR rows now show Site / Source and Complete/Missing status.
+- A six-entry timeline exposes Time 1, Time 2, OT In, and OT Out independently.
+- Header positioning was changed to a responsive grid after code review.
+- Production build and all 130 automated tests pass.
+- Browser connection was retried on 2026-09-15 and failed with the same Windows sandbox initialization error.
 
 ## Primary interactions checked
 
-- Automated/code-level: Review and Resolve share the existing open/save/close state path; Save preserves the existing attendance decision payload.
+- Code-level: Review and Resolve use the real attendance decision flow; Cancel, close, outside-click, Escape, classification, approved hours, reason validation, and Save remain connected.
 - Browser interaction: blocked.
 - Console errors: not checked because the browser could not connect.
 
 ## Implementation checklist
 
-- [x] Preserve distinct Time 1, Time 2, and OT punches.
-- [x] Preserve each punch's site, multi-site path, and raw biometric aliases.
-- [x] Add OT In - Out to Cutoff Attendance.
-- [x] Open detailed DTR evidence from both Review and Resolve.
-- [x] Preserve classification and approved-hour editing.
-- [x] Pass automated tests, TypeScript, and production build.
-- [ ] Capture and compare the browser-rendered states.
+- [x] Follow the reference modal information hierarchy.
+- [x] Use existing system colors and icon library.
+- [x] Show real canonical employee and site context.
+- [x] Show Time 1, Time 2, and OT In/Out with per-punch sites.
+- [x] Show Complete/Missing status and punch timeline.
+- [x] Preserve Review/Resolve behavior and attendance calculations.
+- [x] Pass TypeScript, production build, and all automated tests.
+- [ ] Capture and compare browser-rendered Review and Resolve states.
 
 ## Follow-up polish
 
-- Reassess table width and small-screen wrapping after browser capture.
+- Reassess the six-column timeline density on narrow laptop widths after browser capture.
 
 final result: blocked

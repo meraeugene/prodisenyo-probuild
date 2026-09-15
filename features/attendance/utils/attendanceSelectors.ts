@@ -3,7 +3,9 @@ import {
   calculateDailyWorkMinutes,
   compareStep2Rows,
   earlierTime,
+  earliestNonEmptyTime,
   laterTime,
+  latestNonEmptyTime,
   matchesSearchText,
   normalizeBiometricDailyTimes,
 } from "@/lib/utils";
@@ -23,11 +25,19 @@ export interface BranchSummary {
 export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
   const grouped = new Map<string, DailyLogRow>();
 
+  const displayTime = (record: AttendanceRecord) =>
+    record.nextDay && !record.logTime.endsWith("+")
+      ? `${record.logTime.slice(0, 5)}+`
+      : record.logTime;
   const ordered = [...records].sort((a, b) =>
-    a.date.localeCompare(b.date) || a.logTime.localeCompare(b.logTime) || a.site.localeCompare(b.site),
+    a.date.localeCompare(b.date) ||
+    (a.nextDay === b.nextDay ? 0 : a.nextDay ? 1 : -1) ||
+    a.logTime.localeCompare(b.logTime) ||
+    a.site.localeCompare(b.site),
   );
 
   for (const record of ordered) {
+    const recordTime = displayTime(record);
     const identityKey = record.employeeId
       ? `employee:${record.employeeId}`
       : `raw:${(record.normalizedBiometricName ?? record.employee).trim().toLowerCase()}`;
@@ -64,23 +74,23 @@ export function buildDailyRows(records: AttendanceRecord[]): DailyLogRow[] {
     if (!current.site && record.site) current.site = record.site;
 
     if (record.source === "Time1" && record.type === "IN") {
-      const next = earlierTime(current.time1In, record.logTime); if (next !== current.time1In) current.time1InSite = record.site; current.time1In = next;
+      const next = earlierTime(current.time1In, recordTime); if (next !== current.time1In) current.time1InSite = record.site; current.time1In = next;
     } else if (record.source === "Time1" && record.type === "OUT") {
-      const next = laterTime(current.time1Out, record.logTime); if (next !== current.time1Out) current.time1OutSite = record.site; current.time1Out = next;
+      const next = laterTime(current.time1Out, recordTime); if (next !== current.time1Out) current.time1OutSite = record.site; current.time1Out = next;
     } else if (record.source === "Time2" && record.type === "IN") {
-      const next = earlierTime(current.time2In, record.logTime); if (next !== current.time2In) current.time2InSite = record.site; current.time2In = next;
+      const next = earlierTime(current.time2In, recordTime); if (next !== current.time2In) current.time2InSite = record.site; current.time2In = next;
     } else if (record.source === "Time2" && record.type === "OUT") {
-      const next = laterTime(current.time2Out, record.logTime); if (next !== current.time2Out) current.time2OutSite = record.site; current.time2Out = next;
+      const next = laterTime(current.time2Out, recordTime); if (next !== current.time2Out) current.time2OutSite = record.site; current.time2Out = next;
     } else if (record.source === "OT" && record.type === "IN") {
-      const next = earlierTime(current.otIn, record.logTime); if (next !== current.otIn) current.otInSite = record.site; current.otIn = next;
+      const next = earlierTime(current.otIn, recordTime); if (next !== current.otIn) current.otInSite = record.site; current.otIn = next;
     } else if (record.source === "OT" && record.type === "OUT") {
-      const next = laterTime(current.otOut, record.logTime); if (next !== current.otOut) current.otOutSite = record.site; current.otOut = next;
+      const next = laterTime(current.otOut, recordTime); if (next !== current.otOut) current.otOutSite = record.site; current.otOut = next;
     }
 
-    const inTimes = [current.time1In, current.time2In, current.otIn].filter(Boolean).sort();
-    const outTimes = [current.time1Out, current.time2Out, current.otOut].filter(Boolean).sort().reverse();
-    if (record.type === "IN" && record.logTime === inTimes[0]) current.timeInSite = record.site;
-    if (record.type === "OUT" && record.logTime === outTimes[0]) current.timeOutSite = record.site;
+    const earliestIn = earliestNonEmptyTime(current.time1In, current.time2In, current.otIn);
+    const latestOut = latestNonEmptyTime(current.time1Out, current.time2Out, current.otOut);
+    if (record.type === "IN" && recordTime === earliestIn) current.timeInSite = record.site;
+    if (record.type === "OUT" && recordTime === latestOut) current.timeOutSite = record.site;
 
     grouped.set(key, current);
   }

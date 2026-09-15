@@ -150,6 +150,7 @@ create table if not exists public.attendance_records (
   employee_name text not null,
   log_date date not null,
   log_time time not null,
+  is_next_day boolean not null default false,
   log_type text not null check (log_type in ('IN', 'OUT')),
   log_source text not null check (log_source in ('Time1', 'Time2', 'OT')),
   site_name text not null,

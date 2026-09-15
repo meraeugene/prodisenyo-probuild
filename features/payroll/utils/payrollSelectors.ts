@@ -155,6 +155,44 @@ export function allocateCombinedBranchPay(
   };
 }
 
+export function allocateReviewedHoursAcrossPayrollRows(
+  rows: PayrollRow[],
+  totalHours: number,
+  preferredRowId: string,
+): Record<string, number> {
+  const targetHours =
+    Number.isFinite(totalHours) && totalHours > 0 ? round2(totalHours) : 0;
+  if (rows.length === 0) return {};
+
+  const weights = rows.map((row) =>
+    Number.isFinite(row.hoursWorked) && row.hoursWorked > 0
+      ? row.hoursWorked
+      : 0,
+  );
+  const totalWeight = weights.reduce((sum, hours) => sum + hours, 0);
+
+  if (totalWeight <= 0) {
+    return Object.fromEntries(
+      rows.map((row) => [
+        row.id,
+        row.id === preferredRowId ? targetHours : 0,
+      ]),
+    );
+  }
+
+  let allocated = 0;
+  return Object.fromEntries(
+    rows.map((row, index) => {
+      const isLast = index === rows.length - 1;
+      const hours = isLast
+        ? round2(Math.max(0, targetHours - allocated))
+        : round2((targetHours * weights[index]) / totalWeight);
+      allocated = round2(allocated + hours);
+      return [row.id, hours];
+    }),
+  );
+}
+
 export function buildDateHoursMap(
   logs: Array<{ date: string; hours: number }>,
 ): Map<string, number> {

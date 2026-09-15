@@ -129,13 +129,13 @@ export function splitPayrollReportSiteNames(value: string): string[] {
 
 function toMinutes(value: string | null): number {
   if (!value) return -1;
-  const match = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  const match = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(\+)?$/);
   if (!match) return -1;
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
   if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return -1;
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return -1;
-  return hours * 60 + minutes;
+  return hours * 60 + minutes + (match[3] ? 24 * 60 : 0);
 }
 
 export function buildPayrollReportDailyRows(
@@ -144,6 +144,9 @@ export function buildPayrollReportDailyRows(
   const map = new Map<string, DailyLogRow>();
 
   for (const log of logs) {
+    const logTime = log.is_next_day
+      ? `${log.log_time.slice(0, 5)}+`
+      : log.log_time;
     const site =
       extractSiteName(log.site_name ?? "") ||
       log.site_name?.trim() ||
@@ -167,7 +170,7 @@ export function buildPayrollReportDailyRows(
       site,
     };
 
-    const currentMinutes = toMinutes(log.log_time);
+    const currentMinutes = toMinutes(logTime);
     if (employee.length > row.employee.length) row.employee = employee;
 
     if (log.log_source === "Time1") {
@@ -175,13 +178,13 @@ export function buildPayrollReportDailyRows(
         row.time1In =
           !row.time1In ||
           (currentMinutes >= 0 && currentMinutes < toMinutes(row.time1In))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.time1In;
       } else {
         row.time1Out =
           !row.time1Out ||
           (currentMinutes >= 0 && currentMinutes > toMinutes(row.time1Out))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.time1Out;
       }
     }
@@ -191,13 +194,13 @@ export function buildPayrollReportDailyRows(
         row.time2In =
           !row.time2In ||
           (currentMinutes >= 0 && currentMinutes < toMinutes(row.time2In))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.time2In;
       } else {
         row.time2Out =
           !row.time2Out ||
           (currentMinutes >= 0 && currentMinutes > toMinutes(row.time2Out))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.time2Out;
       }
     }
@@ -207,13 +210,13 @@ export function buildPayrollReportDailyRows(
         row.otIn =
           !row.otIn ||
           (currentMinutes >= 0 && currentMinutes < toMinutes(row.otIn))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.otIn;
       } else {
         row.otOut =
           !row.otOut ||
           (currentMinutes >= 0 && currentMinutes > toMinutes(row.otOut))
-            ? (log.log_time ?? "")
+            ? logTime
             : row.otOut;
       }
     }

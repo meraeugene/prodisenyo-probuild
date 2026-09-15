@@ -276,7 +276,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const { data: attendanceRows, error: attendanceError } = await supabase
           .from("attendance_records")
           .select(
-            "id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, log_type, log_source, site_name, employee:employees(full_name, default_role_code)",
+            "id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, is_next_day, log_type, log_source, site_name, employee:employees(full_name, default_role_code)",
           )
           .eq("import_id", latestImport.id)
           .order("log_date", { ascending: true })

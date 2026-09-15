@@ -223,6 +223,7 @@ export interface Database {
           match_source: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date: string;
           log_time: string;
+          is_next_day: boolean;
           log_type: "IN" | "OUT";
           log_source: "Time1" | "Time2" | "OT";
           site_name: string;
@@ -239,6 +240,7 @@ export interface Database {
           match_source?: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date: string;
           log_time: string;
+          is_next_day?: boolean;
           log_type: "IN" | "OUT";
           log_source: "Time1" | "Time2" | "OT";
           site_name: string;
@@ -253,6 +255,7 @@ export interface Database {
           match_source?: "EXACT_NAME" | "EXISTING_ALIAS" | "REFERENCE_PDF" | "MANUAL" | "NORMALIZED_MATCH" | null;
           log_date?: string;
           log_time?: string;
+          is_next_day?: boolean;
           log_type?: "IN" | "OUT";
           log_source?: "Time1" | "Time2" | "OT";
           site_name?: string;

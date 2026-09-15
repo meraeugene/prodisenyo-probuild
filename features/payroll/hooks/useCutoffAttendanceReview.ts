@@ -9,7 +9,10 @@ import {
   collectPayrollExceptions,
   type CutoffAttendanceDay,
 } from "@/features/payroll/utils/payrollAttendanceEngine";
-import { calculateDailyWorkMinutes } from "@/lib/utils";
+import {
+  calculateDailyWorkMinutes,
+  requiresBiometricReview,
+} from "@/lib/utils";
 
 interface UseCutoffAttendanceReviewInput {
   identity: string | null;
@@ -61,6 +64,7 @@ export function useCutoffAttendanceReview(
           breakSeconds: calculated.lunchDeductionMinutes * 60,
           calculatedRegularSeconds: calculated.regularMinutes * 60,
           detectedOvertimeSeconds: calculated.overtimeMinutes * 60,
+          needsReview: requiresBiometricReview(log),
         };
       }),
       holidays: [...input.paidHolidayDates].map((date) => ({

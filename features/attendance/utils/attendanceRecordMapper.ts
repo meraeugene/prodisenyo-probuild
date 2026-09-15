@@ -47,7 +47,10 @@ export function mapCanonicalAttendanceRecords(
       normalizedBiometricName: row.normalized_biometric_name,
       matchStatus: row.match_status,
       matchSource: row.match_source,
-      logTime: row.log_time,
+      logTime: row.is_next_day
+        ? `${row.log_time.slice(0, 5)}+`
+        : row.log_time,
+      nextDay: row.is_next_day,
       type: row.log_type,
       source: row.log_source,
       site: row.site_name,
