@@ -62,6 +62,10 @@ test("unresolved names are capitalized for display without replacing raw evidenc
   assert.equal(record.employee, "A Josh M");
   assert.equal(record.rawBiometricName, "a josh m");
   assert.equal(formatBiometricDisplayName("eduardo brigole jr"), "Eduardo Brigole Jr");
+  assert.equal(
+    formatBiometricDisplayName("elec novbryan warguez"),
+    "Novbryan Warguez",
+  );
 });
 
 test("confirmed aliases across sites merge into one canonical daily row", () => {

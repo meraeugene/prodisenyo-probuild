@@ -38,6 +38,31 @@ test("confirmed aliases resolve to the canonical database employee", () => {
   assert.equal(result.officialName, "Aidan Tundag");
 });
 
+test("confirmed Warguez variants resolve to Ryan Warguez", () => {
+  const warguezEmployees = [{ id: "ryan", full_name: "Ryan Warguez" }];
+  const aliases = [
+    "elec novbryan warguez",
+    "nov ryan warguez",
+    "ryan warguez warguez",
+  ].map((normalized_alias) => ({
+    employee_id: "ryan",
+    normalized_alias,
+    confirmed: true,
+    match_source: "MANUAL",
+  }));
+
+  for (const rawName of [
+    "Elec Novbryan Warguez",
+    "Nov ryan Warguez",
+    "Ryan Warguez Warguez",
+  ]) {
+    const result = resolveBiometricIdentity(rawName, warguezEmployees, aliases);
+    assert.equal(result.status, "MATCHED");
+    assert.equal(result.employeeId, "ryan");
+    assert.equal(result.officialName, "Ryan Warguez");
+  }
+});
+
 test("exact full names resolve but first names remain review items", () => {
   assert.equal(
     resolveBiometricIdentity("JERECK GAMAYON", employees, []).status,

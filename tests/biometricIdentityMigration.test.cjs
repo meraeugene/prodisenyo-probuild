@@ -130,5 +130,87 @@ test("requested reference aliases merge reversed and likely names canonically", 
     select count(*)::integer as count
     from public.employees
   `);
-  assert.equal(employees.rows[0].count, 83);
+  assert.equal(employees.rows[0].count, 91);
+});
+
+test("administrator-confirmed short names backfill to supplied canonical employees", async () => {
+  const database = await createMigrationDatabase();
+  await database.exec(`
+    insert into public.employees (full_name) values
+      ('Ryan Warguez'),
+      ('Joshua Miguel Monton'),
+      ('Angelord Absacta'),
+      ('Hannah Shaine Baquita'),
+      ('Henry Bacalla'),
+      ('Jessa Bactasa'),
+      ('Khurt Christine Lim'),
+      ('Andrew Villalon'),
+      ('Prince Roniver Magsalos'),
+      ('Robbie Rivera');
+    insert into public.attendance_records (employee_name) values
+      ('Elec Novbryan Warguez'),
+      ('Elec Nov Ryan W'),
+      ('E Wargues Nov Ryan'),
+      ('Nov ryan Warguez'),
+      ('Ryan Warguez Warguez'),
+      ('A Josh M'),
+      ('Angelord'),
+      ('Hannah'),
+      ('Henry'),
+      ('Jessa'),
+      ('Kc'),
+      ('Ojt Andrew'),
+      ('Ojt Prince'),
+      ('Robie');
+  `);
+
+  const migration = await readFile(migrationPath, "utf8");
+  await database.exec(migration);
+  await database.exec(migration);
+
+  const attendance = await database.query(`
+    select employee_name, raw_biometric_name, match_status
+    from public.attendance_records
+    order by raw_biometric_name
+  `);
+  assert.deepEqual(attendance.rows, [
+    { employee_name: "Joshua Miguel Monton", raw_biometric_name: "A Josh M", match_status: "MATCHED" },
+    { employee_name: "Angelord Absacta", raw_biometric_name: "Angelord", match_status: "MATCHED" },
+    { employee_name: "Ryan Warguez", raw_biometric_name: "E Wargues Nov Ryan", match_status: "MATCHED" },
+    { employee_name: "Ryan Warguez", raw_biometric_name: "Elec Nov Ryan W", match_status: "MATCHED" },
+    { employee_name: "Ryan Warguez", raw_biometric_name: "Elec Novbryan Warguez", match_status: "MATCHED" },
+    { employee_name: "Hannah Shaine Baquita", raw_biometric_name: "Hannah", match_status: "MATCHED" },
+    { employee_name: "Henry Bacalla", raw_biometric_name: "Henry", match_status: "MATCHED" },
+    { employee_name: "Jessa Bactasa", raw_biometric_name: "Jessa", match_status: "MATCHED" },
+    { employee_name: "Khurt Christine Lim", raw_biometric_name: "Kc", match_status: "MATCHED" },
+    { employee_name: "Ryan Warguez", raw_biometric_name: "Nov ryan Warguez", match_status: "MATCHED" },
+    { employee_name: "Andrew Villalon", raw_biometric_name: "Ojt Andrew", match_status: "MATCHED" },
+    { employee_name: "Prince Roniver Magsalos", raw_biometric_name: "Ojt Prince", match_status: "MATCHED" },
+    { employee_name: "Robbie Rivera", raw_biometric_name: "Robie", match_status: "MATCHED" },
+    { employee_name: "Ryan Warguez", raw_biometric_name: "Ryan Warguez Warguez", match_status: "MATCHED" },
+  ]);
+});
+
+test("legacy Nov Ryan employee punches move to the Ryan Warguez employee ID", async () => {
+  const database = await createMigrationDatabase();
+  await database.exec(`
+    insert into public.employees (id, full_name) values
+      ('00000000-0000-0000-0000-000000000001', 'Nov Ryan Warguez'),
+      ('00000000-0000-0000-0000-000000000002', 'Ryan Warguez');
+    insert into public.attendance_records (employee_id, employee_name) values
+      ('00000000-0000-0000-0000-000000000001', 'Nov Ryan Warguez');
+  `);
+
+  const migration = await readFile(migrationPath, "utf8");
+  await database.exec(migration);
+
+  const attendance = await database.query(`
+    select employee_id::text, employee_name, match_status
+    from public.attendance_records
+  `);
+  assert.deepEqual(attendance.rows, [{
+    employee_id: "00000000-0000-0000-0000-000000000002",
+    employee_name: "Ryan Warguez",
+    match_status: "MATCHED",
+  }]);
 });

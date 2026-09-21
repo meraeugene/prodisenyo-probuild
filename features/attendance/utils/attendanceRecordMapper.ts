@@ -19,10 +19,18 @@ const DISPLAY_SUFFIXES: Record<string, string> = {
 };
 
 export function formatBiometricDisplayName(value: string): string {
-  return value
+  const displayTokens = value
     .trim()
     .replace(/\s+/g, " ")
-    .split(" ")
+    .split(" ");
+
+  // Job prefixes belong to the biometric device identity, not the person's
+  // visible name. The untouched raw value remains available for auditing.
+  if (displayTokens[0]?.toLowerCase() === "elec" && displayTokens.length > 1) {
+    displayTokens.shift();
+  }
+
+  return displayTokens
     .map((token) => {
       const lower = token.toLowerCase();
       return DISPLAY_SUFFIXES[lower] ??

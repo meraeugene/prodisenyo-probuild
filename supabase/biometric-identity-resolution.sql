@@ -111,6 +111,15 @@ with approved_active_employees(full_name) as (
     ('Brian Louis Paisones'),
     ('Bryan Cabelita'),
     ('Bryan Hugo'),
+    ('Joshua Miguel Monton'),
+    ('Angelord Absacta'),
+    ('Hannah Shaine Baquita'),
+    ('Henry Bacalla'),
+    ('Jessa Bactasa'),
+    ('Khurt Christine Lim'),
+    ('Andrew Villalon'),
+    ('Prince Roniver Magsalos'),
+    ('Robbie Rivera'),
     ('Dominador Paquit'),
     ('Eden Anggano'),
     ('Eduardo Brigole Jr'),
@@ -151,7 +160,6 @@ with approved_active_employees(full_name) as (
     ('Mike Gerona'),
     ('Neil Capillanes'),
     ('Nelson Cuyno'),
-    ('Nov Ryan Warguez'),
     ('Oliver Lopez'),
     ('Patrick Lorico'),
     ('Patrino Ubod'),
@@ -215,7 +223,7 @@ with high_confidence_aliases(raw_alias, normalized_alias, full_name) as (
     ('Fore Neil', 'fore neil', 'Neil Capillanes'),
     ('E Welo', 'e welo', 'Welo Cabileta'),
     ('Skilled Vicente C', 'skilled vicente c', 'Vicente Cabigquez'),
-    ('Elec Nov Ryan W', 'elec nov ryan w', 'Nov Ryan Warguez'),
+    ('Elec Nov Ryan W', 'elec nov ryan w', 'Ryan Warguez'),
     ('Skilled Bernie', 'skilled bernie', 'Bernie Sabayanan'),
     ('Skilled Adam', 'skilled adam', 'Adam Taer'),
     ('Skilled Gilbert', 'skilled gilbert', 'Gilbert Cabigquez'),
@@ -321,13 +329,27 @@ with confirmed_aliases(raw_alias, normalized_alias, full_name) as (
     ('aidan', 'aidan', 'Aidan Tundag'),
     ('PA Aidan', 'pa aidan', 'Aidan Tundag'),
     ('P Aidan T', 'p aidan t', 'Aidan Tundag'),
-    ('Aidan Tundag', 'aidan tundag', 'Aidan Tundag')
+    ('Aidan Tundag', 'aidan tundag', 'Aidan Tundag'),
+    ('Elec Novbryan Warguez', 'elec novbryan warguez', 'Ryan Warguez'),
+    ('Elec Nov Ryan W', 'elec nov ryan w', 'Ryan Warguez'),
+    ('E Wargues Nov Ryan', 'e wargues nov ryan', 'Ryan Warguez'),
+    ('E Warguez Nov Ryan', 'e warguez nov ryan', 'Ryan Warguez'),
+    ('Nov ryan Warguez', 'nov ryan warguez', 'Ryan Warguez'),
+    ('Ryan Warguez Warguez', 'ryan warguez warguez', 'Ryan Warguez'),
+    ('A Josh M', 'a josh m', 'Joshua Miguel Monton'),
+    ('Angelord', 'angelord', 'Angelord Absacta'),
+    ('Hannah', 'hannah', 'Hannah Shaine Baquita'),
+    ('Henry', 'henry', 'Henry Bacalla'),
+    ('Jessa', 'jessa', 'Jessa Bactasa'),
+    ('Kc', 'kc', 'Khurt Christine Lim'),
+    ('Ojt Andrew', 'ojt andrew', 'Andrew Villalon'),
+    ('Ojt Prince', 'ojt prince', 'Prince Roniver Magsalos'),
+    ('Robie', 'robie', 'Robbie Rivera')
 ),
 canonical_employees as (
-  select full_name, min(id::text)::uuid as employee_id
+  select lower(trim(full_name)) as name_key, min(id::text)::uuid as employee_id
   from public.employees
-  where full_name in ('Adam Taer', 'Aidan Tundag')
-  group by full_name
+  group by lower(trim(full_name))
   having count(*) = 1
 )
 insert into public.employee_biometric_aliases (
@@ -338,7 +360,8 @@ select
   employee.employee_id, alias.raw_alias, alias.normalized_alias, 'MANUAL', 1,
   true, timezone('utc', now())
 from confirmed_aliases alias
-join canonical_employees employee on employee.full_name = alias.full_name
+join canonical_employees employee
+  on employee.name_key = lower(trim(alias.full_name))
 on conflict (normalized_alias) do update set
   employee_id = excluded.employee_id,
   raw_alias = excluded.raw_alias,
@@ -382,6 +405,29 @@ from public.employee_biometric_aliases alias
 join public.employees employee on employee.id = alias.employee_id
 where alias.confirmed
   and attendance.normalized_biometric_name = alias.normalized_alias;
+
+-- Payroll explicitly confirmed that the legacy Nov Ryan Warguez employee row
+-- and Ryan Warguez are one person. Preserve the legacy employee for audit
+-- history, but move every historical punch to the canonical Ryan employee ID.
+with canonical_ryan as (
+  select min(id::text)::uuid as employee_id
+  from public.employees
+  where lower(trim(full_name)) = 'ryan warguez'
+  having count(*) = 1
+),
+legacy_nov_ryan as (
+  select id
+  from public.employees
+  where lower(trim(full_name)) = 'nov ryan warguez'
+)
+update public.attendance_records attendance
+set
+  employee_id = canonical.employee_id,
+  employee_name = 'Ryan Warguez',
+  match_status = 'MATCHED',
+  match_source = 'EXISTING_ALIAS'
+from canonical_ryan canonical
+where attendance.employee_id in (select id from legacy_nov_ryan);
 
 -- Reconcile unique exact canonical names that predate the alias system.
 with unique_canonical_names as (
