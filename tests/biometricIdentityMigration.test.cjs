@@ -130,7 +130,7 @@ test("requested reference aliases merge reversed and likely names canonically", 
     select count(*)::integer as count
     from public.employees
   `);
-  assert.equal(employees.rows[0].count, 91);
+  assert.equal(employees.rows[0].count, 93);
 });
 
 test("administrator-confirmed short names backfill to supplied canonical employees", async () => {
@@ -191,6 +191,75 @@ test("administrator-confirmed short names backfill to supplied canonical employe
   ]);
 });
 
+
+test("payroll-approved aliases merge and Tanjay is renamed canonically", async () => {
+  const database = await createMigrationDatabase();
+  await database.exec(`
+    insert into public.employees (full_name) values
+      ('Roland Pimentel'),
+      ('Leadman Pimentel R'),
+      ('Angelo Sabocdalao'),
+      ('P Angelo'),
+      ('Rodel Jimenez'),
+      ('Rodel Plumber'),
+      ('Patrino Ubod'),
+      ('Ubod'),
+      ('Tanjay');
+    insert into public.attendance_records (employee_id, employee_name)
+    select id, full_name
+    from public.employees
+    where full_name in (
+      'Leadman Pimentel R', 'P Angelo', 'Rodel Plumber', 'Ubod', 'Tanjay'
+    );
+  `);
+
+  const migration = await readFile(migrationPath, "utf8");
+  await database.exec(migration);
+  await database.exec(migration);
+
+  const attendance = await database.query(`
+    select employee_name, raw_biometric_name, match_status
+    from public.attendance_records
+    order by raw_biometric_name
+  `);
+  assert.deepEqual(attendance.rows, [
+    { employee_name: "Roland Pimentel", raw_biometric_name: "Leadman Pimentel R", match_status: "MATCHED" },
+    { employee_name: "Angelo Sabocdalo", raw_biometric_name: "P Angelo", match_status: "MATCHED" },
+    { employee_name: "Rodel Jimenez", raw_biometric_name: "Rodel Plumber", match_status: "MATCHED" },
+    { employee_name: "Francisco Tanjay", raw_biometric_name: "Tanjay", match_status: "MATCHED" },
+    { employee_name: "Patrino Ubod", raw_biometric_name: "Ubod", match_status: "MATCHED" },
+  ]);
+
+  const aliases = await database.query(`
+    select alias.normalized_alias, employee.full_name, alias.confirmed
+    from public.employee_biometric_aliases alias
+    join public.employees employee on employee.id = alias.employee_id
+    where alias.normalized_alias in (
+      'leadman pimentel r', 'p angelo', 'rodel plumber', 'ubod', 'tanjay'
+    )
+    order by alias.normalized_alias
+  `);
+  assert.deepEqual(aliases.rows, [
+    { normalized_alias: "leadman pimentel r", full_name: "Roland Pimentel", confirmed: true },
+    { normalized_alias: "p angelo", full_name: "Angelo Sabocdalo", confirmed: true },
+    { normalized_alias: "rodel plumber", full_name: "Rodel Jimenez", confirmed: true },
+    { normalized_alias: "tanjay", full_name: "Francisco Tanjay", confirmed: true },
+    { normalized_alias: "ubod", full_name: "Patrino Ubod", confirmed: true },
+  ]);
+
+  const renamedEmployees = await database.query(`
+    select full_name
+    from public.employees
+    where lower(full_name) in (
+      'angelo sabocdalao', 'angelo sabocdalo', 'tanjay', 'francisco tanjay'
+    )
+    order by full_name
+  `);
+  assert.deepEqual(renamedEmployees.rows, [
+    { full_name: "Angelo Sabocdalo" },
+    { full_name: "Francisco Tanjay" },
+  ]);
+});
 test("legacy Nov Ryan employee punches move to the Ryan Warguez employee ID", async () => {
   const database = await createMigrationDatabase();
   await database.exec(`

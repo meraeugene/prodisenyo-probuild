@@ -107,7 +107,7 @@ test("unconfirmed reference mappings block polluted exact-name matches", () => {
     "Angelo Saboclao",
     [
       { id: "raw", full_name: "Angelo Saboclao" },
-      { id: "canonical", full_name: "Angelo Sabocdalao" },
+      { id: "canonical", full_name: "Angelo Sabocdalo" },
     ],
     [
       {
@@ -122,5 +122,5 @@ test("unconfirmed reference mappings block polluted exact-name matches", () => {
   assert.equal(result.employeeId, null);
   assert.equal(result.officialName, null);
   assert.equal(result.suggestedEmployeeId, "canonical");
-  assert.equal(result.suggestedOfficialName, "Angelo Sabocdalao");
+  assert.equal(result.suggestedOfficialName, "Angelo Sabocdalo");
 });

@@ -96,14 +96,41 @@ create policy "biometric aliases managed by payroll managers and ceo"
   using (public.is_ceo() or public.is_payroll_manager())
   with check (public.is_ceo() or public.is_payroll_manager());
 
+-- Preserve existing employee IDs while applying payroll-approved canonical names.
+update public.employees employee
+set full_name = 'Angelo Sabocdalo'
+where lower(trim(employee.full_name)) = 'angelo sabocdalao'
+  and employee.id = (
+    select min(candidate.id::text)::uuid
+    from public.employees candidate
+    where lower(trim(candidate.full_name)) = 'angelo sabocdalao'
+  )
+  and not exists (
+    select 1 from public.employees existing
+    where lower(trim(existing.full_name)) = 'angelo sabocdalo'
+  );
+
+update public.employees employee
+set full_name = 'Francisco Tanjay'
+where lower(trim(employee.full_name)) = 'tanjay'
+  and employee.id = (
+    select min(candidate.id::text)::uuid
+    from public.employees candidate
+    where lower(trim(candidate.full_name)) = 'tanjay'
+  )
+  and not exists (
+    select 1 from public.employees existing
+    where lower(trim(existing.full_name)) = 'francisco tanjay'
+  );
+
 -- Explicitly approved canonical-roster initialization. These are employee
 -- identities from the active full-name roster, not names inferred from punch
--- files. Existing employee rows remain authoritative and are never overwritten.
+-- files. Other employee rows remain authoritative and are not overwritten.
 with approved_active_employees(full_name) as (
   values
     ('Adam Taer'),
     ('Aidan Tundag'),
-    ('Angelo Sabocdalao'),
+    ('Angelo Sabocdalo'),
     ('Arlendo Mercado'),
     ('Arruelle Paisones'),
     ('Ben Cuizon'),
@@ -130,6 +157,7 @@ with approved_active_employees(full_name) as (
     ('Felizardo Lauron'),
     ('Francisco Yuag'),
     ('Gibson Dialon'),
+    ('Francisco Tanjay'),
     ('Gilbert Cabigquez'),
     ('Henry Lacbayo'),
     ('James Belarmino'),
@@ -174,6 +202,7 @@ with approved_active_employees(full_name) as (
     ('Roberto Gabisay'),
     ('Rodel Hawinay'),
     ('Rodel Yana'),
+    ('Rodel Jimenez'),
     ('Rodolfo Quinompot'),
     ('Roland Pimentel'),
     ('Rolly Pimentel'),
@@ -300,7 +329,7 @@ with review_aliases(raw_alias, normalized_alias, full_name, confidence) as (
     ('labor jereck gamayon', 'labor jereck gamayon', 'Jereck Gamayon', 0.9500),
     ('jereck', 'jereck', 'Jereck Gamayon', 0.8500),
     ('Aguid Jr Sanny', 'aguid jr sanny', 'Sanny Aguid Jr', 0.9500),
-    ('Angelo Saboclao', 'angelo saboclao', 'Angelo Sabocdalao', 0.8500)
+    ('Angelo Saboclao', 'angelo saboclao', 'Angelo Sabocdalo', 0.8500)
 ),
 canonical_employees as (
   select lower(trim(full_name)) as name_key, min(id::text)::uuid as employee_id
@@ -344,7 +373,13 @@ with confirmed_aliases(raw_alias, normalized_alias, full_name) as (
     ('Kc', 'kc', 'Khurt Christine Lim'),
     ('Ojt Andrew', 'ojt andrew', 'Andrew Villalon'),
     ('Ojt Prince', 'ojt prince', 'Prince Roniver Magsalos'),
-    ('Robie', 'robie', 'Robbie Rivera')
+    ('Robie', 'robie', 'Robbie Rivera'),
+    ('Leadman Pimentel R', 'leadman pimentel r', 'Roland Pimentel'),
+    ('P Angelo', 'p angelo', 'Angelo Sabocdalo'),
+    ('Rodel Plumber', 'rodel plumber', 'Rodel Jimenez'),
+    ('Ubod', 'ubod', 'Patrino Ubod'),
+    ('Tanjay', 'tanjay', 'Francisco Tanjay'),
+    ('Angelo Sabocdalao', 'angelo sabocdalao', 'Angelo Sabocdalo')
 ),
 canonical_employees as (
   select lower(trim(full_name)) as name_key, min(id::text)::uuid as employee_id
@@ -394,6 +429,36 @@ from public.employee_biometric_aliases alias
 where not alias.confirmed
   and attendance.normalized_biometric_name = alias.normalized_alias;
 
+
+-- Move every alias attached to a legacy employee row to the approved
+-- canonical employee, including aliases other than the names listed above.
+with requested_employee_merges(legacy_name, canonical_name) as (
+  values
+    ('Leadman Pimentel R', 'Roland Pimentel'),
+    ('P Angelo', 'Angelo Sabocdalo'),
+    ('Rodel Plumber', 'Rodel Jimenez'),
+    ('Ubod', 'Patrino Ubod'),
+    ('Tanjay', 'Francisco Tanjay'),
+    ('Angelo Sabocdalao', 'Angelo Sabocdalo')
+),
+canonical_employees as (
+  select lower(trim(full_name)) as name_key, min(id::text)::uuid as employee_id
+  from public.employees
+  group by lower(trim(full_name))
+  having count(*) = 1
+)
+update public.employee_biometric_aliases alias
+set
+  employee_id = canonical.employee_id,
+  updated_at = timezone('utc', now())
+from requested_employee_merges requested
+join canonical_employees canonical
+  on canonical.name_key = lower(requested.canonical_name)
+where alias.employee_id in (
+  select legacy.id
+  from public.employees legacy
+  where lower(trim(legacy.full_name)) = lower(requested.legacy_name)
+);
 -- Reconcile all historical punches covered by a confirmed alias.
 update public.attendance_records attendance
 set
@@ -406,6 +471,38 @@ join public.employees employee on employee.id = alias.employee_id
 where alias.confirmed
   and attendance.normalized_biometric_name = alias.normalized_alias;
 
+
+-- Merge attendance already linked to legacy employee rows into the same
+-- canonical payroll identity. The legacy employee rows remain for audit.
+with requested_employee_merges(legacy_name, canonical_name) as (
+  values
+    ('Leadman Pimentel R', 'Roland Pimentel'),
+    ('P Angelo', 'Angelo Sabocdalo'),
+    ('Rodel Plumber', 'Rodel Jimenez'),
+    ('Ubod', 'Patrino Ubod'),
+    ('Tanjay', 'Francisco Tanjay'),
+    ('Angelo Sabocdalao', 'Angelo Sabocdalo')
+),
+canonical_employees as (
+  select lower(trim(full_name)) as name_key, min(id::text)::uuid as employee_id
+  from public.employees
+  group by lower(trim(full_name))
+  having count(*) = 1
+)
+update public.attendance_records attendance
+set
+  employee_id = canonical.employee_id,
+  employee_name = requested.canonical_name,
+  match_status = 'MATCHED',
+  match_source = 'EXISTING_ALIAS'
+from requested_employee_merges requested
+join canonical_employees canonical
+  on canonical.name_key = lower(requested.canonical_name)
+where attendance.employee_id in (
+  select legacy.id
+  from public.employees legacy
+  where lower(trim(legacy.full_name)) = lower(requested.legacy_name)
+);
 -- Payroll explicitly confirmed that the legacy Nov Ryan Warguez employee row
 -- and Ryan Warguez are one person. Preserve the legacy employee for audit
 -- history, but move every historical punch to the canonical Ryan employee ID.
