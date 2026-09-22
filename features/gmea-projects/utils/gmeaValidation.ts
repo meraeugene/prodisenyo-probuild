@@ -76,8 +76,13 @@ function vat(value: Record<string, unknown>) {
 
 export function normalizeProjectDetails(value: unknown): ProjectDetailsInput {
   const project = object(value);
+  const color = text(project.color, "Container color", true, 7).toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(color))
+    throw new Error("Container color must be a valid color.");
   return {
+    title: text(project.title, "Project title", true, 100),
     name: text(project.name, "Project name", true, 200),
+    color,
     client: text(project.client, "Client", false, 200),
     location: text(project.location, "Project location", true, 300),
     duration: normalizeProjectDuration(

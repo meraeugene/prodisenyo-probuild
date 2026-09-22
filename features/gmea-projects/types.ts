@@ -64,7 +64,9 @@ export interface GmeaExpenseOptions {
 
 export interface GmeaProject {
   id: string;
+  title: string;
   name: string;
+  color: string;
   client: string;
   location: string;
   contract_amount: number;
@@ -79,7 +81,9 @@ export interface GmeaProject {
 
 export type ProjectDetailsInput = Pick<
   GmeaProject,
+  | "title"
   | "name"
+  | "color"
   | "client"
   | "location"
   | "duration"

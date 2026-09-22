@@ -8,6 +8,7 @@ export default function GmeaProjectOverview({
 }) {
   const s = projectSummary(project);
   const details = [
+    ["Project name", project.name],
     ["Client", project.client],
     ["Project location", project.location],
     ["Contract amount", formatMoney(s.contract)],

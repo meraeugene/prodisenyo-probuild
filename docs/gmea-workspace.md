@@ -12,8 +12,9 @@ Run these files in the Supabase SQL editor in this exact order:
 3. `supabase/gmea-03-mutations.sql` — installs the transactional, service-only project, contract collection, and expense mutation function.
 4. `supabase/gmea-04-access.sql` — excludes GMEA from the identified broadly readable payroll tables and protects GMEA profile privileges.
 5. `supabase/gmea-05-contract-payments.sql` — upgrades collection rows into contract-specific payment terms, adds auditable receipt history, and installs the current mutation function.
+6. `supabase/gmea-06-project-appearance.sql` — adds the project title and container color, including workbook-matching colors for known project titles.
 
-Apply all five before making GMEA accounts available. Existing roles retain their access. These migrations may be reapplied without deleting GMEA history. They have been tested against an isolated PostgreSQL engine; they are not automatically applied to the connected Supabase database.
+Apply all six before making GMEA accounts available. Existing roles retain their access. These migrations may be reapplied without deleting GMEA history. They have been tested against an isolated PostgreSQL engine; they are not automatically applied to the connected Supabase database.
 
 If installing optional payroll-attendance tables later, rerun `gmea-04-access.sql` afterward so its GMEA restrictions also cover those tables.
 
@@ -25,7 +26,7 @@ GMEA users share the company workspace and can create/edit projects and expenses
 
 ## Workflow
 
-1. Create a project with its project name, optional client, project location, contract amount, and project duration.
+1. Create a project with its short project title, full project name, container color, optional client, project location, contract amount, and project duration. Titles matching the reference workbook automatically select the same tab color.
 2. Choose an editable payment template (80/20, 30/70, 75/25, or 30/30/30/10) or create a custom schedule. Percentage and fixed terms must total the contract amount.
 3. Use **Payment Schedule** to record one or more payments against each term. Status is calculated as unpaid, partial, or paid. Incorrect payments are voided with a reason so the audit history remains intact.
 4. Record project expenses with their date, description, category, supplier/vendor, OR or invoice number, amount, refunded amount for Sir Edward, payment method, invoice recipient, and VAT treatment.

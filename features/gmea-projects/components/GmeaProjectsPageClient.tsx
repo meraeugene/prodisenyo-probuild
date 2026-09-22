@@ -139,7 +139,7 @@ export default function GmeaProjectsPageClient({
 
       {create && <GmeaProjectForm onClose={() => setCreate(false)} />}
       {details && (
-        <GmeaDialog title={details.name} onClose={() => setDetails(null)}>
+        <GmeaDialog title={details.title} onClose={() => setDetails(null)}>
           <GmeaProjectOverview project={details} />
         </GmeaDialog>
       )}

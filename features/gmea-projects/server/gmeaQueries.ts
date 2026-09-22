@@ -11,6 +11,7 @@ import {
   type ReceiptRow,
 } from "./gmeaDatabase";
 import { readAllGmeaRows } from "./readAllGmeaRows";
+import { projectColor } from "../utils/projectAppearance";
 
 export async function requireGmeaAccess(write = false) {
   const auth = await requireRole(
@@ -107,6 +108,8 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
     output.push(
       ...(batch.map((project) => ({
         ...project,
+        title: project.title?.trim() || project.name,
+        color: projectColor(project),
         contract_amount: Number(project.contract_amount),
         expenses: unpack(
           expenses.filter((row) => row.project_id === project.id),

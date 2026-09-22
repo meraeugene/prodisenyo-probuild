@@ -21,7 +21,9 @@ export type DataRow = {
 };
 export type ProjectRow = {
   id: string;
+  title: string;
   name: string;
+  color: string;
   client: string;
   location: string;
   contract_amount: number;

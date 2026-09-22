@@ -27,6 +27,7 @@ async function main() {
       "gmea-03-mutations.sql",
       "gmea-04-access.sql",
       "gmea-05-contract-payments.sql",
+      "gmea-06-project-appearance.sql",
     ])
       await db.exec(
         fs.readFileSync("supabase/" + name, "utf8").replace(/^\uFEFF/, ""),
@@ -222,12 +223,21 @@ async function main() {
       .getByRole("button", { name: "New project", exact: true })
       .click();
     await page
+      .getByLabel("Project title *", { exact: true })
+      .fill("MARAMAG");
+    await page
       .getByLabel("Project name *", { exact: true })
       .fill("GMEA Solar Installation");
     await page.getByLabel("Client", { exact: true }).fill("Sample Client");
     await page
       .getByLabel("Project location *", { exact: true })
       .fill("Cagayan de Oro");
+    await page
+      .getByLabel("Project duration *", { exact: true })
+      .fill("7–14 days");
+    await page
+      .getByRole("button", { name: "Continue", exact: true })
+      .click();
     await page
       .getByLabel("Contract amount (PHP) *", { exact: true })
       .fill("85000");
@@ -241,10 +251,7 @@ async function main() {
       .getByLabel("Starting template", { exact: true })
       .selectOption("75-25");
     await page
-      .getByLabel("Project duration *", { exact: true })
-      .fill("7–14 days");
-    await page
-      .getByRole("button", { name: "Save changes", exact: true })
+      .getByRole("button", { name: "Create project", exact: true })
       .click();
     await page
       .getByRole("heading", { name: "GMEA Solar Installation", exact: true })
@@ -256,14 +263,13 @@ async function main() {
       .getByRole("button", { name: "Edit contract terms", exact: true })
       .click();
     await page
-      .getByLabel("Contract notes", { exact: true })
+      .getByLabel("Notes (optional)", { exact: true })
       .first()
       .fill("Verify legacy workbook details");
     await page
       .getByRole("button", { name: "Save changes", exact: true })
       .click();
     await page.getByRole("dialog").waitFor({ state: "detached" });
-    await page.getByRole("button", { name: "Down payment of the contract" }).click();
     await page.getByRole("button", { name: "Record payment", exact: true }).click();
     await page.getByLabel("Amount received (PHP) *").fill("63000");
     await page.getByLabel("Payment method").fill("Bank transfer");

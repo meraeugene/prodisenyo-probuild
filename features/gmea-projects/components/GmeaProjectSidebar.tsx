@@ -17,6 +17,7 @@ export default function GmeaProjectSidebar({ project, canEdit, onEdit }: {
   const collection = contractCollectionSummary(project);
   const percentage = project.contract_amount > 0 ? Math.min(100, Math.round(collection.received / project.contract_amount * 100)) : 0;
   const details = [
+    { label: "Name", value: project.name, icon: Circle },
     { label: "Location", value: project.location || "Not set", icon: MapPin },
     { label: "Client", value: project.client || "Not set", icon: UserRound },
     { label: "Created", value: formatDate(project.created_at), icon: CalendarDays },

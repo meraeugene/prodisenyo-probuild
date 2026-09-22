@@ -15,6 +15,7 @@ import GmeaCollectionsSection from "./GmeaCollectionsSection";
 import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
 import GmeaProjectSidebar from "./GmeaProjectSidebar";
+import { contrastTextColor, projectColor } from "../utils/projectAppearance";
 const tabs = [
   { label: "Payment Schedule", icon: CalendarDays },
   { label: "Expenses", icon: ReceiptText },
@@ -63,9 +64,16 @@ export default function GmeaProjectWorkspace({
           <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/70">
             GMEA Marketing Corporation
           </p>
-          <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight sm:text-4xl">
-            {project.name}
-          </h1>
+          <p
+            className="mt-3 inline-flex max-w-full rounded-lg px-3 py-1.5 text-sm font-bold uppercase tracking-[0.12em]"
+            style={{
+              backgroundColor: projectColor(project),
+              color: contrastTextColor(projectColor(project)),
+            }}
+          >
+            {project.title}
+          </p>
+          <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{project.name}</h1>
           <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
             <MapPin size={14} className="shrink-0" aria-hidden="true" />
             {project.location}

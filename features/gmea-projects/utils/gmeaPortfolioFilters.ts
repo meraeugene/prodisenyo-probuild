@@ -9,7 +9,7 @@ export function selectPortfolioClients(projects: GmeaProject[]) {
 export function filterPortfolioProjects(projects: GmeaProject[], query: string, filter: string) {
   const search = query.trim().toLowerCase();
   return projects.filter((project) => {
-    if (![project.name, project.client, project.location].join(" ").toLowerCase().includes(search)) {
+    if (![project.title, project.name, project.client, project.location].join(" ").toLowerCase().includes(search)) {
       return false;
     }
     if (filter.startsWith("client:")) return project.client.trim() === filter.slice(7);

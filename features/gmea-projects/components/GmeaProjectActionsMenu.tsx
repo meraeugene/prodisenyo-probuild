@@ -2,13 +2,13 @@
 
 import { useRef, useState } from "react";
 import { DropdownMenu } from "radix-ui";
-import { Ellipsis, Pencil, Trash2 } from "lucide-react";
+import { Ellipsis, Eye, Pencil, Trash2 } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import GmeaProjectForm from "./GmeaProjectForm";
 
-export default function GmeaProjectActionsMenu({ project }: { project: GmeaProject }) {
+export default function GmeaProjectActionsMenu({ project, onDetails }: { project: GmeaProject; onDetails: () => void }) {
   const [action, setAction] = useState<"edit" | "delete" | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const save = useGmeaMutation(project);
@@ -25,7 +25,7 @@ export default function GmeaProjectActionsMenu({ project }: { project: GmeaProje
           <button
             ref={triggerRef}
             type="button"
-            aria-label={`Actions for ${project.name}`}
+            aria-label={`Actions for ${project.title}`}
             className="relative z-20 grid h-8 w-8 place-items-center rounded-[9px] border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 data-[state=open]:bg-teal-50 data-[state=open]:text-teal-700"
           >
             <Ellipsis size={17} aria-hidden="true" />
@@ -38,6 +38,12 @@ export default function GmeaProjectActionsMenu({ project }: { project: GmeaProje
             onCloseAutoFocus={(event) => { if (action) event.preventDefault(); }}
             className="z-[140] min-w-40 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg"
           >
+            <DropdownMenu.Item
+              onSelect={onDetails}
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 outline-none data-[highlighted]:bg-teal-50 data-[highlighted]:text-teal-800"
+            >
+              <Eye size={15} aria-hidden="true" /> Details
+            </DropdownMenu.Item>
             <DropdownMenu.Item
               onSelect={() => setAction("edit")}
               className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 outline-none data-[highlighted]:bg-teal-50 data-[highlighted]:text-teal-800"
@@ -66,7 +72,7 @@ export default function GmeaProjectActionsMenu({ project }: { project: GmeaProje
           danger
         >
           <p className="text-sm leading-6 text-slate-600">
-            Permanently delete <strong className="font-semibold text-slate-900">{project.name}</strong>?
+            Permanently delete <strong className="font-semibold text-slate-900">{project.title}</strong>?
             {" "}This also removes its expenses, payment schedule, receipts, and partner records. This cannot be undone.
           </p>
         </GmeaDialog>

@@ -6,6 +6,7 @@ import {
   projectSummary,
 } from "../utils/gmeaCalculations";
 import { getCollectionStatus } from "../utils/ceoPortfolio";
+import { projectColor } from "../utils/projectAppearance";
 
 const statusStyles: Record<string, string> = {
   "Fully collected": "text-emerald-700",
@@ -47,7 +48,7 @@ export default function CeoGmeaProjectsTable({ projects }: { projects: GmeaProje
             const status = getCollectionStatus(project);
             return (
               <div key={project.id} className="grid grid-cols-[1.1fr_1.2fr_.9fr_.9fr_.9fr_.9fr_1.2fr_.8fr_.65fr] items-center gap-4 px-4 py-3 text-[11px] hover:bg-slate-50/70">
-                <div className="min-w-0"><p className="truncate font-semibold text-slate-950">{project.name}</p><p className="mt-0.5 truncate text-[10px] text-slate-400">GMEA-{project.id.slice(0, 8).toUpperCase()}</p></div>
+                <div className="flex min-w-0 items-start gap-2"><span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full border border-black/10" style={{ backgroundColor: projectColor(project) }} /><div className="min-w-0"><p className="truncate font-semibold text-slate-950">{project.title}</p><p className="mt-0.5 truncate text-[10px] text-slate-500">{project.name}</p></div></div>
                 <div className="min-w-0"><p className="truncate font-medium text-slate-800">{project.client || "Client not set"}</p><p className="mt-0.5 truncate text-[10px] text-slate-500">{project.location || "Location not set"}</p></div>
                 <strong className="truncate font-semibold text-slate-900 tabular-nums">{formatMoney(summary.contract)}</strong>
                 <strong className="truncate font-semibold text-slate-900 tabular-nums">{formatMoney(summary.expenses)}</strong>

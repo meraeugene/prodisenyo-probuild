@@ -52,13 +52,13 @@ export function buildCeoPortfolio(projects: GmeaProject[], months: number) {
 
 export function selectCeoActivity(projects: GmeaProject[]) {
   return projects.flatMap((project) => [
-    { id: `project:${project.id}`, projectId: project.id, project: project.name, title: "Project added", date: project.created_at, kind: "project" },
+    { id: `project:${project.id}`, projectId: project.id, project: project.title, title: "Project added", date: project.created_at, kind: "project" },
     ...project.expenses.map((expense) => ({
-      id: `expense:${expense.id}`, projectId: project.id, project: project.name,
+      id: `expense:${expense.id}`, projectId: project.id, project: project.title,
       title: expense.description || "Project expense", date: expense.date, kind: "expense",
     })),
     ...project.payment_terms.flatMap((term) => term.receipts.map((receipt) => ({
-      id: `receipt:${receipt.id}`, projectId: project.id, project: project.name,
+      id: `receipt:${receipt.id}`, projectId: project.id, project: project.title,
       title: receipt.status === "voided" ? "Payment voided" : "Payment recorded",
       date: receipt.voided_at ?? receipt.recorded_at, kind: "payment",
     }))),

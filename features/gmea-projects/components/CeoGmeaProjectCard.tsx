@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   LuArrowUpRight as ArrowUpRight,
-  LuBriefcaseBusiness as BriefcaseBusiness,
   LuMapPin as MapPin,
   LuUserRound as UserRound,
 } from "react-icons/lu";
@@ -12,6 +11,7 @@ import {
   projectSummary,
 } from "../utils/gmeaCalculations";
 import { getCollectionStatus } from "../utils/ceoPortfolio";
+import { projectContainerStyle } from "../utils/projectAppearance";
 
 export default function CeoGmeaProjectCard({
   project,
@@ -26,14 +26,14 @@ export default function CeoGmeaProjectCard({
   const hasNewExpense = project.expenses.some((expense) => expense.is_new);
 
   return (
-    <article className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow duration-200 hover:shadow-[0_14px_32px_-20px_rgba(15,23,42,.38)]">
+    <article style={projectContainerStyle(project)} className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow duration-200 hover:shadow-[0_14px_32px_-20px_rgba(15,23,42,.38)]">
       <div className="flex-1 p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <BriefcaseBusiness size={14} className="shrink-0 text-[#087d76]" aria-hidden="true" />
-            <h3 className="truncate text-[16px] font-bold leading-5 tracking-[-0.02em] text-slate-950">
-              {project.name}
-            </h3>
+          <div className="min-w-0">
+            <div className="min-w-0">
+              <h3 className="truncate text-[16px] font-bold leading-5 tracking-[-0.02em] text-slate-950">{project.title}</h3>
+              <p className="mt-0.5 truncate text-[11px] text-slate-500">{project.name}</p>
+            </div>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#e8faf4] px-3 py-1 text-[11px] font-semibold text-[#08775f]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#0b9f7d]" />
@@ -90,7 +90,7 @@ export default function CeoGmeaProjectCard({
 
       <footer className="flex items-center justify-between border-t border-slate-100 bg-slate-50/45 px-5 py-3">
         <Link
-          aria-label={`Open project: ${project.name}`}
+          aria-label={`Open project: ${project.title}`}
           className="inline-flex items-center gap-2 text-[13px] font-bold text-[#08746f] after:absolute after:inset-0 after:z-10 after:rounded-[16px] after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-teal-700"
           href={`/gmea-projects/${project.id}`}
         >

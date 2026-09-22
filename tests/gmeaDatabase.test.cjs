@@ -17,6 +17,7 @@ const migrations = [
   "gmea-03-mutations.sql",
   "gmea-04-access.sql",
   "gmea-05-contract-payments.sql",
+  "gmea-06-project-appearance.sql",
 ];
 
 function paymentTerms(firstId = randomUUID(), secondId = randomUUID()) {
@@ -45,7 +46,9 @@ function createProjectCommand(name, terms) {
     kind: "create_project",
     value: {
       details: {
+        title: name,
         name,
+        color: name === "MARAMAG" ? "#00FF00" : "#FFFFFF",
         client: "",
         location: "Corrales Ave, Cagayan de Oro City",
         duration: "7 Days",
@@ -119,11 +122,13 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
   await t.test("project creation stores its chosen schedule atomically", async () => {
     const project = (
       await db.query(
-        "select name,client,location,contract_amount,duration from public.gmea_projects where id=$1",
+        "select title,name,color,client,location,contract_amount,duration from public.gmea_projects where id=$1",
         [projectId],
       )
     ).rows[0];
     assert.equal(project.client, "");
+    assert.equal(project.title, "Installation of Analog CCTV");
+    assert.equal(project.color, "#FFFFFF");
     assert.equal(Number(project.contract_amount), 175000);
     assert.equal(
       (
@@ -328,7 +333,9 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
       mutate(projectId, 1, {
         kind: "project_details",
         value: {
+          title: "Stale",
           name: "Stale",
+          color: "#FFFFFF",
           client: "",
           location: "CDO",
           duration: "7 Days",
@@ -392,7 +399,9 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
           {
             kind: "project_details",
             value: {
+              title: "Blocked",
               name: "Blocked",
+              color: "#FFFFFF",
               client: "",
               location: "CDO",
               duration: "7 Days",

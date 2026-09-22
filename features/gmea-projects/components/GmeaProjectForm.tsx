@@ -7,9 +7,14 @@ import type {
 } from "../types";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import { buildPaymentTerms, recalculatePercentageTerms } from "../utils/paymentTerms";
+import {
+  DEFAULT_PROJECT_COLOR,
+  workbookColorForProjectTitle,
+} from "../utils/projectAppearance";
 import GmeaDialog from "./GmeaDialog";
 import { MoneyField, TextField } from "./GmeaFields";
 import GmeaPaymentTermsEditor from "./GmeaPaymentTermsEditor";
+import GmeaProjectColorField from "./GmeaProjectColorField";
 
 export default function GmeaProjectForm({
   project,
@@ -21,12 +26,16 @@ export default function GmeaProjectForm({
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<ProjectDetailsInput>(
     project ? {
-      name: project.name,
-      client: project.client,
-      location: project.location,
-      duration: project.duration,
+      title: project.title ?? project.name ?? "",
+      name: project.name ?? "",
+      color: project.color ?? DEFAULT_PROJECT_COLOR,
+      client: project.client ?? "",
+      location: project.location ?? "",
+      duration: project.duration ?? "",
     } : {
+      title: "",
       name: "",
+      color: DEFAULT_PROJECT_COLOR,
       client: "",
       location: "",
       duration: "",
@@ -70,11 +79,26 @@ export default function GmeaProjectForm({
       saveLabel={project ? "Save changes" : step === 1 ? "Continue" : "Create project"}
       secondaryLabel={!project && step === 2 ? "Back" : "Cancel"}
       onSecondary={!project && step === 2 ? () => setStep(1) : undefined}
-      compact={!project && step === 1}
-      wide={!project && step === 2}
+      wide={!project}
     >
       {(project || step === 1) && (
-      <div className={project ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField
+          label="Project title *"
+          required
+          placeholder="e.g. MARAMAG"
+          maxLength={100}
+          value={form.title}
+          onChange={(event) => {
+            const title = event.target.value;
+            const workbookColor = workbookColorForProjectTitle(title);
+            setForm((current) => ({
+              ...current,
+              title,
+              color: workbookColor ?? current.color,
+            }));
+          }}
+        />
         <TextField
           label="Project name *"
           required
@@ -103,6 +127,12 @@ export default function GmeaProjectForm({
           value={form.duration}
           onChange={(e) => update("duration", e.target.value)}
         />
+        <div className="md:col-span-2">
+          <GmeaProjectColorField
+            value={form.color}
+            onChange={(color) => update("color", color)}
+          />
+        </div>
       </div>
       )}
       {!project && step === 2 && (

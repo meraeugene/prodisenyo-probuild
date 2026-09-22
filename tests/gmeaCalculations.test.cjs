@@ -77,7 +77,9 @@ test("project validation separates details from contract terms", () => {
     kind: "create_project",
     value: {
       details: {
+        title: " MARAMAG ",
         name: " CCTV Installation ",
+        color: "#00ff00",
         client: " ",
         location: " Corrales Ave ",
         duration: " 7 Days ",
@@ -99,7 +101,9 @@ test("project validation separates details from contract terms", () => {
     },
   });
   assert.deepEqual(result.value.details, {
+    title: "MARAMAG",
     name: "CCTV Installation",
+    color: "#00FF00",
     client: "",
     location: "Corrales Ave",
     duration: "7 Days",
