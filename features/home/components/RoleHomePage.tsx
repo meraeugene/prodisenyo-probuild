@@ -51,6 +51,7 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
   "/my-tasks": ListTodo,
   "/projects": FolderKanban,
   "/gmea-projects": FolderKanban,
+  "/gmea-overview": LayoutDashboard,
   "/progress-reports": FileText,
   "/overview": LayoutDashboard,
   "/projects?section=material-approvals": ClipboardCheck,
@@ -60,8 +61,23 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
 
 const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
   gmea: [
-    { href: "/gmea-projects", title: "GMEA Projects", description: "Manage quotations, payments, expenses, and profit sharing." },
-    { href: "/settings", title: "Settings", description: "Manage your account and password." },
+    {
+      href: "/gmea-overview",
+      title: "Overview Dashboard",
+      description:
+        "Review Electronics & Solar and Rentals performance in one place.",
+    },
+    {
+      href: "/gmea-projects",
+      title: "Electronics & Solar",
+      description:
+        "Manage projects, collections, expenses, and profit sharing.",
+    },
+    {
+      href: "/settings",
+      title: "Settings",
+      description: "Manage your account and password.",
+    },
   ],
   admin: [
     {
@@ -89,12 +105,14 @@ const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
     {
       href: "/projects",
       title: "Projects Portfolio",
-      description: "High-level overview of all company projects, budgets, and schedules.",
+      description:
+        "High-level overview of all company projects, budgets, and schedules.",
     },
     {
       href: "/projects?section=material-approvals",
       title: "Material Approvals",
-      description: "Approve or reject material requests submitted by site engineers.",
+      description:
+        "Approve or reject material requests submitted by site engineers.",
     },
     {
       href: "/budget-tracker",
@@ -114,7 +132,8 @@ const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
     {
       href: "/estimate-approvals",
       title: "Estimate Approvals",
-      description: "Review project estimate submissions from the Projects workflow.",
+      description:
+        "Review project estimate submissions from the Projects workflow.",
     },
   ],
   payroll_manager: [
@@ -151,12 +170,14 @@ const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
     {
       href: "/overview",
       title: "Overview Dashboard",
-      description: "A comprehensive project overview dashboard featuring status trackers and alerts.",
+      description:
+        "A comprehensive project overview dashboard featuring status trackers and alerts.",
     },
     {
       href: "/projects",
       title: "Projects Workspace",
-      description: "Manage tasks, log progress reports, and submit material requests for your assigned projects.",
+      description:
+        "Manage tasks, log progress reports, and submit material requests for your assigned projects.",
     },
     {
       href: "/cost-estimator",
@@ -270,7 +291,8 @@ export default function RoleHomePage({
   const roleHints = getRoleHints(role);
   const featureCards = ROLE_FEATURES[role];
 
-  if (role === "employee") return <EmployeeHomePage fullName={fullName} username={username} />;
+  if (role === "employee")
+    return <EmployeeHomePage fullName={fullName} username={username} />;
 
   return (
     <main className="min-h-full space-y-6 bg-white p-4 sm:p-6">

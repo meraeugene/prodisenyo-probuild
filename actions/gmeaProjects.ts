@@ -51,6 +51,7 @@ export async function saveGmeaProjectAction(
   });
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-projects");
+  revalidatePath("/gmea-overview");
   revalidatePath("/gmea-projects/" + data);
   return data;
 }
@@ -82,5 +83,6 @@ export async function markGmeaExpenseViewedAction(
   });
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-projects");
+  revalidatePath("/gmea-overview");
   revalidatePath("/gmea-projects/" + projectId);
 }

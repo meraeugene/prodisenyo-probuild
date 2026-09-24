@@ -33,7 +33,7 @@ test("GMEA role home and server access agree; CEO cannot mutate", async () => {
       },
     );
     if (role === "gmea") {
-      assert.equal(auth.getRoleHomePath(role), "/gmea-projects");
+      assert.equal(auth.getRoleHomePath(role), "/gmea-overview");
       await requireGmeaAccess(true);
     } else await assert.rejects(requireGmeaAccess(true), /REDIRECT/);
     if (["gmea", "ceo"].includes(role)) await requireGmeaAccess();
@@ -83,22 +83,44 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
     /auth\/login/,
   );
   assert.match(
+    (await request(null, "/gmea-rentals")).headers.get("location"),
+    /auth\/login/,
+  );
+  assert.match(
+    (await request(null, "/gmea-overview")).headers.get("location"),
+    /auth\/login/,
+  );
+  assert.match(
     (await request("engineer", "/gmea-projects")).headers.get("location"),
     /overview/,
   );
   assert.match(
     (await request("gmea", "/dashboard")).headers.get("location"),
-    /gmea-projects/,
+    /gmea-overview/,
   );
   assert.match(
     (await request("gmea", "/auth/login")).headers.get("location"),
-    /gmea-projects/,
+    /gmea-overview/,
   );
   for (const role of ["gmea", "ceo"])
     assert.equal(
       (await request(role, "/gmea-projects/" + id)).headers.get("location"),
       null,
     );
+  for (const role of ["gmea", "ceo"])
+    assert.equal(
+      (await request(role, "/gmea-rentals")).headers.get("location"),
+      null,
+    );
+  for (const role of ["gmea", "ceo"])
+    assert.equal(
+      (await request(role, "/gmea-overview")).headers.get("location"),
+      null,
+    );
+  assert.match(
+    (await request("engineer", "/gmea-rentals")).headers.get("location"),
+    /overview/,
+  );
   assert.equal(
     (await request("gmea", "/settings")).headers.get("location"),
     null,
@@ -169,4 +191,88 @@ test("financial reads paginate rather than silently truncating at API row limits
     })),
     /Connection failed/,
   );
+});
+
+test("GMEA Overview combines portfolio totals and excludes voided rental payments", () => {
+  const { buildGmeaOverview, selectGmeaOverviewAlerts } = load(
+    "features/gmea-overview/utils/gmeaOverviewSelectors.ts",
+  );
+  const project = {
+    id: "project-1",
+    title: "Solar array",
+    client: "ABC Corp",
+    contract_amount: 2000,
+    created_at: "2026-09-01T00:00:00Z",
+    expenses: [
+      {
+        id: "project-expense",
+        date: "2026-09-10",
+        amount: 112,
+        refunded_amount: 12,
+        vat_mode: "inclusive",
+        vat_rate: 12,
+      },
+    ],
+    payment_terms: [
+      {
+        id: "term-1",
+        amount: 2000,
+        receipts: [
+          {
+            id: "receipt-posted",
+            amount: 1000,
+            received_date: "2026-09-04",
+            status: "posted",
+          },
+          {
+            id: "receipt-voided",
+            amount: 900,
+            received_date: "2026-09-05",
+            status: "voided",
+          },
+        ],
+      },
+    ],
+  };
+  const data = {
+    projects: [project],
+    rentals: {
+      rentals: [
+        {
+          id: "rental-1",
+          rental_number: "R-001",
+          client: " abc corp ",
+          status: "active",
+          start_date: "2026-09-25",
+        },
+      ],
+      payments: [
+        { amount: 500, payment_date: "2026-09-06", status: "posted" },
+        { amount: 300, payment_date: "2026-09-07", status: "voided" },
+      ],
+      expenses: [
+        {
+          date: "2026-09-11",
+          amount: 100,
+          refunded_amount: 12,
+          vat_mode: "exclusive",
+          vat_rate: 12,
+        },
+      ],
+      equipment: [
+        { id: "equipment-1", name: "Generator", status: "maintenance" },
+      ],
+      categories: [],
+    },
+  };
+  const summary = buildGmeaOverview(data);
+  assert.equal(summary.totalRevenue, 2500);
+  assert.equal(summary.totalExpenses, 200);
+  assert.equal(summary.netProfit, 2300);
+  assert.equal(summary.activeWork, 2);
+  assert.equal(summary.activeClients, 1);
+  const alerts = selectGmeaOverviewAlerts(data, "2026-09-20");
+  assert.match(alerts.map((alert) => alert.title).join("|"), /Upcoming rental/);
+  assert.match(alerts.map((alert) => alert.title).join("|"), /maintenance/);
+  assert.match(alerts.map((alert) => alert.title).join("|"), /Outstanding/);
 });

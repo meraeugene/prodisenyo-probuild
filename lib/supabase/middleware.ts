@@ -18,6 +18,8 @@ type CookieMutation = {
 
 const PROTECTED_PREFIXES = [
   "/gmea-projects",
+  "/gmea-rentals",
+  "/gmea-overview",
   "/home",
   "/dashboard",
   "/payroll-dashboard",
@@ -54,6 +56,8 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 
 const CEO_ALLOWED_PREFIXES = [
   "/gmea-projects",
+  "/gmea-rentals",
+  "/gmea-overview",
   "/dashboard",
   "/budget-tracker",
   "/estimate-approvals",
@@ -236,7 +240,8 @@ export async function updateSession(request: NextRequest) {
     return redirect(redirectUrl);
   }
 
-  let authenticatedProfile: Database["public"]["Tables"]["profiles"]["Row"] | null = null;
+  let authenticatedProfile:
+    Database["public"]["Tables"]["profiles"]["Row"] | null = null;
 
   if (user) {
     const { data: profile, error: profileError } = await supabase
@@ -278,20 +283,20 @@ export async function updateSession(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname =
         currentRole === "gmea"
-          ? "/gmea-projects"
+          ? "/gmea-overview"
           : currentRole === "admin"
-          ? ADMIN_REDIRECT_PATH
-          : currentRole === "ceo"
-          ? CEO_REDIRECT_PATH
-          : currentRole === "payroll_manager"
-            ? PAYROLL_MANAGER_REDIRECT_PATH
-            : currentRole === "engineer"
-              ? ENGINEER_REDIRECT_PATH
-            : currentRole === "purchaser"
-              ? PURCHASER_REDIRECT_PATH
-              : currentRole === "employee"
-                ? EMPLOYEE_REDIRECT_PATH
-                : "/dashboard";
+            ? ADMIN_REDIRECT_PATH
+            : currentRole === "ceo"
+              ? CEO_REDIRECT_PATH
+              : currentRole === "payroll_manager"
+                ? PAYROLL_MANAGER_REDIRECT_PATH
+                : currentRole === "engineer"
+                  ? ENGINEER_REDIRECT_PATH
+                  : currentRole === "purchaser"
+                    ? PURCHASER_REDIRECT_PATH
+                    : currentRole === "employee"
+                      ? EMPLOYEE_REDIRECT_PATH
+                      : "/dashboard";
       redirectUrl.searchParams.delete("next");
       redirectUrl.searchParams.delete("required");
       return redirect(redirectUrl);
@@ -361,10 +366,15 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    if (!profileError && currentRole === "gmea" &&
-      !["/gmea-projects", "/settings"].some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"))) {
+    if (
+      !profileError &&
+      currentRole === "gmea" &&
+      !["/gmea-projects", "/gmea-rentals", "/gmea-overview", "/settings"].some(
+        (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
+      )
+    ) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/gmea-projects";
+      redirectUrl.pathname = "/gmea-overview";
       redirectUrl.search = "";
       return redirect(redirectUrl);
     }

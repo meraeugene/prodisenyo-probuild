@@ -31,7 +31,14 @@ function hasAllowedPrefix(pathname: string, prefixes: readonly string[]) {
 function isRoleAllowedNextPath(role: AppRole, pathname: string) {
   if (!isSafeInternalPath(pathname)) return false;
 
-  if (role === APP_ROLES.GMEA) return hasAllowedPrefix(pathname, ["/gmea-projects", "/settings"]);
+  if (role === APP_ROLES.GMEA) {
+    return hasAllowedPrefix(pathname, [
+      "/gmea-projects",
+      "/gmea-rentals",
+      "/gmea-overview",
+      "/settings",
+    ]);
+  }
 
   if (role === APP_ROLES.CEO) {
     return hasAllowedPrefix(pathname, [
@@ -46,6 +53,8 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
       "/payroll-reports",
       "/projects",
       "/gmea-projects",
+      "/gmea-rentals",
+      "/gmea-overview",
       "/material-approvals",
       "/settings",
     ]);

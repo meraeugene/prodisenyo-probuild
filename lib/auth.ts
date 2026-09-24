@@ -23,7 +23,7 @@ export const APP_ROLES = {
 export const DEFAULT_AUTH_REDIRECT = "/dashboard";
 
 export function getRoleHomePath(role: AppRole | null | undefined) {
-  if (role === APP_ROLES.GMEA) return "/gmea-projects";
+  if (role === APP_ROLES.GMEA) return "/gmea-overview";
   if (role === APP_ROLES.ADMIN) return "/add-user";
   if (role === APP_ROLES.CEO) return "/dashboard";
   if (role === APP_ROLES.PAYROLL_MANAGER) return "/payroll-dashboard";

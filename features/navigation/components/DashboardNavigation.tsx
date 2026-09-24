@@ -15,6 +15,7 @@ import {
   UserRoundSearch,
   Wallet,
   FolderKanban,
+  Truck,
 } from "lucide-react";
 import type { AppRole } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -52,7 +53,13 @@ const CEO_PAYROLL_ITEMS = [
 ] as const;
 
 const GMEA_NAV_ITEMS = [
-  { href: "/gmea-projects", label: "GMEA Projects", icon: FolderKanban },
+  {
+    href: "/gmea-overview",
+    label: "Overview Dashboard",
+    icon: LayoutDashboard,
+  },
+  { href: "/gmea-projects", label: "Electronics & Solar", icon: FolderKanban },
+  { href: "/gmea-rentals", label: "Rentals", icon: Truck },
 ] as const;
 const CEO_PROJECT_ITEMS = [
   ...GMEA_NAV_ITEMS,
@@ -119,49 +126,49 @@ function renderSidebarLink(params: {
 
   return (
     <SidebarTooltip key={item.href} active={collapsed} label={item.label}>
-    <Link
-      href={item.href}
-      prefetch
-      onClick={onNavigate}
-      className={cn(
-        "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
-        collapsed && "justify-center px-2.5",
-        active
-          ? collapsed
-            ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
-            : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-          : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
-      )}
-    >
-      <div
+      <Link
+        href={item.href}
+        prefetch
+        onClick={onNavigate}
         className={cn(
-          "flex h-7 w-7 items-center justify-center transition-colors",
-          collapsed ? "rounded-none" : "rounded-full",
+          "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
+          collapsed && "justify-center px-2.5",
           active
             ? collapsed
-              ? "bg-transparent text-white"
-              : "bg-[#076d69] text-white"
-            : "text-apple-smoke group-hover:text-apple-charcoal",
+              ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
+              : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
+            : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
         )}
       >
-        <item.icon size={15} />
-      </div>
-      {!collapsed ? (
-        <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
-          {item.label}
-        </span>
-      ) : null}
-      {badgeCount > 0 ? (
-        <span
+        <div
           className={cn(
-            "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#076d69] px-2 py-0.5 text-[11px] font-bold text-white",
-            collapsed ? "absolute -right-1 -top-1" : "ml-1",
+            "flex h-7 w-7 items-center justify-center transition-colors",
+            collapsed ? "rounded-none" : "rounded-full",
+            active
+              ? collapsed
+                ? "bg-transparent text-white"
+                : "bg-[#076d69] text-white"
+              : "text-apple-smoke group-hover:text-apple-charcoal",
           )}
         >
-          {badgeCount > 99 ? "99+" : badgeCount}
-        </span>
-      ) : null}
-    </Link>
+          <item.icon size={15} />
+        </div>
+        {!collapsed ? (
+          <span className="min-w-0 flex-1 font-medium whitespace-nowrap">
+            {item.label}
+          </span>
+        ) : null}
+        {badgeCount > 0 ? (
+          <span
+            className={cn(
+              "inline-flex h-6 min-w-[24px] shrink-0 items-center justify-center rounded-full bg-[#076d69] px-2 py-0.5 text-[11px] font-bold text-white",
+              collapsed ? "absolute -right-1 -top-1" : "ml-1",
+            )}
+          >
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </span>
+        ) : null}
+      </Link>
     </SidebarTooltip>
   );
 }
