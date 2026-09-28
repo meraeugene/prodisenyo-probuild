@@ -22,12 +22,14 @@ export default function GmeaRentalExpenseForm({
   equipment,
   categories,
   expense,
+  readOnly = false,
   onClose,
 }: {
   rental: GmeaRental;
   equipment: RentalEquipment[];
   categories: RentalExpenseCategory[];
   expense?: RentalExpense;
+  readOnly?: boolean;
   onClose: () => void;
 }) {
   const initialScope: Scope = expense?.rental_id
@@ -95,16 +97,17 @@ export default function GmeaRentalExpenseForm({
   }
   return (
     <GmeaRentalsDialog
-      title={expense ? "Edit rental expense" : "New rental expense"}
+      title={readOnly ? "Rental expense details" : expense ? "Edit rental expense" : "New rental expense"}
       description="Record Rentals operational spending and VAT treatment."
       onClose={onClose}
       onSave={submit}
       pending={pending}
       error={localError || error}
       saveLabel={expense ? "Save changes" : "Add expense"}
+      readOnly={readOnly}
       wide
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Expense scope *">
           <select
             value={scope}
@@ -256,7 +259,7 @@ export default function GmeaRentalExpenseForm({
             />
           </Field>
         </div>
-      </div>
+      </fieldset>
     </GmeaRentalsDialog>
   );
 }

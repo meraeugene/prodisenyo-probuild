@@ -8,7 +8,6 @@ import {
   getPayrollManagerReportNotificationsAction,
   savePayrollRunAction,
 } from "@/actions/payroll";
-import DashboardPageHero from "@/components/DashboardPageHero";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import PayrollApprovalQueue from "@/features/payroll/components/PayrollApprovalQueue";
 import OvertimeRejectedAlertModal from "@/features/payroll/components/OvertimeRejectedAlertModal";
@@ -348,13 +347,7 @@ export default function PayrollPage() {
   }
 
   return (
-    <div className="p-0 sm:p-4">
-      <DashboardPageHero
-        eyebrow="Payroll"
-        title="Generate Payroll"
-        description="Review grouped employee rows, manage paid holidays and rates, then submit the finished payroll report."
-      />
-
+    <div className="p-0">
       <PayrollSection
         dailyRowsCount={attendance.dailyRows.length}
         availableSites={attendance.availableSites}

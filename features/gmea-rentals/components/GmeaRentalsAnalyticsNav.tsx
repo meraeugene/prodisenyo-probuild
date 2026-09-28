@@ -23,6 +23,7 @@ export default function GmeaRentalsAnalyticsNav() {
           <Link
             key={link.href}
             href={link.href}
+            prefetch={false}
             className={cn(
               "rounded-lg px-3 py-2 text-xs font-semibold whitespace-nowrap transition",
               active

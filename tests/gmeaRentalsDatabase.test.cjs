@@ -10,6 +10,7 @@ const migrations = [
   "gmea-rentals-03-rental-workspace.sql",
   "gmea-rentals-04-collections.sql",
   "gmea-rentals-05-expenses-workers.sql",
+  "gmea-rentals-06-ceo-expense-unread.sql",
 ].map((name) => fs.readFileSync("supabase/" + name, "utf8"));
 
 test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) => {
@@ -103,7 +104,7 @@ test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) 
     [expense, rental, equipment, category, gmea],
   );
   await db.query(
-    "insert into public.gmea_rental_expense_notifications(expense_id,rental_id,recipient_id) values($1,$2,$3)",
+    "insert into public.gmea_rental_expense_notifications(expense_id,rental_id,recipient_id) values($1,$2,$3) on conflict(expense_id,recipient_id) do nothing",
     [expense, rental, ceo],
   );
 
@@ -446,6 +447,40 @@ test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) 
     [linkedExpense, ceo],
   );
   assert.equal(Number(notificationCount.rows[0].count), 1);
+
+  await db.query(
+    "select public.mark_gmea_rental_expense_viewed($1,$2)",
+    [ceo, linkedExpense],
+  );
+  const viewed = await db.query(
+    "select read_at from public.gmea_rental_expense_notifications where expense_id=$1 and recipient_id=$2",
+    [linkedExpense, ceo],
+  );
+  assert.ok(viewed.rows[0].read_at);
+
+  const updatedExpense = expenseCommand(linkedExpense, createdRental, equipment);
+  updatedExpense.kind = "update";
+  updatedExpense.value.description = "Updated fuel expense";
+  await db.query(
+    "select public.mutate_gmea_rental_expense($1,$2,1,$3::jsonb)",
+    [gmea, linkedExpense, JSON.stringify(updatedExpense)],
+  );
+  const reopened = await db.query(
+    "select read_at from public.gmea_rental_expense_notifications where expense_id=$1 and recipient_id=$2",
+    [linkedExpense, ceo],
+  );
+  assert.equal(reopened.rows[0].read_at, null);
+  await assert.rejects(
+    db.query(
+      "select public.mutate_gmea_rental_expense($1,$2,1,$3::jsonb)",
+      [gmea, linkedExpense, JSON.stringify(updatedExpense)],
+    ),
+    /changed.*Reload/i,
+  );
+  await assert.rejects(
+    db.query("select public.mark_gmea_rental_expense_viewed($1,$2)", [gmea, linkedExpense]),
+    /Only an active CEO/,
+  );
 
   for (const migration of migrations) await db.exec(migration);
   const preserved = await db.query(

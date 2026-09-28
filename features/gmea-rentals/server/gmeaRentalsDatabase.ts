@@ -104,6 +104,14 @@ type RentalExpenseRow = {
   created_at: string;
   updated_at: string;
 };
+type RentalExpenseNotificationRow = {
+  id: string;
+  expense_id: string;
+  rental_id: string | null;
+  recipient_id: string;
+  read_at: string | null;
+  created_at: string;
+};
 type Table<T> = {
   Row: T;
   Insert: Partial<T>;
@@ -121,6 +129,7 @@ type RentalsDatabase = {
       gmea_rental_worker_assignments: Table<RentalAssignmentRow>;
       gmea_rental_expense_categories: Table<RentalExpenseCategoryRow>;
       gmea_rental_expenses: Table<RentalExpenseRow>;
+      gmea_rental_expense_notifications: Table<RentalExpenseNotificationRow>;
     };
     Views: Record<string, never>;
     Functions: {
@@ -177,6 +186,10 @@ type RentalsDatabase = {
           p_command: unknown;
         };
         Returns: string;
+      };
+      mark_gmea_rental_expense_viewed: {
+        Args: { p_actor: string; p_expense: string };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

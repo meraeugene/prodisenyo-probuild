@@ -112,6 +112,7 @@ export default function GmeaRentalsDashboard({
               <Link
                 key={rental.id}
                 href={"/gmea-rentals/" + rental.id}
+                prefetch={false}
                 className="flex items-center justify-between gap-3 py-3 hover:bg-slate-50"
               >
                 <div className="min-w-0">
@@ -135,6 +136,7 @@ export default function GmeaRentalsDashboard({
               <Link
                 key={rental.id}
                 href={"/gmea-rentals/" + rental.id}
+                prefetch={false}
                 className="flex items-center justify-between gap-3 py-3 hover:bg-slate-50"
               >
                 <div className="min-w-0">

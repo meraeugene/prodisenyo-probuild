@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import useSWR from "swr";
 import {
   getGmeaRentalEquipmentAction,
+  getGmeaRentalsAction,
   saveGmeaRentalEquipmentAction,
 } from "@/actions/gmeaRentals";
 import type { GmeaRental, RentalEquipment } from "../types";
@@ -35,6 +36,11 @@ export default function GmeaRentalsPage({
       revalidateOnFocus: false,
       refreshInterval: canEdit ? 0 : 30000,
     },
+  );
+  const { data: rentalRows = rentals } = useSWR(
+    "gmea-rentals:list",
+    getGmeaRentalsAction,
+    { fallbackData: rentals, refreshInterval: canEdit ? 0 : 30000 },
   );
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -151,7 +157,7 @@ export default function GmeaRentalsPage({
           onCreateRental={() => setCreatingRental(true)}
         />
         <GmeaRentalsAnalyticsNav />
-        <GmeaRentalsSummary rentals={rentals} equipment={items} />
+        <GmeaRentalsSummary rentals={rentalRows} equipment={items} />
 
         {error && selected === undefined && (
           <p
@@ -171,13 +177,13 @@ export default function GmeaRentalsPage({
               All rentals
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              {rentals.length} {rentals.length === 1 ? "rental" : "rentals"} in
+              {rentalRows.length} {rentalRows.length === 1 ? "rental" : "rentals"} in
               your workspace
             </p>
           </div>
-          {rentals.length ? (
+          {rentalRows.length ? (
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {rentals.map((rental) => (
+              {rentalRows.map((rental) => (
                 <GmeaRentalPortfolioCard key={rental.id} rental={rental} />
               ))}
             </div>

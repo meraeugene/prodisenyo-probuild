@@ -38,6 +38,19 @@ test("GMEA role home and server access agree; CEO cannot mutate", async () => {
     } else await assert.rejects(requireGmeaAccess(true), /REDIRECT/);
     if (["gmea", "ceo"].includes(role)) await requireGmeaAccess();
     else await assert.rejects(requireGmeaAccess(), /REDIRECT/);
+
+    const { requireGmeaRentalsAccess } = load(
+      "features/gmea-rentals/server/gmeaRentalsQueries.ts",
+      {
+        "server-only": {},
+        "@/lib/auth": auth,
+        "./gmeaRentalsDatabase": {},
+      },
+    );
+    if (role === "gmea") await requireGmeaRentalsAccess(true);
+    else await assert.rejects(requireGmeaRentalsAccess(true), /REDIRECT/);
+    if (["gmea", "ceo"].includes(role)) await requireGmeaRentalsAccess();
+    else await assert.rejects(requireGmeaRentalsAccess(), /REDIRECT/);
   }
   const { requireGmeaAccess } = load(
     "features/gmea-projects/server/gmeaQueries.ts",
@@ -108,10 +121,16 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
       null,
     );
   for (const role of ["gmea", "ceo"])
-    assert.equal(
-      (await request(role, "/gmea-rentals")).headers.get("location"),
-      null,
-    );
+    for (const path of [
+      "/gmea-rentals",
+      "/gmea-rentals/" + id,
+      "/gmea-rentals/dashboard",
+      "/gmea-rentals/reports",
+    ])
+      assert.equal(
+        (await request(role, path)).headers.get("location"),
+        null,
+      );
   for (const role of ["gmea", "ceo"])
     assert.equal(
       (await request(role, "/gmea-overview")).headers.get("location"),

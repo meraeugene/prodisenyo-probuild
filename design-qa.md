@@ -1,70 +1,52 @@
-# Design QA
+# Generate Payroll Design QA
 
-- Source visual truth: `design-references/resolve-review.png`, supplied as `C:\Users\User\Downloads\resolve review.png`.
-- Source dimensions: 1680 � 940 pixels.
-- Implementation route and state: `/generate-payroll` � employee action � Cutoff Attendance � Review/Resolve.
-- Intended comparison viewport: 1440 � 900 CSS pixels, device scale factor 1.
-- Implementation screenshot: unavailable.
-- State under review: opened attendance Review/Resolve modal with biometric DTR evidence and approval form.
+- Source visual truth: `payroll-reference.png`
+- Source pixels: 1680 × 947
+- Implementation screenshot: not captured — the in-app browser runtime was blocked by the Windows sandbox before a tab could be opened
+- Intended comparison viewport: 1680 × 947 CSS pixels at device scale factor 1
+- State: signed-in payroll manager, generated payroll preview, All Employees tab
+- Density normalization: source is treated as 1×; implementation density could not be measured
 
-## Full-view comparison evidence
+**Findings**
 
-Blocked. The local application was started successfully, but the required in-app browser failed during connection because its Windows sandbox could not initialize read access. No browser-rendered implementation screenshot could be captured.
+- [P1] Browser-rendered visual evidence is unavailable
+  - Location: `/generate-payroll`
+  - Evidence: the production build and targeted lint pass, but the required in-app browser kernel exits during startup with a Windows sandbox ACL error. No implementation screenshot can be placed beside the reference.
+  - Impact: typography, spacing, table density, sticky summary behavior, and responsive overflow cannot be certified from rendered evidence.
+  - Fix: restore in-app browser access, open the local route at 1680 × 947, capture the generated-payroll state, and compare it with `payroll-reference.png`.
 
-## Focused-region comparison evidence
+**Required Fidelity Surfaces**
 
-Blocked for the same reason. The intended focused comparisons are:
+- Fonts and typography: implemented with the app's SF Pro/system stack and reference-aligned sizes; browser comparison blocked.
+- Spacing and layout rhythm: header, KPI cards, tab rail, filters, dense table, pagination, and sticky summary are implemented; browser comparison blocked.
+- Colors and visual tokens: navy text, teal actions/success, amber review states, pale blue-gray borders, and white surfaces are implemented; browser comparison blocked.
+- Image quality and asset fidelity: the reference contains no page-specific raster artwork; existing brand assets and the installed icon system are preserved.
+- Copy and content: Generate Payroll hierarchy, payroll period, status counts, filters, employee details, and submission labels are implemented.
 
-1. Header hierarchy and employee/date context.
-2. DTR log table, Complete/Missing status, and six punch timeline entries.
-3. Site movement, raw alias, and detected-overtime cards.
-4. Classification, approved hours, reason, and footer actions.
+**Full-view Comparison Evidence**
 
-## Findings
+Blocked. The source image is available, but a browser-rendered implementation capture could not be produced.
 
-- [P1] Browser-rendered comparison unavailable
-  - Location: local Generate Payroll Review/Resolve workflow.
-  - Evidence: the local server is available, while the implementation could not be opened or captured through the required in-app browser.
-  - Impact: final responsive spacing, clipping, and pixel-level fidelity cannot be certified.
-  - Fix: restore the in-app browser connection, open Review and Resolve states at 1440 � 900, capture them, and compare against the source.
+**Focused Region Comparison Evidence**
 
-## Required fidelity surfaces
+Blocked for the header/actions, KPI cards, control rail, employee rows, and bottom summary because browser capture is unavailable.
 
-- Fonts and typography: existing ProBuild font stack, weights, compact labels, and hierarchy are reused; browser verification blocked.
-- Spacing and layout rhythm: wide two-panel modal, contextual header, card spacing, scrollable evidence, and fixed footer are implemented; browser verification blocked.
-- Colors and visual tokens: existing slate, teal, amber, and red semantic tokens are used; browser verification blocked.
-- Image quality and asset fidelity: the target contains no required raster content inside the modal. Existing Lucide system icons are used rather than copying decorative reference icons.
-- Copy and content: Attendance Resolution, canonical employee/date context, Biometric DTR Logs, Time 1, Time 2, Overtime, statuses, Punch Timeline, Site Movement, Raw Biometric Aliases, detected OT, classification, approved hours, reason, Cancel, and Save are implemented.
+**Primary Interactions**
 
-## Comparison history
+- Implemented: generate preview, submit payroll report, review tabs, attendance logs tab, employee search, site filter, sorting, clear filters, rates, paid holidays, bulk payslip export, employee action menu, edit employee, export payslip, pagination, and View Exceptions.
+- Browser interaction test: blocked before navigation.
+- Console errors checked: blocked before navigation.
 
-- The earlier compact modal was expanded to follow the supplied information hierarchy.
-- Canonical employee, site, date, and raw-hour context were added using actual payroll data.
-- DTR rows now show Site / Source and Complete/Missing status.
-- A six-entry timeline exposes Time 1, Time 2, OT In, and OT Out independently.
-- Header positioning was changed to a responsive grid after code review.
-- Production build and all 130 automated tests pass.
-- Browser connection was retried on 2026-09-15 and failed with the same Windows sandbox initialization error.
+**Implementation Checklist**
 
-## Primary interactions checked
+- Restore the in-app browser connection.
+- Capture `/generate-payroll` at 1680 × 947 in the generated state.
+- Compare the source and implementation together.
+- Fix any visible P1/P2 differences and repeat the capture.
 
-- Code-level: Review and Resolve use the real attendance decision flow; Cancel, close, outside-click, Escape, classification, approved hours, reason validation, and Save remain connected.
-- Browser interaction: blocked.
-- Console errors: not checked because the browser could not connect.
+**Comparison History**
 
-## Implementation checklist
-
-- [x] Follow the reference modal information hierarchy.
-- [x] Use existing system colors and icon library.
-- [x] Show real canonical employee and site context.
-- [x] Show Time 1, Time 2, and OT In/Out with per-punch sites.
-- [x] Show Complete/Missing status and punch timeline.
-- [x] Preserve Review/Resolve behavior and attendance calculations.
-- [x] Pass TypeScript, production build, and all automated tests.
-- [ ] Capture and compare browser-rendered Review and Resolve states.
-
-## Follow-up polish
-
-- Reassess the six-column timeline density on narrow laptop widths after browser capture.
+- Pass 1: blocked before visual comparison; no browser-rendered evidence was available.
+- Pass 2: removed employee selection checkboxes and the 1,050px table minimum. Added a full-width desktop table plus responsive employee cards and wrapping controls so normal browser zoom no longer hides payroll fields. Production build, TypeScript, and targeted lint pass; browser-rendered comparison remains blocked by the in-app browser sandbox.
 
 final result: blocked

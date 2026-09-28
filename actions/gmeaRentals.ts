@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { APP_ROLES, requireRole } from "@/lib/auth";
 import type { Json } from "@/types/database";
 import { gmeaRentalsWriter } from "@/features/gmea-rentals/server/gmeaRentalsDatabase";
 import {
@@ -44,6 +45,30 @@ export async function getGmeaRentalOperationsAction() {
 }
 export async function getGmeaRentalAnalyticsAction() {
   return getGmeaRentalAnalytics();
+}
+
+export async function getUnreadGmeaRentalExpenseCountAction() {
+  const { user } = await requireRole(APP_ROLES.CEO);
+  const result = await gmeaRentalsWriter()
+    .from("gmea_rental_expense_notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("recipient_id", user.id).is("read_at", null);
+  if (result.error) throw new Error(result.error.message);
+  return result.count || 0;
+}
+
+export async function markGmeaRentalExpenseViewedAction(expenseId: string) {
+  validEquipmentId(expenseId);
+  const { user } = await requireRole(APP_ROLES.CEO);
+  const { error } = await gmeaRentalsWriter().rpc(
+    "mark_gmea_rental_expense_viewed",
+    { p_actor: user.id, p_expense: expenseId },
+  );
+  if (error) throw new Error(error.message);
+  revalidatePath("/gmea-rentals");
+  revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-rentals/dashboard");
+  revalidatePath("/gmea-rentals/reports");
 }
 
 export async function saveGmeaRentalEquipmentAction(

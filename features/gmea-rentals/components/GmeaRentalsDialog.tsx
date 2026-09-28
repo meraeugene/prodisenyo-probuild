@@ -18,16 +18,18 @@ export default function GmeaRentalsDialog({
   error,
   saveLabel,
   wide = false,
+  readOnly = false,
 }: {
   title: string;
   description: string;
   children: ReactNode;
   onClose: () => void;
-  onSave: () => void;
+  onSave?: () => void;
   pending: boolean;
   error?: string;
   saveLabel: string;
   wide?: boolean;
+  readOnly?: boolean;
 }) {
   return (
     <Dialog.Root open onOpenChange={(open) => !open && !pending && onClose()}>
@@ -84,16 +86,16 @@ export default function GmeaRentalsDialog({
                 onClick={onClose}
                 className={rentalSecondaryButtonClass}
               >
-                Cancel
+                {readOnly ? "Close" : "Cancel"}
               </button>
-              <button
+              {!readOnly && onSave && <button
                 type="button"
                 disabled={pending}
                 onClick={onSave}
                 className={rentalPrimaryButtonClass}
               >
                 {pending ? "Saving…" : saveLabel}
-              </button>
+              </button>}
             </div>
           </footer>
         </Dialog.Content>

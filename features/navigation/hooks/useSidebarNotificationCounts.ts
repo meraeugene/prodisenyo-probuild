@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getUnreadGmeaExpenseCountAction } from "@/actions/gmeaProjects";
+import { getUnreadGmeaRentalExpenseCountAction } from "@/actions/gmeaRentals";
 
 type NotificationCounts = {
   overtime: number;
   payrollReports: number;
   estimateReviews: number;
   gmeaExpenses: number;
+  gmeaRentalExpenses: number;
 };
 
 const EMPTY_COUNTS: NotificationCounts = {
@@ -16,6 +18,7 @@ const EMPTY_COUNTS: NotificationCounts = {
   payrollReports: 0,
   estimateReviews: 0,
   gmeaExpenses: 0,
+  gmeaRentalExpenses: 0,
 };
 
 let activeRequest: Promise<NotificationCounts | null> | null = null;
@@ -43,6 +46,7 @@ function loadNotificationCounts() {
       .select("id", { count: "exact", head: true })
       .eq("status", "submitted"),
     getUnreadGmeaExpenseCountAction().catch(() => 0),
+    getUnreadGmeaRentalExpenseCountAction().catch(() => 0),
   ])
     .then(
       ([
@@ -51,6 +55,7 @@ function loadNotificationCounts() {
         payrollReports,
         estimates,
         gmeaExpenses,
+        gmeaRentalExpenses,
       ]) => {
         if (
           payrollOvertime.error ||
@@ -67,6 +72,7 @@ function loadNotificationCounts() {
           payrollReports: payrollReports.count ?? 0,
           estimateReviews: estimates.count ?? 0,
           gmeaExpenses,
+          gmeaRentalExpenses,
         };
       },
     )
@@ -116,7 +122,8 @@ export function useSidebarNotificationCounts(enabled: boolean) {
         canPlaySound.current &&
         (nextCounts.overtime > previous.overtime ||
           nextCounts.estimateReviews > previous.estimateReviews ||
-          nextCounts.gmeaExpenses > previous.gmeaExpenses)
+          nextCounts.gmeaExpenses > previous.gmeaExpenses ||
+          nextCounts.gmeaRentalExpenses > previous.gmeaRentalExpenses)
       ) {
         const audio = new Audio("/sounds/overtime-approval.mp3");
         audio.volume = 0.9;
@@ -135,6 +142,7 @@ export function useSidebarNotificationCounts(enabled: boolean) {
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("payroll:pending-count-changed", refresh);
     window.addEventListener("gmea:expense-viewed", refresh);
+    window.addEventListener("gmea:rental-expense-viewed", refresh);
 
     return () => {
       cancelled = true;
@@ -143,6 +151,7 @@ export function useSidebarNotificationCounts(enabled: boolean) {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("payroll:pending-count-changed", refresh);
       window.removeEventListener("gmea:expense-viewed", refresh);
+      window.removeEventListener("gmea:rental-expense-viewed", refresh);
     };
   }, [enabled]);
 

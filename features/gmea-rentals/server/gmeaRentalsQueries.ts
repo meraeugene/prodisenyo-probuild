@@ -127,8 +127,25 @@ export async function getGmeaRentals(id?: string): Promise<GmeaRental[]> {
   })) as GmeaRental[];
 }
 
+async function getUnreadRentalExpenseIds(
+  db: Awaited<ReturnType<typeof gmeaRentalsReader>>,
+  recipientId: string,
+) {
+  const ids = new Set<string>();
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    const result = await db.from("gmea_rental_expense_notifications")
+      .select("expense_id").eq("recipient_id", recipientId).is("read_at", null)
+      .order("created_at").order("id").range(from, from + pageSize - 1);
+    if (result.error) throw new Error(result.error.message);
+    const rows = result.data || [];
+    rows.forEach((row) => ids.add(row.expense_id));
+    if (rows.length < pageSize) return ids;
+  }
+}
+
 export async function getGmeaRentalOperations(): Promise<RentalOperationsData> {
-  await requireGmeaRentalsAccess();
+  const { user, profile } = await requireGmeaRentalsAccess();
   const db = await gmeaRentalsReader();
   const [workerResult, categoryResult, equipment] = await Promise.all([
     db
@@ -190,6 +207,9 @@ export async function getGmeaRentalOperations(): Promise<RentalOperationsData> {
     expenses.push(...rows);
     if (rows.length < pageSize) break;
   }
+  const unreadExpenseIds = profile.role === APP_ROLES.CEO
+    ? await getUnreadRentalExpenseIds(db, user.id)
+    : new Set<string>();
   return {
     workers: (workerResult.data ?? []).map((worker) => ({
       id: worker.id,
@@ -202,18 +222,16 @@ export async function getGmeaRentalOperations(): Promise<RentalOperationsData> {
       updated_at: worker.updated_at,
     })) as RentalOperationsData["workers"],
     categories: categoryResult.data ?? [],
-    expenses,
+    expenses: expenses.map((expense) => ({
+      ...expense,
+      is_new: unreadExpenseIds.has(expense.id),
+    })),
     equipment,
   };
 }
 
-export async function getGmeaRentalAnalytics(): Promise<RentalAnalyticsData> {
+async function getGmeaRentalPayments() {
   await requireGmeaRentalsAccess();
-  const [rentals, equipment, operations] = await Promise.all([
-    getGmeaRentals(),
-    getGmeaRentalEquipment(),
-    getGmeaRentalOperations(),
-  ]);
   const db = await gmeaRentalsReader();
   const payments: RentalPayment[] = [];
   const pageSize = 1000;
@@ -234,9 +252,18 @@ export async function getGmeaRentalAnalytics(): Promise<RentalAnalyticsData> {
     payments.push(...rows);
     if (rows.length < pageSize) break;
   }
+  return payments;
+}
+
+export async function getGmeaRentalAnalytics(): Promise<RentalAnalyticsData> {
+  const [rentals, operations, payments] = await Promise.all([
+    getGmeaRentals(),
+    getGmeaRentalOperations(),
+    getGmeaRentalPayments(),
+  ]);
   return {
     rentals,
-    equipment,
+    equipment: operations.equipment,
     expenses: operations.expenses,
     categories: operations.categories,
     payments,

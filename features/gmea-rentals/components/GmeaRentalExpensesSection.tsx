@@ -1,6 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { useSWRConfig } from "swr";
+import { markGmeaRentalExpenseViewedAction } from "@/actions/gmeaRentals";
 import type { GmeaRental, RentalOperationsData, RentalExpense } from "../types";
 import { rentalVatBreakdown } from "../utils/expenseCalculations";
 import {
@@ -24,6 +26,7 @@ export default function GmeaRentalExpensesSection({
   const [category, setCategory] = useState("");
   const { saveExpense, pending, error } =
     useGmeaRentalOperationsMutation(rental);
+  const { mutate } = useSWRConfig();
   const rentalEquipmentIds = new Set(
     rental.items.map((item) => item.equipment_id),
   );
@@ -66,6 +69,16 @@ export default function GmeaRentalExpensesSection({
   function remove(expense: RentalExpense) {
     if (!window.confirm("Delete this rental expense?")) return;
     void saveExpense(expense, { kind: "delete" }).catch(() => undefined);
+  }
+
+  function openExpense(expense: RentalExpense) {
+    setEditor(expense);
+    if (!canEdit && expense.is_new) {
+      void markGmeaRentalExpenseViewedAction(expense.id).then(async () => {
+        await mutate("gmea-rentals:operations");
+        window.dispatchEvent(new Event("gmea:rental-expense-viewed"));
+      }).catch(() => undefined);
+    }
   }
 
   return (
@@ -177,6 +190,11 @@ export default function GmeaRentalExpensesSection({
                     <p className="mt-1 text-xs text-slate-500">
                       {categoryById.get(expense.category_id) ?? "Category"}
                     </p>
+                    {expense.is_new && (
+                      <span className="mt-1 inline-flex rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-800">
+                        New
+                      </span>
+                    )}
                     {expense.notes && (
                       <p className="mt-1 text-xs text-slate-500">
                         {expense.notes}
@@ -211,15 +229,16 @@ export default function GmeaRentalExpensesSection({
                     {formatRentalMoney(expense.refunded_amount)}
                   </td>
                   <td className="p-3">
-                    {canEdit && (
-                      <div className="flex gap-1">
+                    <div className="flex gap-1">
                         <button
                           type="button"
-                          onClick={() => setEditor(expense)}
+                          onClick={() => openExpense(expense)}
                           className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-teal-700 hover:bg-teal-50"
                         >
-                          <Pencil size={14} /> Edit
+                          {canEdit ? <Pencil size={14} /> : <Eye size={14} />}
+                          {canEdit ? "Edit" : "Details"}
                         </button>
+                        {canEdit && (
                         <button
                           type="button"
                           disabled={pending}
@@ -228,8 +247,8 @@ export default function GmeaRentalExpensesSection({
                         >
                           <Trash2 size={14} /> Delete
                         </button>
+                        )}
                       </div>
-                    )}
                   </td>
                 </tr>
               );
@@ -250,6 +269,7 @@ export default function GmeaRentalExpensesSection({
           equipment={operations.equipment}
           categories={operations.categories}
           expense={editor ?? undefined}
+          readOnly={!canEdit}
           onClose={() => setEditor(undefined)}
         />
       )}

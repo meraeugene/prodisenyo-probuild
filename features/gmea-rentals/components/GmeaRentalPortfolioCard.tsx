@@ -53,7 +53,8 @@ export default function GmeaRentalPortfolioCard({
       <footer className="border-t border-slate-100 bg-slate-50/45 px-5 py-3">
         <Link
           href={`/gmea-rentals/${rental.id}`}
-          className="inline-flex items-center gap-2 text-[13px] font-bold text-[#08746f] after:absolute after:inset-0 after:z-10 after:rounded-[16px] after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-teal-700"
+          prefetch={false}
+          className="relative z-20 inline-flex min-h-10 w-full items-center justify-between gap-2 rounded-lg text-[13px] font-bold text-[#08746f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700"
         >
           Open rental <ArrowUpRight size={14} aria-hidden="true" />
         </Link>

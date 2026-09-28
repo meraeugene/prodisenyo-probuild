@@ -210,6 +210,7 @@ export default function DashboardNavigation({
     payrollReports: number;
     estimateReviews: number;
     gmeaExpenses: number;
+    gmeaRentalExpenses: number;
   };
 }) {
   const isGmea = role === "gmea",
@@ -257,6 +258,10 @@ export default function DashboardNavigation({
               pathname,
               collapsed,
               onNavigate: onNavigate,
+              badgeCount:
+                item.href === "/gmea-rentals"
+                  ? notificationCounts.gmeaRentalExpenses
+                  : 0,
             }),
           )}
 

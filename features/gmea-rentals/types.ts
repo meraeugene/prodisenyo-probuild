@@ -120,6 +120,7 @@ export type RentalExpense = {
   version: number;
   created_at: string;
   updated_at: string;
+  is_new?: boolean;
 };
 
 export type GmeaRental = {
