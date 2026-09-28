@@ -26,6 +26,9 @@ export const config = {
     "/overtime-approvals/:path*",
     "/add-user/:path*",
     "/request-material/:path*",
+    "/operations/:path*",
+    "/material-approvals/:path*",
+    "/purchasing/:path*",
     "/request-overtime/:path*",
     "/reset-data/:path*",
     "/attendance-analytics/:path*",
@@ -36,5 +39,6 @@ export const config = {
     "/purchasing-approvals/:path*",
     "/purchaser-dashboard/:path*",
     "/settings/:path*",
+    "/engineer/:path*",
   ],
 };
