@@ -5,6 +5,7 @@ const {
   contractCollectionSummary,
   money,
   paymentTermSummary,
+  projectContractBreakdown,
   projectSummary,
   vatBreakdown,
 } = load("features/gmea-projects/utils/gmeaCalculations.ts");
@@ -15,9 +16,10 @@ const { normalizeMutation } = load(
 const id = "11111111-1111-4111-8111-111111111111";
 const secondId = "22222222-2222-4222-8222-222222222222";
 
-function project(contractAmount, expenses = []) {
+function project(contractAmount, expenses = [], taxRate = 0) {
   return {
     contract_amount: contractAmount,
+    tax_rate: taxRate,
     expenses,
     payment_terms: [],
     partners: [
@@ -38,6 +40,24 @@ test("contract cost summary matches the workbook calculation", () => {
   assert.equal(summary.profit, 73431.8);
   assert.equal(summary.partners[0].amount, 36715.9);
   assert.equal(summary.partners[1].amount, 36715.9);
+});
+
+test("project tax increases contract and collections but not profit or shares", () => {
+  const taxed = project(100000, [expense(25000)], 12);
+  taxed.payment_terms = [
+    { id, amount: 112000, receipts: [{ amount: 12000, status: "posted" }] },
+  ];
+  assert.deepEqual(projectContractBreakdown(taxed), {
+    baseContract: 100000,
+    taxRate: 12,
+    taxAmount: 12000,
+    totalContract: 112000,
+  });
+  const summary = projectSummary(taxed);
+  assert.equal(summary.contract, 112000);
+  assert.equal(summary.profit, 75000);
+  assert.equal(summary.partners[0].amount, 37500);
+  assert.equal(contractCollectionSummary(taxed).outstanding, 100000);
 });
 
 test("losses remain visible and partner shares do not become negative", () => {
@@ -181,6 +201,34 @@ test("contract terms support mixed percentage and fixed values", () => {
   );
 });
 
+test("taxed contract terms total the gross amount and reject invalid rates", () => {
+  const result = normalizeMutation({
+    kind: "contract_terms",
+    value: {
+      contract_amount: 100000,
+      tax_rate: 12.5,
+      payment_terms: [
+        { id, description: "Deposit", value_mode: "percentage", percentage: 50, amount: 0, notes: "" },
+        { id: secondId, description: "Balance", value_mode: "fixed", percentage: null, amount: 56250, notes: "" },
+      ],
+    },
+  });
+  assert.equal(result.value.tax_rate, 12.5);
+  assert.equal(result.value.payment_terms[0].amount, 56250);
+  assert.equal(result.value.payment_terms[1].amount, 56250);
+
+  for (const tax_rate of [-1, 100.01, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.throws(() => normalizeMutation({
+      kind: "contract_terms",
+      value: {
+        contract_amount: 100000,
+        tax_rate,
+        payment_terms: [{ id, description: "Full", value_mode: "fixed", percentage: null, amount: 100000, notes: "" }],
+      },
+    }));
+  }
+});
+
 test("receipt totals produce unpaid, partial, paid, and outstanding states", () => {
   const term = {
     id,
@@ -256,4 +304,18 @@ test("expense and project deletion commands are supported", () => {
   assert.deepEqual(normalizeMutation({ kind: "delete_project" }), {
     kind: "delete_project",
   });
+});
+
+test("project status accepts active and completed only", () => {
+  assert.deepEqual(
+    normalizeMutation({ kind: "project_status", value: { status: "completed" } }),
+    { kind: "project_status", value: { status: "completed" } },
+  );
+  assert.deepEqual(
+    normalizeMutation({ kind: "project_status", value: { status: "active" } }),
+    { kind: "project_status", value: { status: "active" } },
+  );
+  assert.throws(() =>
+    normalizeMutation({ kind: "project_status", value: { status: "archived" } }),
+  );
 });

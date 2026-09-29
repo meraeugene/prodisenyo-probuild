@@ -15,8 +15,9 @@ export default function GmeaProfitSection({
   const [edit, setEdit] = useState(false);
   const s = projectSummary(project);
   const lines: [string, number][] = [
-    ["Contract amount", s.contract],
-    ["Total project expenses", s.expenses],
+    ["Total contract amount including tax", s.contract],
+    [`Less: project tax (${s.taxRate}%)`, -s.taxAmount],
+    ["Less: total project expenses", -s.expenses],
     ["Total net profit", s.profit],
   ];
   return (
@@ -55,8 +56,8 @@ export default function GmeaProfitSection({
         </dl>
         <div className="space-y-4">
           <p className="text-sm text-slate-500">
-            Net profit is the contract amount less all project expenses.
-            Partner shares are calculated from positive net profit.
+            Net profit is the tax-inclusive contract total less project tax and all project expenses.
+            Partner shares use positive net profit only.
           </p>
           {s.partners.map((p) => (
             <div

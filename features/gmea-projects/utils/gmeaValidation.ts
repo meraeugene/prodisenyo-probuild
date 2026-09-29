@@ -96,8 +96,11 @@ export function normalizeContractTerms(value: unknown): ContractTermsInput {
   const contractAmount = money(
     number(contract.contract_amount, "Contract amount"),
   );
+  const taxRate = money(number(contract.tax_rate ?? 0, "Tax rate", 100));
   if (contractAmount <= 0)
     throw new Error("Contract amount must be greater than zero.");
+  const taxAmount = money((contractAmount * taxRate) / 100);
+  const totalContract = sumMoney([contractAmount, taxAmount]);
 
   let lastPercentageIndex = -1;
   const rows = array(contract.payment_terms, 30).map((row, index) => {
@@ -114,7 +117,7 @@ export function normalizeContractTerms(value: unknown): ContractTermsInput {
     if (percentage !== null) lastPercentageIndex = index;
     const amount =
       mode === "percentage"
-        ? money((contractAmount * percentage!) / 100)
+        ? money((totalContract * percentage!) / 100)
         : money(number(row.amount, "Payment term amount"));
     if (amount <= 0)
       throw new Error("Payment term amounts must be greater than zero.");
@@ -132,18 +135,22 @@ export function normalizeContractTerms(value: unknown): ContractTermsInput {
     throw new Error("Payment terms must have unique identifiers.");
 
   const difference = money(
-    contractAmount - sumMoney(rows.map((row) => row.amount)),
+    totalContract - sumMoney(rows.map((row) => row.amount)),
   );
   if (Math.abs(difference) > 0.01)
-    throw new Error("Payment terms must total the contract amount.");
+    throw new Error("Payment terms must total the contract amount including tax.");
   if (difference && lastPercentageIndex >= 0)
     rows[lastPercentageIndex].amount = money(
       rows[lastPercentageIndex].amount + difference,
     );
-  if (sumMoney(rows.map((row) => row.amount)) !== contractAmount)
-    throw new Error("Payment terms must total the contract amount.");
+  if (sumMoney(rows.map((row) => row.amount)) !== totalContract)
+    throw new Error("Payment terms must total the contract amount including tax.");
 
-  return { contract_amount: contractAmount, payment_terms: rows };
+  return {
+    contract_amount: contractAmount,
+    tax_rate: taxRate,
+    payment_terms: rows,
+  };
 }
 
 export function normalizeMutation(input: unknown): GmeaMutation {
@@ -161,6 +168,12 @@ export function normalizeMutation(input: unknown): GmeaMutation {
   }
   if (kind === "project_details")
     return { kind, value: normalizeProjectDetails(command.value) };
+  if (kind === "project_status") {
+    const value = object(command.value);
+    if (value.status !== "active" && value.status !== "completed")
+      throw new Error("Select a valid project status.");
+    return { kind, value: { status: value.status } };
+  }
   if (kind === "contract_terms")
     return { kind, value: normalizeContractTerms(command.value) };
   if (kind === "delete_project") return { kind };

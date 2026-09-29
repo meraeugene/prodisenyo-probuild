@@ -12,6 +12,7 @@ import {
 } from "../utils/gmeaCalculations";
 import { getCollectionStatus } from "../utils/ceoPortfolio";
 import { projectContainerStyle } from "../utils/projectAppearance";
+import GmeaProjectStatusBadge from "./GmeaProjectStatusBadge";
 
 export default function CeoGmeaProjectCard({
   project,
@@ -35,10 +36,13 @@ export default function CeoGmeaProjectCard({
               <p className="mt-0.5 truncate text-[11px] text-slate-500">{project.name}</p>
             </div>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#e8faf4] px-3 py-1 text-[11px] font-semibold text-[#08775f]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#0b9f7d]" />
-            {getCollectionStatus(project)}
-          </span>
+          <div className="flex flex-wrap justify-end gap-1.5">
+            <GmeaProjectStatusBadge status={project.status} />
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#e8faf4] px-3 py-1 text-[11px] font-semibold text-[#08775f]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0b9f7d]" />
+              {getCollectionStatus(project)}
+            </span>
+          </div>
         </div>
 
         <div className="mt-3 grid gap-1.5 text-[13px] text-slate-500 sm:grid-cols-2">

@@ -9,9 +9,9 @@ export default function GmeaSummaryCards({
 }) {
   const s = projectSummary(project);
   const entries = [
-    { label: "Contract amount", value: formatMoney(s.contract), caption: "Total contract value", icon: WalletCards, tone: "text-teal-700" },
+    { label: "Contract amount", value: formatMoney(s.contract), caption: "Total including project tax", icon: WalletCards, tone: "text-teal-700" },
     { label: "Total project expenses", value: formatMoney(s.expenses), caption: "Actual expenses to date", icon: ReceiptText, tone: "text-amber-700" },
-    { label: "Total net profit", value: formatMoney(s.profit), caption: "Contract amount minus expenses", icon: TrendingUp, tone: s.profit < 0 ? "text-rose-700" : "text-teal-700" },
+    { label: "Total net profit", value: formatMoney(s.profit), caption: "Gross contract minus tax and expenses", icon: TrendingUp, tone: s.profit < 0 ? "text-rose-700" : "text-teal-700" },
     { label: "Project duration", value: formatProjectDuration(project.duration), caption: "Project timeline", icon: CalendarDays, tone: "text-violet-700" },
   ];
   return (

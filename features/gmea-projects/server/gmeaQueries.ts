@@ -111,6 +111,10 @@ export async function getGmeaProjects(id?: string): Promise<GmeaProject[]> {
         title: project.title?.trim() || project.name,
         color: projectColor(project),
         contract_amount: Number(project.contract_amount),
+        tax_rate: Number(project.tax_rate ?? 0),
+        status: project.status === "completed" ? "completed" : "active",
+        completed_at: project.completed_at ?? null,
+        completed_by: project.completed_by ?? null,
         expenses: unpack(
           expenses.filter((row) => row.project_id === project.id),
         ).map((expense) => ({

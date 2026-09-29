@@ -7,6 +7,7 @@ import type {
 } from "../types";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import { buildPaymentTerms, recalculatePercentageTerms } from "../utils/paymentTerms";
+import { projectContractBreakdown } from "../utils/gmeaCalculations";
 import {
   DEFAULT_PROJECT_COLOR,
   workbookColorForProjectTitle,
@@ -15,6 +16,7 @@ import GmeaDialog from "./GmeaDialog";
 import { MoneyField, TextField } from "./GmeaFields";
 import GmeaPaymentTermsEditor from "./GmeaPaymentTermsEditor";
 import GmeaProjectColorField from "./GmeaProjectColorField";
+import GmeaContractTaxFields from "./GmeaContractTaxFields";
 
 export default function GmeaProjectForm({
   project,
@@ -42,10 +44,24 @@ export default function GmeaProjectForm({
     },
   );
   const [contractAmount, setContractAmount] = useState(0);
+  const [taxEnabled, setTaxEnabled] = useState(false);
+  const [taxRate, setTaxRate] = useState(0);
   const [terms, setTerms] = useState<ContractPaymentTermInput[]>(() =>
     project ? [] : buildPaymentTerms("80-20", 0),
   );
   const save = useGmeaMutation(project);
+  const totalContract = projectContractBreakdown({
+    contract_amount: contractAmount,
+    tax_rate: taxEnabled ? taxRate : 0,
+  }).totalContract;
+  function updateTax(nextRate: number) {
+    setTaxRate(nextRate);
+    const nextTotal = projectContractBreakdown({
+      contract_amount: contractAmount,
+      tax_rate: nextRate,
+    }).totalContract;
+    setTerms((current) => recalculatePercentageTerms(current, nextTotal));
+  }
   function update<K extends keyof ProjectDetailsInput>(
     key: K,
     value: ProjectDetailsInput[K],
@@ -71,6 +87,7 @@ export default function GmeaProjectForm({
                 details: form,
                 contract: {
                   contract_amount: contractAmount,
+                  tax_rate: taxEnabled ? taxRate : 0,
                   payment_terms: terms,
                 },
               },
@@ -138,16 +155,30 @@ export default function GmeaProjectForm({
       {!project && step === 2 && (
         <div className="space-y-5">
           <MoneyField
-            label="Contract amount (PHP) *"
+            label="Pre-tax contract amount (PHP) *"
             required
             value={contractAmount}
             onValueChange={(value) => {
               setContractAmount(value);
-              setTerms((current) => recalculatePercentageTerms(current, value));
+              const nextTotal = projectContractBreakdown({
+                contract_amount: value,
+                tax_rate: taxEnabled ? taxRate : 0,
+              }).totalContract;
+              setTerms((current) => recalculatePercentageTerms(current, nextTotal));
             }}
           />
+          <GmeaContractTaxFields
+            enabled={taxEnabled}
+            baseAmount={contractAmount}
+            taxRate={taxRate}
+            onEnabledChange={(enabled) => {
+              setTaxEnabled(enabled);
+              updateTax(enabled ? (taxRate || 12) : 0);
+            }}
+            onTaxRateChange={updateTax}
+          />
           <GmeaPaymentTermsEditor
-            contractAmount={contractAmount}
+            contractAmount={totalContract}
             terms={terms}
             onChange={setTerms}
           />

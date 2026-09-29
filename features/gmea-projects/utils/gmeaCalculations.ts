@@ -78,7 +78,22 @@ export function paymentTermSummary(term: ContractPaymentTerm) {
   } as const;
 }
 
+export function projectContractBreakdown(
+  project: Pick<GmeaProject, "contract_amount" | "tax_rate">,
+) {
+  const baseContract = money(project.contract_amount);
+  const taxRate = money(project.tax_rate ?? 0);
+  const taxAmount = money((baseContract * taxRate) / 100);
+  return {
+    baseContract,
+    taxRate,
+    taxAmount,
+    totalContract: sumMoney([baseContract, taxAmount]),
+  };
+}
+
 export function contractCollectionSummary(project: GmeaProject) {
+  const { totalContract } = projectContractBreakdown(project);
   const scheduled = sumMoney(project.payment_terms.map((term) => term.amount));
   const received = sumMoney(
     project.payment_terms.map((term) => postedReceiptTotal(term)),
@@ -86,25 +101,33 @@ export function contractCollectionSummary(project: GmeaProject) {
   return {
     scheduled,
     received,
-    outstanding: Math.max(0, money(project.contract_amount - received)),
+    outstanding: Math.max(0, money(totalContract - received)),
   };
 }
 
 export function projectSummary(project: GmeaProject) {
-  const contract = money(project.contract_amount);
+  const {
+    baseContract,
+    taxRate,
+    taxAmount,
+    totalContract: contract,
+  } = projectContractBreakdown(project);
   const expenses = sumMoney(
     project.expenses.map(
       (expense) =>
         vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross,
     ),
   );
-  const profit = money(contract - expenses);
+  const profit = money(contract - taxAmount - expenses);
   const distributable = Math.max(0, profit);
   const shares = allocatePercentages(
     distributable,
     project.partners.map((partner) => partner.percentage),
   );
   return {
+    baseContract,
+    taxRate,
+    taxAmount,
     contract,
     expenses,
     profit,

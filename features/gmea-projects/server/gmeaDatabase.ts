@@ -27,6 +27,10 @@ export type ProjectRow = {
   client: string;
   location: string;
   contract_amount: number;
+  tax_rate: number;
+  status: "active" | "completed";
+  completed_at: string | null;
+  completed_by: string | null;
   duration: string;
   version: number;
   created_at: string;

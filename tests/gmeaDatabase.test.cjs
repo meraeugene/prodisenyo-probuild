@@ -18,6 +18,8 @@ const migrations = [
   "gmea-04-access.sql",
   "gmea-05-contract-payments.sql",
   "gmea-06-project-appearance.sql",
+  "gmea-07-project-tax.sql",
+  "gmea-08-project-status.sql",
 ];
 
 function paymentTerms(firstId = randomUUID(), secondId = randomUUID()) {
@@ -41,7 +43,7 @@ function paymentTerms(firstId = randomUUID(), secondId = randomUUID()) {
   ];
 }
 
-function createProjectCommand(name, terms) {
+function createProjectCommand(name, terms, contractAmount = 175000, taxRate = 0) {
   return {
     kind: "create_project",
     value: {
@@ -54,7 +56,8 @@ function createProjectCommand(name, terms) {
         duration: "7 Days",
       },
       contract: {
-        contract_amount: 175000,
+        contract_amount: contractAmount,
+        tax_rate: taxRate,
         payment_terms: terms,
       },
     },
@@ -122,7 +125,7 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
   await t.test("project creation stores its chosen schedule atomically", async () => {
     const project = (
       await db.query(
-        "select title,name,color,client,location,contract_amount,duration from public.gmea_projects where id=$1",
+        "select title,name,color,client,location,contract_amount,tax_rate,duration from public.gmea_projects where id=$1",
         [projectId],
       )
     ).rows[0];
@@ -130,6 +133,7 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
     assert.equal(project.title, "Installation of Analog CCTV");
     assert.equal(project.color, "#FFFFFF");
     assert.equal(Number(project.contract_amount), 175000);
+    assert.equal(Number(project.tax_rate), 0);
     assert.equal(
       (
         await db.query("select id from public.gmea_partners where project_id=$1", [
@@ -148,6 +152,114 @@ test("GMEA contract payments, expenses, transactions, and access", async (t) => 
     assert.equal(schedule[0].value_mode, "percentage");
     assert.equal(Number(schedule[0].amount), 131250);
     assert.equal(Number(schedule[1].amount), 43750);
+  });
+
+  await t.test("taxed projects store pre-tax revenue and a gross payment schedule", async () => {
+    const taxedTerms = paymentTerms();
+    const taxedProjectId = await mutate(
+      null,
+      null,
+      createProjectCommand("Solar Taxed", taxedTerms, 100000, 12),
+    );
+    const project = (
+      await db.query(
+        "select contract_amount,tax_rate from public.gmea_projects where id=$1",
+        [taxedProjectId],
+      )
+    ).rows[0];
+    assert.equal(Number(project.contract_amount), 100000);
+    assert.equal(Number(project.tax_rate), 12);
+    const schedule = (
+      await db.query(
+        "select data from public.gmea_collections where project_id=$1 order by (data->>'sort_order')::int",
+        [taxedProjectId],
+      )
+    ).rows.map((row) => Number(row.data.amount));
+    assert.deepEqual(schedule, [84000, 28000]);
+
+    await mutate(taxedProjectId, 1, {
+      kind: "contract_terms",
+      value: { contract_amount: 100000, tax_rate: 15, payment_terms: taxedTerms },
+    });
+    assert.equal(await version(taxedProjectId), 2);
+    assert.equal(Number((await db.query(
+      "select tax_rate from public.gmea_projects where id=$1",
+      [taxedProjectId],
+    )).rows[0].tax_rate), 15);
+
+    await mutate(taxedProjectId, 2, {
+      kind: "record_receipt",
+      value: {
+        id: randomUUID(),
+        term_id: taxedTerms[0].id,
+        amount: 85000,
+        received_date: "2026-09-07",
+        method: "Bank transfer",
+        reference_number: "TAX-PROTECTION",
+        notes: "",
+      },
+    });
+    await assert.rejects(
+      mutate(taxedProjectId, 3, {
+        kind: "contract_terms",
+        value: { contract_amount: 100000, tax_rate: 0, payment_terms: taxedTerms },
+      }),
+      /reduced below its received amount/,
+    );
+    assert.equal(await version(taxedProjectId), 3);
+  });
+
+  await t.test("projects can be completed and reopened without losing history", async () => {
+    const statusProjectId = await mutate(
+      null,
+      null,
+      createProjectCommand("Status Project", paymentTerms()),
+    );
+    let saved = (
+      await db.query(
+        "select status,completed_at,completed_by,version from public.gmea_projects where id=$1",
+        [statusProjectId],
+      )
+    ).rows[0];
+    assert.equal(saved.status, "active");
+    assert.equal(saved.completed_at, null);
+
+    await mutate(statusProjectId, 1, {
+      kind: "project_status",
+      value: { status: "completed" },
+    });
+    saved = (
+      await db.query(
+        "select status,completed_at,completed_by,version from public.gmea_projects where id=$1",
+        [statusProjectId],
+      )
+    ).rows[0];
+    assert.equal(saved.status, "completed");
+    assert.ok(saved.completed_at);
+    assert.equal(saved.completed_by, actor);
+    assert.equal(saved.version, 2);
+
+    await mutate(statusProjectId, 2, {
+      kind: "project_status",
+      value: { status: "active" },
+    });
+    saved = (
+      await db.query(
+        "select status,completed_at,completed_by,version from public.gmea_projects where id=$1",
+        [statusProjectId],
+      )
+    ).rows[0];
+    assert.equal(saved.status, "active");
+    assert.equal(saved.completed_at, null);
+    assert.equal(saved.completed_by, null);
+    assert.equal(saved.version, 3);
+    assert.equal(
+      Number((await db.query(
+        "select count(*) count from public.gmea_collections where project_id=$1",
+        [statusProjectId],
+      )).rows[0].count),
+      2,
+    );
   });
 
   await t.test("legacy quotation tables are removed and the new receipt table exists", async () => {

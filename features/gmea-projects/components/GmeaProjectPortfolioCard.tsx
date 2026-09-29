@@ -8,6 +8,7 @@ import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { projectContainerStyle } from "../utils/projectAppearance";
 import GmeaProjectActionsMenu from "./GmeaProjectActionsMenu";
+import GmeaProjectStatusBadge from "./GmeaProjectStatusBadge";
 
 export default function GmeaProjectPortfolioCard({
   project,
@@ -32,6 +33,7 @@ export default function GmeaProjectPortfolioCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <GmeaProjectStatusBadge status={project.status} />
             {hasNewExpense && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e8faf4] px-3 py-1 text-[11px] font-semibold text-[#08775f]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0b9f7d]" />

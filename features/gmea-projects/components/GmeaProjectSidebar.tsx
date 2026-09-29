@@ -1,6 +1,6 @@
 import { CalendarDays, CheckCircle2, Circle, Clock3, MapPin, Pencil, UserRound } from "lucide-react";
 import type { GmeaProject } from "../types";
-import { contractCollectionSummary, paymentTermSummary } from "../utils/gmeaCalculations";
+import { contractCollectionSummary, paymentTermSummary, projectContractBreakdown } from "../utils/gmeaCalculations";
 import { formatProjectDuration } from "../utils/gmeaFormatters";
 
 function formatDate(value: string) {
@@ -15,7 +15,8 @@ export default function GmeaProjectSidebar({ project, canEdit, onEdit }: {
   onEdit: () => void;
 }) {
   const collection = contractCollectionSummary(project);
-  const percentage = project.contract_amount > 0 ? Math.min(100, Math.round(collection.received / project.contract_amount * 100)) : 0;
+  const totalContract = projectContractBreakdown(project).totalContract;
+  const percentage = totalContract > 0 ? Math.min(100, Math.round(collection.received / totalContract * 100)) : 0;
   const details = [
     { label: "Name", value: project.name, icon: Circle },
     { label: "Location", value: project.location || "Not set", icon: MapPin },

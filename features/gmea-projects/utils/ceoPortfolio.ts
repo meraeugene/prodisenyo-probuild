@@ -1,11 +1,11 @@
 import type { GmeaProject } from "../types";
-import { contractCollectionSummary, projectSummary, sumMoney, vatBreakdown } from "./gmeaCalculations";
+import { contractCollectionSummary, projectContractBreakdown, projectSummary, sumMoney, vatBreakdown } from "./gmeaCalculations";
 
 export type CollectionStatus = "Uncollected" | "Partially collected" | "Fully collected" | "No contract amount";
 
 export function getCollectionStatus(project: GmeaProject): CollectionStatus {
   const collection = contractCollectionSummary(project);
-  if (project.contract_amount <= 0) return "No contract amount";
+  if (projectContractBreakdown(project).totalContract <= 0) return "No contract amount";
   if (collection.received <= 0) return "Uncollected";
   return collection.outstanding > 0 ? "Partially collected" : "Fully collected";
 }
@@ -35,7 +35,7 @@ export function buildCeoPortfolio(projects: GmeaProject[], months: number) {
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     return {
       month: date.toLocaleDateString("en", { month: "short", year: "2-digit" }),
-      contract: sumMoney(projects.filter((project) => project.created_at.startsWith(key)).map((project) => project.contract_amount)),
+      contract: sumMoney(projects.filter((project) => project.created_at.startsWith(key)).map((project) => projectContractBreakdown(project).totalContract)),
       expenses: sumMoney(projects.flatMap((project) => project.expenses)
         .filter((expense) => expense.date.startsWith(key))
         .map((expense) => vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross)),

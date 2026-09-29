@@ -11,7 +11,10 @@ export default function GmeaProjectOverview({
     ["Project name", project.name],
     ["Client", project.client],
     ["Project location", project.location],
-    ["Contract amount", formatMoney(s.contract)],
+    ["Project status", project.status === "completed" ? "Completed" : "Active"],
+    ["Pre-tax contract amount", formatMoney(s.baseContract)],
+    ["Project tax", `${s.taxRate}% (${formatMoney(s.taxAmount)})`],
+    ["Total contract amount", formatMoney(s.contract)],
     ["Project duration", formatProjectDuration(project.duration)],
   ];
   return (
@@ -30,7 +33,7 @@ export default function GmeaProjectOverview({
       </dl>
       <div className="rounded-xl border border-teal-100 bg-teal-50/50 p-4 text-sm">
         <p>
-          Total net profit: <strong>{formatMoney(s.profit)}</strong>
+          Net profit after deducting project tax and expenses: <strong>{formatMoney(s.profit)}</strong>
         </p>
       </div>
     </div>

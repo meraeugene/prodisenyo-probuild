@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CreditCard, Eye, Trash2 } from "lucide-react";
 import type { ContractPaymentTerm, ContractReceipt, GmeaProject } from "../types";
-import { formatMoney, paymentTermSummary } from "../utils/gmeaCalculations";
+import { formatMoney, paymentTermSummary, projectContractBreakdown } from "../utils/gmeaCalculations";
 import { secondaryClass } from "../utils/gmeaConstants";
 import GmeaReceiptForm from "./GmeaReceiptForm";
 import GmeaVoidReceiptForm from "./GmeaVoidReceiptForm";
@@ -40,6 +40,7 @@ export default function GmeaPaymentTermRow({
   const [deleting, setDeleting] = useState(false);
   const save = useGmeaMutation(project);
   const summary = paymentTermSummary(term);
+  const totalContract = projectContractBreakdown(project).totalContract;
   const badge = {
     unpaid: "bg-slate-100 text-slate-700",
     partial: "bg-amber-100 text-amber-800",
@@ -106,7 +107,7 @@ export default function GmeaPaymentTermRow({
       )}
       {recording && <GmeaReceiptForm project={project} term={term} onClose={() => setRecording(false)} />}
       {voiding && <GmeaVoidReceiptForm project={project} receipt={voiding} onClose={() => setVoiding(null)} />}
-      {deleting && <GmeaDialog title="Delete payment term?" onClose={() => setDeleting(false)} onSave={() => save({ kind: "contract_terms", value: { contract_amount: project.contract_amount, payment_terms: removePaymentTerm(project.payment_terms, term.id, project.contract_amount) } })} saveLabel="Delete term" compact danger><p className="text-sm leading-6 text-slate-600">Remove <strong className="font-semibold text-slate-900">{term.description}</strong>? Its scheduled amount will be moved to the final remaining payment term.</p></GmeaDialog>}
+      {deleting && <GmeaDialog title="Delete payment term?" onClose={() => setDeleting(false)} onSave={() => save({ kind: "contract_terms", value: { contract_amount: project.contract_amount, tax_rate: project.tax_rate, payment_terms: removePaymentTerm(project.payment_terms, term.id, totalContract) } })} saveLabel="Delete term" compact danger><p className="text-sm leading-6 text-slate-600">Remove <strong className="font-semibold text-slate-900">{term.description}</strong>? Its scheduled amount will be moved to the final remaining payment term.</p></GmeaDialog>}
     </>
   );
 }

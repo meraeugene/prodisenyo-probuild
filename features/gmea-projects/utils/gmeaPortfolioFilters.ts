@@ -18,7 +18,7 @@ export function filterPortfolioProjects(projects: GmeaProject[], query: string, 
       case "without-expenses": return project.expenses.length === 0;
       case "over-contract": {
         const summary = projectSummary(project);
-        return summary.expenses > summary.contract;
+        return summary.expenses > summary.baseContract;
       }
       case "missing-client": return !project.client.trim();
       case "new": return project.expenses.some((expense) => expense.is_new);

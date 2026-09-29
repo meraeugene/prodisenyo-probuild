@@ -22,7 +22,13 @@ export function useGmeaMutation(project?: GmeaProject) {
     }
     if (project) await mutate(["gmea-project", project.id]);
     await mutate("gmea-projects:list");
-    toast.success("Saved successfully.");
+    toast.success(
+      command.kind === "project_status"
+        ? command.value.status === "completed"
+          ? "Project marked as completed."
+          : "Project reopened."
+        : "Saved successfully.",
+    );
     if (!project) router.push("/gmea-projects/" + id);
     router.refresh();
     return id;

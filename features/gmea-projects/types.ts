@@ -70,6 +70,10 @@ export interface GmeaProject {
   client: string;
   location: string;
   contract_amount: number;
+  tax_rate: number;
+  status: "active" | "completed";
+  completed_at: string | null;
+  completed_by: string | null;
   duration: string;
   version: number;
   created_at: string;
@@ -91,6 +95,7 @@ export type ProjectDetailsInput = Pick<
 
 export interface ContractTermsInput {
   contract_amount: number;
+  tax_rate: number;
   payment_terms: ContractPaymentTermInput[];
 }
 
@@ -119,5 +124,6 @@ export type GmeaMutation =
   | { kind: "void_receipt"; receipt_id: string; reason: string }
   | { kind: "expense"; value: Expense }
   | { kind: "partners"; value: Partner[] }
+  | { kind: "project_status"; value: { status: "active" | "completed" } }
   | { kind: "delete_project" }
   | { kind: "delete"; entity: "expense"; id: string };

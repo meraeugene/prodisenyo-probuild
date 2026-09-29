@@ -3,7 +3,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, ChartPie, MapPin, Pencil, ReceiptText, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChartPie, CheckCircle2, MapPin, Pencil, ReceiptText, RotateCcw, Trash2, UserRound } from "lucide-react";
 import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
 import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -16,6 +16,7 @@ import GmeaProfitSection from "./GmeaProfitSection";
 import GmeaConfirmButton from "./GmeaConfirmButton";
 import GmeaProjectSidebar from "./GmeaProjectSidebar";
 import { contrastTextColor, projectColor } from "../utils/projectAppearance";
+import GmeaProjectStatusBadge from "./GmeaProjectStatusBadge";
 const tabs = [
   { label: "Payment Schedule", icon: CalendarDays },
   { label: "Expenses", icon: ReceiptText },
@@ -64,8 +65,11 @@ export default function GmeaProjectWorkspace({
           <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/70">
             GMEA Marketing Corporation
           </p>
+          <div className="mt-3">
+            <GmeaProjectStatusBadge status={project.status} inverse />
+          </div>
           <p
-            className="mt-3 inline-flex max-w-full rounded-lg px-3 py-1.5 text-sm font-bold uppercase tracking-[0.12em]"
+            className="mt-2 inline-flex max-w-full rounded-lg px-3 py-1.5 text-sm font-bold uppercase tracking-[0.12em]"
             style={{
               backgroundColor: projectColor(project),
               color: contrastTextColor(projectColor(project)),
@@ -88,6 +92,13 @@ export default function GmeaProjectWorkspace({
             <button className={secondaryClass + " gap-2 border-transparent bg-slate-50 text-[#076d69]"} onClick={() => setEdit(true)}>
               <Pencil size={15} aria-hidden="true" /> Edit project
             </button>
+            <GmeaConfirmButton
+              label={project.status === "completed" ? "Reopen project" : "Mark as done"}
+              triggerLabel={project.status === "completed" ? "Reopen project" : "Mark as done"}
+              triggerIcon={project.status === "completed" ? <RotateCcw size={15} aria-hidden="true" /> : <CheckCircle2 size={15} aria-hidden="true" />}
+              description={project.status === "completed" ? "Move this project back to the active project list?" : "Move this project to Completed? Its financial records and history will remain available."}
+              onConfirm={() => save({ kind: "project_status", value: { status: project.status === "completed" ? "active" : "completed" } })}
+            />
             <GmeaConfirmButton
               label="Delete project"
               triggerLabel="Delete project"

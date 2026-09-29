@@ -2,14 +2,14 @@
 
 import { useRef, useState } from "react";
 import { DropdownMenu } from "radix-ui";
-import { Ellipsis, Eye, Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, Ellipsis, Eye, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { GmeaProject } from "../types";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import GmeaProjectForm from "./GmeaProjectForm";
 
 export default function GmeaProjectActionsMenu({ project, onDetails }: { project: GmeaProject; onDetails: () => void }) {
-  const [action, setAction] = useState<"edit" | "delete" | null>(null);
+  const [action, setAction] = useState<"edit" | "status" | "delete" | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const save = useGmeaMutation(project);
 
@@ -50,6 +50,14 @@ export default function GmeaProjectActionsMenu({ project, onDetails }: { project
             >
               <Pencil size={15} aria-hidden="true" /> Edit
             </DropdownMenu.Item>
+            <DropdownMenu.Item
+              onSelect={() => setAction("status")}
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 outline-none data-[highlighted]:bg-teal-50 data-[highlighted]:text-teal-800"
+            >
+              {project.status === "completed"
+                ? <><RotateCcw size={15} aria-hidden="true" /> Reopen project</>
+                : <><CheckCircle2 size={15} aria-hidden="true" /> Mark as done</>}
+            </DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1 h-px bg-slate-100" />
             <DropdownMenu.Item
               onSelect={() => setAction("delete")}
@@ -62,6 +70,24 @@ export default function GmeaProjectActionsMenu({ project, onDetails }: { project
       </DropdownMenu.Root>
 
       {action === "edit" && <GmeaProjectForm project={project} onClose={closeDialog} />}
+      {action === "status" && (
+        <GmeaDialog
+          title={project.status === "completed" ? "Reopen project?" : "Mark project as done?"}
+          onClose={closeDialog}
+          onSave={() => save({
+            kind: "project_status",
+            value: { status: project.status === "completed" ? "active" : "completed" },
+          }).then(closeDialog)}
+          saveLabel={project.status === "completed" ? "Reopen project" : "Mark as done"}
+          compact
+        >
+          <p className="text-sm leading-6 text-slate-600">
+            {project.status === "completed"
+              ? "Move this project back to the active project list?"
+              : "Move this project to Completed? Its financial records and history will remain available."}
+          </p>
+        </GmeaDialog>
+      )}
       {action === "delete" && (
         <GmeaDialog
           title="Delete project?"

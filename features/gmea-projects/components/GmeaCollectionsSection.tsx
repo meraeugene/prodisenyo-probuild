@@ -7,6 +7,7 @@ import { secondaryClass } from "../utils/gmeaConstants";
 import {
   contractCollectionSummary,
   formatMoney,
+  projectSummary,
 } from "../utils/gmeaCalculations";
 import GmeaCollectionForm from "./GmeaCollectionForm";
 import GmeaPaymentTermRow from "./GmeaPaymentTermRow";
@@ -21,6 +22,7 @@ export default function GmeaCollectionsSection({
   const [open, setOpen] = useState(false);
   const terms = project.payment_terms ?? [];
   const summary = contractCollectionSummary(project);
+  const projectTotals = projectSummary(project);
 
   return (
     <section className="space-y-5">
@@ -41,7 +43,7 @@ export default function GmeaCollectionsSection({
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { name: "Contract amount", value: project.contract_amount, caption: "Total contract value", icon: WalletCards, tone: "text-teal-700" },
+          { name: "Contract amount", value: projectTotals.contract, caption: "Total including project tax", icon: WalletCards, tone: "text-teal-700" },
           { name: "Received", value: summary.received, caption: "Payments collected", icon: CircleDollarSign, tone: "text-sky-600" },
           { name: "Outstanding", value: summary.outstanding, caption: "Balance remaining", icon: Landmark, tone: "text-rose-600" },
         ].map(({ name, value, caption, icon: Icon, tone }) => (

@@ -36,17 +36,22 @@ export default function GmeaProjectsPageClient({
   );
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "all">("active");
   const [create, setCreate] = useState(false);
   const [details, setDetails] = useState<GmeaProject | null>(null);
 
-  const visible = useMemo(
-    () => filterPortfolioProjects(liveProjects, query, filter),
-    [filter, liveProjects, query],
-  );
+  const visible = useMemo(() => {
+    const byStatus = statusFilter === "all"
+      ? liveProjects
+      : liveProjects.filter((project) => project.status === statusFilter);
+    return filterPortfolioProjects(byStatus, query, filter);
+  }, [filter, liveProjects, query, statusFilter]);
   const clients = useMemo(() => selectPortfolioClients(liveProjects), [liveProjects]);
-  const hasFilters = Boolean(query.trim()) || filter !== "all";
+  const hasFilters = Boolean(query.trim()) || filter !== "all" || statusFilter !== "active";
 
-  const summaries = liveProjects.map(projectSummary);
+  const activeProjects = liveProjects.filter((project) => project.status === "active");
+  const completedCount = liveProjects.length - activeProjects.length;
+  const summaries = activeProjects.map(projectSummary);
   const contractTotal = sumMoney(summaries.map((summary) => summary.contract));
   const expenseTotal = sumMoney(summaries.map((summary) => summary.expenses));
 
@@ -55,7 +60,7 @@ export default function GmeaProjectsPageClient({
       <div className="mx-auto max-w-[1440px] space-y-4">
         <GmeaPortfolioHero canEdit={canEdit} onCreate={() => setCreate(true)} />
         <GmeaPortfolioStats
-          projectCount={liveProjects.length}
+          projectCount={activeProjects.length}
           contractTotal={contractTotal}
           expenseTotal={expenseTotal}
         />
@@ -64,17 +69,34 @@ export default function GmeaProjectsPageClient({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 id="gmea-project-list-heading" className="text-[20px] font-bold tracking-[-0.035em] text-slate-950">
-                {hasFilters ? "Filtered projects" : "All projects"}
+                {statusFilter === "active" ? "Active projects" : statusFilter === "completed" ? "Completed projects" : "All projects"}
               </h2>
               <p aria-live="polite" className="mt-0.5 text-xs text-slate-500">
                 {visible.length} {visible.length === 1 ? "project" : "projects"}
                 {hasFilters ? ` of ${liveProjects.length} shown` : " in your portfolio"}
                 {hasFilters && (
-                  <button type="button" onClick={() => { setQuery(""); setFilter("all"); }} className="ml-3 rounded text-teal-700 underline underline-offset-2 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700">
+                  <button type="button" onClick={() => { setQuery(""); setFilter("all"); setStatusFilter("active"); }} className="ml-3 rounded text-teal-700 underline underline-offset-2 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700">
                     Clear filters
                   </button>
                 )}
               </p>
+              <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1" aria-label="Filter by project status">
+                {([
+                  ["active", "Active", activeProjects.length],
+                  ["completed", "Completed", completedCount],
+                  ["all", "All", liveProjects.length],
+                ] as const).map(([value, label, count]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={statusFilter === value}
+                    onClick={() => setStatusFilter(value)}
+                    className={"rounded-lg px-3 py-1.5 text-xs font-semibold transition " + (statusFilter === value ? "bg-white text-teal-800 shadow-sm" : "text-slate-500 hover:text-slate-900")}
+                  >
+                    {label} ({count})
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex w-full flex-col gap-2.5 sm:max-w-[560px] sm:flex-row">
