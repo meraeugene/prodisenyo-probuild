@@ -105,6 +105,10 @@ interface AppStateContextValue {
   setCurrentPayrollRunMeta: (
     value: { id: string | null; status: PayrollRunStatus | null },
   ) => void;
+  selectAttendanceWorkspace: (
+    attendanceImportId: string,
+    payrollRunId?: string | null,
+  ) => Promise<boolean>;
   handleParsed: (result: ParseResult) => void;
   handleClearAttendanceData: () => void;
   handleReset: () => void;
@@ -203,6 +207,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     attendancePeriod,
     availableSites: attendance.availableSites,
     currentAttendanceImportId,
+    currentPayrollRunId,
   });
 
   const setWorkspaceResetCookie = useCallback((value: boolean) => {
@@ -248,7 +253,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        if (resetFlag) return;
+        const openingSavedPayroll =
+          window.location.pathname === "/generate-payroll" &&
+          Boolean(new URLSearchParams(window.location.search).get("runId")) &&
+          Boolean(new URLSearchParams(window.location.search).get("importId"));
+        if (resetFlag || openingSavedPayroll) return;
 
         const supabase = createSupabaseBrowserClient();
         const {
@@ -440,6 +449,89 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const selectAttendanceWorkspace = useCallback(
+    async (attendanceImportId: string, payrollRunId?: string | null) => {
+      const importId = attendanceImportId.trim();
+      if (!importId) return false;
+
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data: importData, error: importError } = await supabase
+          .from("attendance_imports")
+          .select(
+            "id, site_name, period_label, period_start, period_end, original_filename",
+          )
+          .eq("id", importId)
+          .maybeSingle();
+        const selectedImport = (importData ?? null) as RestoredAttendanceImport | null;
+
+        if (importError || !selectedImport) return false;
+
+        const { data: attendanceRows, error: attendanceError } = await supabase
+          .from("attendance_records")
+          .select(
+            "id, employee_id, employee_name, raw_biometric_name, normalized_biometric_name, match_status, match_source, log_date, log_time, is_next_day, log_type, log_source, site_name, employee:employees(full_name, default_role_code)",
+          )
+          .eq("import_id", importId)
+          .order("log_date", { ascending: true })
+          .order("log_time", { ascending: true });
+
+        if (attendanceError) return false;
+
+        let runQuery = supabase
+          .from("payroll_runs")
+          .select("id, status")
+          .eq("attendance_import_id", importId);
+        runQuery = payrollRunId
+          ? runQuery.eq("id", payrollRunId)
+          : runQuery.order("updated_at", { ascending: false }).limit(1);
+        const { data: runData, error: runError } = await runQuery.maybeSingle();
+        const selectedRun = (runData ?? null) as RestoredPayrollRunMeta | null;
+        if (runError || (payrollRunId && !selectedRun)) return false;
+        const nextRecords = mapCanonicalAttendanceRecords(
+          (attendanceRows ?? []) as CanonicalAttendanceRecordRow[],
+        );
+
+        attendance.resetAttendanceReview();
+        payroll.resetPayrollState();
+        setCurrentAttendanceImportId(selectedImport.id);
+        setCurrentPayrollRunId(selectedRun?.id ?? null);
+        setCurrentPayrollRunStatus(selectedRun?.status ?? null);
+        setSite(selectedImport.site_name ?? "Unknown Site");
+        setAttendancePeriod(
+          buildStoredPeriodLabel(
+            selectedImport.period_start ?? null,
+            selectedImport.period_end ?? null,
+            selectedImport.period_label ?? null,
+          ),
+        );
+        setRecords(nextRecords);
+        setEmployees(buildEmployeesFromRecords(nextRecords));
+        setUploadedFiles(
+          (selectedImport.original_filename ?? "")
+            .split("|")
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((name) => ({
+              name,
+              size: 0,
+              lastModified: 0,
+              file: null,
+              persisted: true,
+            })),
+        );
+        setWorkspaceReset(false);
+        window.localStorage.removeItem(RESET_FLAG_KEY);
+        setWorkspaceResetCookie(false);
+        payroll.setPayrollGenerated(Boolean(selectedRun));
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [attendance, payroll, setWorkspaceResetCookie],
+  );
+
   const handleGeneratePayroll = useCallback(() => {
     return payroll.handleGeneratePayroll();
   }, [payroll]);
@@ -471,6 +563,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setUploadedFiles,
       setCurrentAttendanceImportId,
       setCurrentPayrollRunMeta,
+      selectAttendanceWorkspace,
       handleParsed,
       handleClearAttendanceData,
       handleReset,
@@ -491,6 +584,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       payroll,
       workspaceReset,
       setCurrentPayrollRunMeta,
+      selectAttendanceWorkspace,
       handleParsed,
       handleClearAttendanceData,
       handleReset,

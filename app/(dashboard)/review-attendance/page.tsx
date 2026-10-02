@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import AttendanceReviewSection from "@/features/attendance/components/AttendanceReviewSection";
@@ -30,6 +31,13 @@ export default function ReviewAttendancePage() {
 
   return (
     <div className="space-y-4 p-0 sm:p-4">
+      <Link
+        href="/upload-attendance"
+        className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-apple-mist bg-white px-3.5 text-sm font-semibold text-apple-ash shadow-sm transition hover:border-[#8bc9c4] hover:bg-teal-50 hover:text-[#076d69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69] focus-visible:ring-offset-2"
+      >
+        <ArrowLeft size={16} />
+        Back to Upload Attendance
+      </Link>
       <DashboardPageHero
         eyebrow="Attendance"
         title="Review Attendance"

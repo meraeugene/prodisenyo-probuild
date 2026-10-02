@@ -12,8 +12,7 @@ import {
   Users,
   Trash2,
   Upload,
-  UserRoundSearch,
-  Wallet,
+  WalletCards,
   FolderKanban,
   Truck,
 } from "lucide-react";
@@ -28,7 +27,7 @@ const PRIMARY_NAV_ITEMS = [
 
 const PAYROLL_MANAGER_GENERAL_ITEMS = [
   { href: "/payroll-dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/upload-attendance", label: "Upload Attendance", icon: Upload },
+  { href: "/payroll-workspace", label: "Payroll Workspace", icon: WalletCards },
 ] as const;
 
 const PAYROLL_MANAGER_REQUEST_ITEMS = [
@@ -72,15 +71,6 @@ const CEO_REVIEW_ITEMS = [
     label: "Overtime Approvals",
     icon: Clock3,
   },
-] as const;
-
-const GENERAL_WORKFLOW_ITEMS = [
-  {
-    href: "/review-attendance",
-    label: "Review Attendance",
-    icon: UserRoundSearch,
-  },
-  { href: "/generate-payroll", label: "Generate Payroll", icon: Wallet },
 ] as const;
 
 const CEO_ADMIN_ITEMS = [
@@ -197,14 +187,12 @@ export default function DashboardNavigation({
   pathname,
   collapsed,
   onNavigate,
-  canSeeWorkflowNav,
   notificationCounts,
 }: {
   role: AppRole | null;
   pathname: string;
   collapsed: boolean;
   onNavigate: () => void;
-  canSeeWorkflowNav: boolean;
   notificationCounts: {
     overtime: number;
     payrollReports: number;
@@ -333,23 +321,6 @@ export default function DashboardNavigation({
 
       {isPayrollManager ? (
         <>
-          {canSeeWorkflowNav ? (
-            <>
-              {renderSidebarSectionLabel({
-                label: "Payroll",
-                collapsed,
-              })}
-              {GENERAL_WORKFLOW_ITEMS.map((item) =>
-                renderSidebarLink({
-                  item,
-                  pathname,
-                  collapsed,
-                  onNavigate: onNavigate,
-                }),
-              )}
-            </>
-          ) : null}
-
           {renderSidebarSectionLabel({
             label: "Requests",
             collapsed,

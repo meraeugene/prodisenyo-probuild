@@ -1,4 +1,4 @@
-import { CalendarDays, Calculator, ChevronDown, Loader2, Send } from "lucide-react";
+import { CalendarDays, Calculator, ChevronDown, Loader2, Save, Send } from "lucide-react";
 import { formatPayrollPeriodDate } from "@/features/payroll/utils/payrollWorkspace";
 
 interface PayrollWorkspaceHeaderProps {
@@ -8,6 +8,7 @@ interface PayrollWorkspaceHeaderProps {
   periodStart?: string;
   periodEnd?: string;
   onGenerate: () => void;
+  onSaveDraft: () => void;
   onSubmit: () => void;
 }
 
@@ -18,6 +19,7 @@ export default function PayrollWorkspaceHeader({
   periodStart,
   periodEnd,
   onGenerate,
+  onSaveDraft,
   onSubmit,
 }: PayrollWorkspaceHeaderProps) {
   const periodLabel = periodStart
@@ -48,21 +50,38 @@ export default function PayrollWorkspaceHeader({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={generated ? onSubmit : onGenerate}
-          disabled={savePending || (generated && !canSubmit)}
-          className="inline-flex h-12 min-w-[190px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] bg-[#08766f] px-6 text-sm font-bold text-white shadow-[0_8px_20px_rgba(8,118,111,0.18)] transition hover:bg-[#066861] focus:outline-none focus:ring-4 focus:ring-[#0f9b91]/15 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {savePending ? (
-            <Loader2 size={17} className="animate-spin" />
-          ) : generated ? (
-            <Send size={17} />
-          ) : (
+        {generated ? (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={onSaveDraft}
+              disabled={savePending || !canSubmit}
+              className="inline-flex h-12 min-w-[145px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[#08766f] bg-white px-5 text-sm font-bold text-[#08766f] transition hover:bg-[#eff9f7] focus:outline-none focus:ring-4 focus:ring-[#0f9b91]/15 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {savePending ? <Loader2 size={17} className="animate-spin" /> : <Save size={17} />}
+              {savePending ? "Saving..." : "Save as Draft"}
+            </button>
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={savePending || !canSubmit}
+              className="inline-flex h-12 min-w-[190px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] bg-[#08766f] px-6 text-sm font-bold text-white shadow-[0_8px_20px_rgba(8,118,111,0.18)] transition hover:bg-[#066861] focus:outline-none focus:ring-4 focus:ring-[#0f9b91]/15 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Send size={17} />
+              Submit for CEO Review
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onGenerate}
+            disabled={savePending}
+            className="inline-flex h-12 min-w-[190px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] bg-[#08766f] px-6 text-sm font-bold text-white shadow-[0_8px_20px_rgba(8,118,111,0.18)] transition hover:bg-[#066861] focus:outline-none focus:ring-4 focus:ring-[#0f9b91]/15 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Calculator size={17} />
-          )}
-          {savePending ? "Submitting..." : generated ? "Submit Payroll Report" : "Generate Payroll Preview"}
-        </button>
+            Generate Payroll Preview
+          </button>
+        )}
       </div>
     </header>
   );

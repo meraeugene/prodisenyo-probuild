@@ -94,7 +94,7 @@ export default function PayrollOverviewPanel({
       ) : null}
 
       <Link
-        href={hasOwnedAttendance ? "/generate-payroll" : "/upload-attendance"}
+        href={hasOwnedAttendance ? "/payroll-workspace" : "/upload-attendance"}
         className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-teal-700 px-4 text-xs font-bold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
       >
         {hasOwnedAttendance ? "Open Payroll Workspace" : "Upload Attendance"}

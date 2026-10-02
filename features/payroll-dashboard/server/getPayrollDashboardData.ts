@@ -237,6 +237,30 @@ export async function getPayrollDashboardData(
         rejectionReason: run.rejectionReason,
         netTotal: run.netTotal,
       })),
+    payrollDrafts: runs
+      .filter((run) => run.status === "draft")
+      .slice(0, 6)
+      .map((run) => ({
+        id: run.id,
+        attendanceImportId: run.attendanceImportId,
+        siteName: run.siteName,
+        periodLabel: run.periodLabel,
+        periodStart: run.periodStart,
+        periodEnd: run.periodEnd,
+        netTotal: run.netTotal,
+        updatedAt: run.updatedAt,
+      })),
+    workspaceRuns: runs.map((run) => ({
+      id: run.id,
+      attendanceImportId: run.attendanceImportId,
+      siteName: run.siteName,
+      periodLabel: run.periodLabel,
+      periodStart: run.periodStart,
+      periodEnd: run.periodEnd,
+      status: run.status,
+      netTotal: run.netTotal,
+      updatedAt: run.updatedAt,
+    })),
     recentActivity: buildPayrollActivity(imports, runs, actorNames).slice(
       0,
       RECENT_ACTIVITY_LIMIT,

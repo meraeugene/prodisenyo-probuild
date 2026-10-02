@@ -20,7 +20,8 @@ interface PayrollSectionProps {
   availableSites: string[];
   payroll: UsePayrollStateResult;
   onGeneratePreview: () => void;
-  onSavePayroll: () => void;
+  onSaveDraft: () => void;
+  onSubmitPayroll: () => void;
   currentPayrollRunId: string | null;
   currentPayrollRunStatus: "draft" | "submitted" | "approved" | "rejected" | null;
   currentUserRole: AppRole | null;
@@ -32,7 +33,8 @@ export default function PayrollSection({
   availableSites,
   payroll,
   onGeneratePreview,
-  onSavePayroll,
+  onSaveDraft,
+  onSubmitPayroll,
   currentPayrollRunStatus,
   currentUserRole,
   savePending,
@@ -42,7 +44,9 @@ export default function PayrollSection({
   const canSubmit =
     (currentUserRole === "payroll_manager" || currentUserRole === "ceo") &&
     payroll.payrollGenerated &&
-    payroll.payrollRows.length > 0;
+    payroll.payrollRows.length > 0 &&
+    currentPayrollRunStatus !== "approved" &&
+    currentPayrollRunStatus !== "submitted";
 
   const logTotalPages = payroll.payrollTotalPages;
   const logPage = Math.min(payroll.payrollPage, logTotalPages);
@@ -57,7 +61,8 @@ export default function PayrollSection({
         periodStart={payroll.payrollDateRange?.start}
         periodEnd={payroll.payrollDateRange?.end}
         onGenerate={onGeneratePreview}
-        onSubmit={onSavePayroll}
+        onSaveDraft={onSaveDraft}
+        onSubmit={onSubmitPayroll}
       />
 
       {currentPayrollRunStatus ? (

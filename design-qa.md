@@ -1,52 +1,48 @@
-# Generate Payroll Design QA
+# Payroll Dashboard Design QA
 
-- Source visual truth: `payroll-reference.png`
-- Source pixels: 1680 × 947
-- Implementation screenshot: not captured — the in-app browser runtime was blocked by the Windows sandbox before a tab could be opened
-- Intended comparison viewport: 1680 × 947 CSS pixels at device scale factor 1
-- State: signed-in payroll manager, generated payroll preview, All Employees tab
-- Density normalization: source is treated as 1×; implementation density could not be measured
+- Source visual truth: latest user-provided Payroll Dashboard sketch in the current conversation
+- Source pixels: 834 x 518
+- Implementation routes: `/payroll-dashboard` and `/payroll-workspace`
+- Implementation screenshot: not captured; the in-app browser runtime exited during startup because of a Windows sandbox ACL failure
+- Intended comparison viewport: 1365 x 768 CSS pixels at device scale factor 1
+- State: signed-in payroll manager, Dashboard selected
+- Density normalization: source and implementation could not be combined into a browser-rendered comparison
 
 **Findings**
 
 - [P1] Browser-rendered visual evidence is unavailable
-  - Location: `/generate-payroll`
-  - Evidence: the production build and targeted lint pass, but the required in-app browser kernel exits during startup with a Windows sandbox ACL error. No implementation screenshot can be placed beside the reference.
-  - Impact: typography, spacing, table density, sticky summary behavior, and responsive overflow cannot be certified from rendered evidence.
-  - Fix: restore in-app browser access, open the local route at 1680 × 947, capture the generated-payroll state, and compare it with `payroll-reference.png`.
+  - Location: `/payroll-dashboard`
+  - Evidence: production build, TypeScript, lint, and focused dashboard tests pass, but the required in-app browser exits before a tab opens.
+  - Impact: final sidebar proportions, card wrapping, draft-list density, and right-panel height cannot be visually certified.
+  - Fix: restore in-app browser access and compare the rendered overview with the latest supplied sketch.
 
 **Required Fidelity Surfaces**
 
-- Fonts and typography: implemented with the app's SF Pro/system stack and reference-aligned sizes; browser comparison blocked.
-- Spacing and layout rhythm: header, KPI cards, tab rail, filters, dense table, pagination, and sticky summary are implemented; browser comparison blocked.
-- Colors and visual tokens: navy text, teal actions/success, amber review states, pale blue-gray borders, and white surfaces are implemented; browser comparison blocked.
-- Image quality and asset fidelity: the reference contains no page-specific raster artwork; existing brand assets and the installed icon system are preserved.
-- Copy and content: Generate Payroll hierarchy, payroll period, status counts, filters, employee details, and submission labels are implemented.
+- Fonts and typography: existing product system typography and hierarchy are preserved; visual comparison blocked.
+- Spacing and layout rhythm: overview hero, four metrics, two-column drafts/overview body, and existing scroll behavior follow the sketch; visual comparison blocked.
+- Colors and visual tokens: existing Prodisenyo teal, slate, white, semantic status colors, borders, radii, and shadows are reused.
+- Image quality and asset fidelity: the source has no page-specific raster artwork; the existing logo and icon system are preserved.
+- Copy and content: Payroll Dashboard, New Payroll Attendance, Payroll Drafts, Payroll to Process, Pending CEO Approval, Approved Payroll Expenses, and Payroll Overview are implemented.
 
 **Full-view Comparison Evidence**
 
-Blocked. The source image is available, but a browser-rendered implementation capture could not be produced.
+Blocked because a browser-rendered implementation screenshot could not be produced.
 
 **Focused Region Comparison Evidence**
 
-Blocked for the header/actions, KPI cards, control rail, employee rows, and bottom summary because browser capture is unavailable.
+Blocked for sidebar navigation, summary cards, draft rows, and payroll overview.
 
 **Primary Interactions**
 
-- Implemented: generate preview, submit payroll report, review tabs, attendance logs tab, employee search, site filter, sorting, clear filters, rates, paid holidays, bulk payslip export, employee action menu, edit employee, export payslip, pagination, and View Exceptions.
-- Browser interaction test: blocked before navigation.
-- Console errors checked: blocked before navigation.
-
-**Implementation Checklist**
-
-- Restore the in-app browser connection.
-- Capture `/generate-payroll` at 1680 × 947 in the generated state.
-- Compare the source and implementation together.
-- Fix any visible P1/P2 differences and repeat the capture.
+- Dashboard opens `/payroll-dashboard`.
+- Payroll Workspace opens `/payroll-workspace`.
+- New Payroll Attendance opens `/upload-attendance`.
+- Continue Draft opens the exact attendance import and payroll run.
+- Open Payroll Workspace opens the separated workspace route.
+- Browser interaction and console checks: blocked before navigation.
 
 **Comparison History**
 
-- Pass 1: blocked before visual comparison; no browser-rendered evidence was available.
-- Pass 2: removed employee selection checkboxes and the 1,050px table minimum. Added a full-width desktop table plus responsive employee cards and wrapping controls so normal browser zoom no longer hides payroll fields. Production build, TypeScript, and targeted lint pass; browser-rendered comparison remains blocked by the in-app browser sandbox.
+- Pass 1: route split and overview implementation completed; visual comparison blocked by the in-app browser Windows sandbox ACL failure.
 
 final result: blocked

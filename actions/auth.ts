@@ -70,7 +70,9 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
 
   if (role === APP_ROLES.PAYROLL_MANAGER) {
     return hasAllowedPrefix(pathname, [
+      "/home",
       "/payroll-dashboard",
+      "/payroll-workspace",
       "/upload-attendance",
       "/review-attendance",
       "/generate-payroll",

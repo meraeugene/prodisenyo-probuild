@@ -54,6 +54,7 @@ interface SavePayrollRunInput {
   payrollAttendanceInputs: AttendanceRecordInput[];
   payrollRows: PayrollRow[];
   payrollOverrides: Record<string, PayrollRowOverride | undefined>;
+  intent: "draft" | "submit";
 }
 
 type PayrollSaveErrorDetails = Record<string, unknown>;
@@ -947,6 +948,9 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
   const { user } = await requireRole(["ceo", "payroll_manager"]);
   const database = createSupabaseAdminClient() as any;
   const periodRange = parsePeriodRange(input.attendancePeriod);
+  const nextStatus = input.intent === "submit" ? "submitted" : "draft";
+  const submittedAt =
+    input.intent === "submit" ? new Date().toISOString() : null;
 
   if (input.payrollRows.length === 0) {
     throw createPayrollSaveError(
@@ -1298,9 +1302,13 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         period_label: input.attendancePeriod,
         period_start: periodRange.start,
         period_end: periodRange.end,
-        status: "submitted" satisfies PayrollRunStatus,
-        submitted_by: user.id,
-        submitted_at: new Date().toISOString(),
+        status: nextStatus satisfies PayrollRunStatus,
+        submitted_by: input.intent === "submit" ? user.id : null,
+        submitted_at: submittedAt,
+        approved_by: null,
+        approved_at: null,
+        rejected_at: null,
+        rejection_reason: null,
         gross_total: grossTotal,
         net_total: netTotal,
       })
@@ -1408,10 +1416,10 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
         period_label: input.attendancePeriod,
         period_start: periodRange.start,
         period_end: periodRange.end,
-        status: "submitted" satisfies PayrollRunStatus,
+        status: nextStatus satisfies PayrollRunStatus,
         created_by: user.id,
-        submitted_by: user.id,
-        submitted_at: new Date().toISOString(),
+        submitted_by: input.intent === "submit" ? user.id : null,
+        submitted_at: submittedAt,
         gross_total: grossTotal,
         net_total: netTotal,
       })
@@ -1458,15 +1466,35 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
     total_pay: snapshot.totalPay,
   }));
 
-  const { data: insertedItems, error: itemsError } = await database
+  let { data: insertedItems, error: itemsError } = await database
     .from("payroll_run_items")
     .insert(payrollItemPayload)
     .select("id, employee_name, role_code, site_name");
 
+  const isMissingOvertimeMultiplierColumn =
+    Boolean(itemsError) &&
+    (itemsError.code === "42703" ||
+      itemsError.code === "PGRST204" ||
+      itemsError.message?.includes("schema cache")) &&
+    itemsError.message?.includes("overtime_multiplier");
+
+  if (isMissingOvertimeMultiplierColumn) {
+    const legacyPayrollItemPayload = payrollItemPayload.map(
+      ({ overtime_multiplier: _overtimeMultiplier, ...item }) => item,
+    );
+    const legacyInsertResult = await database
+      .from("payroll_run_items")
+      .insert(legacyPayrollItemPayload)
+      .select("id, employee_name, role_code, site_name");
+
+    insertedItems = legacyInsertResult.data;
+    itemsError = legacyInsertResult.error;
+  }
+
   if (itemsError) {
     throw createPayrollSaveError(
       "PAYROLL_SAVE_ITEMS_FAILED",
-      "Failed to save payroll items.",
+      `Failed to save payroll items.${itemsError.message ? ` ${itemsError.message}` : ""}`,
       {
         runId,
         itemCount: payrollItemPayload.length,
@@ -1772,9 +1800,15 @@ export async function savePayrollRunAction(input: SavePayrollRunInput) {
     }
   }
 
+  revalidatePath("/payroll-dashboard");
+  if (input.intent === "submit") {
+    revalidatePath("/payroll-approvals");
+    revalidatePath("/payroll-reports");
+  }
+
   return {
     runId,
-    status: "submitted" as PayrollRunStatus,
+    status: nextStatus as PayrollRunStatus,
   };
 }
 

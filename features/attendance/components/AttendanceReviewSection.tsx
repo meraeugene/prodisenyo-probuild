@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { AttendanceRecord } from "@/types";
@@ -469,6 +470,26 @@ ${
               )}
             </div>
           )}
+
+          {records.length > 0 ? (
+            <div className="flex flex-col gap-3 rounded-[14px] border border-teal-100 bg-teal-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold text-slate-900">
+                  Attendance review ready
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-600">
+                  Continue to generate and review the payroll draft for this attendance period.
+                </p>
+              </div>
+              <Link
+                href="/generate-payroll"
+                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] bg-[#076d69] px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(7,109,105,0.16)] transition hover:bg-[#055f5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69] focus-visible:ring-offset-2"
+              >
+                Continue to Generate Payroll
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

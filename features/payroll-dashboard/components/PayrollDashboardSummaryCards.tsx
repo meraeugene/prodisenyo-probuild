@@ -4,18 +4,24 @@ import {
   FileCheck2,
   WalletCards,
 } from "lucide-react";
-import type { PayrollDashboardSummary } from "@/features/payroll-dashboard/types";
+import type {
+  PayrollDashboardData,
+  PayrollDashboardSummary,
+} from "@/features/payroll-dashboard/types";
 import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
 
 export default function PayrollDashboardSummaryCards({
-  summary,
+  data,
 }: {
-  summary: PayrollDashboardSummary;
+  data: PayrollDashboardData;
 }) {
+  const summary: PayrollDashboardSummary = data.summary;
   const cards = [
     {
-      label: "Attendance Batches",
-      value: summary.attendanceBatches.toLocaleString("en-PH"),
+      label: "Payroll Drafts",
+      value: data.workspaceRuns
+        .filter((run) => run.status === "draft")
+        .length.toLocaleString("en-PH"),
       icon: CalendarDays,
     },
     {
@@ -29,7 +35,7 @@ export default function PayrollDashboardSummaryCards({
       icon: FileCheck2,
     },
     {
-      label: "Approved Payroll",
+      label: "Approved Payroll Expenses",
       value: formatPayrollCurrency(summary.approvedNetPayroll),
       icon: WalletCards,
     },

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { BadgeCheck, Send } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, BadgeCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
   getPayrollManagerOvertimeNotificationsAction,
@@ -27,9 +29,12 @@ export default function PayrollPage() {
     currentPayrollRunId,
     currentPayrollRunStatus,
     setCurrentPayrollRunMeta,
+    selectAttendanceWorkspace,
     handleGeneratePayroll,
   } = useAppState();
   const [role, setRole] = useState<AppRole | null>(null);
+  const searchParams = useSearchParams();
+  const selectedWorkspaceRef = useRef<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [rejectionAlert, setRejectionAlert] = useState<{
@@ -48,6 +53,23 @@ export default function PayrollPage() {
   const knownRejectionTimesRef = useRef<Record<string, string>>({});
   const knownOvertimeRejectionTimesRef = useRef<Record<string, string>>({});
   const canPlayNotificationSoundRef = useRef(false);
+
+  useEffect(() => {
+    const importId = searchParams.get("importId")?.trim() ?? "";
+    const runId = searchParams.get("runId")?.trim() || null;
+    if (!importId) return;
+
+    const selectionKey = `${importId}:${runId ?? ""}`;
+    if (selectedWorkspaceRef.current === selectionKey) return;
+    selectedWorkspaceRef.current = selectionKey;
+
+    void selectAttendanceWorkspace(importId, runId).then((loaded) => {
+      if (!loaded) {
+        selectedWorkspaceRef.current = null;
+        toast.error("Unable to open this payroll draft.");
+      }
+    });
+  }, [searchParams, selectAttendanceWorkspace]);
 
   useEffect(() => {
     let cancelled = false;
@@ -290,7 +312,7 @@ export default function PayrollPage() {
     );
   }
 
-  function executeSavePayroll() {
+  function executeSavePayroll(intent: "draft" | "submit") {
     startTransition(async () => {
       try {
         if (!payroll.payrollGenerated || payroll.payrollRows.length === 0) {
@@ -308,6 +330,7 @@ export default function PayrollPage() {
           payrollAttendanceInputs: payroll.payrollAttendanceInputs,
           payrollRows: payroll.payrollRows,
           payrollOverrides: payroll.payrollOverrides,
+          intent,
         });
 
         setCurrentPayrollRunMeta({
@@ -315,8 +338,8 @@ export default function PayrollPage() {
           status: result.status,
         });
         toast.success(
-          currentPayrollRunId
-            ? "Payroll report updated and kept in the CEO review queue."
+          intent === "draft"
+            ? "Payroll draft saved. You can continue it from the payroll dashboard."
             : "Payroll report submitted for CEO review.",
         );
       } catch (error) {
@@ -331,29 +354,41 @@ export default function PayrollPage() {
         toast.error(
           error instanceof Error
             ? error.message
-            : "Unable to submit payroll report.",
+            : intent === "draft"
+              ? "Unable to save payroll draft."
+              : "Unable to submit payroll report.",
         );
       }
     });
   }
 
-  function handleSavePayroll() {
+  function handleSubmitPayroll() {
     if (role === "payroll_manager") {
       setShowSaveConfirm(true);
       return;
     }
 
-    executeSavePayroll();
+    executeSavePayroll("submit");
   }
 
   return (
     <div className="p-0">
+      <div className="px-4 pt-4 sm:px-6 xl:px-7">
+        <Link
+          href="/review-attendance"
+          className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-apple-mist bg-white px-3.5 text-sm font-semibold text-apple-ash shadow-sm transition hover:border-[#8bc9c4] hover:bg-teal-50 hover:text-[#076d69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69] focus-visible:ring-offset-2"
+        >
+          <ArrowLeft size={16} />
+          Back to Review Attendance
+        </Link>
+      </div>
       <PayrollSection
         dailyRowsCount={attendance.dailyRows.length}
         availableSites={attendance.availableSites}
         payroll={payroll}
         onGeneratePreview={handleGeneratePreview}
-        onSavePayroll={handleSavePayroll}
+        onSaveDraft={() => executeSavePayroll("draft")}
+        onSubmitPayroll={handleSubmitPayroll}
         currentPayrollRunId={currentPayrollRunId}
         currentPayrollRunStatus={currentPayrollRunStatus}
         currentUserRole={role}
@@ -447,7 +482,7 @@ export default function PayrollPage() {
                 type="button"
                 onClick={() => {
                   setShowSaveConfirm(false);
-                  executeSavePayroll();
+                  executeSavePayroll("submit");
                 }}
                 disabled={isPending}
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#076d69] px-5 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"

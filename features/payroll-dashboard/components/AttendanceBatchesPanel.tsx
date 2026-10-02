@@ -21,14 +21,15 @@ const STATUS_PRESENTATION: Record<
 };
 
 function batchAction(batch: PayrollDashboardBatch) {
-  if (!batch.isLatestOwnedBatch) {
-    return { href: "/attendance-analytics", label: "View" };
-  }
   if (batch.status === "ready") {
-    return { href: "/review-attendance", label: "Review" };
+    return batch.isLatestOwnedBatch
+      ? { href: "/review-attendance", label: "Review" }
+      : { href: "/attendance-analytics", label: "View" };
   }
   if (batch.status === "draft" || batch.status === "returned") {
-    return { href: "/generate-payroll", label: "Continue" };
+    const query = new URLSearchParams({ importId: batch.id });
+    if (batch.payrollRunId) query.set("runId", batch.payrollRunId);
+    return { href: `/generate-payroll?${query.toString()}`, label: "Continue" };
   }
   return { href: "/attendance-analytics", label: "View" };
 }

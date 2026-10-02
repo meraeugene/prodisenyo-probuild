@@ -9,8 +9,6 @@ import DashboardNavigation from "@/features/navigation/components/DashboardNavig
 import SidebarTooltip from "@/features/navigation/components/SidebarTooltip";
 import SignOutButton from "@/components/auth/SignOutButton";
 import ProfileAvatar from "@/components/ProfileAvatar";
-import { useAppState } from "@/features/app/AppStateProvider";
-import { useDashboardNavState } from "@/features/navigation/hooks/useDashboardNavState";
 import { useSidebarNotificationCounts } from "@/features/navigation/hooks/useSidebarNotificationCounts";
 import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
 import { cn } from "@/lib/utils";
@@ -44,21 +42,10 @@ export default function DashboardShell({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { hasAttendanceData, workspaceReset } =
-    useAppState();
   const sidebarWidth = collapsed ? "72px" : "264px";
   const headerHeight = "69px";
   const settingsActive = pathname === "/settings";
-  const isWorkflowRoute =
-    pathname === "/review-attendance" || pathname === "/generate-payroll";
   const isCeo = profile?.role === "ceo";
-  const isPayrollManager = profile?.role === "payroll_manager";
-  const navState = useDashboardNavState(profile?.id ?? null, profile?.role ?? null);
-  const canSeeWorkflowNav =
-    isCeo ||
-    (isPayrollManager &&
-      !workspaceReset &&
-      (navState.hasSavedAttendance || hasAttendanceData || isWorkflowRoute));
   const notificationCounts = useSidebarNotificationCounts(isCeo);
 
   useEffect(() => {
@@ -182,7 +169,7 @@ export default function DashboardShell({
               paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
             }}
           >
-            <DashboardNavigation role={profile?.role ?? null} pathname={pathname} collapsed={collapsed} onNavigate={() => setOpen(false)} canSeeWorkflowNav={canSeeWorkflowNav} notificationCounts={notificationCounts} />
+            <DashboardNavigation role={profile?.role ?? null} pathname={pathname} collapsed={collapsed} onNavigate={() => setOpen(false)} notificationCounts={notificationCounts} />
 
             <div className="mt-auto space-y-1 pt-3">
               {!collapsed ? (

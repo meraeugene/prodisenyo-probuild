@@ -105,6 +105,29 @@ export type ReturnedPayrollRow = PayrollApprovalRow & {
   rejectionReason: string | null;
 };
 
+export type PayrollDraftRow = {
+  id: string;
+  attendanceImportId: string | null;
+  siteName: string;
+  periodLabel: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  netTotal: number;
+  updatedAt: string;
+};
+
+export type PayrollWorkspaceRun = {
+  id: string;
+  attendanceImportId: string | null;
+  siteName: string;
+  periodLabel: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  status: PayrollDashboardRunStatus;
+  netTotal: number;
+  updatedAt: string;
+};
+
 export type PayrollActivityType =
   | "attendance"
   | "created"
@@ -127,6 +150,8 @@ export type PayrollDashboardData = {
   payrollOverview: PayrollDashboardOverview;
   awaitingApprovals: PayrollApprovalRow[];
   returnedSubmissions: ReturnedPayrollRow[];
+  payrollDrafts: PayrollDraftRow[];
+  workspaceRuns: PayrollWorkspaceRun[];
   recentActivity: PayrollActivityItem[];
   hasOwnedAttendance: boolean;
 };

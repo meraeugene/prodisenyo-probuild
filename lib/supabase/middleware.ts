@@ -23,6 +23,7 @@ const PROTECTED_PREFIXES = [
   "/home",
   "/dashboard",
   "/payroll-dashboard",
+  "/payroll-workspace",
   "/upload-attendance",
   "/budget-tracker",
   "/cost-estimator",
@@ -114,7 +115,9 @@ const EMPLOYEE_ALLOWED_PREFIXES = [
   "/settings",
 ] as const;
 const PAYROLL_MANAGER_ALLOWED_PREFIXES = [
+  "/home",
   "/payroll-dashboard",
+  "/payroll-workspace",
   "/upload-attendance",
   "/review-attendance",
   "/generate-payroll",
@@ -340,29 +343,35 @@ export async function updateSession(request: NextRequest) {
       currentRole === "payroll_manager" &&
       requiresHrSubmission(pathname)
     ) {
+      const openingSavedPayroll =
+        pathname === "/generate-payroll" &&
+        Boolean(request.nextUrl.searchParams.get("runId")) &&
+        Boolean(request.nextUrl.searchParams.get("importId"));
       const workspaceReset =
         request.cookies.get("prodisenyo-workspace-reset")?.value === "true";
 
-      if (workspaceReset) {
+      if (workspaceReset && !openingSavedPayroll) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = "/upload-attendance";
         redirectUrl.searchParams.set("required", "documents");
         return redirect(redirectUrl);
       }
 
-      const { data: latestImport, error: importError } = await supabase
-        .from("attendance_imports")
-        .select("id")
-        .eq("uploaded_by", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      if (!openingSavedPayroll) {
+        const { data: latestImport, error: importError } = await supabase
+          .from("attendance_imports")
+          .select("id")
+          .eq("uploaded_by", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (!importError && !latestImport) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/upload-attendance";
-        redirectUrl.searchParams.set("required", "documents");
-        return redirect(redirectUrl);
+        if (!importError && !latestImport) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/upload-attendance";
+          redirectUrl.searchParams.set("required", "documents");
+          return redirect(redirectUrl);
+        }
       }
     }
 
