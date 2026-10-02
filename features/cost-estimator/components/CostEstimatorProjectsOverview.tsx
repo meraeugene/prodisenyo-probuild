@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  BriefcaseBusiness,
-  CircleCheck,
-  FileText,
-  Send,
-} from "lucide-react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorOverviewMetric from "@/features/cost-estimator/components/CostEstimatorOverviewMetric";
 import CostEstimatorOverviewProjectCard from "@/features/cost-estimator/components/CostEstimatorOverviewProjectCard";
@@ -59,10 +53,10 @@ export default function CostEstimatorProjectsOverview({
       />
 
       <section aria-label="Estimate summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <CostEstimatorOverviewMetric icon={BriefcaseBusiness} value={queueCount} label="Projects" tone="teal" />
-        <CostEstimatorOverviewMetric icon={FileText} value={draftCount} label="Draft" tone="amber" />
-        <CostEstimatorOverviewMetric icon={Send} value={submittedCount} label="Submitted" tone="sky" />
-        <CostEstimatorOverviewMetric icon={CircleCheck} value={approvedCount} label="Approved" tone="teal" />
+        <CostEstimatorOverviewMetric value={queueCount} label="Projects" />
+        <CostEstimatorOverviewMetric value={draftCount} label="Draft" />
+        <CostEstimatorOverviewMetric value={submittedCount} label="Submitted" />
+        <CostEstimatorOverviewMetric value={approvedCount} label="Approved" />
       </section>
 
       <section aria-labelledby="assigned-projects-heading" className="space-y-4 px-3 sm:px-2">

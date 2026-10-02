@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { PaidHolidayItem } from "@/features/payroll/types";
 import { isIsoDateWithinRange } from "@/features/payroll/utils/payrollDateHelpers";
 
@@ -260,7 +260,6 @@ export default function PaidHolidayModal({
 
             <div className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/30 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-apple-charcoal">
-                <CalendarDays size={16} />
                 Manual Holiday Entry
               </div>
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Banknote, Calculator, ReceiptText, Wallet } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import PayrollBreakdownChart from "@/features/payroll-dashboard/components/PayrollBreakdownChart";
 import type { PayrollDashboardOverview } from "@/features/payroll-dashboard/types";
 import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
@@ -12,10 +12,10 @@ export default function PayrollOverviewPanel({
   hasOwnedAttendance: boolean;
 }) {
   const metrics = [
-    { label: "Total Gross Pay", value: overview.grossPay, icon: Banknote, tone: "text-teal-700 bg-teal-50" },
-    { label: "Total Deductions", value: overview.deductions, icon: ReceiptText, tone: "text-rose-700 bg-rose-50" },
-    { label: "Total Net Pay", value: overview.netPay, icon: Wallet, tone: "text-teal-700 bg-teal-50" },
-    { label: "Approved Runs", value: overview.approvedRunCount, icon: Calculator, tone: "text-sky-700 bg-sky-50", count: true },
+    { label: "Total Gross Pay", value: overview.grossPay,  tone: "text-teal-700 bg-teal-50" },
+    { label: "Total Deductions", value: overview.deductions,  tone: "text-rose-700 bg-rose-50" },
+    { label: "Total Net Pay", value: overview.netPay,  tone: "text-teal-700 bg-teal-50" },
+    { label: "Approved Runs", value: overview.approvedRunCount,  tone: "text-sky-700 bg-sky-50", count: true },
   ];
   const chartRows = [
     { label: "Regular pay", value: overview.regularPay, color: "bg-teal-700" },
@@ -43,13 +43,9 @@ export default function PayrollOverviewPanel({
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">
         {metrics.map((metric) => {
-          const Icon = metric.icon;
           return (
             <div key={metric.label} className="rounded-xl border border-slate-100 p-3">
               <div className="flex items-center gap-2">
-                <span className={"flex h-8 w-8 items-center justify-center rounded-full " + metric.tone}>
-                  <Icon size={14} />
-                </span>
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400">
                     {metric.label}

@@ -1,6 +1,5 @@
 "use client";
 
-import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
 
@@ -67,7 +66,6 @@ export default function CostEstimatorDraftSidebar({
       </section>
 
       <section className="flex gap-3 rounded-[14px] border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
-        <Lightbulb aria-hidden="true" className="mt-0.5 shrink-0" size={19} />
         <p><span className="font-semibold">Tip:</span> Save the draft as you build the BOQ, then submit it when every persisted item has been reviewed.</p>
       </section>
     </aside>

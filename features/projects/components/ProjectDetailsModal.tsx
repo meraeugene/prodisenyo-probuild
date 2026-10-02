@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ProjectRecord } from "../types";
-import { X, Calendar, DollarSign, User, MapPin, ClipboardList, Activity, Building2, Pencil, Trash2 } from "lucide-react";
+import { X, Pencil, Trash2 } from "lucide-react";
 
 interface ProjectDetailsModalProps {
   project: ProjectRecord;
@@ -36,7 +36,6 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
           <div>
             <h3 className="text-xl font-bold text-apple-charcoal">{project.name}</h3>
             <div className="flex items-center gap-1 text-slate-400 text-xs mt-1">
-              <MapPin size={13} />
               <span>{project.location}</span>
             </div>
           </div>
@@ -54,28 +53,24 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
             <div className="space-y-1">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Subject</span>
               <div className="flex items-center gap-1.5 text-sm text-apple-charcoal font-semibold">
-                <Building2 size={13} className="text-slate-400" />
                 <span>{project.subject || project.client || "—"}</span>
               </div>
             </div>
             <div className="space-y-1">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Lead</span>
               <div className="flex items-center gap-1.5 text-sm text-apple-charcoal font-semibold">
-                <User size={13} className="text-slate-400" />
                 <span>{project.lead || project.manager || "—"}</span>
               </div>
             </div>
             <div className="space-y-1">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Project Timeline</span>
               <div className="flex items-center gap-1.5 text-sm text-apple-charcoal font-semibold">
-                <Calendar size={13} className="text-slate-400" />
                 <span>{project.startDate} to {project.endDate}</span>
               </div>
             </div>
             <div className="space-y-1">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Assigned Site Engineer or Project Manager</span>
               <div className="flex items-center gap-1.5 text-sm text-apple-charcoal font-semibold">
-                <User size={13} className="text-slate-400" />
                 <span>{project.engineer}</span>
               </div>
             </div>
@@ -85,19 +80,19 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
           <div className="grid sm:grid-cols-3 gap-4 bg-teal-50/20 border border-teal-100 p-4 rounded-2xl">
             <div className="space-y-0.5">
               <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
-                <DollarSign size={11} /> Total Budget
+                 Total Budget
               </span>
               <p className="text-lg font-bold text-apple-charcoal">{formatCurrency(project.budget)}</p>
             </div>
             <div className="space-y-0.5">
               <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
-                <DollarSign size={11} /> Actual Spent
+                 Actual Spent
               </span>
               <p className="text-lg font-bold text-apple-charcoal">{formatCurrency(project.spent)}</p>
             </div>
             <div className="space-y-0.5">
               <span className="text-[10px] text-teal-800/80 font-bold uppercase tracking-wider flex items-center gap-0.5">
-                <Activity size={11} /> Project Progress
+                 Project Progress
               </span>
               <div className="flex items-center gap-2">
                 <p className="text-lg font-bold text-apple-charcoal">{project.progress}%</p>
@@ -111,9 +106,6 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
           {/* Site Metrics Sub-Panel */}
           <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
             <div className="border border-slate-100 rounded-xl p-3.5 bg-slate-50/50 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-sky-600 shadow-2xs">
-                <ClipboardList size={16} />
-              </div>
               <div>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Benchmarks / Tasks</p>
                 <p className="text-sm font-bold text-apple-charcoal mt-0.5">
@@ -123,9 +115,6 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
             </div>
 
             <div className="border border-slate-100 rounded-xl p-3.5 bg-slate-50/50 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-amber-600 shadow-2xs">
-                <ClipboardList size={16} />
-              </div>
               <div>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Material Deliveries</p>
                 <p className="text-sm font-bold text-apple-charcoal mt-0.5">

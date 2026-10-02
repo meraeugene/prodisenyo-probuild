@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, FolderKanban, Truck } from "lucide-react";
+
 import { formatOverviewMoney } from "../utils/gmeaOverviewSelectors";
 
 type Division = {
@@ -33,18 +33,14 @@ export default function GmeaOverviewDivisions({
       </div>
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
         {divisions.map((division) => {
-          const Icon = division.name === "Rentals" ? Truck : FolderKanban;
-          return (
+                    return (
             <Link
               key={division.name}
               href={division.href}
-              className="group rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition hover:border-teal-200 hover:shadow-sm"
+              className="group rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition hover:border-teal-200 "
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#087d76]">
-                    <Icon size={19} />
-                  </span>
                   <div>
                     <h3 className="text-[17px] font-bold tracking-[-0.025em] text-slate-950">
                       {division.name}
@@ -55,10 +51,6 @@ export default function GmeaOverviewDivisions({
                     </p>
                   </div>
                 </div>
-                <ArrowRight
-                  size={18}
-                  className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#087d76]"
-                />
               </div>
               <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4">
                 <Metric

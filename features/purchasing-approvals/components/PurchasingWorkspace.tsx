@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { BadgeDollarSign, Download, FileCheck2, LoaderCircle, Pencil, Search, UploadCloud } from "lucide-react";
+import { Download, FileCheck2, LoaderCircle, Pencil, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PurchasingRecordsSkeleton from "@/features/purchasing-approvals/components/PurchasingRecordsSkeleton";
@@ -86,14 +86,13 @@ export default function PurchasingWorkspace() {
   return (
     <div className="min-h-full space-y-4 bg-white p-4 sm:p-6">
       <DashboardPageHero eyebrow="Procurement" title="Purchasing" description="Manage supplier pricing, purchase orders, delivery progress, and receipt records." actions={<span className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#076d69] shadow-sm sm:w-auto">
-          <BadgeDollarSign size={14} /> Purchase value: {money(total)}
+           Purchase value: {money(total)}
         </span>} />
 
       <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver" />
         <input value={search} onChange={(event) => setSearch(event.target.value)}
           placeholder="Search project, material, supplier..."
-          className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-9 pr-3 text-sm outline-none focus:border-[#076d69]" />
+          className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-3 pr-3 text-sm outline-none focus:border-[#076d69]" />
       </div>
 
       {loading ? (

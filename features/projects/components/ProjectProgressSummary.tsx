@@ -1,4 +1,4 @@
-import { CalendarClock, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import type { ProjectProgressUpdateRecord } from "../progressUpdateTypes";
 import { selectLatestProgressUpdate } from "../utils/progressUpdates";
 import {
@@ -64,7 +64,6 @@ export default function ProjectProgressSummary({
 
       <div className="p-5">
         <div className="flex items-center gap-2">
-          <CalendarClock size={16} className="text-teal-700" aria-hidden="true" />
           <h3 className="text-sm font-semibold text-slate-900">Progress history</h3>
         </div>
         <div className="mt-3 divide-y divide-slate-100">

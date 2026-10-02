@@ -1,4 +1,3 @@
-import { CalendarDays, MapPin, UserRound } from "lucide-react";
 import type { ProjectRecord } from "@/features/projects/types";
 import {
   formatProjectCurrency,
@@ -34,13 +33,13 @@ export default function ProjectWorkspaceHeader({
           </div>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-teal-50/80">
             <span className="inline-flex items-center gap-1.5">
-              <UserRound size={14} /> {project.status === "planning" ? "Estimate Engineer" : "Engineer / PM"}: {project.status === "planning" ? project.estimateEngineer : project.engineer}
+               {project.status === "planning" ? "Estimate Engineer" : "Engineer / PM"}: {project.status === "planning" ? project.estimateEngineer : project.engineer}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <MapPin size={14} /> {project.location}
+               {project.location}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <CalendarDays size={14} /> {project.startDate} – {project.endDate}
+               {project.startDate} – {project.endDate}
             </span>
           </div>
         </div>

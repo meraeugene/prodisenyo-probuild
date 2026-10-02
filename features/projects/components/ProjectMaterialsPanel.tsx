@@ -4,20 +4,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ProjectMaterialRequest } from "@/features/material-approvals/types";
 import type { PlannedMaterialRow } from "@/features/material-requests/utils/plannedMaterials";
-import PlannedMaterialsSection from "@/features/projects/components/PlannedMaterialsSection";
+
 import MaterialProcurementDetails from "@/features/purchasing-approvals/components/MaterialProcurementDetails";
 import type { ProjectPurchaseOrder } from "@/features/project-cost-tracking/types";
-import {
-  CheckCircle2,
-  ClipboardList,
-  Clock3,
-  PackageCheck,
-  Plus,
-  Search,
-  ShoppingCart,
-  XCircle,
-} from "lucide-react";
-
+import { Plus } from "lucide-react";
 
 const STATUS_LABELS: Record<ProjectMaterialRequest["status"], string> = {
   submitted: "Pending",
@@ -81,10 +71,10 @@ export default function ProjectMaterialsPanel({
   return (
     <div className="space-y-5">
       <section aria-label="Material request summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={ClipboardList} label="Total Requests" value={stats.total} helper="This project" tone="emerald" />
-        <StatCard icon={Clock3} label="Awaiting Approval" value={stats.pending} helper="CEO review" tone="amber" />
-        <StatCard icon={CheckCircle2} label="Approved Requests" value={stats.approved} helper="Ready for procurement" tone="emerald" />
-        <StatCard icon={ShoppingCart} label="Procurement Status" value={stats.procurement} helper="Purchasing to received" tone="sky" />
+        <StatCard  label="Total Requests" value={stats.total} helper="This project" tone="emerald" />
+        <StatCard  label="Awaiting Approval" value={stats.pending} helper="CEO review" tone="amber" />
+        <StatCard  label="Approved Requests" value={stats.approved} helper="Ready for procurement" tone="emerald" />
+        <StatCard  label="Procurement Status" value={stats.procurement} helper="Purchasing to received" tone="sky" />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -92,7 +82,7 @@ export default function ProjectMaterialsPanel({
           <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div><h2 className="font-semibold text-slate-950">Requested Materials</h2><p className="mt-1 text-xs text-slate-500">Only persisted requests for this project are shown.</p></div>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <label className="relative"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><span className="sr-only">Search materials</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search materials..." className="h-10 w-full rounded-lg border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100 sm:w-56" /></label>
+              <label className="relative"><span className="sr-only">Search materials</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search materials..." className="h-10 w-full rounded-lg border border-slate-200 pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100 sm:w-56" /></label>
               <select aria-label="Filter by request status" value={status} onChange={(event) => setStatus(event.target.value as typeof status)} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
                 <option value="all">All statuses</option><option value="submitted">Pending</option><option value="approved">Approved</option><option value="rejected">Returned</option><option value="purchasing">Purchasing</option><option value="ordered">Ordered</option><option value="received">Received</option><option value="cancelled">Cancelled</option>
               </select>
@@ -123,20 +113,19 @@ export default function ProjectMaterialsPanel({
               </tbody>
             </table>
           </div>
-          {filtered.length === 0 ? <div className="border-t border-slate-100 px-5 py-12 text-center"><PackageCheck size={30} className="mx-auto text-slate-300" /><p className="mt-3 font-medium text-slate-700">No material requests found</p><p className="mt-1 text-sm text-slate-500">Try another search or status filter.</p></div> : null}
+          {filtered.length === 0 ? <div className="border-t border-slate-100 px-5 py-12 text-center"><p className="mt-3 font-medium text-slate-700">No material requests found</p><p className="mt-1 text-sm text-slate-500">Try another search or status filter.</p></div> : null}
           <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">Showing {filtered.length} of {requests.length} requests</div>
         </section>
 
         <aside className="space-y-5">
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h2 className="font-semibold text-slate-950">New Material Request</h2><p className="mt-2 text-sm leading-6 text-slate-500">Request materials needed for this assigned project.</p><Link href={`/request-material?projectId=${projectId}`} className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-teal-800 px-4 text-sm font-semibold text-white transition hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2"><Plus size={16} /> Create Material Request</Link></section>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h2 className="font-semibold text-slate-950">Recent Material Updates</h2><div className="mt-3 divide-y divide-slate-100">{requests.slice(0, 5).map((request) => <div key={request.id} className="flex gap-3 py-3"><div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${request.status === "rejected" ? "bg-rose-50 text-rose-600" : request.status === "submitted" ? "bg-amber-50 text-amber-600" : "bg-teal-50 text-teal-700"}`}>{request.status === "rejected" ? <XCircle size={15} /> : request.status === "submitted" ? <Clock3 size={15} /> : <CheckCircle2 size={15} />}</div><div><p className="text-sm font-semibold text-slate-800">{request.material_name}</p><p className="mt-0.5 text-xs text-slate-500">{STATUS_LABELS[request.status]} · {formatDate(request.created_at)}</p></div></div>)}{requests.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">No material updates yet.</p> : null}</div></section>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h2 className="font-semibold text-slate-950">Recent Material Updates</h2><div className="mt-3 divide-y divide-slate-100">{requests.slice(0, 5).map((request) => <div key={request.id} className="flex gap-3 py-3"><div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${request.status === "rejected" ? "bg-rose-50 text-rose-600" : request.status === "submitted" ? "bg-amber-50 text-amber-600" : "bg-teal-50 text-teal-700"}`}></div><div><p className="text-sm font-semibold text-slate-800">{request.material_name}</p><p className="mt-0.5 text-xs text-slate-500">{STATUS_LABELS[request.status]} · {formatDate(request.created_at)}</p></div></div>)}{requests.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">No material updates yet.</p> : null}</div></section>
         </aside>
       </div>
     </div>
   );
 }
 
-function StatCard({ icon: Icon, label, value, helper, tone }: { icon: typeof ClipboardList; label: string; value: number; helper: string; tone: "emerald" | "amber" | "sky" }) {
-  const colors = { emerald: "text-teal-700", amber: "text-amber-600", sky: "text-sky-700" };
-  return <article className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]"><div className="flex min-w-0 items-center gap-2"><Icon size={15} className={`shrink-0 ${colors[tone]}`} aria-hidden="true" /><p className="truncate text-xs font-medium text-slate-500">{label}</p></div><p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p></article>;
+function StatCard({ label, value, helper }: {  label: string; value: number; helper: string; tone: "emerald" | "amber" | "sky" }) {
+  return <article className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]"><div className="flex min-w-0 items-center gap-2"><p className="truncate text-xs font-medium text-slate-500">{label}</p></div><p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p></article>;
 }

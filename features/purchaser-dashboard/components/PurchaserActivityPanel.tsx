@@ -1,13 +1,5 @@
-import { CheckCircle2, Clock3, FileText, Truck } from "lucide-react";
 import type { PurchaserActivityItem } from "@/features/purchaser-dashboard/types";
 import { formatPurchaserDate } from "@/features/purchaser-dashboard/utils/purchaserDashboard";
-
-const PRESENTATION = {
-  emerald: { icon: CheckCircle2, classes: "bg-teal-50 text-teal-700" },
-  sky: { icon: Truck, classes: "bg-sky-50 text-sky-700" },
-  amber: { icon: FileText, classes: "bg-amber-50 text-amber-700" },
-  slate: { icon: Clock3, classes: "bg-slate-100 text-slate-600" },
-};
 
 export default function PurchaserActivityPanel({ items }: { items: PurchaserActivityItem[] }) {
   return (
@@ -18,11 +10,8 @@ export default function PurchaserActivityPanel({ items }: { items: PurchaserActi
       </div>
       <div className="mt-4 divide-y divide-slate-100">
         {items.slice(0, 5).map((item) => {
-          const presentation = PRESENTATION[item.tone];
-          const Icon = presentation.icon;
           return (
             <div key={item.id} className="flex gap-3 py-3 first:pt-0">
-              <div className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-full " + presentation.classes}><Icon size={15} /></div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-900">{item.title}</p>
                 <p className="mt-0.5 truncate text-[11px] text-slate-500">{item.detail}</p>

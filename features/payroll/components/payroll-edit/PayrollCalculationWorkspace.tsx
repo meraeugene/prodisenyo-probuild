@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useDialogEscape } from "@/lib/useDialogEscape";
+import { useState, type ReactNode } from "react";
 import type { DailyLogRow } from "@/types";
 import type {
   PayrollAllowanceEntry,
@@ -95,6 +96,9 @@ export interface PayrollCalculationWorkspaceProps {
 export function PayrollCalculationWorkspace(
   props: PayrollCalculationWorkspaceProps,
 ) {
+  useDialogEscape(() => { if (!props.isSaving) props.onClose(); }, 50);
+  const [activeTab, setActiveTab] = useState("attendance");
+  const tabs = [["attendance", "Cutoff Attendance"], ["logs", "Biometric Logs"], ["biometric", "Biometric OT Decision"], ["adjustments", "Adjustment Breakdown"], ["summary", "Calculation Summary"], ...(props.branchRates.length > 1 ? [["rates", "Branch Rates"]] : [])];
   const summaryProps = {
     attendanceDays: props.attendanceDays,
     daysWorked: props.daysWorked,
@@ -105,8 +109,8 @@ export function PayrollCalculationWorkspace(
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-0 sm:p-3">
-      <div className="flex h-[100dvh] w-full flex-col overflow-hidden border border-slate-200 bg-[#f8faf9] shadow-2xl sm:h-[94vh] sm:max-w-[1540px] sm:rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-3 sm:p-6">
+      <div className="flex h-[min(860px,92dvh)] w-full max-w-[1280px] flex-col overflow-hidden border border-slate-200 bg-[#f8faf9] rounded-2xl shadow-2xl">
         <PayrollCalculationHeader
           employeeName={props.employeeName}
           roleName={props.roleName}
@@ -119,19 +123,27 @@ export function PayrollCalculationWorkspace(
         />
         <PayrollSummaryCards {...summaryProps} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-3 xl:overflow-hidden">
-          <div className="grid gap-3 xl:h-full xl:grid-cols-[minmax(0,1.9fr)_minmax(330px,0.72fr)]">
-            <div className="space-y-3 xl:min-h-0 xl:overflow-y-auto xl:pr-1">
-              {props.cutoffAttendanceDays?.length && props.onResolveAttendance ? (
+        <div role="tablist" aria-label="Employee payroll details" className="flex shrink-0 flex-wrap gap-1 border-b border-slate-200 bg-white px-3 py-2">
+          {tabs.map(([id, label]) => <button key={id} id={`payroll-tab-${id}`} type="button" role="tab" aria-selected={activeTab === id} tabIndex={activeTab === id ? 0 : -1} aria-controls="payroll-detail-panel" onKeyDown={(event) => {
+            const index = tabs.findIndex(([key]) => key === id);
+            const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+            if (next === null) return;
+            event.preventDefault();
+            setActiveTab(tabs[next][0]);
+            document.getElementById(`payroll-tab-${tabs[next][0]}`)?.focus();
+          }} onClick={() => setActiveTab(id)} className={`rounded-lg px-3 py-2 text-[13px] font-medium ${activeTab === id ? "bg-teal-50 text-teal-800" : "text-slate-500 hover:bg-slate-50"}`}>{label}</button>)}
+        </div>
+        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+          <div className="space-y-3">
+            <div>
+              {activeTab === "attendance" && !props.cutoffAttendanceDays?.length ? <p className="p-4 text-[13px] text-slate-500">No cutoff attendance available. Open Biometric Logs to review attendance records.</p> : null}
+              {activeTab === "attendance" && props.cutoffAttendanceDays?.length && props.onResolveAttendance ? (
                 <CutoffAttendanceTable
                   days={props.cutoffAttendanceDays}
                   onResolve={props.onResolveAttendance}
                 />
               ) : null}
-              <details open={!props.cutoffAttendanceDays?.length} className="group">
-                <summary className="mb-2 cursor-pointer text-[10px] font-semibold text-slate-500 hover:text-teal-700">
-                  Biometric log editing
-                </summary>
+              {activeTab === "logs" ? (
                 <PayrollAttendanceLogsTable
                 logs={props.logs}
                 visibleLogs={props.visibleLogs}
@@ -145,8 +157,8 @@ export function PayrollCalculationWorkspace(
                 onPageChange={props.onPageChange}
                 onToggleAllLogs={props.onToggleAllLogs}
                 />
-              </details>
-              <PayrollAdjustmentEntries
+              ) : null}
+              {activeTab === "adjustments" ? <PayrollAdjustmentEntries
                 cashAdvanceEntries={props.cashAdvanceEntries}
                 overtimeEntries={props.overtimeEntries}
                 paidLeaveEntries={props.paidLeaveEntries}
@@ -156,10 +168,11 @@ export function PayrollCalculationWorkspace(
                 onRemoveOvertime={props.onRemoveOvertime}
                 onRemovePaidLeave={props.onRemovePaidLeave}
                 onRemoveAllowance={props.onRemoveAllowance}
-              />
+              /> : null}
             </div>
 
             <PayrollCalculationSidebar
+              panel={activeTab}
               {...summaryProps}
               baseWorkedPay={props.baseWorkedPay}
               overtimePay={props.overtimePay}

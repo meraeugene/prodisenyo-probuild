@@ -1,16 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useTransition } from "react";
-import {
-  Download,
-  FileImage,
-  FileSpreadsheet,
-  FileText,
-  LoaderCircle,
-  Search,
-  Trash2,
-  UploadCloud,
-} from "lucide-react";
+import { Download, LoaderCircle, Trash2, UploadCloud, FileSpreadsheet, FileImage, FileText } from "lucide-react";
 import { toast } from "sonner";
 import {
   deleteProjectDocumentAction,
@@ -113,11 +104,11 @@ export default function ProjectDocumentsPanel({
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200">
           <div className="flex flex-col gap-2 border-b border-slate-200 p-4 sm:flex-row">
-            <label className="relative flex-1"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><span className="sr-only">Search documents</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search documents..." className="h-10 w-full rounded-lg border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" /></label>
+            <label className="relative flex-1"><span className="sr-only">Search documents</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search documents..." className="h-10 w-full rounded-lg border border-slate-200 pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" /></label>
             <select aria-label="Filter documents by category" value={category} onChange={(event) => setCategory(event.target.value as typeof category)} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm capitalize outline-none focus:border-teal-600"><option value="all">All categories</option>{PROJECT_DOCUMENT_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}</select>
           </div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="border-b border-slate-200 bg-slate-50/70 text-xs text-slate-500"><tr><th className="px-4 py-3">Document Name</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Uploaded By</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Size</th><th className="px-4 py-3 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map((document) => <tr key={document.id} className="hover:bg-slate-50/70"><td className="px-4 py-3"><span className="flex items-center gap-3 font-semibold text-slate-900"><DocumentIcon mimeType={document.mime_type} />{document.file_name}</span></td><td className="px-4 py-3 capitalize text-slate-600">{document.category}</td><td className="px-4 py-3 text-slate-600">{document.uploader_name}</td><td className="px-4 py-3 text-slate-600">{formatDate(document.created_at)}</td><td className="px-4 py-3 text-slate-600">{formatSize(document.file_size)}</td><td className="px-4 py-3"><div className="flex justify-end gap-1"><button type="button" onClick={() => download(document)} disabled={activeDocumentId === document.id} aria-label={`Download ${document.file_name}`} className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-700">{activeDocumentId === document.id ? <LoaderCircle size={16} className="animate-spin" /> : <Download size={16} />}</button>{canUpload && document.uploaded_by === currentUserId ? <button type="button" onClick={() => remove(document)} disabled={activeDocumentId === document.id} aria-label={`Delete ${document.file_name}`} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button> : null}</div></td></tr>)}</tbody></table></div>
-          {filtered.length === 0 ? <div className="px-5 py-12 text-center"><FileText size={32} className="mx-auto text-slate-300" /><p className="mt-3 font-medium text-slate-700">No documents found</p><p className="mt-1 text-sm text-slate-500">Uploaded project files will appear here.</p></div> : null}
+          <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="border-b border-slate-200 bg-slate-50/70 text-xs text-slate-500"><tr><th className="px-4 py-3">Document Name</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Uploaded By</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Size</th><th className="px-4 py-3 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">{filtered.map((document) => <tr key={document.id} className="hover:bg-slate-50/70"><td className="px-4 py-3"><span className="font-semibold text-slate-900">{document.file_name}</span></td><td className="px-4 py-3 capitalize text-slate-600">{document.category}</td><td className="px-4 py-3 text-slate-600">{document.uploader_name}</td><td className="px-4 py-3 text-slate-600">{formatDate(document.created_at)}</td><td className="px-4 py-3 text-slate-600">{formatSize(document.file_size)}</td><td className="px-4 py-3"><div className="flex justify-end gap-1"><button type="button" onClick={() => download(document)} disabled={activeDocumentId === document.id} aria-label={`Download ${document.file_name}`} className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-700">{activeDocumentId === document.id ? <LoaderCircle size={16} className="animate-spin" /> : <Download size={16} />}</button>{canUpload && document.uploaded_by === currentUserId ? <button type="button" onClick={() => remove(document)} disabled={activeDocumentId === document.id} aria-label={`Delete ${document.file_name}`} className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16} /></button> : null}</div></td></tr>)}</tbody></table></div>
+          {filtered.length === 0 ? <div className="px-5 py-12 text-center"><p className="mt-3 font-medium text-slate-700">No documents found</p><p className="mt-1 text-sm text-slate-500">Uploaded project files will appear here.</p></div> : null}
           <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">Showing {filtered.length} of {documents.length} documents</p>
         </div>
 

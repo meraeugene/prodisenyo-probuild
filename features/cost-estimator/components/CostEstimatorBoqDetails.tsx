@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  ClipboardList,
-  Eye,
-  FileText,
-  HardHat,
-  Layers3,
-  Pencil,
-  Wrench,
-} from "lucide-react";
+import { Eye, FileText, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CostEstimatorBoqSidebar from "@/features/cost-estimator/components/CostEstimatorBoqSidebar";
 import CostEstimatorBoqTable from "@/features/cost-estimator/components/CostEstimatorBoqTable";
@@ -108,10 +99,10 @@ export default function CostEstimatorBoqDetails({
       </section>
 
       <section aria-label="BOQ totals" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={ClipboardList} label="BOQ Items" value={boqItemCount.toLocaleString("en-PH")} tone="emerald" />
-        <Metric icon={Layers3} label="Materials" value={formatBudgetMoney(categoryTotal("materials"))} tone="emerald" />
-        <Metric icon={HardHat} label="Labor" value={formatBudgetMoney(categoryTotal("labor"))} tone="amber" />
-        <Metric icon={Wrench} label="Equipment" value={formatBudgetMoney(categoryTotal("equipment"))} tone="sky" />
+        <Metric  label="BOQ Items" value={boqItemCount.toLocaleString("en-PH")} tone="emerald" />
+        <Metric  label="Materials" value={formatBudgetMoney(categoryTotal("materials"))} tone="emerald" />
+        <Metric  label="Labor" value={formatBudgetMoney(categoryTotal("labor"))} tone="amber" />
+        <Metric  label="Equipment" value={formatBudgetMoney(categoryTotal("equipment"))} tone="sky" />
       </section>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
@@ -128,12 +119,9 @@ const METRIC_TONES = {
   sky: "bg-sky-50 text-sky-600",
 } as const;
 
-function Metric({ icon: Icon, label, value, tone }: { icon: typeof ClipboardList; label: string; value: string; tone: keyof typeof METRIC_TONES }) {
+function Metric({ label, value }: {  label: string; value: string; tone: keyof typeof METRIC_TONES }) {
   return (
     <article className="flex min-h-[100px] items-center gap-4 rounded-[14px] border border-slate-200 bg-white px-5 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
-      <span aria-hidden="true" className={cn("inline-flex size-12 shrink-0 items-center justify-center rounded-[12px]", METRIC_TONES[tone])}>
-        <Icon size={24} strokeWidth={1.8} />
-      </span>
       <div className="min-w-0">
         <p className="text-sm text-slate-600">{label}</p>
         <p className="mt-1 break-words text-[22px] font-semibold tracking-[-0.025em] text-slate-950">{value}</p>

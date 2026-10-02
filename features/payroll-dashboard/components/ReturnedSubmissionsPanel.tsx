@@ -1,4 +1,3 @@
-import { CircleAlert } from "lucide-react";
 import type { ReturnedPayrollRow } from "@/features/payroll-dashboard/types";
 import { formatPayrollDate } from "@/features/payroll-dashboard/utils/payrollDashboard";
 
@@ -10,7 +9,6 @@ export default function ReturnedSubmissionsPanel({
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
       <div className="flex items-center gap-2">
-        <CircleAlert size={17} className="text-rose-600" />
         <h2 className="font-bold text-slate-950">Returned Submissions</h2>
       </div>
       <p className="mt-1 text-xs text-slate-500">

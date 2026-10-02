@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Package } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { EngineerDashboardMaterialRequest } from "@/features/engineer-dashboard/types";
 import { formatDashboardDate } from "@/features/engineer-dashboard/utils/engineerDashboard";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,6 @@ export default function EngineerDashboardRequests({ requests }: { requests: Engi
       <div className="mt-4 flex-1 space-y-3">
         {requests.length === 0 ? <p className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">No material requests for this project.</p> : requests.slice(0, 4).map((request) => (
           <div key={request.id} className="flex items-start gap-3 border-b border-slate-100 pb-3 last:border-0">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500"><Package size={17} /></div>
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{request.materialName}</p><p className="mt-0.5 truncate text-xs text-slate-500">{request.quantity} {request.unit} · {formatDashboardDate(request.createdAt)}</p></div>
             <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize", request.status === "rejected" ? "bg-rose-50 text-rose-700" : request.status === "submitted" ? "bg-amber-50 text-amber-700" : request.status === "received" ? "bg-teal-50 text-teal-700" : "bg-sky-50 text-sky-700")}>{request.status}</span>
           </div>

@@ -190,7 +190,7 @@ export default function DashboardShell({
                       ? collapsed
                         ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
                         : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                      : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm",
+                      : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal ",
                   )}
                 >
                 <div

@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  Check,
-  LoaderCircle,
-  Trash2,
-} from "lucide-react";
+import { LoaderCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import { resetWorkspaceDataAction } from "@/actions/resetData";
@@ -63,7 +59,6 @@ export default function ResetDataPageClient() {
                 database. Back up the database before continuing.
               </p>
               <p className="mt-3 flex items-center gap-2 text-sm font-semibold text-red-900">
-                <Check size={16} />
                 Preserved: auth users, profile accounts
                 {preservePayroll ? ", and payroll records." : "."}
               </p>

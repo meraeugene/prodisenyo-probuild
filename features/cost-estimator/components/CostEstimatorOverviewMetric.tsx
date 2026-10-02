@@ -1,34 +1,12 @@
-import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const TONE_STYLES = {
-  teal: "bg-teal-50 text-teal-700",
-  amber: "bg-amber-50 text-amber-600",
-  sky: "bg-sky-50 text-sky-600",
-} as const;
-
 export default function CostEstimatorOverviewMetric({
-  icon: Icon,
   value,
   label,
-  tone,
 }: {
-  icon: LucideIcon;
   value: number;
   label: string;
-  tone: keyof typeof TONE_STYLES;
 }) {
   return (
     <article className="flex min-h-[126px] items-center gap-5 rounded-[14px] border border-slate-200 bg-white px-7 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
-      <span
-        aria-hidden="true"
-        className={cn(
-          "inline-flex size-14 shrink-0 items-center justify-center rounded-[14px]",
-          TONE_STYLES[tone],
-        )}
-      >
-        <Icon size={29} strokeWidth={1.8} />
-      </span>
       <div>
         <p className="text-[30px] font-semibold leading-none tracking-[-0.03em] text-teal-950">
           {value}

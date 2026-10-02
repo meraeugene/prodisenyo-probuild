@@ -1,4 +1,4 @@
-import { CalendarDays, Calculator, ChevronDown, Loader2, Save, Send } from "lucide-react";
+import { Calculator, Loader2, Save, Send } from "lucide-react";
 import { formatPayrollPeriodDate } from "@/features/payroll/utils/payrollWorkspace";
 
 interface PayrollWorkspaceHeaderProps {
@@ -44,9 +44,7 @@ export default function PayrollWorkspaceHeader({
         <div className="min-w-0 flex-1 sm:min-w-[315px] 2xl:flex-none">
           <p className="mb-1.5 text-[11px] font-semibold text-[#132238]">Payroll Period</p>
           <div className="flex h-12 items-center gap-3 rounded-[9px] border border-[#cfdce2] bg-white px-4 text-sm font-semibold text-[#21334b] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-            <CalendarDays size={17} className="shrink-0 text-[#496076]" />
             <span className="min-w-0 flex-1 truncate">{periodLabel}</span>
-            <ChevronDown size={16} className="shrink-0 text-[#64788c]" />
           </div>
         </div>
 

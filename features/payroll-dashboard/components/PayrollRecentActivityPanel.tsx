@@ -1,26 +1,5 @@
-import {
-  CalendarCheck2,
-  CheckCircle2,
-  CircleAlert,
-  FileClock,
-  FilePlus2,
-} from "lucide-react";
-import type {
-  PayrollActivityItem,
-  PayrollActivityType,
-} from "@/features/payroll-dashboard/types";
+import type { PayrollActivityItem } from "@/features/payroll-dashboard/types";
 import { formatPayrollDateTime } from "@/features/payroll-dashboard/utils/payrollDashboard";
-
-const PRESENTATION: Record<
-  PayrollActivityType,
-  { icon: typeof CalendarCheck2; tone: string }
-> = {
-  attendance: { icon: CalendarCheck2, tone: "bg-sky-50 text-sky-700" },
-  created: { icon: FilePlus2, tone: "bg-amber-50 text-amber-700" },
-  submitted: { icon: FileClock, tone: "bg-violet-50 text-violet-700" },
-  approved: { icon: CheckCircle2, tone: "bg-teal-50 text-teal-700" },
-  rejected: { icon: CircleAlert, tone: "bg-rose-50 text-rose-700" },
-};
 
 export default function PayrollRecentActivityPanel({
   items,
@@ -38,18 +17,8 @@ export default function PayrollRecentActivityPanel({
 
       <div className="mt-4 divide-y divide-slate-100">
         {visibleItems.map((item) => {
-          const presentation = PRESENTATION[item.type];
-          const Icon = presentation.icon;
           return (
             <article key={item.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-              <span
-                className={
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full " +
-                  presentation.tone
-                }
-              >
-                <Icon size={15} />
-              </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-xs font-bold leading-5 text-slate-900">

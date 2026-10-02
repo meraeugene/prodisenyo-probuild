@@ -5,6 +5,7 @@ import { Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 import { getPasswordStrength } from "../utils/passwordStrength";
 
 interface SettingsPasswordSectionProps {
+  hideDecorativeIcons?: boolean;
   newPassword: string;
   confirmPassword: string;
   showNewPassword: boolean;
@@ -18,6 +19,7 @@ interface SettingsPasswordSectionProps {
 }
 
 export default function SettingsPasswordSection({
+  hideDecorativeIcons = false,
   newPassword,
   confirmPassword,
   showNewPassword,
@@ -44,11 +46,11 @@ export default function SettingsPasswordSection({
               New Password
             </span>
             <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
-              <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />
+              {!hideDecorativeIcons && <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
-                onChange={(event) => onNewPasswordChange(event.target.value)}
+ onChange={(event) => onNewPasswordChange(event.target.value)}
                 placeholder="Enter new password"
                 autoComplete="new-password"
                 aria-describedby="settings-password-strength"
@@ -83,11 +85,11 @@ export default function SettingsPasswordSection({
               Confirm New Password
             </span>
             <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
-              <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />
+              {!hideDecorativeIcons && <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(event) =>
+ onChange={(event) =>
                   onConfirmPasswordChange(event.target.value)
                 }
                 placeholder="Confirm new password"

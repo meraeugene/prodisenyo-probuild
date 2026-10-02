@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  LuArrowUpRight as ArrowUpRight,
-  LuMapPin as MapPin,
-  LuUserRound as UserRound,
-} from "react-icons/lu";
+import { LuArrowUpRight as ArrowUpRight } from "react-icons/lu";
 import type { GmeaProject } from "../types";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { projectContainerStyle } from "../utils/projectAppearance";
@@ -23,7 +19,7 @@ export default function GmeaProjectPortfolioCard({
   const hasNewExpense = !canEdit && project.expenses.some((expense) => expense.is_new);
 
   return (
-    <article style={projectContainerStyle(project)} className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow duration-200 hover:shadow-[0_14px_32px_-20px_rgba(15,23,42,.38)]">
+    <article style={projectContainerStyle(project)} className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow duration-200 ">
       <div className="flex-1 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -45,8 +41,8 @@ export default function GmeaProjectPortfolioCard({
         </div>
 
         <div className="mt-3 grid gap-1.5 text-[13px] text-slate-500 sm:grid-cols-2">
-          <p className="flex items-center gap-2"><UserRound size={13} aria-hidden="true" /><span className="truncate">{project.client || "Client not set"}</span></p>
-          <p className="flex items-center gap-2"><MapPin size={13} aria-hidden="true" /><span className="truncate">{project.location}</span></p>
+          <p className="flex items-center gap-2"><span className="truncate">{project.client || "Client not set"}</span></p>
+          <p className="flex items-center gap-2"><span className="truncate">{project.location}</span></p>
         </div>
 
         <div className="mt-4 grid grid-cols-2 border-t border-slate-100 pt-3.5">

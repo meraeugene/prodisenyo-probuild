@@ -42,6 +42,7 @@ export default function SettingsPageClient({
 
           <div className="min-w-0 space-y-4">
             <SettingsPasswordSection
+              hideDecorativeIcons={state.profile?.role !== "ceo"}
               newPassword={state.newPassword}
               confirmPassword={state.confirmPassword}
               showNewPassword={state.showNewPassword}

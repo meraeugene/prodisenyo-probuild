@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
-import { Upload, FileSpreadsheet, X, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileSpreadsheet, X, Loader2 } from "lucide-react";
 import { parseAttendanceFiles, type ParseResult } from "@/lib/parser";
 import AttendanceUploadProgress from "@/features/attendance/components/AttendanceUploadProgress";
 import type { UploadedFileItem } from "@/types";
@@ -168,7 +168,7 @@ export default function UploadZone({
               ? "scale-[1.01] border-teal-500 bg-teal-50 shadow-[0_18px_36px_rgba(20,184,166,0.12)]"
               : hasFiles
                 ? "border-teal-100 bg-[rgb(var(--apple-snow))] shadow-[0_12px_30px_rgba(7,109,105,0.05)]"
-                : "border-slate-300 bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-[0_14px_32px_rgba(7,109,105,0.06)]"
+                : "border-slate-300 bg-white hover:border-teal-300 hover:bg-teal-50/40 "
           }
         `}
       >
@@ -183,7 +183,7 @@ export default function UploadZone({
 
         {!hasFiles ? (
           <div className="flex flex-col items-center px-8 py-16 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-[0_16px_32px_rgba(7,109,105,0.22)] transition-transform duration-200 group-hover:scale-110">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-[0_16px_32px_rgba(7,109,105,0.22)] transition-transform duration-200 ">
               <Upload size={28} className="text-white" strokeWidth={1.5} />
             </div>
             <p className="mb-1 text-[17px] font-semibold tracking-tight text-apple-charcoal">
@@ -288,10 +288,6 @@ export default function UploadZone({
 
       {error && (
         <div className="flex items-start gap-3 rounded-[12px] border border-red-100 bg-red-50 p-4">
-          <AlertCircle
-            size={16}
-            className="text-red-500 mt-0.5 flex-shrink-0"
-          />
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}

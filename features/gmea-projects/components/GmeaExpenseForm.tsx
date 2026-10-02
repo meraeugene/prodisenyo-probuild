@@ -1,16 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import {
-  Building2,
-  CalendarDays,
-  CreditCard,
-  FileText,
-  Package,
-  PhilippinePeso,
-  RotateCcw,
-  UserRound,
-} from "lucide-react";
+
 import type { Expense, GmeaExpenseOptions, GmeaProject } from "../types";
 import { EXPENSE_CATEGORIES, inputClass, today } from "../utils/gmeaConstants";
 import { formatMoney, vatBreakdown } from "../utils/gmeaCalculations";
@@ -81,7 +72,7 @@ export default function GmeaExpenseForm({
     >
       <fieldset disabled={readOnly} className="min-w-0">
         <div className="grid gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-            <TextField label="Expense date *" type="date" required value={form.date} leadingIcon={<CalendarDays size={18} />} onChange={(event) => update("date", event.target.value)} />
+            <TextField label="Expense date *" type="date" required value={form.date} onChange={(event) => update("date", event.target.value)} />
 
             <div className="sm:col-span-1 lg:col-span-2">
               <GmeaExpenseItemsField value={form.description} onChange={(value) => update("description", value)} />
@@ -90,19 +81,18 @@ export default function GmeaExpenseForm({
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
               <label htmlFor={categoryId} className="block">Category</label>
               <div className="relative">
-                <span className="pointer-events-none absolute inset-y-px left-px grid w-12 place-items-center rounded-l-[11px] border-r border-slate-100 bg-slate-50 text-slate-500" aria-hidden="true"><Package size={18} /></span>
-                <select id={categoryId} className={inputClass + " pl-14"} value={form.category} onChange={(event) => update("category", event.target.value)}>
+                <select id={categoryId} className={inputClass} value={form.category} onChange={(event) => update("category", event.target.value)}>
                   {EXPENSE_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
                 </select>
               </div>
             </div>
 
-            <SearchableSelect label="Supplier / vendor" options={expenseOptions.suppliers} maxLength={200} value={form.supplier} leadingIcon={<Building2 size={18} />} onChange={(value) => update("supplier", value)} />
-            <MoneyField label="Amount (PHP) *" required value={form.amount} leadingIcon={<PhilippinePeso size={18} />} onValueChange={(value) => update("amount", value)} />
-            <SearchableSelect label="Payment method *" options={expenseOptions.methods} placeholder="Type or choose a payment method" required maxLength={100} value={form.method} leadingIcon={<CreditCard size={18} />} onChange={(value) => update("method", value)} />
-            <TextField label="OR / invoice number" maxLength={100} value={form.invoice_number} leadingIcon={<FileText size={18} />} onChange={(event) => update("invoice_number", event.target.value)} />
-            <SearchableSelect label="Invoice issued to" options={expenseOptions.invoiceNames} maxLength={200} value={form.invoice_name} leadingIcon={<UserRound size={18} />} onChange={(value) => update("invoice_name", value)} />
-            <MoneyField label="Refunded Sir Edward (PHP)" value={form.refunded_amount} leadingIcon={<RotateCcw size={18} />} onValueChange={(value) => update("refunded_amount", value)} />
+            <SearchableSelect label="Supplier / vendor" options={expenseOptions.suppliers} maxLength={200} value={form.supplier} onChange={(value) => update("supplier", value)} />
+            <MoneyField label="Amount (PHP) *" required value={form.amount} onValueChange={(value) => update("amount", value)} />
+            <SearchableSelect label="Payment method *" options={expenseOptions.methods} placeholder="Type or choose a payment method" required maxLength={100} value={form.method} onChange={(value) => update("method", value)} />
+            <TextField label="OR / invoice number" maxLength={100} value={form.invoice_number} onChange={(event) => update("invoice_number", event.target.value)} />
+            <SearchableSelect label="Invoice issued to" options={expenseOptions.invoiceNames} maxLength={200} value={form.invoice_name} onChange={(value) => update("invoice_name", value)} />
+            <MoneyField label="Refunded Sir Edward (PHP)" value={form.refunded_amount} onValueChange={(value) => update("refunded_amount", value)} />
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
               <label htmlFor={`${categoryId}-vat`} className="block">VAT treatment</label>
@@ -110,7 +100,7 @@ export default function GmeaExpenseForm({
                 id={`${categoryId}-vat`}
                 className={inputClass}
                 value={form.vat_mode}
-                onChange={(event) => {
+ onChange={(event) => {
                   const vat_mode = event.target.value as Expense["vat_mode"];
                   setForm((current) => ({ ...current, vat_mode, vat_rate: vat_mode === "off" ? 0 : 12 }));
                 }}

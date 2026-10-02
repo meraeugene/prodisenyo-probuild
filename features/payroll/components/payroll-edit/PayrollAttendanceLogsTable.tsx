@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Clock3 } from "lucide-react";
+import { useState } from "react";
+import { PayrollDetailPagination } from "./PayrollDetailPagination";
+
 import type { DailyLogRow } from "@/types";
 import {
   extractSiteName,
@@ -37,24 +39,27 @@ interface PayrollAttendanceLogsTableProps {
 export function PayrollAttendanceLogsTable(
   props: PayrollAttendanceLogsTableProps,
 ) {
+  const [selectedPage, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(props.logs.length / 5));
+  const page = Math.min(selectedPage, totalPages);
+  const visibleLogs = props.logs.slice((page - 1) * 5, page * 5);
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex min-h-11 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2">
-          <Clock3 size={16} className="text-teal-700" />
           <div>
-            <h3 className="text-xs font-bold text-slate-950">Attendance Logs</h3>
-            <p className="text-[10px] text-slate-400">Biometric time and editable payable hours</p>
+            <h3 className="text-[13px] font-semibold text-slate-950">Attendance Logs</h3>
+            <p className="text-[13px] text-slate-400">Biometric time and editable payable hours</p>
           </div>
         </div>
-        <span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">
+        <span className="rounded-md bg-slate-100 px-2 py-1 text-[13px] font-medium text-slate-500">
           {props.logs.length} record{props.logs.length === 1 ? "" : "s"}
         </span>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-xs">
-          <thead className="bg-slate-50 text-[9px] uppercase tracking-[0.08em] text-slate-500">
+        <table className="w-full min-w-[820px] text-[13px]">
+          <thead className="bg-slate-50 text-[13px] uppercase tracking-[0.08em] text-slate-500">
             <tr>
               {[
                 "Date",
@@ -67,7 +72,7 @@ export function PayrollAttendanceLogsTable(
                 "Payable",
                 "Status",
               ].map((label) => (
-                <th key={label} className="px-3 py-2 text-left font-semibold">
+                <th key={label} className="px-3 py-2 text-left font-medium">
                   {label}
                 </th>
               ))}
@@ -76,12 +81,12 @@ export function PayrollAttendanceLogsTable(
           <tbody>
             {props.logs.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
+                <td colSpan={9} className="px-4 py-10 text-center text-[13px] text-slate-500">
                   No attendance logs found.
                 </td>
               </tr>
             ) : (
-              props.visibleLogs.map((log, index) => {
+              visibleLogs.map((log, index) => {
                 const regular = props.getRegularHours(log);
                 const overtime = props.getOvertimeHours(log);
                 const status = getPayrollLogStatus(
@@ -102,28 +107,28 @@ export function PayrollAttendanceLogsTable(
                     key={`${log.date}-${log.employee}-${index}`}
                     className="border-t border-slate-100 transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
+                    <td className="whitespace-nowrap px-3 py-2 font-medium text-slate-800">
                       {toWeekLabel(log.date)}
                     </td>
                     <td className="max-w-56 px-3 py-2 text-slate-500">
                       {isMultiBranch ? (
                         <>
-                          <span className="inline-flex rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">MULTI BRANCH</span>
-                          <span className="mt-1 block whitespace-nowrap text-[10px]">{sitePath.join(" -> ")}</span>
+                          <span className="inline-flex rounded bg-amber-50 px-1.5 py-0.5 text-[13px] font-medium text-amber-700">MULTI BRANCH</span>
+                          <span className="mt-1 block whitespace-nowrap text-[13px]">{sitePath.join(" -> ")}</span>
                         </>
                       ) : sitePath[0] || "-"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px] text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-2 tabular-nums text-[13px] text-slate-700">
                       {timeIn ? formatLogTime(timeIn) : "-"}
-                      {timeIn && log.timeInSite ? <span className="ml-1 text-[9px] text-slate-400">({extractSiteName(log.timeInSite)})</span> : null}
+                      {timeIn && log.timeInSite ? <span className="ml-1 text-[13px] text-slate-400">({extractSiteName(log.timeInSite)})</span> : null}
                       <span className="mx-1.5 text-slate-300">–</span>
                       {timeOut ? formatLogTime(timeOut) : "-"}
-                      {timeOut && log.timeOutSite ? <span className="ml-1 text-[9px] text-slate-400">({extractSiteName(log.timeOutSite)})</span> : null}
+                      {timeOut && log.timeOutSite ? <span className="ml-1 text-[13px] text-slate-400">({extractSiteName(log.timeOutSite)})</span> : null}
                     </td>
-                    <td className="px-3 py-2 font-mono font-semibold text-slate-800">
+                    <td className="px-3 py-2 tabular-nums font-medium text-slate-800">
                       {formatPayrollNumber(biometric.workedHours)}
                     </td>
-                    <td className="px-3 py-2 font-mono font-semibold text-amber-700">
+                    <td className="px-3 py-2 tabular-nums font-medium text-amber-700">
                       -{formatPayrollNumber(biometric.lunchDeductionHours)}
                     </td>
                     <td className="px-3 py-1.5">
@@ -137,7 +142,7 @@ export function PayrollAttendanceLogsTable(
                         onChange={(event) =>
                           props.onUpdateHour(log, "regularHours", event.target.value)
                         }
-                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                        className="h-9 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right tabular-nums text-[13px] font-medium outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
                       />
                     </td>
                     <td className="px-3 py-1.5">
@@ -150,15 +155,15 @@ export function PayrollAttendanceLogsTable(
                         onChange={(event) =>
                           props.onUpdateHour(log, "overtimeHours", event.target.value)
                         }
-                        className="h-7 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right font-mono text-[11px] font-semibold outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                        className="h-9 w-[58px] rounded-md border border-slate-200 bg-white px-1.5 text-right tabular-nums text-[13px] font-medium outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
                       />
                     </td>
-                    <td className="px-3 py-2 font-mono font-bold text-slate-950">
+                    <td className="px-3 py-2 tabular-nums font-medium text-slate-950">
                       {formatPayrollNumber(round2(regular + overtime))}
                     </td>
                     <td className="px-3 py-2">
                       <span
-                        className={`inline-flex whitespace-nowrap rounded-md px-2 py-1 text-[9px] font-bold ${status.className}`}
+                        className={`inline-flex whitespace-nowrap rounded-md px-2 py-1 text-[13px] font-medium ${status.className}`}
                       >
                         {status.label}
                       </span>
@@ -171,43 +176,7 @@ export function PayrollAttendanceLogsTable(
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-3.5 py-2">
-        <span className="text-[10px] text-slate-500">
-          Showing {props.visibleLogs.length} of {props.logs.length}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            aria-label="Previous logs page"
-            onClick={() => props.onPageChange(Math.max(1, props.page - 1))}
-            disabled={props.page === 1 || props.showAllLogs}
-            className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-35"
-          >
-            <ArrowLeft size={13} />
-          </button>
-          <span className="min-w-11 text-center text-[10px] font-semibold text-slate-600">
-            {props.showAllLogs ? "All" : `${props.page}/${props.totalPages}`}
-          </span>
-          <button
-            type="button"
-            aria-label="Next logs page"
-            onClick={() =>
-              props.onPageChange(Math.min(props.totalPages, props.page + 1))
-            }
-            disabled={props.page === props.totalPages || props.showAllLogs}
-            className="grid h-7 w-7 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-35"
-          >
-            <ArrowRight size={13} />
-          </button>
-          <button
-            type="button"
-            onClick={props.onToggleAllLogs}
-            className="h-7 rounded-md border border-slate-200 px-2.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            {props.showAllLogs ? "Paginate" : "View all"}
-          </button>
-        </div>
-      </div>
+      <PayrollDetailPagination page={page} totalPages={totalPages} onChange={setPage} />
     </section>
   );
 }

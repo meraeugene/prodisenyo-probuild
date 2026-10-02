@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { FolderKanban } from "lucide-react";
 
 export default function ProjectThumbnail({
   src,
@@ -28,14 +27,12 @@ export default function ProjectThumbnail({
       <div
         className={`flex items-center justify-center bg-teal-50 text-teal-700 ${className}`}
         aria-label={`${name} project image unavailable`}
-      >
-        <FolderKanban size={24} />
-      </div>
+      />
     );
   }
 
-  // eslint-disable-next-line @next/next/no-img-element
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={imageSrc}
       alt=""

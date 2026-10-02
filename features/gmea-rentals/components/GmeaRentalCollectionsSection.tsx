@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CircleDollarSign,
-  CreditCard,
-  Landmark,
-  WalletCards,
-} from "lucide-react";
+import { CreditCard } from "lucide-react";
 import type { GmeaRental, RentalPayment } from "../types";
 import { rentalCollectionSummary } from "../utils/collectionCalculations";
 import {
@@ -38,22 +33,16 @@ export default function GmeaRentalCollectionsSection({
       label: "Total Rental Charge",
       value: summary.charge,
       caption: "Equipment billing total",
-      icon: WalletCards,
-      color: "text-teal-700",
     },
     {
       label: "Amount Received",
       value: summary.received,
       caption: "Posted payments",
-      icon: CircleDollarSign,
-      color: "text-sky-600",
     },
     {
       label: "Remaining Balance",
       value: summary.balance,
       caption: "Still to be collected",
-      icon: Landmark,
-      color: "text-rose-600",
     },
   ];
 
@@ -81,13 +70,12 @@ export default function GmeaRentalCollectionsSection({
       </header>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {cards.map(({ label, value, caption, icon: Icon, color }) => (
+        {cards.map(({ label, value, caption }) => (
           <article
             key={label}
             className="min-h-28 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)]"
           >
             <div className="flex items-center gap-2">
-              <Icon size={14} className={color} aria-hidden="true" />
               <p className="text-sm font-medium text-slate-500">{label}</p>
             </div>
             <p className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 tabular-nums">

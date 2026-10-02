@@ -2,6 +2,7 @@
 import { useState, type ReactNode } from "react";
 import GmeaDialog from "./GmeaDialog";
 import { secondaryClass } from "../utils/gmeaConstants";
+import { cn } from "@/lib/utils";
 
 export default function GmeaConfirmButton({
   label,
@@ -11,6 +12,7 @@ export default function GmeaConfirmButton({
   triggerIcon,
   triggerLabel,
   compactTrigger = false,
+  triggerClassName,
 }: {
   label: string;
   description: string;
@@ -19,6 +21,7 @@ export default function GmeaConfirmButton({
   triggerIcon?: ReactNode;
   triggerLabel?: string;
   compactTrigger?: boolean;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -26,7 +29,7 @@ export default function GmeaConfirmButton({
       <button
         type="button"
         aria-label={label}
-        className={
+        className={cn(
           compactTrigger
             ? "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-colors " + (danger ? "text-rose-600 hover:bg-rose-50" : "text-slate-600 hover:bg-slate-100")
             : triggerIcon && !triggerLabel
@@ -36,8 +39,9 @@ export default function GmeaConfirmButton({
                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-900")
             : danger
               ? "inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500 bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:border-rose-600 hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 disabled:opacity-50"
-              : secondaryClass + " gap-2"
-        }
+              : secondaryClass + " gap-2",
+          triggerClassName,
+        )}
         onClick={() => setOpen(true)}
       >
         {triggerIcon}

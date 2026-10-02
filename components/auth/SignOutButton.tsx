@@ -28,7 +28,7 @@ function SignOutButtonContent({
       <button
         type="submit"
         disabled={busy}
-        className={`group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-70 ${
+        className={`group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal  disabled:cursor-not-allowed disabled:opacity-70 ${
           collapsed ? "justify-center px-2.5" : ""
         }`}
       >

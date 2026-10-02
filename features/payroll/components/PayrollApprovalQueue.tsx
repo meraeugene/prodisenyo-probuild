@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import PayrollApprovalEmployeeLogsModal from "@/features/payroll/components/PayrollApprovalEmployeeLogsModal";
 import PayrollApprovalQueueCard from "@/features/payroll/components/PayrollApprovalQueueCard";
@@ -62,7 +62,6 @@ export default function PayrollApprovalQueue({
             Payroll adjustments
           </h2>
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <Clock3 size={14} />
             {state.pendingCount} pending
           </span>
         </div>

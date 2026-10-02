@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { PayrollApprovalRow } from "@/features/payroll-dashboard/types";
 import {
   formatPayrollCurrency,
@@ -55,7 +55,7 @@ export default function PayrollApprovalsPanel({
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="inline-flex items-center gap-1.5 text-amber-700">
-                      <Clock3 size={13} /> {formatPayrollDate(approval.submittedAt)}
+                       {formatPayrollDate(approval.submittedAt)}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-right font-bold text-slate-900">

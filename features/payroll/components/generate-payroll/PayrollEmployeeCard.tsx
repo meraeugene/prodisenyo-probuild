@@ -1,4 +1,4 @@
-import { CheckCircle2, MoreHorizontal, TriangleAlert } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
 import {
   buildGroupedEmployeeMetrics,
@@ -41,7 +41,7 @@ export default function PayrollEmployeeCard({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-[#132842]">{employee.name}</p>
           <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.03em] text-[#718499]">
-            {employee.employeeId ?? employee.role}
+            {employee.role}
           </p>
         </div>
         <button
@@ -76,7 +76,6 @@ export default function PayrollEmployeeCard({
 
       <div className="mt-4 flex justify-end">
         <span className={needsReview ? "inline-flex items-center gap-1.5 rounded-full bg-[#fff0d9] px-3 py-1.5 text-[11px] font-semibold text-[#c96808]" : "inline-flex items-center gap-1.5 rounded-full bg-[#dff7ee] px-3 py-1.5 text-[11px] font-semibold text-[#078d64]"}>
-          {needsReview ? <TriangleAlert size={13} /> : <CheckCircle2 size={13} />}
           {needsReview ? "Review" : "Ready"}
         </span>
       </div>

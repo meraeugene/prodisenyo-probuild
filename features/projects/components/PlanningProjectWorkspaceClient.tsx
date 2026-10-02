@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  LoaderCircle,
-  UserRoundCheck,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { activateProjectAfterEstimateAction } from "@/actions/estimateProcurement";
 import EstimateReviewsPageClient from "@/features/cost-estimator/components/EstimateReviewsPageClient";
@@ -89,7 +84,7 @@ export default function PlanningProjectWorkspaceClient({
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700"><UserRoundCheck size={15} /> Final assignment</p>
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700"> Final assignment</p>
             <h2 className="mt-2 text-xl font-bold text-slate-950">Activate project</h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Confirm the engineer responsible for delivery.

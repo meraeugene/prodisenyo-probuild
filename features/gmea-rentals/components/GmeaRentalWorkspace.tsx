@@ -3,15 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import {
-  ArrowLeft,
-  CalendarDays,
-  CalendarRange,
-  MapPin,
-  Truck,
-  UserRound,
-  WalletCards,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { GmeaRental, RentalOperationsData } from "../types";
 import {
   getGmeaRentalAction,
@@ -82,15 +74,12 @@ export default function GmeaRentalWorkspace({
               </h1>
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/80">
                 <span className="inline-flex items-center gap-2">
-                  <UserRound size={14} aria-hidden="true" />
                   {rental.client}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MapPin size={14} aria-hidden="true" />
                   {rental.location}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <CalendarDays size={14} aria-hidden="true" />
                   {formatRentalDate(rental.start_date)} –{" "}
                   {formatRentalDate(rental.end_date)}
                 </span>
@@ -108,30 +97,23 @@ export default function GmeaRentalWorkspace({
               label: "Rental amount",
               value: formatRentalMoney(total),
               caption: "Total of all equipment items",
-              icon: WalletCards,
-              tone: "text-teal-700",
             },
             {
               label: "Equipment units",
               value: String(rental.items.length),
               caption: "Units assigned to this rental",
-              icon: Truck,
-              tone: "text-sky-700",
             },
             {
               label: "Rental period",
               value: `${formatRentalDate(rental.start_date)} – ${formatRentalDate(rental.end_date)}`,
               caption: "Scheduled reservation window",
-              icon: CalendarRange,
-              tone: "text-violet-700",
             },
-          ].map(({ label, value, caption, icon: Icon, tone }) => (
+          ].map(({ label, value, caption }) => (
             <article
               key={label}
               className="min-h-28 min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)]"
             >
               <div className="flex items-center gap-2">
-                <Icon size={14} className={tone} aria-hidden="true" />
                 <p className="text-sm font-medium text-slate-500">{label}</p>
               </div>
               <p className="mt-1 break-words text-xl font-semibold tracking-tight text-slate-950 tabular-nums xl:text-2xl">

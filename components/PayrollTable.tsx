@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-  AlertTriangle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import type { Employee, EmployeeCalculated, PayrollConfig } from "@/types";
 import { capitalize, formatNumber } from "@/lib/payroll";
 import { matchesSearchText } from "@/lib/utils";
@@ -78,10 +72,6 @@ export default function PayrollTable({
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-full sm:max-w-xs">
-          <Search
-            size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-apple-steel"
-          />
           <input
             type="text"
             value={query}
@@ -90,9 +80,7 @@ export default function PayrollTable({
               setPage(1);
             }}
             placeholder="Search employee…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal
-              placeholder:text-apple-silver focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15
-              focus:border-apple-charcoal transition-all"
+            className="w-full pl-3 pr-4 py-2.5 rounded-2xl border border-apple-silver bg-white text-sm text-apple-charcoal\r\n              placeholder:text-apple-silver focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15\r\n              focus:border-apple-charcoal transition-all"
           />
         </div>
 
@@ -263,7 +251,6 @@ export default function PayrollTable({
                       emp.otHours === 0 &&
                       emp.grossPay === 0 && (
                         <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-amber-50 border border-amber-100 text-[10px] font-medium text-amber-700">
-                          <AlertTriangle size={10} className="shrink-0" />
                           No attendance
                         </span>
                       )}

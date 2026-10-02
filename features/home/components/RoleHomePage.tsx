@@ -1,24 +1,6 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Calculator,
-  ClipboardList,
-  Clock3,
-  FolderKanban,
-  LayoutDashboard,
-  LineChart,
-  Receipt,
-  Settings,
-  Trash2,
-  Upload,
-  UserRoundSearch,
-  Users,
-  ListTodo,
-  FileText,
-  ClipboardCheck,
-  BadgeDollarSign,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+
 import type { AppRole } from "@/types/database";
 import RoleGreetingHero from "@/features/home/components/RoleGreetingHero";
 import EmployeeHomePage from "./EmployeeHomePage";
@@ -27,36 +9,6 @@ type FeatureCard = {
   href: string;
   title: string;
   description: string;
-};
-
-const FEATURE_ICONS: Record<string, LucideIcon> = {
-  "/dashboard": LayoutDashboard,
-  "/upload-attendance": Upload,
-  "/review-attendance": UserRoundSearch,
-  "/generate-payroll": FolderKanban,
-  "/budget-tracker": Receipt,
-  "/payroll-analytics": LayoutDashboard,
-  "/payroll-change": LineChart,
-  "/payroll-approvals": LineChart,
-  "/payroll-reports": LineChart,
-  "/overtime-approvals": Clock3,
-  "/estimate-approvals": Calculator,
-  "/estimate-reviews": Calculator,
-  "/add-user": Users,
-  "/reset-data": Trash2,
-  "/request-overtime": Clock3,
-  "/settings": Settings,
-  "/cost-estimator": Calculator,
-  "/request-material": ClipboardList,
-  "/my-tasks": ListTodo,
-  "/projects": FolderKanban,
-  "/gmea-projects": FolderKanban,
-  "/gmea-overview": LayoutDashboard,
-  "/progress-reports": FileText,
-  "/overview": LayoutDashboard,
-  "/projects?section=material-approvals": ClipboardCheck,
-  "/material-approvals": ClipboardCheck,
-  "/purchasing-approvals": BadgeDollarSign,
 };
 
 const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
@@ -314,19 +266,13 @@ export default function RoleHomePage({
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {featureCards.map((card) => {
-            const Icon = FEATURE_ICONS[card.href] ?? FolderKanban;
-
             return (
               <Link
                 key={card.href}
                 href={card.href}
-                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/80 p-5 text-teal-950 shadow-[0_16px_42px_rgba(15,23,42,0.07)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-teal-100 hover:shadow-[0_20px_48px_rgba(15,23,42,0.11)]"
+                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/80 p-5 text-teal-950 shadow-[0_16px_42px_rgba(15,23,42,0.07)] backdrop-blur-xl transition-all duration-300  hover:border-teal-100 "
               >
                 <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-teal-100/60 blur-2xl transition duration-300 group-hover:bg-teal-100" />
-
-                <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-teal-200 bg-teal-50 text-teal-700 shadow-[0_6px_14px_rgba(7,109,105,0.12)] transition duration-300 group-hover:scale-105 group-hover:border-teal-300 group-hover:text-teal-800">
-                  <Icon size={18} />
-                </div>
 
                 <div className="relative z-10 flex items-start justify-between gap-3">
                   <p className="text-[20px] font-semibold tracking-[-0.02em] text-teal-950">
@@ -341,7 +287,7 @@ export default function RoleHomePage({
                 <div className="relative z-10 mt-2 flex items-center justify-end">
                   <ArrowRight
                     size={16}
-                    className="text-teal-700 transition duration-300 group-hover:translate-x-1 group-hover:text-teal-800"
+                    className="text-teal-700 transition duration-300  group-hover:text-teal-800"
                   />
                 </div>
               </Link>

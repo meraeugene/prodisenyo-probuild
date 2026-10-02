@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ClipboardList,
-  FilePlus2,
-  FileText,
-  Info,
-  MapPin,
-} from "lucide-react";
+import { FilePlus2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   formatBudgetMoney,
@@ -101,12 +95,10 @@ export default function CostEstimatorOverviewProjectCard({
       {isNotStarted ? (
         <>
           <p className="mt-3 flex items-center gap-2 text-[15px] text-slate-600">
-            <MapPin aria-hidden="true" size={19} />
             <span className="break-words">{location}</span>
           </p>
 
           <div className="mt-8 flex min-h-[96px] items-center justify-center gap-3 rounded-[12px] border border-dashed border-teal-300 bg-teal-50/20 px-5 text-center text-sm text-slate-600">
-            <ClipboardList aria-hidden="true" className="shrink-0 text-teal-700" size={21} />
             <span>No BOQ has been created for this project.</span>
           </div>
 
@@ -172,12 +164,10 @@ export default function CostEstimatorOverviewProjectCard({
 
             {estimate.status === "submitted" ? (
               <p className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-                <Info aria-hidden="true" size={17} className="text-sky-500" />
                 Waiting for CEO review
               </p>
             ) : estimate.status === "rejected" ? (
               <p className="mt-3 flex items-center gap-2 text-sm text-rose-700">
-                <Info aria-hidden="true" size={17} />
                 Returned for correction
               </p>
             ) : null}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
 import type { ProjectEstimateDraftLine } from "@/features/cost-estimator/types";
@@ -104,12 +104,11 @@ export default function CostEstimatorDraftTable({
         </div>
         <label className="relative block w-full lg:w-64">
           <span className="sr-only">Search estimate items</span>
-          <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search items..."
-            className="h-11 w-full rounded-[9px] border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+            className="h-11 w-full rounded-[9px] border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
           />
         </label>
       </div>

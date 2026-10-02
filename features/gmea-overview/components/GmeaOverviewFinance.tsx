@@ -1,4 +1,3 @@
-import { BarChart3 } from "lucide-react";
 import { formatOverviewMoney } from "../utils/gmeaOverviewSelectors";
 
 type Division = {
@@ -25,7 +24,6 @@ export default function GmeaOverviewFinance({
     <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,.7fr)]">
       <article className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)]">
         <div className="flex items-center gap-2">
-          <BarChart3 size={16} className="text-[#087d76]" />
           <div>
             <h2 className="text-[16px] font-bold tracking-[-0.025em] text-slate-950">
               Financial Snapshot

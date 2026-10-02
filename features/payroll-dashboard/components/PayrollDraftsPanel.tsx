@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FilePenLine } from "lucide-react";
+
 import type { PayrollDraftRow } from "@/features/payroll-dashboard/types";
 import {
   formatPayrollCurrency,
@@ -14,9 +14,6 @@ export default function PayrollDraftsPanel({
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
       <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
-          <FilePenLine size={17} />
-        </span>
         <div>
           <h2 className="font-bold text-slate-950">Payroll Drafts</h2>
           <p className="mt-0.5 text-xs text-slate-500">

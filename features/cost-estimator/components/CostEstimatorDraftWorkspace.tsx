@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Calculator, CalendarDays, ClipboardList, HardHat, Layers3, LoaderCircle, MapPin, Save, Send, Trash2, UserRound, Wrench } from "lucide-react";
+import { ArrowLeft, LoaderCircle, Save, Send, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CostEstimatorDraftSidebar from "@/features/cost-estimator/components/CostEstimatorDraftSidebar";
 import CostEstimatorDraftTable from "@/features/cost-estimator/components/CostEstimatorDraftTable";
@@ -68,21 +68,21 @@ export default function CostEstimatorDraftWorkspace({
       </header>
 
       <section className="grid gap-px overflow-hidden rounded-[14px] border border-slate-200 bg-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.035)] sm:grid-cols-2 xl:grid-cols-4">
-        <Fact icon={ClipboardList} label="Project" value={form.projectName} />
-        <Fact icon={Wrench} label="Project Type" value={formatProjectTypeLabel(form.projectType || null)} />
-        <Fact icon={MapPin} label="Location" value={form.location || "Not recorded"} />
-        <Fact icon={UserRound} label="Owner" value={form.ownerName || "Not recorded"} />
-        <Fact icon={Calculator} label="Budget Ceiling" value={budgetCeiling === null ? "Not recorded" : formatBudgetMoney(budgetCeiling)} />
-        <Fact icon={CalendarDays} label="Date" value={draftedDate ? new Intl.DateTimeFormat("en-PH", { year: "numeric", month: "long", day: "numeric" }).format(new Date(draftedDate)) : "Not recorded"} />
-        <Fact icon={ClipboardList} label="Status" value="Draft" valueClass="text-teal-800" />
+        <Fact  label="Project" value={form.projectName} />
+        <Fact  label="Project Type" value={formatProjectTypeLabel(form.projectType || null)} />
+        <Fact  label="Location" value={form.location || "Not recorded"} />
+        <Fact  label="Owner" value={form.ownerName || "Not recorded"} />
+        <Fact  label="Budget Ceiling" value={budgetCeiling === null ? "Not recorded" : formatBudgetMoney(budgetCeiling)} />
+        <Fact  label="Date" value={draftedDate ? new Intl.DateTimeFormat("en-PH", { year: "numeric", month: "long", day: "numeric" }).format(new Date(draftedDate)) : "Not recorded"} />
+        <Fact  label="Status" value="Draft" valueClass="text-teal-800" />
       </section>
 
       <section aria-label="Estimate totals" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <Metric icon={ClipboardList} label="BOQ Items" value={`${boqItemCount} items`} />
-        <Metric icon={Layers3} label="Materials" value={formatBudgetMoney(categoryTotal("materials"))} />
-        <Metric icon={HardHat} label="Labor" value={formatBudgetMoney(categoryTotal("labor"))} />
-        <Metric icon={Wrench} label="Equipment" value={formatBudgetMoney(categoryTotal("equipment"))} />
-        <Metric icon={Calculator} label="Total Estimate" value={formatBudgetMoney(total)} />
+        <Metric  label="BOQ Items" value={`${boqItemCount} items`} />
+        <Metric  label="Materials" value={formatBudgetMoney(categoryTotal("materials"))} />
+        <Metric  label="Labor" value={formatBudgetMoney(categoryTotal("labor"))} />
+        <Metric  label="Equipment" value={formatBudgetMoney(categoryTotal("equipment"))} />
+        <Metric  label="Total Estimate" value={formatBudgetMoney(total)} />
       </section>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -103,10 +103,10 @@ export default function CostEstimatorDraftWorkspace({
   );
 }
 
-function Fact({ icon: Icon, label, value, valueClass }: { icon: typeof ClipboardList; label: string; value: string; valueClass?: string }) {
-  return <div className="flex min-h-[94px] items-center gap-3 bg-white px-5 py-4"><span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700"><Icon aria-hidden="true" size={19} /></span><div className="min-w-0"><p className="text-xs text-slate-500">{label}</p><p className={cn("mt-1 break-words text-sm font-semibold text-slate-950", valueClass)}>{value}</p></div></div>;
+function Fact({ label, value, valueClass }: {  label: string; value: string; valueClass?: string }) {
+  return <div className="flex min-h-[94px] items-center gap-3 bg-white px-5 py-4"><div className="min-w-0"><p className="text-xs text-slate-500">{label}</p><p className={cn("mt-1 break-words text-sm font-semibold text-slate-950", valueClass)}>{value}</p></div></div>;
 }
 
-function Metric({ icon: Icon, label, value }: { icon: typeof ClipboardList; label: string; value: string }) {
-  return <article className="flex min-h-[90px] items-center gap-3 rounded-[13px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.035)]"><span className="inline-flex size-11 shrink-0 items-center justify-center rounded-[11px] bg-teal-50 text-teal-700"><Icon aria-hidden="true" size={21} /></span><div className="min-w-0"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</p></div></article>;
+function Metric({ label, value }: {  label: string; value: string }) {
+  return <article className="flex min-h-[90px] items-center gap-3 rounded-[13px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.035)]"><div className="min-w-0"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</p></div></article>;
 }

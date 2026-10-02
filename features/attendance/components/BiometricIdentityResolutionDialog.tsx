@@ -1,5 +1,6 @@
 "use client";
 
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { useEffect, useMemo, useState } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ export function BiometricIdentityResolutionDialog({
   dailyLogs = [],
   onClose,
 }: Props) {
+  useDialogEscape(() => { if (!saving) onClose(); }, 90);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState("");

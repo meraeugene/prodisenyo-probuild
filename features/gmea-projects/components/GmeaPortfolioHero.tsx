@@ -37,7 +37,7 @@ export default function GmeaPortfolioHero({
           {canEdit && (
             <button
               type="button"
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/70 bg-white px-4 py-2.5 text-sm font-bold text-[#076d69] shadow-[0_8px_24px_-12px_rgba(0,0,0,.45)] transition hover:-translate-y-0.5 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-white/70 bg-white px-4 py-2.5 text-sm font-bold text-[#076d69] shadow-[0_8px_24px_-12px_rgba(0,0,0,.45)] transition  hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               onClick={onCreate}
             >
               <Plus size={18} aria-hidden="true" />

@@ -1,4 +1,4 @@
-import { Building2, CalendarDays, Download, Search, Settings2, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, Download, Settings2, X } from "lucide-react";
 import type { Step2Sort } from "@/types";
 import type { PayrollReviewFilter } from "@/features/payroll/utils/payrollWorkspace";
 
@@ -55,22 +55,20 @@ export default function PayrollWorkspaceControls({
       <div className="flex flex-col gap-3 py-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
         <div className="grid flex-1 gap-3 md:grid-cols-2 2xl:max-w-[760px] 2xl:grid-cols-[minmax(220px,1fr)_170px_190px]">
           <label className="relative block">
-            <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#76899c]" />
             <input
               type="search"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Search employee name or ID..."
-              className="h-11 w-full rounded-[8px] border border-[#cfdae1] bg-white pl-10 pr-4 text-sm text-[#21354d] outline-none transition placeholder:text-[#8da0b1] focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
+              className="h-11 w-full rounded-[8px] border border-[#cfdae1] bg-white pl-3 pr-4 text-sm text-[#21354d] outline-none transition placeholder:text-[#8da0b1] focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
             />
           </label>
 
           <label className="relative">
-            <Building2 size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#647a8d]" />
             <select
               value={site}
               onChange={(event) => onSiteChange(event.target.value)}
-              className="h-11 w-full appearance-none rounded-[8px] border border-[#cfdae1] bg-white pl-10 pr-8 text-sm font-medium text-[#31465e] outline-none focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
+              className="h-11 w-full rounded-[8px] border border-[#cfdae1] bg-white pl-3 pr-8 text-sm font-medium text-[#31465e] outline-none focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
             >
               <option value="ALL">All Sites</option>
               {sites.map((siteName) => <option key={siteName} value={siteName}>{siteName}</option>)}
@@ -78,11 +76,10 @@ export default function PayrollWorkspaceControls({
           </label>
 
           <label className="relative">
-            <SlidersHorizontal size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#647a8d]" />
             <select
               value={sort}
               onChange={(event) => onSortChange(event.target.value as Step2Sort)}
-              className="h-11 w-full appearance-none rounded-[8px] border border-[#cfdae1] bg-white pl-10 pr-8 text-sm font-medium text-[#31465e] outline-none focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
+              className="h-11 w-full rounded-[8px] border border-[#cfdae1] bg-white pl-3 pr-8 text-sm font-medium text-[#31465e] outline-none focus:border-[#0b8f85] focus:ring-4 focus:ring-[#0b8f85]/10"
             >
               <option value="name-asc">Sort by Name (A-Z)</option>
               <option value="name-desc">Sort by Name (Z-A)</option>

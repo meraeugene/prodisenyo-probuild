@@ -1,5 +1,6 @@
 "use client";
 
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { MinusCircle, Plus, X } from "lucide-react";
 import type { AdjustmentFormType } from "@/features/payroll/utils/payrollEditModalHelpers";
 
@@ -47,7 +48,7 @@ function NumberField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-1.5 text-xs font-semibold text-slate-600">
+    <label className="grid gap-1.5 text-[13px] font-medium text-slate-600">
       {label}
       <input
         type="number"
@@ -55,7 +56,7 @@ function NumberField({
         step="0.01"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
         placeholder="0.00"
       />
     </label>
@@ -70,13 +71,13 @@ function NotesField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-1.5 text-xs font-semibold text-slate-600">
+    <label className="grid gap-1.5 text-[13px] font-medium text-slate-600">
       Notes
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={3}
-        className="resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+        className="resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-900 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
         placeholder="Optional note"
       />
     </label>
@@ -92,6 +93,7 @@ export function PayrollAdjustmentDialog({
   onSubmit,
   onClearReductions,
 }: PayrollAdjustmentDialogProps) {
+  useDialogEscape(onClose, 70);
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/40 p-4">
       <form
@@ -103,10 +105,10 @@ export function PayrollAdjustmentDialog({
       >
         <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+            <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-teal-700">
               Adjustment
             </p>
-            <h3 className="mt-1 text-lg font-bold text-slate-950">
+            <h3 className="mt-1 text-base font-semibold text-slate-950">
               {FORM_TITLES[activeForm]}
             </h3>
           </div>
@@ -154,7 +156,7 @@ export function PayrollAdjustmentDialog({
                 onChange={(value) => onChange("overtimeNotes", value)}
               />
               {overtimeValidationMessage ? (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700">
                   {overtimeValidationMessage}
                 </p>
               ) : null}
@@ -225,7 +227,7 @@ export function PayrollAdjustmentDialog({
             <button
               type="button"
               onClick={onClearReductions}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 text-[13px] font-medium text-red-600 transition hover:bg-red-50"
             >
               <MinusCircle size={16} />
               Clear
@@ -234,13 +236,13 @@ export function PayrollAdjustmentDialog({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-4 text-[13px] font-medium text-slate-700 transition hover:bg-slate-100"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-[13px] font-medium text-white transition hover:bg-teal-800"
           >
             <Plus size={16} />
             Save adjustment

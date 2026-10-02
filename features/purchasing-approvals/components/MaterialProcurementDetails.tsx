@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileCheck2, LoaderCircle, Store, Truck } from "lucide-react";
+import { Download, FileCheck2, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getPurchaseReceiptDownloadUrlAction } from "@/actions/purchasing";
 import type { ProjectPurchaseOrder } from "@/features/project-cost-tracking/types";
@@ -44,11 +44,10 @@ export default function MaterialProcurementDetails({
     <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 text-xs">
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
-          <Store size={12} className="text-teal-700" />
           {order.supplier_name || "Supplier pending"}
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 font-semibold text-sky-700">
-          <Truck size={12} /> {label(order.status)} · {label(order.delivery_status)}
+           {label(order.status)} · {label(order.delivery_status)}
         </span>
       </div>
 

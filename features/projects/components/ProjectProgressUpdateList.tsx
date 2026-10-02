@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ClipboardList,
-  Eye,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
+import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import type { ProjectProgressUpdateRecord } from "../progressUpdateTypes";
 import {
   formatProgressDateParts,
@@ -82,7 +77,6 @@ export default function ProjectProgressUpdateList({
                 </p>
                 {update.remarks ? (
                   <div className="mt-2 flex items-start gap-2 text-sm leading-5 text-slate-500">
-                    <ClipboardList size={15} className="mt-0.5 shrink-0 text-slate-400" aria-hidden="true" />
                     <p className="whitespace-pre-wrap">{update.remarks}</p>
                   </div>
                 ) : (
@@ -154,9 +148,6 @@ export default function ProjectProgressUpdateList({
 
         {updates.length === 0 ? (
           <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 px-5 py-12 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-              <ClipboardList size={20} aria-hidden="true" />
-            </span>
             <p className="mt-4 font-semibold text-slate-800">No progress updates yet</p>
             <p className="mt-1 max-w-xs text-sm leading-5 text-slate-500">
               Engineer-submitted daily updates will appear here.

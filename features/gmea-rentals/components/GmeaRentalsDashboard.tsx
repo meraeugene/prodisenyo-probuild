@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, ReceiptText, TrendingUp, Truck } from "lucide-react";
+
 import useSWR from "swr";
 import { getGmeaRentalAnalyticsAction } from "@/actions/gmeaRentals";
 import type { RentalAnalyticsData } from "../utils/rentalAnalytics";
@@ -52,14 +52,13 @@ export default function GmeaRentalsDashboard({
     [
       "Active rentals",
       data.rentals.filter((rental) => rental.status === "active").length,
-      CalendarClock,
     ],
-    ["Rental revenue", formatRentalMoney(revenue), TrendingUp],
-    ["Total expenses", formatRentalMoney(expenses), ReceiptText],
-    ["Net profit/loss", formatRentalMoney(revenue - expenses), TrendingUp],
-    ["Available equipment", equipment.available, Truck],
-    ["On rental", equipment.onRental, Truck],
-    ["Maintenance", equipment.maintenance, Truck],
+    ["Rental revenue", formatRentalMoney(revenue)],
+    ["Total expenses", formatRentalMoney(expenses)],
+    ["Net profit/loss", formatRentalMoney(revenue - expenses)],
+    ["Available equipment", equipment.available],
+    ["On rental", equipment.onRental],
+    ["Maintenance", equipment.maintenance],
   ] as const;
 
   return (
@@ -86,13 +85,12 @@ export default function GmeaRentalsDashboard({
           aria-label="Rental dashboard summary"
           className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4"
         >
-          {cards.map(([label, value, Icon]) => (
+          {cards.map(([label, value]) => (
             <article
               key={label}
               className="rounded-[12px] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)]"
             >
               <div className="flex items-center gap-2">
-                <Icon size={13} className="text-[#087d76]" />
                 <p className="text-xs font-semibold text-slate-700">{label}</p>
               </div>
               <p className="mt-2 text-[22px] font-semibold tracking-[-0.035em] text-slate-950 tabular-nums">

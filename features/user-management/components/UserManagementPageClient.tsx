@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
@@ -116,17 +108,12 @@ export default function UserManagementPageClient({
         <div className="mt-5 grid gap-2 md:grid-cols-[minmax(240px,1fr)_190px_160px]">
           <label className="relative block">
             <span className="sr-only">Search users</span>
-            <Search
-              aria-hidden="true"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-steel"
-              size={16}
-            />
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search name, username, or email"
-              className="h-10 w-full rounded-[10px] border border-apple-mist bg-white pl-9 pr-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
+              className="h-10 w-full rounded-[10px] border border-apple-mist bg-white pl-3 pr-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
             />
           </label>
           <select

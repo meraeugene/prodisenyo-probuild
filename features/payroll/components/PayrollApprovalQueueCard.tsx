@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Clock3, Loader2, MapPin, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { parseOvertimeRequestNotes } from "@/features/payroll/utils/overtimeRequestNotes";
 import {
@@ -62,17 +62,14 @@ export default function PayrollApprovalQueueCard({
           >
             {request.status === "approved" ? (
               <>
-                <CheckCircle2 size={12} strokeWidth={2.5} />
                 Approved
               </>
             ) : request.status === "rejected" ? (
               <>
-                <XCircle size={12} strokeWidth={2.5} />
                 Returned
               </>
             ) : (
               <>
-                <Clock3 size={12} strokeWidth={2.5} />
                 Pending Approval
               </>
             )}
@@ -81,7 +78,6 @@ export default function PayrollApprovalQueueCard({
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-apple-steel">
           <div className="flex items-center gap-1.5">
-            <MapPin size={14} className="text-apple-smoke" />
             {siteLabel}
           </div>
           <div className="hidden h-3 w-px bg-apple-mist lg:block" />
@@ -128,7 +124,6 @@ export default function PayrollApprovalQueueCard({
           </span>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-          
           {request.quantity.toLocaleString("en-PH")} total hr
           {request.quantity === 1 ? "" : "s"}
         </div>
@@ -159,7 +154,7 @@ export default function PayrollApprovalQueueCard({
               type="button"
               onClick={() => onApprove(request.id)}
               disabled={rowBusy}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
               aria-label={`Approve overtime request for ${request.employee_name ?? "employee"}`}
             >
               {approveBusy ? (

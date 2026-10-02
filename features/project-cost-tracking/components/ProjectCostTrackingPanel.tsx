@@ -1,6 +1,5 @@
 "use client";
 
-import { CalendarDays, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import CostTrackingBoard from "@/features/project-cost-tracking/components/CostTrackingBoard";
 import CostTrackingSummary from "@/features/project-cost-tracking/components/CostTrackingSummary";
@@ -81,8 +80,7 @@ export default function ProjectCostTrackingPanel({
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)]">
         <label className="relative">
           <span className="sr-only">Search costs</span>
-          <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" />
         </label>
         <label>
           <span className="sr-only">Filter by category</span>
@@ -92,9 +90,8 @@ export default function ProjectCostTrackingPanel({
           </select>
         </label>
         <label className="relative">
-          <CalendarDays size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <span className="sr-only">Filter by date</span>
-          <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
+          <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-3 text-sm text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
             <option value="all">All dates</option>
             <option value="recent">Past 30 days</option>
             <option value="past-due">Past due</option>

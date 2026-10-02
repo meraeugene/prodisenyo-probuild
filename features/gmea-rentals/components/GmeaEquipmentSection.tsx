@@ -1,4 +1,4 @@
-import { ListFilter, Pencil, Power, Search } from "lucide-react";
+import { Pencil, Power } from "lucide-react";
 import { EQUIPMENT_STATUSES, type RentalEquipment } from "../types";
 import {
   formatRentalMoney,
@@ -100,27 +100,19 @@ export default function GmeaEquipmentSection({
         <div className="flex w-full flex-col gap-2.5 sm:flex-row lg:max-w-3xl">
           <label className="relative min-w-0 flex-1">
             <span className="sr-only">Search equipment</span>
-            <Search
-              size={17}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
             <input
               value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
+ onChange={(event) => onQueryChange(event.target.value)}
               placeholder="Search name, type, asset code, or plate..."
-              className={rentalInputClass + " pl-11"}
+              className={rentalInputClass}
             />
           </label>
           <label className="relative">
             <span className="sr-only">Filter equipment status</span>
-            <ListFilter
-              size={16}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
-            />
             <select
               value={status}
-              onChange={(event) => onStatusChange(event.target.value)}
-              className={rentalInputClass + " pl-10 sm:w-44"}
+ onChange={(event) => onStatusChange(event.target.value)}
+              className={rentalInputClass + " sm:w-44"}
             >
               <option value="all">All statuses</option>
               {EQUIPMENT_STATUSES.map((value) => (
@@ -133,7 +125,7 @@ export default function GmeaEquipmentSection({
           <select
             aria-label="Filter equipment activity"
             value={activity}
-            onChange={(event) => onActivityChange(event.target.value)}
+ onChange={(event) => onActivityChange(event.target.value)}
             className={rentalInputClass + " sm:w-44"}
           >
             <option value="all">Active and inactive</option>

@@ -1,4 +1,3 @@
-import { CalendarDays, PackageCheck, ReceiptText } from "lucide-react";
 import type { TrackedProjectCost } from "@/features/project-cost-tracking/types";
 import { costColumnTotal } from "@/features/project-cost-tracking/utils/costTracking";
 import { COST_COLUMNS } from "@/features/project-cost-tracking/utils/costTrackingConstants";
@@ -61,14 +60,12 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
                       : "Cost pending"}
                   </p>
                   <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                    <CalendarDays size={14} aria-hidden="true" />
                     <span>
                       {cost.dateLabel}: {cost.date ? date.format(new Date(cost.date)) : "Not recorded"}
                     </span>
                   </div>
 
                   <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
-                    {cost.source === "material" ? <PackageCheck size={14} aria-hidden="true" /> : <ReceiptText size={14} aria-hidden="true" />}
                     {cost.source === "material" ? "Synced from Materials and Purchasing" : "Synced from Project Expenses"}
                   </div>
                 </article>

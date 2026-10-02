@@ -1,37 +1,13 @@
 "use client";
 
+import OvertimeRequestCard from "./OvertimeRequestCard";
+
 import { useMemo, useState, useTransition } from "react";
-import { CalendarDays, Clock3, LoaderCircle, MapPin } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import { submitOvertimeRequestAction } from "@/actions/payroll";
-import {
-  formatOvertimeRequesterRole,
-  type OvertimeRequestRecord,
-} from "@/features/overtime-requests/types";
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function getStatusClasses(status: OvertimeRequestRecord["status"]) {
-  if (status === "approved")
-    return "border-teal-200 bg-teal-50 text-teal-700";
-  if (status === "rejected")
-    return "border-[#ccfbf1] bg-[#f0fdfa] text-[#0f766e]";
-  return "border-amber-200 bg-amber-50 text-amber-700";
-}
-
-function getStatusLabel(status: OvertimeRequestRecord["status"]) {
-  if (status === "rejected") return "returned";
-  return status;
-}
+import { type OvertimeRequestRecord } from "@/features/overtime-requests/types";
 
 type OvertimeFormErrors = {
   employeeName?: string;
@@ -349,84 +325,7 @@ export default function OvertimeRequestPageClient({
           ) : (
             <div className="space-y-3">
               {sortedRequests.map((request) => (
-                <article
-                  key={request.id}
-                  className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-[0_6px_16px_rgba(15,23,42,0.07)]"
-                >
-                  <div className="space-y-4 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                          {formatOvertimeRequesterRole(request.requester_role)}
-                        </p>
-                        <h3 className="mt-1 text-lg font-bold text-apple-charcoal">
-                          {request.employee_name}
-                        </h3>
-                        <div className="mt-1 inline-flex items-center gap-1 text-sm text-apple-smoke">
-                          <MapPin size={14} className="text-teal-700" />
-                          {request.site_name}
-                        </div>
-                      </div>
-                      <span
-                        className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusClasses(request.status)}`}
-                      >
-                        {getStatusLabel(request.status)}
-                      </span>
-                    </div>
-
-                    <div className="grid gap-2 rounded-xl border border-apple-mist bg-white/75 p-3 text-sm text-apple-smoke">
-                      <p className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5">
-                          <CalendarDays
-                            size={14}
-                            className="text-teal-700"
-                          />
-                          Work date
-                        </span>
-                        <span className="font-semibold text-apple-charcoal">
-                          {request.request_date}
-                        </span>
-                      </p>
-                      <p className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Clock3 size={14} className="text-sky-700" />
-                          Overtime hours
-                        </span>
-                        <span className="font-semibold text-sky-700">
-                          {request.overtime_hours.toLocaleString("en-PH", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                      </p>
-                    </div>
-
-                    {request.period_label ? (
-                      <p className="text-sm text-apple-smoke">
-                        Period:{" "}
-                        <span className="font-semibold text-apple-charcoal">
-                          {request.period_label}
-                        </span>
-                      </p>
-                    ) : null}
-
-                    <p className="text-sm text-apple-smoke">
-                      Submitted:{" "}
-                      <span className="font-semibold text-apple-charcoal">
-                        {formatDateTime(request.created_at)}
-                      </span>
-                    </p>
-
-                    {request.rejection_reason ? (
-                      <p className="rounded-lg border border-[#ccfbf1] bg-[#f0fdfa] px-3 py-2 text-sm text-[#0f766e]">
-                        Return reason:{" "}
-                        <span className="font-semibold">
-                          {request.rejection_reason}
-                        </span>
-                      </p>
-                    ) : null}
-                  </div>
-                </article>
+                <OvertimeRequestCard key={request.id} request={request} />
               ))}
             </div>
           )}

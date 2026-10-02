@@ -1,10 +1,4 @@
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle,
-  MapPin,
-  User,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectRecord } from "@/features/projects/types";
 
@@ -50,7 +44,6 @@ export default function ProjectPortfolioCard({
             {project.name}
           </h3>
           <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-md bg-slate-950/55 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-            <MapPin size={13} className="shrink-0 text-teal-200" />
             <span className="truncate">{project.location}</span>
           </div>
         </div>
@@ -64,7 +57,6 @@ export default function ProjectPortfolioCard({
               {project.name}
             </h3>
             <div className="mt-2 inline-flex max-w-full items-center gap-1.5 text-xs font-semibold text-slate-600">
-              <MapPin size={13} className="shrink-0 text-teal-700" />
               <span className="truncate">{project.location}</span>
             </div>
           </div>
@@ -118,11 +110,9 @@ export default function ProjectPortfolioCard({
         ) : (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs font-medium text-slate-600">
             <span className="inline-flex items-center gap-1.5">
-              <CheckCircle size={13} className="text-teal-600" />
               {project.completedTasksCount} / {project.tasksCount} completed
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Calendar size={13} className="text-slate-500" />
               End: {project.endDate}
             </span>
           </div>
@@ -130,7 +120,6 @@ export default function ProjectPortfolioCard({
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <span className="inline-flex min-w-0 items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-            <User size={13} />
             <span className="truncate">Engr: {project.engineer}</span>
           </span>
           <button

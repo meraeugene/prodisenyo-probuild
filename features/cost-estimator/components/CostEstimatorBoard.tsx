@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Eye,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  ReceiptText,
-  Trash2,
-} from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
 import type {
   ProjectEstimateDraftForm,
@@ -115,7 +108,7 @@ export default function CostEstimatorBoard({
               return (
                 <div
                   key={`${group.key}-${index}`}
-                  className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-[0_14px_30px_rgba(7,109,105,0.12)]"
+                  className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)] transition duration-200  hover:border-teal-200 "
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -123,9 +116,6 @@ export default function CostEstimatorBoard({
                         Item no. {index + 1}
                       </p>
                       <div className="mt-2 w-full flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-[#076d69]">
-                          <ReceiptText size={16} />
-                        </div>
                         <p className="truncate text-[17px] font-semibold tracking-[-0.02em] text-apple-charcoal">
                           {group.title || "Item description"}
                         </p>

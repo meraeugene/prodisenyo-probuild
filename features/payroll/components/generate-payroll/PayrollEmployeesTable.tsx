@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpDown, CheckCircle2, MoreHorizontal, Search, TriangleAlert } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
 import {
@@ -68,7 +68,6 @@ export default function PayrollEmployeesTable({
     return (
       <div className="grid h-56 place-items-center rounded-[10px] border border-[#dce6ea] bg-white text-center">
         <div>
-          <Search size={22} className="mx-auto text-[#8ea0af]" />
           <p className="mt-3 text-sm font-semibold text-[#20354d]">No employees found</p>
           <p className="mt-1 text-xs text-[#7b8da0]">Try changing or clearing the active filters.</p>
         </div>
@@ -119,7 +118,7 @@ export default function PayrollEmployeesTable({
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#dcebf2] text-[11px] font-bold text-[#17547a]">{getEmployeeInitials(employee.name)}</span>
                       <div className="min-w-0">
                         <p className="truncate text-[13px] font-semibold text-[#132842]">{highlight(employee.name, search)}</p>
-                        <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.03em] text-[#718499]">{employee.employeeId ?? employee.role}</p>
+                        <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.03em] text-[#718499]">{employee.role}</p>
                       </div>
                     </div>
                   </td>
@@ -135,7 +134,6 @@ export default function PayrollEmployeesTable({
                   <td className="truncate px-3 py-2.5 text-xs font-semibold tabular-nums text-[#122a45]">{formatPeso(metrics.totalPay)}</td>
                   <td className="px-2 py-2.5">
                     <span className={needsReview ? "inline-flex items-center gap-1 rounded-full bg-[#fff0d9] px-2 py-1.5 text-[10px] font-semibold text-[#c96808]" : "inline-flex items-center gap-1 rounded-full bg-[#dff7ee] px-2 py-1.5 text-[10px] font-semibold text-[#078d64]"}>
-                      {needsReview ? <TriangleAlert size={12} /> : <CheckCircle2 size={12} />}
                       {needsReview ? "Review" : "Ready"}
                     </span>
                   </td>
@@ -174,7 +172,7 @@ export default function PayrollEmployeesTable({
 function HeaderCell({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <th className={"px-3 py-3 text-[10px] font-bold uppercase tracking-[0.06em] text-[#697c91] " + (className ?? "")}>
-      <span className="inline-flex items-center gap-1">{children}<ArrowUpDown size={10} /></span>
+      <span className="inline-flex items-center gap-1">{children}</span>
     </th>
   );
 }

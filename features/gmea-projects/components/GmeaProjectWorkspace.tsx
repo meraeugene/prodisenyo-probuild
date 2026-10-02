@@ -3,7 +3,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, ChartPie, CheckCircle2, MapPin, Pencil, ReceiptText, RotateCcw, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChartPie, CheckCircle2, Pencil, ReceiptText, RotateCcw, Trash2 } from "lucide-react";
 import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
 import type { GmeaExpenseOptions, GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -79,11 +79,9 @@ export default function GmeaProjectWorkspace({
           </p>
           <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{project.name}</h1>
           <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
-            <MapPin size={14} className="shrink-0" aria-hidden="true" />
             {project.location}
           </p>
           <p className="mt-2 flex items-center gap-2 text-sm text-white/80">
-            <UserRound size={14} aria-hidden="true" />
             {project.client || "Client not set"}
           </p>
         </div>
@@ -95,6 +93,7 @@ export default function GmeaProjectWorkspace({
             <GmeaConfirmButton
               label={project.status === "completed" ? "Reopen project" : "Mark as done"}
               triggerLabel={project.status === "completed" ? "Reopen project" : "Mark as done"}
+              triggerClassName="border-white/50 bg-white/10 px-4 py-2.5 font-semibold text-white hover:border-white/70 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#075e5b]"
               triggerIcon={project.status === "completed" ? <RotateCcw size={15} aria-hidden="true" /> : <CheckCircle2 size={15} aria-hidden="true" />}
               description={project.status === "completed" ? "Move this project back to the active project list?" : "Move this project to Completed? Its financial records and history will remain available."}
               onConfirm={() => save({ kind: "project_status", value: { status: project.status === "completed" ? "active" : "completed" } })}

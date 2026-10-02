@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, MapPin, UserRound } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { GmeaRental } from "../types";
 import { formatRentalDate, formatRentalMoney } from "../utils/rentalUi";
 import RentalStatusBadge from "./RentalStatusBadge";
@@ -12,7 +12,7 @@ export default function GmeaRentalPortfolioCard({
   const total = rental.items.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <article className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow hover:shadow-[0_14px_32px_-20px_rgba(15,23,42,.38)]">
+    <article className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow ">
       <div className="flex-1 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -28,15 +28,12 @@ export default function GmeaRentalPortfolioCard({
         </div>
         <div className="mt-3 grid gap-1.5 text-[13px] text-slate-500 sm:grid-cols-2">
           <p className="flex items-center gap-2">
-            <UserRound size={13} aria-hidden="true" />
             <span className="truncate">{rental.client}</span>
           </p>
           <p className="flex items-center gap-2">
-            <MapPin size={13} aria-hidden="true" />
             <span className="truncate">{rental.location}</span>
           </p>
           <p className="flex items-center gap-2 sm:col-span-2">
-            <CalendarDays size={13} aria-hidden="true" />
             <span>
               {formatRentalDate(rental.start_date)} –{" "}
               {formatRentalDate(rental.end_date)}

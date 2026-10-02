@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Loader2, Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveEmployeeBranchRatesAction } from "@/actions/payrollRates";
 import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollState";
@@ -201,16 +201,12 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full max-w-md">
-              <Search
-                size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
-              />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search employee, role, or branch"
-                className="h-11 w-full rounded-2xl border border-apple-silver bg-white pl-10 pr-4 text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
+                className="h-11 w-full rounded-2xl border border-apple-silver bg-white pl-3 pr-4 text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
               />
             </div>
 

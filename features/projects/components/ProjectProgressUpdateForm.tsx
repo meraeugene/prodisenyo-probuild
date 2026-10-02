@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ClipboardCheck, LoaderCircle, Send, X } from "lucide-react";
+import { LoaderCircle, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   createProjectProgressUpdateAction,
@@ -76,9 +76,6 @@ export default function ProjectProgressUpdateForm({
     >
       <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-            <ClipboardCheck size={18} aria-hidden="true" />
-          </span>
           <div>
             <h2 id={modalTitleId} className="text-base font-semibold text-slate-950">
               {update ? "Progress Update Details" : "Add Progress Update"}

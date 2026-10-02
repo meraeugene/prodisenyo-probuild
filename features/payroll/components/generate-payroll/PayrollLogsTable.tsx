@@ -1,4 +1,3 @@
-import { Search } from "lucide-react";
 import type { AttendanceRecordInput } from "@/lib/payrollEngine";
 import { extractSiteName, formatPayrollNumber } from "@/features/payroll/utils/payrollFormatters";
 
@@ -16,7 +15,6 @@ export default function PayrollLogsTable({ logs }: { logs: AttendanceRecordInput
         <tbody>
           {logs.length === 0 ? (
             <tr><td colSpan={6} className="h-56 text-center">
-              <Search size={22} className="mx-auto text-[#8ea0af]" />
               <p className="mt-3 text-sm font-semibold text-[#20354d]">No attendance logs found</p>
               <p className="mt-1 text-xs text-[#7b8da0]">Try changing or clearing the active filters.</p>
             </td></tr>

@@ -153,7 +153,7 @@ export default function MyTasksPageClient() {
           filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all duration-300 hover:border-teal-200 hover:shadow-[0_12px_26px_rgba(7,109,105,0.08)]"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all duration-300 hover:border-teal-200 "
             >
               <div>
                 <div className="flex items-center justify-between gap-2">

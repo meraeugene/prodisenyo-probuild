@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Ellipsis,
-  LayoutList,
-  LoaderCircle,
-  Save,
-  Trash2,
-  Info,
-} from "lucide-react";
+import { CheckCircle2, Ellipsis, LayoutList, LoaderCircle, Save, Trash2 } from "lucide-react";
 import EstimateStatusBadge from "@/features/cost-estimator/components/EstimateStatusBadge";
 import type { ProjectEstimateRow } from "@/features/cost-estimator/types";
 import { cn } from "@/lib/utils";
@@ -95,7 +87,7 @@ export default function CostEstimatorHeader({
             {saveState === "saving" ? (
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              null
             )}
             <span>{saveMessage}</span>
           </div>

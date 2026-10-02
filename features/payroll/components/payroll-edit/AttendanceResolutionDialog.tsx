@@ -1,7 +1,8 @@
 "use client";
 
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { useEffect, useState } from "react";
-import { CalendarDays, Settings2, UserRound, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   ATTENDANCE_CLASSIFICATIONS,
   type AttendanceClassification,
@@ -54,14 +55,7 @@ export function AttendanceResolutionDialog({
     setError(null);
   }, [day]);
 
-  useEffect(() => {
-    if (!day) return;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [day, onClose]);
+  useDialogEscape(onClose, 90, Boolean(day));
 
   if (!day) return null;
 
@@ -125,9 +119,6 @@ export function AttendanceResolutionDialog({
             </div>
             <div className="col-span-2 row-start-2 grid gap-2 sm:grid-cols-2 lg:col-span-1 lg:col-start-2 lg:row-start-1">
               <div className="flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-100 text-teal-700">
-                  <UserRound size={17} />
-                </span>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-slate-900">
                     {employeeName}
@@ -138,7 +129,6 @@ export function AttendanceResolutionDialog({
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-                <CalendarDays size={17} className="shrink-0 text-teal-700" />
                 <div>
                   <p className="text-xs font-bold text-slate-900">
                     {formattedDate}
@@ -167,9 +157,6 @@ export function AttendanceResolutionDialog({
 
             <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-teal-50 text-teal-700">
-                  <Settings2 size={17} />
-                </span>
                 <div>
                   <h4 className="text-sm font-bold text-slate-950">
                     Classification and Approval

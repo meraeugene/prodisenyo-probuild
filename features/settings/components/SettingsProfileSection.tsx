@@ -106,10 +106,10 @@ export default function SettingsProfileSection({
               Full Name
             </span>
             <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
-              <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />
+              {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 value={fullName}
-                onChange={(event) => onFullNameChange(event.target.value)}
+ onChange={(event) => onFullNameChange(event.target.value)}
                 placeholder="Enter your full name"
                 className="min-w-0 w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
@@ -122,10 +122,10 @@ export default function SettingsProfileSection({
                 Username
               </span>
               <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
-                <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />
+                {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
                 <input
                   value={username}
-                  onChange={(event) => onUsernameChange(event.target.value)}
+ onChange={(event) => onUsernameChange(event.target.value)}
                   placeholder="Enter your username"
                   className="min-w-0 w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                 />
@@ -137,7 +137,7 @@ export default function SettingsProfileSection({
                 Role
               </span>
               <div className="flex h-10 items-center rounded-lg border border-[#dce5e8] bg-[#f7fafb] px-4 text-sm text-slate-500">
-                <UserRound className="mr-3 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />}
                 {roleLabel(profile?.role ?? null)}
               </div>
             </div>
@@ -148,18 +148,17 @@ export default function SettingsProfileSection({
               Email Address
             </span>
             <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
-              <Mail className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />
+              {profile?.role === "ceo" && <Mail className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type="email"
                 value={email}
-                onChange={(event) => onEmailChange(event.target.value)}
+ onChange={(event) => onEmailChange(event.target.value)}
                 placeholder="Enter your email address"
                 autoComplete="email"
                 className="min-w-0 w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
             </div>
           </label>
-
 
         </div>
       </div>

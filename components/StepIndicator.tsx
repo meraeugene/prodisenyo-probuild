@@ -1,6 +1,5 @@
 "use client";
 
-import { Check } from "lucide-react";
 import type { Step } from "@/types";
 
 interface StepIndicatorProps {
@@ -39,7 +38,7 @@ export default function StepIndicator({ current }: StepIndicatorProps) {
                   }
                 `}
               >
-                {isDone ? <Check size={12} strokeWidth={2.5} /> : num}
+                {num}
               </div>
 
               {/* Label */}

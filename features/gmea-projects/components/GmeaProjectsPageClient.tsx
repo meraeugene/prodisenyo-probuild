@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import {
-  LuChevronDown as ChevronDown,
-  LuListFilter as ListFilter,
-  LuSearch as Search,
-} from "react-icons/lu";
+
 import { getGmeaProjectsDataAction } from "@/actions/gmeaProjects";
 import type { GmeaProject } from "../types";
 import { projectSummary, sumMoney } from "../utils/gmeaCalculations";
@@ -102,23 +98,21 @@ export default function GmeaProjectsPageClient({
             <div className="flex w-full flex-col gap-2.5 sm:max-w-[560px] sm:flex-row">
               <label className="relative min-w-0 flex-1">
                 <span className="sr-only">Search projects</span>
-                <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   aria-label="Search projects"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                   placeholder="Search project, client, or location..."
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+ onChange={(event) => setQuery(event.target.value)}
                 />
               </label>
               <label className="relative shrink-0">
                 <span className="sr-only">Filter projects</span>
-                <ListFilter className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-slate-700" size={17} />
                 <select
                   aria-label="Filter projects"
-                  className="h-11 w-full appearance-none truncate rounded-xl border border-slate-200 bg-white py-0 pl-10 pr-9 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 sm:w-52"
+                  className="h-11 w-full truncate rounded-xl border border-slate-200 bg-white py-0 px-4 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 sm:w-52"
                   value={filter}
-                  onChange={(event) => setFilter(event.target.value)}
+ onChange={(event) => setFilter(event.target.value)}
                 >
                   <option value="all">All projects</option>
                   <optgroup label="Expenses">
@@ -132,7 +126,6 @@ export default function GmeaProjectsPageClient({
                     {clients.map((client) => <option key={client} value={`client:${client}`}>{client}</option>)}
                   </optgroup>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
               </label>
             </div>
           </div>

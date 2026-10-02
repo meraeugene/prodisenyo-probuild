@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, FileText, MapPin } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { PayrollDashboardRunStatus, PayrollWorkspaceRun } from "@/features/payroll-dashboard/types";
 import { formatPayrollCurrency, formatPayrollDate } from "@/features/payroll-dashboard/utils/payrollDashboard";
 
@@ -58,17 +58,16 @@ export default function PayrollWorkspaceRunsPanel({ runs }: { runs: PayrollWorks
         </div>
       </div>
 
-      <div className="mt-4 min-h-[310px] rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_26px_rgba(15,23,42,0.035)] sm:p-5">
+      <div className="mt-4">
         {visibleRuns.length ? (
           <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
             {visibleRuns.map((run) => (
-              <article key={run.id} className="group rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-[0_12px_30px_rgba(8,118,111,0.08)]">
+              <article key={run.id} className="group rounded-2xl border border-slate-200 bg-white p-4 transition  hover:border-teal-200 ">
                 <div className="flex items-start justify-between gap-3">
                   <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${STATUS_STYLES[run.status]}`}>{STATUS_LABELS[run.status]}</span>
-                  <FileText size={17} className="text-slate-300" />
                 </div>
-                <div className="mt-4 flex items-start gap-2 text-sm font-bold text-slate-950"><CalendarDays size={16} className="mt-0.5 shrink-0 text-teal-700" /><span>{run.periodLabel}</span></div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-slate-500"><MapPin size={14} className="shrink-0" /><span className="truncate">{run.siteName}</span></div>
+                <div className="mt-4 flex items-start gap-2 text-sm font-bold text-slate-950"><span>{run.periodLabel}</span></div>
+                <div className="mt-2 flex items-center gap-2 text-xs text-slate-500"><span className="truncate">{run.siteName}</span></div>
                 <div className="mt-5 flex items-end justify-between gap-4 border-t border-slate-100 pt-4">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">Total payroll</p>
@@ -85,7 +84,6 @@ export default function PayrollWorkspaceRunsPanel({ runs }: { runs: PayrollWorks
         ) : (
           <div className="grid min-h-[270px] place-items-center text-center">
             <div className="max-w-sm">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400"><FileText size={20} /></span>
               <h3 className="mt-4 text-sm font-bold text-slate-900">No {filter === "all" ? "payroll records" : `${filter} payrolls`} yet</h3>
               <p className="mt-1 text-xs leading-5 text-slate-500">New payroll work begins by uploading an attendance file.</p>
             </div>

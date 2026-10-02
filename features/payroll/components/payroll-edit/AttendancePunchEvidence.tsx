@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  CircleAlert,
-  Clock3,
-  Link2,
-  MapPin,
-  ScanLine,
-} from "lucide-react";
 import type { CutoffAttendanceDay } from "@/features/payroll/utils/payrollAttendanceEngine";
 import { secondsToDecimalHours } from "@/features/payroll/utils/payrollAttendanceEngine";
 import {
@@ -64,7 +54,6 @@ function PunchStatus({
           : "inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600"
       }
     >
-      {complete ? <CheckCircle2 size={11} /> : <CircleAlert size={11} />}
       {complete ? "Complete" : "Missing"}
     </span>
   );
@@ -116,9 +105,6 @@ export function AttendancePunchEvidence({
   return (
     <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-4 flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-teal-50 text-teal-700">
-          <ScanLine size={17} />
-        </span>
         <div>
           <h4 className="text-sm font-bold text-slate-950">
             Biometric DTR Logs
@@ -186,7 +172,6 @@ export function AttendancePunchEvidence({
 
       <div className="mt-4">
         <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-800">
-          <Clock3 size={14} className="text-teal-700" />
           Punch Timeline
         </div>
         <div className="overflow-x-auto">
@@ -203,9 +188,9 @@ export function AttendancePunchEvidence({
                   }
                 >
                   {punch.value ? (
-                    <CheckCircle2 size={14} className="text-teal-600" />
+                    null
                   ) : (
-                    <CircleAlert size={14} className="text-red-500" />
+                    null
                   )}
                   <p className="mt-1.5 font-mono text-xs font-bold text-slate-900">
                     {punch.value ? formatLogTime(punch.value) : "Missing"}
@@ -228,7 +213,6 @@ export function AttendancePunchEvidence({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            <MapPin size={13} className="text-teal-700" />
             Site Movement
           </div>
           {sitePath.length ? (
@@ -236,7 +220,7 @@ export function AttendancePunchEvidence({
               {sitePath.map((site, index) => (
                 <span key={site} className="inline-flex items-center gap-1">
                   {index > 0 ? (
-                    <ChevronRight size={12} className="text-teal-600" />
+                    null
                   ) : null}
                   {site}
                 </span>
@@ -248,7 +232,6 @@ export function AttendancePunchEvidence({
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            <Link2 size={13} className="text-teal-700" />
             Raw Biometric Aliases
           </div>
           <p className="mt-2 text-xs font-semibold text-slate-800">
@@ -259,7 +242,6 @@ export function AttendancePunchEvidence({
 
       {day.detectedOvertimeSeconds > 0 ? (
         <div className="mt-4 flex gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-800">
-          <AlertTriangle size={17} className="mt-0.5 shrink-0" />
           <div className="text-xs">
             <p className="font-bold">
               Detected overtime:{" "}

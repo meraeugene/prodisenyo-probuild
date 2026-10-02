@@ -30,7 +30,7 @@ export default function GmeaProjectColorField({
               aria-label={`${option.label} project color`}
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-slate-300 shadow-sm outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
+              className="grid h-9 w-9 place-items-center rounded-full border border-slate-300 shadow-sm outline-none transition-transform  focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
               style={projectSwatchStyle(option.value)}
             >
               {selected && (

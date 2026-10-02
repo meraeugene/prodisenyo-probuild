@@ -1,14 +1,9 @@
 "use client";
 
+import BiometricOvertimeConfirmation from "@/features/payroll/components/payroll-edit/BiometricOvertimeConfirmation";
+
 import { useEffect, useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Loader2,
-  X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { requestOvertimeApprovalAction } from "@/actions/payroll";
 import { useAppState } from "@/features/app/AppStateProvider";
@@ -1906,7 +1901,7 @@ export default function PayrollEditModal({
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-xl  px-3 py-2 hover:shadow-[0_8px_18px_rgba(7,109,105,0.06)] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] "
+                    className="rounded-xl  px-3 py-2  bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] "
                   >
                     <p className="text-2xs font-medium text-white/65 uppercase tracking-wider">
                       {item.label}
@@ -2138,62 +2133,7 @@ export default function PayrollEditModal({
           </div>
         </div>
       </div>
-      {confirmBiometricOvertimeStatus ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/35 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-apple-mist bg-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
-            <div className="flex items-start gap-3 border-b border-apple-mist px-5 py-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                <AlertTriangle size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-steel">
-                  Confirm Overtime
-                </p>
-                <h3 className="mt-1 text-lg font-semibold text-apple-charcoal">
-                  {confirmBiometricOvertimeStatus === "approved"
-                    ? "Include biometric overtime in final pay?"
-                    : "Exclude biometric overtime from final pay?"}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-apple-steel">
-                  {confirmBiometricOvertimeStatus === "approved"
-                    ? `This will add ${formatPayrollNumber(biometricOvertimeHours)} biometric overtime hour(s) to the employee's final total pay.`
-                    : "This will keep biometric overtime out of the employee's final total pay."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 px-5 py-4 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() => setConfirmBiometricOvertimeStatus(null)}
-                className="h-10 rounded-xl border border-apple-silver px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setBiometricOvertimeStatus(confirmBiometricOvertimeStatus);
-                  setConfirmBiometricOvertimeStatus(null);
-                }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800"
-              >
-                {confirmBiometricOvertimeStatus === "approved" ? (
-                  <>
-                    <Check size={15} />
-                    Confirm Overtime
-                  </>
-                ) : (
-                  <>
-                    <X size={15} />
-                    Exclude Overtime
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {confirmBiometricOvertimeStatus && <BiometricOvertimeConfirmation status={confirmBiometricOvertimeStatus} biometricOvertimeHours={biometricOvertimeHours} onClose={() => setConfirmBiometricOvertimeStatus(null)} onConfirm={() => { setBiometricOvertimeStatus(confirmBiometricOvertimeStatus); setConfirmBiometricOvertimeStatus(null); }} />}
     </div>
   );
 }

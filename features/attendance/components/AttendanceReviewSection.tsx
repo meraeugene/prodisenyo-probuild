@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { highlight } from "@/components/Highlight";
 import type { AttendanceRecord } from "@/types";
 import type { UseAttendanceReviewResult } from "@/features/attendance/hooks/useAttendanceReview";
@@ -152,10 +152,6 @@ export default function AttendanceReviewSection({
               </select>
 
               <div className="relative w-full">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver"
-                  size={16}
-                />
 
                 <input
                   type="text"
@@ -163,7 +159,7 @@ export default function AttendanceReviewSection({
                   onChange={(e) => setStep2NameFilter(e.target.value)}
                   placeholder="Search employee... ( / )"
                   id="searchEmployee"
-                  className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white py-2.5 pl-9 pr-9 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
+                  className="h-11 w-full rounded-[12px] border border-[#d9e2e6] bg-white py-2.5 pl-3 pr-9 text-sm text-[#334951] transition-all hover:border-[#0f6f74]/35 focus:border-[#0f6f74] focus:outline-none focus:ring-2 focus:ring-[#0f6f74]/10"
                 />
 
                 {step2NameFilter && (
@@ -239,7 +235,6 @@ export default function AttendanceReviewSection({
                       <tr>
                         <td colSpan={12} className="py-10">
                           <div className="flex flex-col items-center justify-center text-center gap-3 text-apple-steel">
-                            <Search size={22} className="text-apple-silver" />
 
                             <p className="text-sm font-semibold text-apple-charcoal">
                               No employees found
@@ -390,7 +385,7 @@ export default function AttendanceReviewSection({
                 <div className="flex items-center gap-1 flex-wrap">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.05 }}
+
                     onClick={() => setRecordsPage(1)}
                     disabled={recordsPage === 1}
                     className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold
@@ -405,7 +400,7 @@ ${
 
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.05 }}
+
                     onClick={() => setRecordsPage((p) => Math.max(1, p - 1))}
                     disabled={recordsPage === 1}
                     className={`h-8 rounded-[10px] border px-3 text-xs font-semibold
@@ -421,7 +416,7 @@ ${
                   {step2Pages.map((p) => (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
+
                       key={p}
                       onClick={() => setRecordsPage(p)}
                       className={`h-8 w-8 rounded-[10px] border text-xs font-semibold transition
@@ -437,7 +432,7 @@ ${
 
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.05 }}
+
                     onClick={() =>
                       setRecordsPage((p) => Math.min(totalRecordPages, p + 1))
                     }
@@ -454,7 +449,7 @@ ${
 
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.05 }}
+
                     onClick={() => setRecordsPage(totalRecordPages)}
                     disabled={recordsPage === totalRecordPages}
                     className={`h-8 rounded-[10px] border px-2.5 text-xs font-semibold

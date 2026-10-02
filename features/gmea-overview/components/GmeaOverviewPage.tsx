@@ -44,8 +44,8 @@ export default function GmeaOverviewPage({
         <GmeaOverviewHeader />
         <GmeaOverviewSummary summary={summary} />
         <GmeaOverviewDivisions divisions={summary.divisions} />
-        <GmeaOverviewOperations activity={activity} alerts={alerts} />
         <GmeaOverviewFinance divisions={summary.divisions} />
+        <GmeaOverviewOperations activity={activity} alerts={alerts} />
       </div>
     </main>
   );

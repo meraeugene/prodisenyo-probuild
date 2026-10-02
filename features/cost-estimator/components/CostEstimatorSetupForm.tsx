@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Calculator } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ButtonLoader from "@/features/budget-tracker/components/ButtonLoader";
 import { BUDGET_PROJECT_TYPE_OPTIONS } from "@/features/budget-tracker/types";
 import {
@@ -63,9 +63,6 @@ export default function CostEstimatorSetupForm({
         ) : null}
 
         <div className="mt-6">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-800">
-            <Calculator size={18} />
-          </div>
           <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             Cost estimate
           </p>

@@ -1,12 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import { PayrollDetailPagination } from "./PayrollDetailPagination";
 import {
   Check,
-  ChevronDown,
-  Clock3,
-  ListChecks,
   Plus,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import type { AdjustmentFormType } from "@/features/payroll/utils/payrollEditModalHelpers";
@@ -23,6 +21,7 @@ interface BranchRateRow {
 }
 
 interface PayrollCalculationSidebarProps {
+  panel: string;
   attendanceDays: number;
   daysWorked: number;
   actualWorkedHours: number;
@@ -44,16 +43,10 @@ interface PayrollCalculationSidebarProps {
   onBiometricDecision: (status: "approved" | "rejected") => void;
 }
 
-function PanelTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2 text-xs font-bold text-slate-950">
-      <span className="text-teal-700">{icon}</span>
-      {children}
-    </div>
-  );
-}
-
 export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps) {
+  const [selectedPage, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(props.branchRates.length / 5));
+  const page = Math.min(selectedPage, totalPages);
   const summaryRows = [
     ["Attendance", `${props.attendanceDays} days`],
     ["Days Worked", `${props.daysWorked} days`],
@@ -79,37 +72,37 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
   ];
 
   return (
-    <aside className="space-y-2.5 xl:min-h-0 xl:overflow-y-auto xl:pr-1">
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <aside className="space-y-3">
+      {props.panel === "summary" ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-3.5 py-2.5">
-          <PanelTitle icon={<ListChecks size={15} />}>Calculation Summary</PanelTitle>
+          <h3 className="text-[13px] font-semibold">Calculation Summary</h3>
         </div>
         <div className="grid grid-cols-2">
           {summaryRows.map(([label, value], index) => (
             <div
               key={label}
-              className={`flex items-center justify-between gap-2 border-slate-100 px-3 py-2 text-[10px] ${
+              className={`flex items-center justify-between gap-2 border-slate-100 px-3 py-2 text-[13px] ${
                 index % 2 === 0 ? "border-r" : ""
               } ${index < summaryRows.length - 2 ? "border-b" : ""}`}
             >
               <span className="text-slate-500">{label}</span>
-              <span className="text-right font-mono font-bold text-slate-900">{value}</span>
+              <span className="text-right tabular-nums font-medium text-slate-900">{value}</span>
             </div>
           ))}
         </div>
         <div className="flex items-center justify-between bg-teal-50 px-3.5 py-2.5">
-          <span className="text-[11px] font-bold text-teal-900">Adjusted Total Pay</span>
-          <span className="font-mono text-base font-black text-teal-700">
+          <span className="text-[13px] font-medium text-teal-900">Adjusted Total Pay</span>
+          <span className="tabular-nums text-base font-medium text-teal-700">
             {formatPeso(props.adjustedTotalPay)}
           </span>
         </div>
-      </section>
+      </section> : null}
 
-      {props.hasBiometricOvertime ? (
+      {props.panel === "biometric" && props.hasBiometricOvertime ? (
         <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-          <PanelTitle icon={<Clock3 size={15} />}>Biometric OT Decision</PanelTitle>
+          <h3 className="text-[13px] font-semibold">Biometric OT Decision</h3>
           <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
-            <span className="rounded-md bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-700">
+            <span className="rounded-md bg-amber-50 px-2 py-1.5 text-[13px] font-medium text-amber-700">
               {formatPayrollNumber(props.biometricOvertimeHours)} hrs{" "}
               {props.biometricOvertimeStatus ?? "pending confirmation"}
             </span>
@@ -117,14 +110,14 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
               <button
                 type="button"
                 onClick={() => props.onBiometricDecision("approved")}
-                className="inline-flex h-7 items-center gap-1 rounded-md border border-teal-200 px-2.5 text-[10px] font-bold text-teal-700 hover:bg-teal-50"
+                className="inline-flex h-9 items-center gap-1 rounded-md border border-teal-200 px-2.5 text-[13px] font-medium text-teal-700 hover:bg-teal-50"
               >
                 <Check size={12} /> Confirm
               </button>
               <button
                 type="button"
                 onClick={() => props.onBiometricDecision("rejected")}
-                className="inline-flex h-7 items-center gap-1 rounded-md border border-red-200 px-2.5 text-[10px] font-bold text-red-600 hover:bg-red-50"
+                className="inline-flex h-9 items-center gap-1 rounded-md border border-red-200 px-2.5 text-[13px] font-medium text-red-600 hover:bg-red-50"
               >
                 <X size={12} /> Exclude
               </button>
@@ -133,52 +126,42 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
         </section>
       ) : null}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-        <PanelTitle icon={<SlidersHorizontal size={15} />}>Quick Adjustments</PanelTitle>
+      {props.panel === "adjustments" ? <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <h3 className="text-[13px] font-semibold">Quick Adjustments</h3>
         <div className="mt-2.5 grid grid-cols-2 gap-1.5">
           {actions.map(([key, label]) => (
             <button
               key={key}
               type="button"
               onClick={() => props.onOpenAdjustment(key)}
-              className="inline-flex h-8 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 text-[10px] font-semibold text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
+              className="inline-flex h-9 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 text-[13px] font-medium text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
             >
               <Plus size={12} /> {label}
             </button>
           ))}
         </div>
-      </section>
+      </section> : null}
+      {props.panel === "biometric" && !props.hasBiometricOvertime ? <p className="p-4 text-[13px] text-slate-500">No biometric overtime to review.</p> : null}
 
-      {props.branchRates.length > 1 ? (
+      {props.panel === "rates" && props.branchRates.length > 1 ? (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <button
-            type="button"
-            onClick={props.onToggleBranchRates}
-            className="flex w-full items-center justify-between px-3.5 py-2.5 text-[11px] font-bold text-slate-900"
-          >
-            Branch Rate Breakdown
-            <ChevronDown
-              size={14}
-              className={`transition ${props.showBranchRates ? "rotate-180" : ""}`}
-            />
-          </button>
-          {props.showBranchRates ? (
+          <h3 className="px-3.5 py-2.5 text-[13px] font-semibold">Branch Rate Breakdown</h3>
             <div className="divide-y divide-slate-100 border-t border-slate-100">
-              {props.branchRates.map((entry) => (
+              {props.branchRates.slice((page - 1) * 5, page * 5).map((entry) => (
                 <div
                   key={entry.site}
-                  className="flex items-center justify-between gap-3 px-3.5 py-2 text-[10px]"
+                  className="flex items-center justify-between gap-3 px-3.5 py-2 text-[13px]"
                 >
                   <span className="text-slate-500">
                     {entry.site} · {formatPayrollNumber(entry.hours)} hrs
                   </span>
-                  <span className="font-mono font-bold text-slate-900">
+                  <span className="tabular-nums font-medium text-slate-900">
                     {formatPeso(entry.ratePerDay)}/day
                   </span>
                 </div>
               ))}
             </div>
-          ) : null}
+          <PayrollDetailPagination page={page} totalPages={totalPages} onChange={setPage} />
         </section>
       ) : null}
     </aside>

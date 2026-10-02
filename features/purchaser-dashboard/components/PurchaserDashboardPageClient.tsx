@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FolderKanban } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PurchaserActivityPanel from "@/features/purchaser-dashboard/components/PurchaserActivityPanel";
@@ -46,8 +46,7 @@ export default function PurchaserDashboardPageClient({
       <DashboardPageHero eyebrow="Purchasing workspace" title="Purchaser Dashboard" description={`Welcome, ${fullName?.trim() || "Purchaser"}. Track requests, supplier pricing, orders, deliveries, and receipts.`} actions={<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <label className="relative">
             <span className="sr-only">Filter by project</span>
-            <FolderKanban size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="h-11 w-full min-w-56 rounded-xl border border-white/80 bg-white pl-9 pr-9 text-sm font-semibold text-slate-700 outline-none focus:border-teal-300 focus:ring-2 focus:ring-white/50">
+            <select value={projectId} onChange={(event) => setProjectId(event.target.value)} className="h-11 w-full min-w-56 rounded-xl border border-white/80 bg-white pl-3 pr-9 text-sm font-semibold text-slate-700 outline-none focus:border-teal-300 focus:ring-2 focus:ring-white/50">
               <option value="all">All projects</option>
               {projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
             </select>

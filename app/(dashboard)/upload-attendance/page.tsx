@@ -6,6 +6,7 @@ import UploadZone from "@/components/UploadZone";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import PayrollWorkflowNavigation from "@/features/payroll/components/generate-payroll/PayrollWorkflowNavigation";
 
 export default function UploadAttendancePage() {
   const {
@@ -15,6 +16,7 @@ export default function UploadAttendancePage() {
     setCurrentPayrollRunMeta,
     handleParsed,
     handleReset,
+    attendance,
   } = useAppState();
   const router = useRouter();
 
@@ -38,6 +40,7 @@ export default function UploadAttendancePage() {
 
   return (
     <div className="space-y-4 p-0 sm:p-4">
+      <PayrollWorkflowNavigation current={1} canReview={attendance.dailyRows.length > 0} />
       <DashboardPageHero
         isUploadAttendance
         eyebrow="Attendance"

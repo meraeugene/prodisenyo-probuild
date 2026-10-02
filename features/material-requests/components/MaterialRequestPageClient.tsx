@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { ClipboardPlus, LoaderCircle, Send } from "lucide-react";
+import { LoaderCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import { createMaterialRequestAction } from "@/actions/materialRequests";
@@ -199,7 +199,6 @@ export default function MaterialRequestPageClient({
         description="Submit material requests with quantity and urgency so procurement can process site needs faster."
         actions={
           <span className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-sm font-semibold text-teal-700 sm:mt-0">
-            <ClipboardPlus size={14} />
             {totalPending} pending
           </span>
         }

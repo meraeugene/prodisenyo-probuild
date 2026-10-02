@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calculator, CheckCircle2, FileText, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { PlannedMaterialRow } from "@/features/material-requests/utils/plannedMaterials";
 
 const currency = new Intl.NumberFormat("en-PH", {
@@ -20,7 +20,7 @@ export default function PlannedMaterialsSection({
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
-            <Calculator size={15} /> Approved estimate
+             Approved estimate
           </p>
           <h2 className="mt-2 text-lg font-bold text-slate-950">Planned Materials</h2>
           <p className="mt-1 text-sm text-slate-600">
@@ -58,11 +58,11 @@ export default function PlannedMaterialsSection({
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
                 <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <FileText size={13} /> {currency.format(material.unitCost)} / {material.unit}
+                   {currency.format(material.unitCost)} / {material.unit}
                 </span>
                 {complete ? (
                   <span className="inline-flex h-9 items-center gap-1 rounded-lg bg-teal-50 px-3 text-xs font-semibold text-teal-700">
-                    <CheckCircle2 size={14} /> Fully requested
+                     Fully requested
                   </span>
                 ) : (
                   <Link

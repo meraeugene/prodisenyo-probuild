@@ -110,7 +110,6 @@ function EstimateReviewCard({
                   : "border border-slate-200 bg-slate-50 capitalize text-slate-600",
               )}
             >
-              <CheckCircle2 aria-hidden="true" size={15} />
               {isSubmitted ? "Needs CEO Approval" : estimate.status}
             </span>
           </div>
