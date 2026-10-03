@@ -4,7 +4,7 @@ type Props = { site: string; attendancePeriod: string; isPending: boolean; onClo
 export default function PayrollSubmitConfirmation({ site, attendancePeriod, isPending, onClose, onConfirm }: Props) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm ">
-      <div className="w-full max-w-xl rounded-[24px] border border-apple-mist bg-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+      <div className="w-full max-w-xl rounded-[24px] border border-transparent bg-white shadow-workspace">
         <div className="border-b border-apple-mist px-6 py-5">
           <div className="flex items-start gap-4">
             <div className="min-w-0">

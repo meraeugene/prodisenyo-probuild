@@ -17,7 +17,7 @@ export default function ProjectReturnEstimateDialog({
 }) {
   return (
     <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-workspace-dialog">
         <div className="border-b border-slate-100 bg-teal-900 px-5 py-4 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             Return estimate

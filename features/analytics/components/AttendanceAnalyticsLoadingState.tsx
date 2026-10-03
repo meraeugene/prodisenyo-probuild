@@ -4,7 +4,7 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
 export function AttendanceAnalyticsLoadingState() {
   return (
-    <section role="status" aria-busy="true" aria-label="Loading content" className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+    <section role="status" aria-busy="true" aria-label="Loading content" className="overflow-hidden rounded-[14px] border border-transparent bg-white shadow-workspace">
       <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
         <SkeletonBlock className="h-3 w-24 rounded-full" />
         <SkeletonBlock className="mt-4 h-8 w-72 max-w-full" />

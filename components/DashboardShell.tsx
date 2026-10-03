@@ -1,318 +1,55 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Menu, PanelLeftClose, PanelLeftOpen, Settings, X } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import DashboardNavigation from "@/features/navigation/components/DashboardNavigation";
+import DashboardBrand from "@/features/navigation/components/DashboardBrand";
+import SidebarAccount from "@/features/navigation/components/SidebarAccount";
 import SidebarTooltip from "@/features/navigation/components/SidebarTooltip";
-import SignOutButton from "@/components/auth/SignOutButton";
-import ProfileAvatar from "@/components/ProfileAvatar";
 import { useSidebarNotificationCounts } from "@/features/navigation/hooks/useSidebarNotificationCounts";
-import { getProfileAvatarPublicUrl } from "@/lib/supabase/storage";
+import { useDashboardSidebar } from "@/features/navigation/hooks/useDashboardSidebar";
+import type { SidebarProfile } from "@/features/navigation/types";
 import { cn } from "@/lib/utils";
-import type { Database } from "@/types/database";
 
-const NO_SCROLL_CLASS = "overflow-hidden";
-
-type ProfileCardData = Pick<
-  Database["public"]["Tables"]["profiles"]["Row"],
-  "full_name" | "username" | "avatar_path" | "role"
->;
-
-function formatRoleLabel(role: ProfileCardData["role"] | null): string {
-  if (role === "gmea") return "GMEA";
-  if (role === "admin") return "Administrator";
-  if (role === "ceo") return "Chief Executive Officer";
-  if (role === "payroll_manager") return "Payroll Manager";
-  if (role === "purchaser") return "Purchaser";
-  if (role === "engineer") return "Engineer";
-  if (role === "employee") return "Employee";
-  return "Signed-in user";
-}
-
-export default function DashboardShell({
-  children,
-  profile,
-}: {
-  children: React.ReactNode;
-  profile: (ProfileCardData & { id: string }) | null;
+export default function DashboardShell({ children, profile }: {
+  children: React.ReactNode; profile: SidebarProfile | null;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const sidebarWidth = collapsed ? "72px" : "264px";
-  const headerHeight = "76px";
-  const settingsActive = pathname === "/settings";
-  const isCeo = profile?.role === "ceo";
-  const notificationCounts = useSidebarNotificationCounts(isCeo);
-
-  useEffect(() => {
-    const isMobile =
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 1023px)").matches;
-
-    if (open && isMobile) {
-      document.body.classList.add(NO_SCROLL_CLASS);
-      document.documentElement.classList.add(NO_SCROLL_CLASS);
-    } else {
-      document.body.classList.remove(NO_SCROLL_CLASS);
-      document.documentElement.classList.remove(NO_SCROLL_CLASS);
-    }
-
-    return () => {
-      document.body.classList.remove(NO_SCROLL_CLASS);
-      document.documentElement.classList.remove(NO_SCROLL_CLASS);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    document.body.classList.remove(NO_SCROLL_CLASS);
-    document.documentElement.classList.remove(NO_SCROLL_CLASS);
-    setOpen(false);
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [pathname]);
-
-  useEffect(() => {
-    const isDesktop =
-      typeof window !== "undefined" &&
-      window.matchMedia("(min-width: 1024px)").matches;
-
-    if (
-      isDesktop &&
-      (pathname === "/budget-tracker" || pathname === "/cost-estimator")
-    ) {
-      setCollapsed(true);
-      return;
-    }
-
-    setCollapsed(false);
-  }, [pathname]);
+  const { open, setOpen, collapsed, setCollapsed } = useDashboardSidebar(pathname);
+  const notificationCounts = useSidebarNotificationCounts(profile?.role === "ceo");
+  const narrow = collapsed && !open;
 
   return (
-    <div className="min-h-screen bg-white [--dashboard-header-height:76px]">
-      <div className="min-h-screen">
-        {/* Mobile sidebar overlay */}
-        {open && (
-          <div
-            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-            onClick={() => setOpen(false)}
-          />
-        )}
-
-        <aside
-          className={cn(
-            "fixed left-0 top-0 z-50 flex h-[100dvh] flex-col overflow-visible border-r border-apple-mist bg-white transition-transform duration-300 lg:h-screen lg:translate-x-0",
-            open ? "translate-x-0" : "-translate-x-full",
-          )}
-          style={{
-            width: sidebarWidth,
-            minWidth: sidebarWidth,
-            maxWidth: sidebarWidth,
-          }}
-        >
-          <div
-            className="relative flex shrink-0 items-center justify-between border-b border-apple-mist px-5"
-            style={{ height: headerHeight }}
-          >
-            <div className="flex items-center gap-3">
-              <BrandLogoMark />
-
-              {!collapsed ? (
-                <p className="whitespace-nowrap text-sm font-semibold tracking-[-0.03em] text-apple-charcoal">
-                  Prodisenyo ProBuild
-                </p>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <SidebarTooltip
-                active
-                label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                <button
-                  type="button"
-                  onClick={() => setCollapsed((current) => !current)}
-                  className={cn(
-                    "hidden h-8 w-8 items-center justify-center rounded-lg text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:flex",
-                    collapsed &&
-                      "absolute -right-3 top-[22px] z-10 rounded-full border border-apple-mist bg-white shadow-sm",
-                  )}
-                  aria-label={
-                    collapsed ? "Expand navigation" : "Collapse navigation"
-                  }
-                >
-                  {collapsed ? (
-                    <PanelLeftOpen size={16} />
-                  ) : (
-                    <PanelLeftClose size={16} />
-                  )}
-                </button>
-              </SidebarTooltip>
-
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist bg-white text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:hidden"
-                aria-label="Close navigation"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div
-            className="sidebar-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-5"
-            style={{
-              WebkitOverflowScrolling: "touch",
-              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
-            }}
-          >
-            <DashboardNavigation role={profile?.role ?? null} pathname={pathname} collapsed={collapsed} onNavigate={() => setOpen(false)} notificationCounts={notificationCounts} />
-
-            <div className="mt-auto space-y-1 pt-3">
-              {!collapsed ? (
-                <div className="px-3 pb-2 pt-5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-700">
-                    Account
-                  </p>
-                </div>
-              ) : null}
-              <SidebarTooltip active={collapsed} label="Settings">
-                <Link
-                  href="/settings"
-                  prefetch
-                  className={cn(
-                    "group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm transition-all",
-                    collapsed && "justify-center px-2.5",
-                    settingsActive
-                      ? collapsed
-                        ? "border-[#076d69] bg-[#076d69] text-white shadow-sm"
-                        : "bg-apple-mist/40 text-apple-charcoal shadow-sm"
-                      : "text-apple-smoke hover:bg-apple-mist/40 hover:text-apple-charcoal ",
-                  )}
-                >
-                <div
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center transition-colors",
-                    collapsed ? "rounded-none" : "rounded-full",
-                    settingsActive
-                      ? collapsed
-                        ? "bg-transparent text-white"
-                        : "bg-[#076d69] text-white"
-                      : "text-apple-smoke group-hover:text-apple-charcoal",
-                  )}
-                >
-                  <Settings size={15} />
-                </div>
-                {!collapsed ? (
-                  <span className="font-medium">Settings</span>
-                ) : null}
-                </Link>
-              </SidebarTooltip>
-
-              <SidebarTooltip active={collapsed} label="Logout">
-                <div className="pt-2">
-                  <SignOutButton variant="sidebar" collapsed={collapsed} />
-                </div>
-              </SidebarTooltip>
-
-              <div className="pt-4">
-                <div
-                  className={cn(
-                    collapsed
-                      ? "flex justify-center"
-                      : "rounded-2xl border border-apple-mist bg-white p-3 shadow-[0_8px_20px_rgba(7,109,105,0.06)]",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex items-center gap-3",
-                      collapsed && "justify-center",
-                    )}
-                  >
-                    <ProfileAvatar
-                      avatarUrl={getProfileAvatarPublicUrl(
-                        profile?.avatar_path,
-                      )}
-                      name={profile?.full_name?.trim() || profile?.username}
-                      sizeClassName={collapsed ? "h-8 w-8" : "h-10 w-10"}
-                      textClassName="text-xs"
-                    />
-                    {!collapsed ? (
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-apple-charcoal">
-                          {profile?.full_name?.trim() ||
-                            profile?.username ||
-                            "Signed-in user"}
-                        </p>
-                        <p className="truncate text-xs text-apple-steel">
-                          {profile?.username
-                            ? ` ${formatRoleLabel(profile.role)}`
-                            : "Loading account details..."}
-                        </p>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-
-                {!collapsed ? (
-                  <p className="pt-4 text-center text-[11px] text-[#b6c1c7]">
-                    Copyright @2026 Veron Software. <br />
-                    All rights reserved.
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <div
-          className={cn(
-            "min-h-screen transition-[padding] duration-300",
-            collapsed ? "lg:pl-[72px]" : "lg:pl-[264px]",
-          )}
-        >
-          {/* Mobile top bar */}
-          <div
-            className="sticky top-0 z-30 flex items-center justify-between border-b border-apple-mist bg-white px-4 lg:hidden"
-            style={{ height: headerHeight }}
-          >
-            <div className="flex items-center gap-3">
-              <BrandLogoMark />
-              <p className="font-semibold tracking-[-0.04em] text-apple-charcoal">
-                Prodisenyo ProBuild
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-apple-mist text-apple-charcoal hover:bg-apple-mist/40"
-              aria-label="Open navigation"
-            >
-              <Menu size={18} />
-            </button>
-          </div>
-
-          <main className="min-h-screen bg-white ">{children}</main>
+    <div className="min-h-screen bg-white [--dashboard-header-height:72px]">
+      <a href="#dashboard-content" className="sr-only fixed left-4 top-4 z-[100] rounded-lg bg-white p-3 text-sm text-[#076d69] shadow-sm focus:not-sr-only">Skip to content</a>
+      {open && <button type="button" aria-label="Close navigation overlay" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[2px] lg:hidden" />}
+      <aside id="dashboard-sidebar" aria-label="Workspace sidebar" role={open ? "dialog" : undefined} aria-modal={open || undefined} className={cn(
+        "fixed left-0 top-0 z-50 flex h-[100dvh] flex-col bg-white shadow-[1px_0_12px_rgba(24,55,52,0.025)] transition-[transform,width] duration-300 motion-reduce:transition-none lg:translate-x-0",
+        narrow ? "w-[72px]" : "w-[248px] max-w-[calc(100vw-40px)]",
+        open ? "visible translate-x-0" : "invisible -translate-x-full lg:visible",
+      )}>
+        <div className={cn("relative flex h-[92px] shrink-0 items-center justify-between", narrow ? "px-[18px]" : "px-3")}>
+          <DashboardBrand collapsed={narrow} />
+          <SidebarTooltip active label={narrow ? "Expand sidebar" : "Collapse sidebar"}>
+            <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={narrow ? "Expand navigation" : "Collapse navigation"} aria-expanded={!narrow} aria-controls="dashboard-sidebar" className={cn(
+              "hidden h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#53736f] transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 lg:flex",
+              narrow && "absolute -right-3 top-8 bg-white shadow-[0_1px_6px_rgba(24,55,52,0.06)]",
+            )}>{narrow ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}</button>
+          </SidebarTooltip>
+          <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#53736f] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 lg:hidden"><X size={17} /></button>
         </div>
+        <div className="sidebar-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+          <DashboardNavigation role={profile?.role ?? null} pathname={pathname} collapsed={narrow} onNavigate={() => setOpen(false)} notificationCounts={notificationCounts} />
+          <SidebarAccount profile={profile} pathname={pathname} collapsed={narrow} onNavigate={() => setOpen(false)} />
+        </div>
+      </aside>
+      <div className={cn("min-h-screen transition-[padding] duration-300 motion-reduce:transition-none", collapsed ? "lg:pl-[72px]" : "lg:pl-[248px]")}>
+        <div className="sticky top-0 z-30 flex h-[72px] items-center justify-between bg-white/95 px-4 shadow-[0_1px_8px_rgba(24,55,52,0.03)] backdrop-blur-lg lg:hidden">
+          <DashboardBrand />
+          <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" aria-expanded={open} aria-controls="dashboard-sidebar" className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[#076d69] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700"><Menu size={20} /></button>
+        </div>
+        <main id="dashboard-content" data-workspace tabIndex={-1} className="min-h-screen bg-white outline-none">{children}</main>
       </div>
     </div>
-  );
-}
-
-function BrandLogoMark() {
-  return (
-    <span className="relative block h-9 w-9 shrink-0">
-      <Image
-        src="/prodisenyo-building-mark.png"
-        alt="Prodisenyo building mark"
-        fill
-        sizes="36px"
-        className="object-contain"
-        priority
-      />
-    </span>
   );
 }

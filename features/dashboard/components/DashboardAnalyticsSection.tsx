@@ -35,7 +35,7 @@ export default function DashboardAnalyticsSection({
 }) {
   return (
     <section className="mb-5">
-      <div className="rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+      <div className="rounded-[12px] bg-white p-5 shadow-workspace">
         <div className="mb-5 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[15px] font-semibold text-apple-charcoal">
@@ -50,7 +50,7 @@ export default function DashboardAnalyticsSection({
               <select
                 value={selectedPeriodKey ?? ""}
                 onChange={(event) => onSelectPeriod(event.target.value || null)}
-                className="h-10 w-full min-w-0 rounded-xl border border-apple-mist bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#076d69] md:min-w-[300px] md:w-auto"
+                className="h-10 w-full min-w-0 rounded-xl border border-transparent bg-white px-3 text-sm font-medium text-apple-charcoal outline-none transition hover:border-apple-steel focus:border-[#076d69] md:min-w-[300px] md:w-auto"
               >
                 {periodOptions.map((option) => (
                   <option key={option.key} value={option.key}>
@@ -65,7 +65,7 @@ export default function DashboardAnalyticsSection({
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+              <p className="text-[17px] font-semibold tracking-tight text-apple-charcoal">
                 Employees per Branch
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function DashboardAnalyticsSection({
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
                   <CartesianGrid
-                    strokeDasharray="3 3"
+                    strokeDasharray="0"
                     vertical={false}
                     stroke="rgb(var(--theme-chart-grid))"
                   />
@@ -121,7 +121,7 @@ export default function DashboardAnalyticsSection({
 
           <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
+              <p className="text-[17px] font-semibold tracking-tight text-apple-charcoal">
                 Payroll Distribution by Project
               </p>
             </div>
@@ -159,7 +159,7 @@ export default function DashboardAnalyticsSection({
                             }
                           | undefined;
                         return (
-                          <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl backdrop-blur-md">
+                          <div className="rounded-xl border border-transparent bg-white p-3 text-apple-charcoal shadow-workspace ">
                             <p className="mb-1 text-[10px] uppercase tracking-widest opacity-60">
                               Branch
                             </p>

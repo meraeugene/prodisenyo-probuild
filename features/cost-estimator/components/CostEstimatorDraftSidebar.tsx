@@ -22,7 +22,7 @@ export default function CostEstimatorDraftSidebar({
 
   return (
     <aside className="space-y-5">
-      <section className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+      <section className="rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
         <h2 className="text-lg font-semibold text-slate-950">BOQ Summary</h2>
         <p className="mt-5 text-sm text-slate-600">Estimated Cost</p>
         <p className="mt-1 break-words text-[25px] font-semibold tracking-[-0.03em] text-teal-700">{formatBudgetMoney(estimatedCost)}</p>
@@ -50,7 +50,7 @@ export default function CostEstimatorDraftSidebar({
         </div>
       </section>
 
-      <section className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+      <section className="rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
         <label htmlFor="estimate-notes" className="text-lg font-semibold text-slate-950">Notes</label>
         <textarea
           id="estimate-notes"

@@ -91,7 +91,7 @@ export default function ProgressReportsPageClient() {
         actions={
           <button
             onClick={() => setShowForm(!showForm)}
-            className="mt-3 sm:mt-0 flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-sm"
+            className="mt-3 sm:mt-0 flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white hover:bg-teal-800 transition shadow-workspace-button"
           >
             {showForm ? <Eye size={15} /> : <Plus size={15} />}
             {showForm ? "View Report History" : "New Progress Report"}
@@ -100,7 +100,7 @@ export default function ProgressReportsPageClient() {
       />
 
       {showForm ? (
-        <div className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_10px_30px_rgba(7,109,105,0.06)] animate-in fade-in duration-300">
+        <div className="bg-white border border-transparent p-5 rounded-2xl shadow-workspace animate-in fade-in duration-300">
           <div className="border-b border-slate-100 pb-3 mb-4">
             <h3 className="text-lg font-bold text-apple-charcoal">Submit Progress Report</h3>
             <p className="text-xs text-slate-400">Describe site completion percentages and construction notes.</p>
@@ -193,7 +193,7 @@ export default function ProgressReportsPageClient() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-sm flex items-center gap-1.5 disabled:opacity-70"
+                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-workspace-button flex items-center gap-1.5 disabled:opacity-70"
               >
                 {isPending && <LoaderCircle size={14} className="animate-spin" />}
                 Submit Report
@@ -206,7 +206,7 @@ export default function ProgressReportsPageClient() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="bg-white border border-apple-mist p-5 rounded-2xl shadow-[0_4px_20px_rgba(7,109,105,0.03)] hover:border-slate-300 transition"
+              className="bg-white border border-transparent p-5 rounded-2xl shadow-workspace hover:border-slate-300 transition"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-50 pb-3">
                 <div className="space-y-0.5">

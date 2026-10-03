@@ -105,7 +105,7 @@ export function BiometricIdentityResolutionDialog({
 
   return (
     <div className="fixed inset-0 z-[90] grid place-items-center bg-slate-950/45 p-4">
-      <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace-dialog">
         <header className="flex items-start justify-between border-b border-slate-200 p-4">
           <div>
             <h3 className="text-sm font-bold text-slate-950">Resolve biometric name</h3>

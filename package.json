@@ -10,6 +10,9 @@
     "lint": "eslint .",
     "test": "node --test tests/**/*.test.cjs",
     "seed:users": "node scripts/seed-users.mjs",
+    "seed:data": "node scripts/seed-data.mjs",
+    "seed:prepare": "node scripts/prepare-seed-schema.mjs",
+    "seed:delete": "node scripts/delete-seed-data.mjs",
     "test:gmea": "node --test tests/gmea*.test.cjs",
     "test:gmea:browser": "node tests/gmea/browserCheck.cjs",
     "gmea:rentals:history": "node scripts/gmea-rentals-history-import.cjs --dry-run"

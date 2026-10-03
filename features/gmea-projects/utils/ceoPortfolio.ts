@@ -69,3 +69,17 @@ export function selectCeoActivity(projects: GmeaProject[]) {
 export function formatCompactPeso(value: number) {
   return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 1 }).format(value);
 }
+
+export function buildCeoProjectTableTotals(projects: GmeaProject[]) {
+  const summaries = projects.map(projectSummary);
+  const collections = projects.map(contractCollectionSummary);
+  const contract = sumMoney(summaries.map((summary) => summary.contract));
+  const collected = sumMoney(collections.map((collection) => collection.received));
+  return {
+    contract,
+    expenses: sumMoney(summaries.map((summary) => summary.expenses)),
+    collected,
+    outstanding: sumMoney(collections.map((collection) => collection.outstanding)),
+    progress: contract > 0 ? Math.min(100, Math.round((collected / contract) * 100)) : 0,
+  };
+}

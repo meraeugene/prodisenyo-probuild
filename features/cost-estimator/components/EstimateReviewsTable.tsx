@@ -69,7 +69,7 @@ export default function EstimateReviewsTable({
   }
 
   return (
-    <section className="mt-4 rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
+    <section className="mt-4 rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
       <div className="mb-4">
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex shrink-0 whitespace-nowrap items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -173,7 +173,7 @@ export default function EstimateReviewsTable({
         ? createPortal(
             <div
               data-estimate-actions-root
-              className="fixed z-[140] min-w-[154px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
+              className="fixed z-[140] min-w-[154px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-workspace"
               style={{ top: openMenu.top, left: openMenu.left }}
             >
               <button

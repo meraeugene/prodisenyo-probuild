@@ -12,7 +12,7 @@ export default function GmeaRentalPortfolioCard({
   const total = rental.items.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <article className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)] transition-shadow ">
+    <article className="group relative isolate flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-transparent bg-white shadow-workspace transition-shadow ">
       <div className="flex-1 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

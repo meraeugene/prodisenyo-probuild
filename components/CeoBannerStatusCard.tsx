@@ -24,16 +24,16 @@ export default function CeoBannerStatusCard({
 }: CeoBannerStatusCardProps) {
   const content = (
     <>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-white">
-        <Icon size={20} aria-hidden="true" />
+      <span className="shrink-0 text-[#076d69]">
+        <Icon size={17} aria-hidden="true" />
       </span>
       <span className="min-w-0 text-left">
-        <span className="block whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.14em] text-white/65">
+        <span className="block text-xs font-normal text-[#53736f]">
           {label}
         </span>
         <span
           className={cn(
-            "mt-0.5 block truncate whitespace-nowrap text-2xl font-bold leading-none text-white tabular-nums",
+            "mt-1 block text-sm font-medium leading-5 text-[#1d1d1f] tabular-nums",
             valueClassName,
           )}
         >
@@ -44,7 +44,7 @@ export default function CeoBannerStatusCard({
   );
 
   const className =
-    "flex min-w-[210px] max-w-full shrink-0 items-center gap-3 rounded-xl border border-white/15 bg-white/12 px-4 py-3 text-white backdrop-blur-sm";
+    "workspace-header-status flex max-w-full items-center gap-3 rounded-[10px] bg-[#f4faf7] px-4 py-3 text-[#1d1d1f]";
 
   if (href) {
     return (
@@ -53,7 +53,7 @@ export default function CeoBannerStatusCard({
         aria-label={ariaLabel}
         className={cn(
           className,
-          "transition hover:border-white/35 hover:bg-[#075e5b]/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+          "transition hover:bg-[#eaf5f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#076d69]",
         )}
       >
         {content}
@@ -69,7 +69,7 @@ export default function CeoBannerStatusCard({
         aria-label={ariaLabel}
         className={cn(
           className,
-          "transition hover:border-white/35 hover:bg-[#075e5b]/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+          "transition hover:bg-[#eaf5f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#076d69]",
         )}
       >
         {content}

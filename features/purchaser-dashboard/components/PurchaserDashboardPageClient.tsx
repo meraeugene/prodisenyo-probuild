@@ -51,7 +51,7 @@ export default function PurchaserDashboardPageClient({
               {projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
             </select>
           </label>
-          <Link href="/purchasing-approvals" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#076d69] shadow-sm transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-white">
+          <Link href="/purchasing-approvals" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#076d69] shadow-workspace-button transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-white">
             Manage purchases <ArrowRight size={15} />
           </Link>
         </div>} />

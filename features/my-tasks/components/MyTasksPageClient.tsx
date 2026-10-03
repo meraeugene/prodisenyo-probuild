@@ -102,7 +102,7 @@ export default function MyTasksPageClient() {
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{item.label}</p>
               <p className="text-2xl sm:text-3xl font-bold mt-1 tracking-tight">{item.val}</p>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-white/80 border border-inherit flex items-center justify-center shadow-xs">
+            <div className="h-10 w-10 rounded-xl bg-white border border-inherit flex items-center justify-center shadow-workspace">
               <item.icon size={18} />
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function MyTasksPageClient() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-apple-mist p-3 rounded-2xl shadow-[0_4px_16px_rgba(7,109,105,0.03)]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-transparent p-3 rounded-2xl shadow-workspace">
         <div className="flex flex-wrap gap-1">
           {([
             { id: "all", label: "All Tasks" },
@@ -152,7 +152,7 @@ export default function MyTasksPageClient() {
           filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_8px_20px_rgba(7,109,105,0.04)] transition-all duration-300 hover:border-teal-200 "
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-transparent bg-white p-5 shadow-workspace transition-all duration-300 hover:border-teal-200 "
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
@@ -236,7 +236,7 @@ export default function MyTasksPageClient() {
       {/* Edit Status Modal */}
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white border border-apple-mist rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md bg-white border border-transparent rounded-2xl p-6 shadow-workspace animate-in zoom-in-95 duration-200">
             <h3 className="text-lg font-bold text-apple-charcoal">Update Task Status</h3>
             <p className="text-xs text-slate-500 mt-1">{editingTask.title} ({editingTask.projectName})</p>
 
@@ -318,7 +318,7 @@ export default function MyTasksPageClient() {
               <button
                 type="button"
                 onClick={handleSave}
-                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-sm"
+                className="h-10 px-5 rounded-xl bg-[#076d69] text-xs font-semibold text-white hover:bg-teal-800 transition shadow-workspace-button"
               >
                 Save Changes
               </button>

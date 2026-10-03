@@ -17,7 +17,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function PurchaserOrdersPanel({ records }: { records: PurchaserDashboardRecord[] }) {
   const orders = records.filter((record) => record.status !== "cancelled");
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,.035)]">
+    <section className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
       <div className="border-b border-slate-100 px-5 py-4">
         <h2 className="font-bold text-slate-950">Purchase Orders</h2>
         <p className="mt-0.5 text-xs text-slate-500">Current purchasing and delivery state</p>

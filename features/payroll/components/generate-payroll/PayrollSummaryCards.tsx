@@ -1,3 +1,4 @@
+import WorkspaceSummaryCards from "@/components/WorkspaceSummaryCards";
 import { formatPeso } from "@/features/payroll/utils/payrollWorkspace";
 
 interface PayrollSummaryCardsProps {
@@ -22,17 +23,5 @@ export default function PayrollSummaryCards({ totalEmployees, needsReview, ready
     payroll: formatPeso(totalPayroll),
   };
 
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map(({ key, label, detail }) => (
-        <article key={key} className="flex min-h-[108px] items-center gap-4 rounded-[10px] border border-[#d8e8e8] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(26,58,71,0.035)]">
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-[#61758e]">{label}</p>
-            <p className="mt-0.5 truncate text-[24px] font-bold leading-tight tracking-[-0.035em] text-[#0b213e]">{values[key]}</p>
-            <p className="mt-1 truncate text-[11px] text-[#8290a3]">{detail}</p>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
+  return <WorkspaceSummaryCards ariaLabel="Payroll preparation summary" className="xl:grid-cols-4" cards={cards.map(({ key, label, detail }) => ({ label, value: values[key], hint: detail }))} />;
 }

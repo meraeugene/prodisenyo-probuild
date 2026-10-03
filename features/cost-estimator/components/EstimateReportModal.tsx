@@ -90,7 +90,7 @@ export default function EstimateReportModal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-x-hidden overflow-y-hidden rounded-none bg-[#f0fdfa] shadow-[0_28px_80px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[96vh] sm:max-w-[1380px] sm:rounded-[28px]">
+      <div className="flex h-[100dvh] w-full max-w-none flex-col overflow-x-hidden overflow-y-hidden rounded-none bg-[#f0fdfa] shadow-workspace-dialog sm:h-auto sm:max-h-[96vh] sm:max-w-[1380px] sm:rounded-[28px]">
         <div className="border-b border-teal-950/10 bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] text-white sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -114,7 +114,7 @@ export default function EstimateReportModal({
 
         <div className="min-h-0 overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
           <div className="grid gap-5 xl:grid-cols-[1fr_1.08fr]">
-            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-transparent bg-white p-5 shadow-workspace">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -197,7 +197,7 @@ export default function EstimateReportModal({
               ) : null}
             </section>
 
-            <section className="min-w-0 rounded-[22px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)]">
+            <section className="min-w-0 rounded-[22px] border border-transparent bg-white p-5 shadow-workspace">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">

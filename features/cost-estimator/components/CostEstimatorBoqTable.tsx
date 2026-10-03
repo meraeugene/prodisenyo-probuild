@@ -29,7 +29,7 @@ export default function CostEstimatorBoqTable({
   ).size;
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <section className="min-w-0 overflow-hidden rounded-[14px] border border-transparent bg-white shadow-workspace">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">
           <thead>

@@ -90,7 +90,7 @@ export default function BudgetTrackerSetupForm({
 
   return (
     <section className="flex min-h-[calc(100vh-3rem)] w-full items-start justify-center px-4 pt-6 sm:items-center sm:pt-0">
-      <div className="w-full max-w-lg rounded-2xl border border-apple-mist bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <div className="w-full max-w-lg rounded-2xl border border-transparent bg-white p-6 shadow-workspace-dialog">
         {projects.length > 0 ? (
           <button
             type="button"
@@ -228,7 +228,7 @@ export default function BudgetTrackerSetupForm({
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#076d69] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(7,109,105,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-[10px] bg-[#076d69] px-5 py-3 text-sm font-semibold text-white shadow-workspace-button disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "project" ? (
               <ButtonLoader label="Starting tracking costs" />

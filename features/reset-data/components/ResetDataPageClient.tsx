@@ -36,14 +36,14 @@ export default function ResetDataPageClient() {
   }
 
   return (
-    <div className="space-y-5 p-0 sm:p-6">
+    <div className="space-y-5 p-4 sm:p-6">
       <DashboardPageHero
         eyebrow="CEO Admin"
         title="Reset Workspace Data"
         description="Permanently clears records. User accounts are preserved."
       />
 
-      <section className="overflow-hidden rounded-none border border-red-200 bg-white shadow-[0_16px_45px_rgba(127,29,29,0.08)] sm:rounded-[20px]">
+      <section className="overflow-hidden rounded-none border border-red-200 bg-white shadow-workspace sm:rounded-[20px]">
         <div className="border-b border-red-100 bg-[linear-gradient(135deg,#fff7f7_0%,#fff_65%)] px-5 py-5 sm:px-7">
           <div className="flex items-start gap-4">
             <div className="min-w-0">
@@ -124,7 +124,7 @@ export default function ResetDataPageClient() {
               type="button"
               onClick={handleResetData}
               disabled={!canReset || isPending}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(220,38,38,0.18)] transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none sm:min-w-40"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-workspace-button transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none sm:min-w-40"
             >
               {isPending ? (
                 <>

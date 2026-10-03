@@ -4,13 +4,13 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
 export function PayrollAnalyticsLoadingState() {
   return (
-    <section aria-busy="true" role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-sm">
+    <section aria-busy="true" role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
       <div className="space-y-10 px-5 py-6 sm:px-8 sm:py-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(7,109,105,0.06)] sm:p-5"
+              className="rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:p-5"
             >
               <SkeletonBlock className="h-3 w-24 rounded-full" />
               <SkeletonBlock className="mt-2 h-7 w-32 rounded-full" />
@@ -26,7 +26,7 @@ export function PayrollAnalyticsLoadingState() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="space-y-4">
             <SkeletonBlock className="h-3 w-48 rounded-full" />
-            <div className="min-h-[350px] rounded-2xl border border-apple-mist bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)] sm:p-6">
+            <div className="min-h-[350px] rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:p-6">
               <div className="grid h-full min-h-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="flex h-[220px] items-center justify-center sm:h-[240px] lg:h-full lg:min-h-[260px]">
                   <div className="flex h-48 w-48 items-center justify-center rounded-full bg-apple-snow">
@@ -50,7 +50,7 @@ export function PayrollAnalyticsLoadingState() {
 
           <div className="space-y-4">
             <SkeletonBlock className="h-3 w-48 rounded-full" />
-            <div className="h-[550px] rounded-2xl border border-apple-mist bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)] sm:p-6">
+            <div className="h-[550px] rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:p-6">
               <div className="grid h-full gap-4">
                 {Array.from({ length: 7 }).map((_, index) => (
                   <div key={index} className="flex items-center gap-4">
@@ -67,7 +67,7 @@ export function PayrollAnalyticsLoadingState() {
               <SkeletonBlock className="h-3 w-40 rounded-full" />
               <SkeletonBlock className="h-3 w-36 rounded-full" />
             </div>
-            <div className="h-[380px] rounded-2xl border border-apple-mist bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)] sm:p-6">
+            <div className="h-[380px] rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:p-6">
               <div className="flex h-full items-end gap-5">
                 <SkeletonBlock className="h-[48%] flex-1 rounded-t-2xl rounded-b-md" />
                 <SkeletonBlock className="h-[72%] flex-1 rounded-t-2xl rounded-b-md" />

@@ -6,6 +6,13 @@ export type GmeaOverviewData = {
   rentals: RentalAnalyticsData;
 };
 
+export type GmeaOverviewDivisionFinance = {
+  name: "Electronics & Solar" | "Rentals";
+  revenue: number;
+  expenses: number;
+  profit: number;
+};
+
 export type GmeaOverviewActivity = {
   id: string;
   title: string;

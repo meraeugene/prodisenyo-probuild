@@ -81,7 +81,7 @@ export function PayrollAdjustmentEntries(props: PayrollAdjustmentEntriesProps) {
   const totalPages = Math.max(1, Math.ceil(rows.length / 2));
   const page = Math.min(selectedPage, totalPages);
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
       <div className="flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2 text-[13px] font-medium text-slate-950">
           Adjustment Entries

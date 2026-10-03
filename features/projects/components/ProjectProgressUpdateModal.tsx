@@ -47,7 +47,7 @@ export default function ProjectProgressUpdateModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="progress-update-modal-title"
-        className="relative z-10 max-h-[94dvh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:max-w-3xl sm:rounded-2xl"
+        className="relative z-10 max-h-[94dvh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-workspace-dialog sm:max-w-3xl sm:rounded-2xl"
       >
         <ProjectProgressUpdateForm
           projectId={projectId}

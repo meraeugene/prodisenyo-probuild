@@ -103,7 +103,7 @@ export function AttendancePunchEvidence({
   ]);
 
   return (
-    <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <section className="min-w-0 rounded-xl border border-transparent bg-white p-4 shadow-workspace sm:p-5">
       <div className="mb-4 flex items-center gap-3">
         <div>
           <h4 className="text-sm font-bold text-slate-950">

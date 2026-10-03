@@ -60,7 +60,7 @@ export function PayrollOvertimeConfirmation({
 
   return (
     <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/45 p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
         <div className="flex gap-3 border-b border-slate-200 p-5">
           <div>
             <p className="text-[13px] font-medium text-slate-950">Confirm overtime decision</p>

@@ -24,7 +24,7 @@ export default function CostEstimatorBoqSidebar({
 
   return (
     <aside className="space-y-5">
-      <section className="rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+      <section className="rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
         <h2 className="text-xl font-semibold tracking-[-0.025em] text-slate-950">BOQ Summary</h2>
         <dl className="mt-6 space-y-5 text-[15px]">
           <SummaryRow label="Estimated Cost" value={formatBudgetMoney(estimatedCost)} valueClassName="text-teal-800" />
@@ -47,7 +47,7 @@ export default function CostEstimatorBoqSidebar({
         </div>
       </section>
 
-      <section id="submission-status" className="scroll-mt-24 rounded-[14px] border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+      <section id="submission-status" className="scroll-mt-24 rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
         <h2 className="text-xl font-semibold tracking-[-0.025em] text-slate-950">Submission & Notes</h2>
 
         <div className={cn("mt-4 flex items-start gap-4 rounded-[10px] border p-4", status.wrapperClassName)}>

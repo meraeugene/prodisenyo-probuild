@@ -54,7 +54,7 @@ export default function EngineeringWorkspace({
   ] as const;
   return (
     <div className="space-y-4 text-sm">
-      <header className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <header className="rounded-lg border border-transparent bg-white px-4 py-3 shadow-workspace">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <button

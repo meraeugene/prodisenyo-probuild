@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  --workspace-panel-shadow: 0 2px 12px rgb(24 55 52 / 3.5%), 0 0 1px rgb(24 55 52 / 10%);
   --font-sans:
     -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "Helvetica Neue", Arial, sans-serif;
@@ -16,13 +17,13 @@
   --apple-ash: 46 51 56;
   --apple-charcoal: 22 24 29;
   --apple-black: 10 12 16;
-  --theme-chart-1: 15 118 110;
-  --theme-chart-2: 13 148 136;
-  --theme-chart-3: 20 184 166;
-  --theme-chart-4: 45 212 191;
-  --theme-chart-5: 94 234 212;
-  --theme-chart-grid: 204 251 241;
-  --theme-chart-axis: 70 74 82;
+  --theme-chart-1: 7 109 105;
+  --theme-chart-2: 105 169 155;
+  --theme-chart-3: 160 203 191;
+  --theme-chart-4: 184 222 214;
+  --theme-chart-5: 83 115 111;
+  --theme-chart-grid: 237 243 241;
+  --theme-chart-axis: 83 115 111;
   --theme-chart-cursor: 247 250 248;
 }
 

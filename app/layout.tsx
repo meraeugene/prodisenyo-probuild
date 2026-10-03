@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./workspace.css";
 import "sonner/dist/styles.css";
 import { Toaster } from "sonner";
 import { AppStateProvider } from "@/features/app/AppStateProvider";
@@ -36,7 +37,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="font-sans" data-theme="prodisenyo">
+    <html lang="en" className="font-sans" data-theme="prodisenyo" data-scroll-behavior="smooth">
       <body className="min-h-screen bg-apple-snow antialiased">
         <PwaRegister />
         <AppStateProvider>

@@ -1,3 +1,4 @@
+import { CHART_COLORS } from "@/lib/chartTheme";
 import type { DailyLogRow } from "@/types";
 import {
   extractSiteName,
@@ -337,14 +338,7 @@ export function buildPayrollReportSiteDistribution(
   }));
 }
 
-export const PAYROLL_REPORT_SITE_COLORS = [
-  "#075f5b",
-  "#076d69",
-  "#087f79",
-  "#0d9488",
-  "#14b8a6",
-  "#4ade80",
-];
+export const PAYROLL_REPORT_SITE_COLORS = CHART_COLORS;
 
 export function buildEmployeeAttendanceModalData(
   report: PayrollRunRow,

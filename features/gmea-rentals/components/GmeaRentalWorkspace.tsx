@@ -62,17 +62,17 @@ export default function GmeaRentalWorkspace({
         </Link>
         <header
           id="overview"
-          className="rounded-[22px] bg-[#075e5b] p-6 text-white shadow-[0_18px_45px_-32px_rgba(3,62,60,.7)] sm:p-8"
+          className="workspace-page-header workspace-header-actions bg-white pb-2"
         >
           <div className="flex flex-col justify-between gap-5 sm:flex-row">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/70">
+              <p className="text-xs font-normal text-[#53736f]">
                 GMEA Rental Workspace
               </p>
-              <h1 className="mt-2 text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+              <h1 className="mt-2.5 break-words text-[28px] font-semibold leading-none tracking-[-0.045em] sm:text-[32px]">
                 {rental.rental_number}
               </h1>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/80">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#53736f]">
                 <span className="inline-flex items-center gap-2">
                   {rental.client}
                 </span>
@@ -111,7 +111,7 @@ export default function GmeaRentalWorkspace({
           ].map(({ label, value, caption }) => (
             <article
               key={label}
-              className="min-h-28 min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,.045)]"
+              className="min-h-28 min-w-0 rounded-2xl border border-transparent bg-white p-5 shadow-workspace"
             >
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium text-slate-500">{label}</p>
@@ -156,7 +156,7 @@ export default function GmeaRentalWorkspace({
         {tab === "Equipment" && (
           <section
             id="equipment"
-            className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7"
+            className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7"
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -221,12 +221,12 @@ export default function GmeaRentalWorkspace({
           </section>
         )}
         {tab === "Collections" && (
-          <div className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+          <div className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
             <GmeaRentalCollectionsSection rental={rental} canEdit={canEdit} />
           </div>
         )}
         {tab === "Expenses" && (
-          <div className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+          <div className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
             <GmeaRentalExpensesSection
               rental={rental}
               operations={operations}
@@ -235,7 +235,7 @@ export default function GmeaRentalWorkspace({
           </div>
         )}
         {tab === "Drivers / Operators" && (
-          <div className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+          <div className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
             <GmeaRentalCrewSection
               rental={rental}
               workers={operations.workers}

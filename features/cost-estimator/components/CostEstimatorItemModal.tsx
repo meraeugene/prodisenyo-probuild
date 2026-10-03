@@ -45,7 +45,7 @@ export default function CostEstimatorItemModal(
         role="dialog"
         aria-modal="true"
         aria-labelledby="boq-item-title"
-        className="relative flex max-h-[100dvh] w-full max-w-[920px] flex-col overflow-hidden bg-white shadow-[0_30px_100px_rgba(15,23,42,0.28)] sm:max-h-[90vh] sm:rounded-[14px] sm:border sm:border-slate-200"
+        className="relative flex max-h-[100dvh] w-full max-w-[920px] flex-col overflow-hidden bg-white shadow-workspace-dialog sm:max-h-[90vh] sm:rounded-[14px] sm:border sm:border-slate-200"
       >
         <header className="flex items-start justify-between gap-5 border-b border-slate-200 px-5 py-5 sm:px-8">
           <div>

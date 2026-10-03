@@ -18,9 +18,9 @@ export function buildPayrollApprovalAnalytics(
     };
   });
   const statuses = [
-    { name: "Approved", value: reports.filter((report) => report.status === "approved").length, color: "#159447" },
-    { name: "Pending Review", value: reports.filter((report) => report.status === "submitted").length, color: "#1673ea" },
-    { name: "Returned", value: reports.filter((report) => report.status === "rejected").length, color: "#f5ad19" },
+    { name: "Approved", value: reports.filter((report) => report.status === "approved").length, color: "#076d69" },
+    { name: "Pending Review", value: reports.filter((report) => report.status === "submitted").length, color: "#69a99b" },
+    { name: "Returned", value: reports.filter((report) => report.status === "rejected").length, color: "#cfab65" },
   ];
   const sites = new Map<string, number>();
   reports.forEach((report) => {

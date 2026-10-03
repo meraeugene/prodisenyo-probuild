@@ -104,7 +104,7 @@ export default function PurchasingWorkspace() {
       ) : (
         <div className="space-y-3">
           {filtered.map((record) => (
-            <article key={record.id} className="rounded-[22px] border border-white/80 bg-white/80 p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+            <article key={record.id} className="rounded-[22px] border border-transparent bg-white p-5 shadow-workspace ">
               <div className="flex flex-col justify-between gap-4 sm:flex-row">
                 <div>
                   <p className="text-xs font-semibold uppercase text-apple-steel">{record.projectName}</p>

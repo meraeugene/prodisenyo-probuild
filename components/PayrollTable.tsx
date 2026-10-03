@@ -120,7 +120,7 @@ export default function PayrollTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-3xl border border-apple-mist bg-white shadow-apple-xs [-webkit-overflow-scrolling:touch]">
+      <div className="overflow-x-auto rounded-3xl border border-transparent bg-white shadow-workspace [-webkit-overflow-scrolling:touch]">
         <table className="w-full text-sm min-w-[920px]">
           <thead>
             <tr className="border-b border-apple-mist">

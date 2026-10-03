@@ -95,7 +95,7 @@ export default function GmeaRentalCreateForm({
       wide
     >
       <div className="space-y-6">
-        <section className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+        <section className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
           <h2 className="text-lg font-semibold text-slate-950">
             Rental details
           </h2>
@@ -155,7 +155,7 @@ export default function GmeaRentalCreateForm({
             </label>
           </div>
         </section>
-        <section className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+        <section className="rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-950">

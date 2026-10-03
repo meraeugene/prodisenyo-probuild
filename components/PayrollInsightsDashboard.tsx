@@ -1,7 +1,11 @@
 "use client";
 
+import { ChartTooltip, ChartCard, KpiCard } from "@/features/analytics/components/PayrollInsightsUi";
+import { STACK_COLORS, formatCurrency, formatCompactCurrency, extractBranchName, shorten, getBranchColor, getPieColor } from "@/features/analytics/utils/payrollInsightPresentation";
+
+
 import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
+
 import {
   Area,
   AreaChart,
@@ -15,7 +19,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  type TooltipProps,
+
 } from "recharts";
 import type { AttendanceRecordInput, PayrollRow } from "@/lib/payrollEngine";
 import { buildPayrollInsightsData } from "@/lib/payrollInsights";
@@ -30,172 +34,6 @@ interface PayrollInsightsDashboardProps {
   payrollRows: PayrollRow[];
   attendanceRows: AttendanceRecordInput[];
   dailyPaidPoints?: DailyPaidPoint[];
-}
-
-const THEME_BRANCH_COLORS = [
-  "rgb(var(--theme-chart-1))",
-  "rgb(var(--theme-chart-2))",
-  "rgb(var(--theme-chart-3))",
-  "rgb(var(--theme-chart-4))",
-  "rgb(var(--theme-chart-5))",
-  "rgb(var(--theme-chart-2))",
-  "rgb(var(--theme-chart-3))",
-  "rgb(var(--theme-chart-4))",
-  "rgb(var(--theme-chart-5))",
-  "rgb(var(--theme-chart-1))",
-];
-
-const PIE_CHART_COLORS = [
-  "rgb(var(--theme-chart-1))",
-  "rgb(var(--theme-chart-2))",
-  "rgb(var(--theme-chart-3))",
-  "rgb(var(--theme-chart-4))",
-  "rgb(var(--theme-chart-5))",
-  "rgba(7, 109, 105, 0.75)",
-  "rgba(15, 118, 110, 0.75)",
-  "rgba(13, 148, 136, 0.72)",
-  "rgba(45, 212, 191, 0.72)",
-  "rgba(94, 234, 212, 0.88)",
-];
-
-const STACK_COLORS = {
-  regular: "rgb(var(--theme-chart-2))",
-  overtime: "rgb(var(--theme-chart-3))",
-  allowance: "rgb(var(--theme-chart-5))",
-};
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatCompactCurrency(value: number): string {
-  const absolute = Math.abs(value);
-  if (absolute >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
-  if (absolute >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (absolute >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString("en-PH");
-}
-
-function shorten(value: string, max = 16): string {
-  if (!value) return "";
-  if (value.length <= max) return value;
-  return `${value.slice(0, max - 3)}...`;
-}
-
-function extractBranchName(value: string): string {
-  if (!value) return "";
-  return value.trim().split(/\s+/)[0].toUpperCase();
-}
-
-function getBranchColor(index: number) {
-  return THEME_BRANCH_COLORS[index % THEME_BRANCH_COLORS.length];
-}
-
-function getPieColor(index: number) {
-  return PIE_CHART_COLORS[index % PIE_CHART_COLORS.length];
-}
-
-type CustomChartTooltipProps = TooltipProps<number, string> & {
-  valueFormatter?: (value: number) => string;
-  unit?: string;
-};
-
-function ChartTooltip({
-  active,
-  payload,
-  label,
-  valueFormatter,
-  unit,
-}: CustomChartTooltipProps) {
-  if (!active || !payload || payload.length === 0) return null;
-
-  return (
-    <div className="rounded-2xl border border-apple-mist bg-white px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-      {label ? (
-        <p className="mb-2 text-[14px] font-semibold text-apple-charcoal">
-          {String(label)}
-        </p>
-      ) : null}
-
-      <div className="space-y-1.5">
-        {payload.map((entry, index) => {
-          const rawValue =
-            typeof entry.value === "number"
-              ? entry.value
-              : Number(entry.value ?? 0);
-
-          return (
-            <div
-              key={`${String(entry.dataKey)}-${index}`}
-              className="flex items-center gap-2"
-            >
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{
-                  backgroundColor: entry.color || "rgb(var(--theme-chart-2))",
-                }}
-              />
-              <span className="text-[12px] text-apple-smoke">
-                {String(entry.name || entry.dataKey || "")}
-              </span>
-              <span className="ml-auto text-[12px] font-semibold text-apple-charcoal">
-                {valueFormatter ? valueFormatter(rawValue) : rawValue}
-                {unit ? ` ${unit}` : ""}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ChartCard({
-  title,
-  children,
-  actions,
-  height = "h-[320px]",
-}: {
-  title: string;
-  children: ReactNode;
-  actions?: ReactNode;
-  height?: string;
-}) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
-          {title}
-        </h3>
-        {actions}
-      </div>
-
-      <div
-        className={`${height} w-full rounded-2xl border border-apple-mist bg-white p-4 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]`}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function KpiCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-5">
-      <span className="absolute inset-y-0 left-0 w-1 bg-teal-600" />
-      <p className="text-[11px] font-medium text-slate-500">
-        {label}
-      </p>
-      <p className="mt-2 break-words text-xl font-bold tracking-tight text-slate-950 tabular-nums sm:text-2xl">
-        {value}
-      </p>
-    </div>
-  );
 }
 
 export default function PayrollInsightsDashboard({
@@ -262,7 +100,7 @@ export default function PayrollInsightsDashboard({
       className="animate-fade-up"
       style={{ animationFillMode: "both", animationDelay: "40ms" }}
     >
-      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_12px_36px_-28px_rgba(15,23,42,.3)]">
+      <div className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
         <div className="border-b border-apple-mist px-5 pb-5 pt-6 sm:px-8 sm:pb-6 sm:pt-8">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-apple-steel">
@@ -270,7 +108,7 @@ export default function PayrollInsightsDashboard({
             </span>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight text-apple-charcoal sm:text-2xl">
+          <h2 className="text-lg font-semibold tracking-tight text-apple-charcoal">
             Payroll insights
           </h2>
 
@@ -336,12 +174,12 @@ export default function PayrollInsightsDashboard({
                 >
                   <defs>
                     <linearGradient id="analyticsTrendFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.04} />
+                      <stop offset="5%" stopColor="#076d69" stopOpacity={0.16} />
+                      <stop offset="95%" stopColor="#076d69" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="3 3"
+                    strokeDasharray="0"
                     vertical={false}
                     stroke="rgb(var(--theme-chart-grid))"
                   />
@@ -371,13 +209,13 @@ export default function PayrollInsightsDashboard({
                     type="monotone"
                     dataKey="total"
                     name="Paid Total"
-                    stroke="rgb(var(--theme-chart-3))"
+                    stroke="rgb(var(--theme-chart-1))"
                     strokeWidth={3}
                     fill="url(#analyticsTrendFill)"
                     dot={{ r: 0 }}
                     activeDot={{
                       r: 5,
-                      fill: "rgb(var(--theme-chart-3))",
+                      fill: "rgb(var(--theme-chart-1))",
                       stroke: "white",
                       strokeWidth: 2,
                     }}
@@ -455,14 +293,14 @@ export default function PayrollInsightsDashboard({
               )}
             </ChartCard>
 
-            <ChartCard title="Top 10 Highest Paid Employees" height="h-[550px]">
+            <ChartCard title="Top 10 Highest Paid Employees" chartHeight={Math.max(320, topPaidEmployeesData.length * 46 + 20)}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={topPaidEmployeesData}
                   layout="vertical"
                   barCategoryGap={18}
                   barGap={4}
-                  margin={{ top: 10, right: 20, left: 92, bottom: 10 }}
+                  margin={{ top: 10, right: 16, left: 0, bottom: 10 }}
                 >
                   <XAxis type="number" hide />
                   <YAxis
@@ -470,10 +308,10 @@ export default function PayrollInsightsDashboard({
                     type="category"
                     axisLine={false}
                     tickLine={false}
-                    width={140}
+                    width={126}
                     tick={{
                       fill: "rgb(var(--theme-chart-axis))",
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: 500,
                     }}
                   />
@@ -550,7 +388,7 @@ export default function PayrollInsightsDashboard({
                     margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                   >
                     <CartesianGrid
-                      strokeDasharray="3 3"
+                      strokeDasharray="0"
                       vertical={false}
                       stroke="rgb(var(--theme-chart-grid))"
                     />

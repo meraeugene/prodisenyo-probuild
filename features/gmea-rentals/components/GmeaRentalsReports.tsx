@@ -1,5 +1,7 @@
 "use client";
 
+import DashboardPageHero from "@/components/DashboardPageHero";
+
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { getGmeaRentalAnalyticsAction } from "@/actions/gmeaRentals";
@@ -55,25 +57,14 @@ export default function GmeaRentalsReports({
   return (
     <main className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-4">
-        <header className="rounded-[22px] bg-[#075e5b] px-6 py-7 text-white shadow-[0_18px_45px_-32px_rgba(3,62,60,.7)] sm:px-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/75">
-            GMEA Marketing Corporation
-          </p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-[34px] font-bold tracking-[-0.045em] sm:text-[42px]">
-                Rental reports
-              </h1>
-              <p className="mt-2 text-sm text-white/80">
-                Financial performance calculated from posted collections and
-                recorded expenses.
-              </p>
-            </div>
-            <GmeaRentalsAnalyticsNav />
-          </div>
-        </header>
+        <DashboardPageHero
+          eyebrow="GMEA Marketing Corporation"
+          title="Rental reports"
+          description="Financial performance calculated from posted collections and recorded expenses."
+          actions={<GmeaRentalsAnalyticsNav />}
+        />
 
-        <section className="rounded-[16px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)]">
+        <section className="rounded-[16px] border border-transparent bg-white p-5 shadow-workspace">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="text-[16px] font-bold tracking-[-0.025em] text-slate-950">
@@ -184,7 +175,7 @@ function ReportCard({
   tone: string;
 }) {
   return (
-    <article className="rounded-[12px] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)]">
+    <article className="rounded-[12px] border border-transparent bg-white px-5 py-4 shadow-workspace">
       <p className="text-xs font-semibold text-slate-700">{label}</p>
       <p
         className={

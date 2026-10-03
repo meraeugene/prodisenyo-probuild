@@ -192,7 +192,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-hidden bg-black/40 p-4 sm:p-6 backdrop-blur-sm">
-      <div role="dialog" aria-modal="true" aria-labelledby="branch-rate-title" className="flex max-h-[min(85dvh,720px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-apple-xs sm:p-6">
+      <div role="dialog" aria-modal="true" aria-labelledby="branch-rate-title" className="flex max-h-[min(85dvh,720px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-transparent bg-white p-4 shadow-workspace-dialog sm:p-6">
         <div className="shrink-0">
           <h3 id="branch-rate-title" className="text-lg font-bold text-apple-charcoal">
             Edit Employee Rates Per Branch

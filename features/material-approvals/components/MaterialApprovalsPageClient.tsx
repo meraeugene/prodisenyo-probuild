@@ -201,7 +201,7 @@ export default function MaterialApprovalsPageClient({
         {filteredRequests.map((request) => (
           <article
             key={request.id}
-            className="flex flex-col justify-between gap-6 rounded-2xl border border-apple-mist bg-white p-5 shadow-[0_4px_20px_rgba(7,109,105,.03)] md:flex-row md:items-center"
+            className="flex flex-col justify-between gap-6 rounded-2xl border border-transparent bg-white p-5 shadow-workspace md:flex-row md:items-center"
           >
             <div className="flex min-w-0 flex-1 items-start gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-teal-100 bg-teal-50 text-teal-700">

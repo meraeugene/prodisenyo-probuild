@@ -228,7 +228,7 @@ export default function UploadZone({
                   e.stopPropagation();
                   inputRef.current?.click();
                 }}
-                className="h-9 rounded-[10px] border border-teal-200 bg-teal-50 px-3 text-xs font-semibold text-teal-700 shadow-sm transition-all hover:border-teal-300 hover:bg-teal-100"
+                className="h-9 rounded-[10px] border border-teal-200 bg-teal-50 px-3 text-xs font-semibold text-teal-700 shadow-workspace-button transition-all hover:border-teal-300 hover:bg-teal-100"
               >
                 Add files
               </button>
@@ -242,7 +242,7 @@ export default function UploadZone({
                   }
                   setError(null);
                 }}
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-sm transition-colors hover:bg-[#087f79]"
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#075f5b,#076d69)] shadow-workspace-button transition-colors hover:bg-[#087f79]"
               >
                 <X size={14} className="text-white" />
               </button>

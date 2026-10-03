@@ -1,3 +1,4 @@
+import WorkspaceSummaryCards from "@/components/WorkspaceSummaryCards";
 import type {
   PayrollDashboardData,
   PayrollDashboardSummary,
@@ -31,27 +32,5 @@ export default function PayrollDashboardSummaryCards({
     },
   ];
 
-  return (
-    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map((card) => {
-        return (
-          <article
-            key={card.label}
-            className="rounded-[22px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] backdrop-blur-xl"
-          >
-            <div className="flex items-start gap-3">
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                  {card.label}
-                </p>
-                <p className="mt-1 truncate text-xl font-bold tracking-[-0.03em] text-slate-950">
-                  {card.value}
-                </p>
-              </div>
-            </div>
-          </article>
-        );
-      })}
-    </section>
-  );
+  return <WorkspaceSummaryCards ariaLabel="Payroll summary" cards={cards} className="xl:grid-cols-4" />;
 }

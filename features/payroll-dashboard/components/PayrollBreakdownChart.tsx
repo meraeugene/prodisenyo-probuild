@@ -2,8 +2,9 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
+import { CHART_TOOLTIP_STYLE } from "@/lib/chartTheme";
 
-const COLORS = ["#087f79", "#f59e0b", "#e11d48"];
+const COLORS = ["#076d69", "#69a99b", "#cfab65"];
 
 export default function PayrollBreakdownChart({
   regularPay,
@@ -15,9 +16,9 @@ export default function PayrollBreakdownChart({
   deductions: number;
 }) {
   const data = [
-    { name: "Regular pay", value: regularPay },
-    { name: "Overtime & holiday", value: supplementalPay },
-    { name: "Deductions", value: deductions },
+    { name: "Regular pay", value: regularPay, color: COLORS[0] },
+    { name: "Overtime & holiday", value: supplementalPay, color: COLORS[1] },
+    { name: "Deductions", value: deductions, color: COLORS[2] },
   ].filter((item) => item.value > 0);
 
   if (!data.length) return null;
@@ -37,18 +38,13 @@ export default function PayrollBreakdownChart({
             paddingAngle={2}
             stroke="none"
           >
-            {data.map((item, index) => (
-              <Cell key={item.name} fill={COLORS[index]} />
+            {data.map((item) => (
+              <Cell key={item.name} fill={item.color} />
             ))}
           </Pie>
           <Tooltip
             formatter={(value) => formatPayrollCurrency(Number(value))}
-            contentStyle={{
-              borderRadius: 10,
-              borderColor: "#e2e8f0",
-              fontSize: 12,
-              boxShadow: "0 8px 24px rgba(15,23,42,.08)",
-            }}
+            contentStyle={CHART_TOOLTIP_STYLE}
           />
         </PieChart>
       </ResponsiveContainer>

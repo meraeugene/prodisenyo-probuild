@@ -1,32 +1,36 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import type { CeoApprovalSummary } from "@/features/ceo-dashboard/types";
+import type { CeoApprovalSummary } from "../types";
+import styles from "./ceoDashboard.module.css";
 
 export default function CeoDashboardApprovalQueue({ items }: { items: CeoApprovalSummary[] }) {
   const pendingItems = items.filter((item) => item.count > 0);
-
+  const visibleItems = pendingItems.length ? pendingItems : items;
   return (
-    <section id="approval-queue" className="scroll-mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-        <h2 className="text-base font-bold tracking-tight text-slate-950">Approval Queue</h2>
-        <Link href="/payroll-approvals" className="text-xs font-semibold text-blue-700 hover:text-blue-900">View all</Link>
+    <section id="approval-queue" className={`${styles.panel} scroll-mt-6 p-5`}>
+      <h2 className={styles.heading}>Approval Queue</h2>
+      <div className="mt-5 overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-teal-50/40 text-[#53736f]">
+            <tr>
+              <th scope="col" className="rounded-l-lg px-2 py-2.5 font-medium">Type</th>
+              <th scope="col" className="hidden px-2 py-2.5 font-medium 2xl:table-cell">Description</th>
+              <th scope="col" className="px-2 py-2.5 text-center font-medium">Pending</th>
+              <th scope="col" className="rounded-r-lg px-2 py-2.5 text-right font-medium">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-teal-900/[0.06]">
+            {visibleItems.map((item) => (
+              <tr key={item.href}>
+                <th scope="row" className="px-2 py-5 font-medium leading-5 text-[#294b48]">{item.label}</th>
+                <td className="hidden max-w-[160px] px-2 py-5 leading-5 text-[#53736f] 2xl:table-cell">{item.detail}</td>
+                <td className="px-2 py-5 text-center font-medium tabular-nums">{item.count}</td>
+                <td className="px-2 py-5 text-right"><Link href={item.href} aria-label={`Review ${item.count} ${item.label.toLowerCase()}`} className="inline-flex min-h-8 items-center rounded-lg bg-teal-50 px-3 font-medium text-[#076d69] transition-colors hover:bg-teal-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700">Review</Link></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1.6fr)_70px_64px] gap-3 border-b border-slate-100 bg-slate-50/40 px-5 py-2 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">
-        <span>Type</span><span>Description</span><span>Pending</span><span>Action</span>
-      </div>
-      <div className="divide-y divide-slate-100">
-        {(pendingItems.length ? pendingItems : items).map((item) => (
-          <div key={item.href} className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1.6fr)_70px_64px] items-center gap-3 px-5 py-3 text-xs">
-            <p className="truncate font-semibold text-slate-800">{item.label}</p>
-            <p className="truncate text-slate-500">{item.detail}</p>
-            <p className="font-semibold text-slate-700 tabular-nums">{item.count}</p>
-            <Link href={item.href} className="font-semibold text-emerald-700 hover:text-emerald-900">Review</Link>
-          </div>
-        ))}
-      </div>
-      <Link href="/payroll-approvals" className="flex items-center justify-end gap-1.5 border-t border-slate-100 px-5 py-3 text-xs font-semibold text-blue-700 hover:bg-blue-50/40">
-        View all approvals <ArrowRight size={13} />
-      </Link>
+      {!pendingItems.length && <p className="mt-3 text-xs text-[#53736f]">You’re all caught up. No approvals awaiting review.</p>}
     </section>
   );
 }

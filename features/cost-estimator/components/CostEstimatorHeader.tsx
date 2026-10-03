@@ -133,7 +133,7 @@ export default function CostEstimatorHeader({
             <summary className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-[10px] border border-apple-mist bg-white text-apple-charcoal transition hover:bg-apple-mist/40 [&::-webkit-details-marker]:hidden">
               <Ellipsis size={18} />
             </summary>
-            <div className="absolute right-0 top-[calc(100%+8px)] z-20 w-48 overflow-hidden rounded-[12px] border border-apple-mist bg-white shadow-[0_16px_40px_rgba(15,23,42,0.16)]">
+            <div className="absolute right-0 top-[calc(100%+8px)] z-20 w-48 overflow-hidden rounded-[12px] border border-transparent bg-white shadow-workspace">
               {estimates.length > 0 ? (
                 <button
                   type="button"

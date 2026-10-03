@@ -126,17 +126,16 @@ export default function RoleHomePage({
               <Link
                 key={card.href}
                 href={card.href}
-                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[22px] border border-white/80 bg-white/80 p-5 text-teal-950 shadow-[0_16px_42px_rgba(15,23,42,0.07)] backdrop-blur-xl transition-all duration-300  hover:border-teal-100 "
+                className="group relative flex min-h-[180px] flex-col justify-between overflow-hidden rounded-[22px] border border-transparent bg-white p-5 text-teal-950 shadow-workspace-button  transition-colors duration-200  hover:border-teal-100 "
               >
-                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-teal-100/60 blur-2xl transition duration-300 group-hover:bg-teal-100" />
 
                 <div className="relative z-10 flex items-start justify-between gap-3">
-                  <p className="text-[20px] font-semibold tracking-[-0.02em] text-teal-950">
+                  <p className="text-lg font-semibold tracking-[-0.02em] text-teal-950">
                     {card.title}
                   </p>
                 </div>
 
-                <p className="relative z-10 mt-4 text-base leading-6 text-teal-800">
+                <p className="relative z-10 mt-3 text-sm leading-6 text-teal-800">
                   {card.description}
                 </p>
 

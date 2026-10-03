@@ -22,26 +22,26 @@ export default function ProjectProgressSummary({
   const currentPercent = latestUpdate?.overall_percent ?? 0;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,.04)]">
-      <div className="bg-[#075e5b] px-5 py-5 text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-100">
+    <section className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
+      <div className="bg-white px-5 py-5 text-[#1d1d1f]">
+        <p className="text-sm font-medium text-[#53736f]">
           Overall project progress
         </p>
         <div className="mt-3 flex items-end justify-between gap-4">
-          <strong className="text-4xl font-bold tracking-tight tabular-nums">
+          <strong className="text-[30px] font-semibold tracking-tight tabular-nums">
             {latestUpdate ? formatProgressPercentage(currentPercent) : "—"}
           </strong>
-          <span className="pb-1 text-xs font-medium text-teal-100">
+          <span className="pb-1 text-xs font-medium text-[#53736f]">
             Engineer entered
           </span>
         </div>
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#eaf4f0]">
           <div
-            className="h-full rounded-full bg-teal-200 transition-[width]"
+            className="h-full rounded-full bg-[#076d69] transition-[width]"
             style={{ width: `${clampProgressPercentage(currentPercent)}%` }}
           />
         </div>
-        <p className="mt-3 text-xs leading-5 text-teal-50/80">
+        <p className="mt-3 text-xs leading-5 text-[#53736f]">
           {latestUpdate
             ? `Progress dated ${formatProgressDate(latestUpdate.progress_date ?? latestUpdate.created_at)}`
             : "No overall percentage has been submitted yet."}

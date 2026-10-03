@@ -109,7 +109,7 @@ export default function BudgetTrackerHeader({
             </button>
 
             {showMobileActions ? (
-              <div className="absolute right-0 top-[calc(100%+8px)] z-30 min-w-[190px] overflow-hidden rounded-[12px] border border-apple-mist bg-white p-1.5 shadow-[0_14px_28px_rgba(15,23,42,0.12)]">
+              <div className="absolute right-0 top-[calc(100%+8px)] z-30 min-w-[190px] overflow-hidden rounded-[12px] border border-transparent bg-white p-1.5 shadow-workspace">
                 {projects.length > 0 ? (
                   <button
                     type="button"

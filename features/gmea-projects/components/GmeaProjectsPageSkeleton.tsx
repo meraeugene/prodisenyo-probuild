@@ -45,7 +45,7 @@ export default function GmeaProjectsPageSkeleton() {
 
         <section className="grid gap-3.5 sm:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
-            <section key={index} className="min-h-[84px] rounded-[12px] bg-slate-50/70 px-5 py-4 shadow-[0_8px_22px_-20px_rgba(15,23,42,.22)]">
+            <section key={index} className="min-h-[84px] rounded-[12px] bg-white/70 px-5 py-4 shadow-[0_8px_22px_-20px_rgba(15,23,42,.22)]">
               <div className="flex items-center gap-2">
                 <Block className="h-3 w-28" />
               </div>

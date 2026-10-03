@@ -9,7 +9,7 @@ export default function PayrollApprovalQueueSkeleton() {
       {Array.from({ length: 2 }).map((_, index) => (
         <div
           key={`approval-skeleton-${index}`}
-          className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]"
+          className="rounded-2xl border border-transparent bg-white p-6 shadow-workspace"
         >
           <div className="flex h-full flex-col animate-pulse motion-reduce:animate-none">
             <div className="min-w-0 space-y-3">
@@ -33,7 +33,7 @@ export default function PayrollApprovalQueueSkeleton() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-apple-mist bg-white p-4 shadow-sm">
+            <div className="mt-6 rounded-2xl border border-transparent bg-white p-4 shadow-workspace">
               <div className="space-y-2">
                 <div className="h-3 w-20 rounded-full bg-slate-200/70" />
                 <div className="h-8 w-24 rounded-full bg-slate-200/70" />

@@ -47,7 +47,7 @@ export default function CostEstimatorPageSkeleton() {
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={`cost-estimator-item-skeleton-${index}`}
-                    className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)]"
+                    className="rounded-[14px] border border-transparent bg-white p-4 shadow-workspace"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-2">

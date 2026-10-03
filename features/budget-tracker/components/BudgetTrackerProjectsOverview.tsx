@@ -66,7 +66,7 @@ export default function BudgetTrackerProjectsOverview({
         }
       />
 
-      <section className="rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px] sm:p-5">
+      <section className="rounded-none border border-transparent bg-white p-4 shadow-workspace sm:rounded-[18px] sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">

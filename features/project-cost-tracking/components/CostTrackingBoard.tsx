@@ -19,7 +19,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
       {COST_COLUMNS.map((column) => {
         const columnCosts = costs.filter((cost) => cost.status === column.value);
         return (
-          <section key={column.value} className="flex min-h-[28rem] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <section key={column.value} className="flex min-h-[28rem] flex-col rounded-2xl border border-transparent bg-white p-4 shadow-workspace">
             <header className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-base font-bold text-slate-950">
@@ -37,7 +37,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
 
             <div className="mt-4 flex-1 space-y-3">
               {columnCosts.map((cost) => (
-                <article key={cost.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.05)]">
+                <article key={cost.id} className="rounded-xl border border-transparent bg-white p-4 shadow-workspace">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="truncate text-sm font-bold text-slate-950">{cost.name}</h3>

@@ -141,11 +141,11 @@ export default function OvertimeRequestPageClient({
   }
 
   return (
-    <div className="p-0 sm:p-6 xl:flex xl:flex-col">
+    <div className="p-4 sm:p-6 xl:flex xl:flex-col">
       <DashboardPageHero eyebrow="Overtime Workflow" title="Request Overtime" />
 
       <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[1.08fr_0.92fr] xl:items-stretch">
-        <section className="rounded-none border border-apple-mist h-fit bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px]">
+        <section className="rounded-none border border-transparent h-fit bg-white p-5 shadow-workspace sm:rounded-[16px]">
           <h2 className="text-lg font-semibold text-apple-charcoal">
             Overtime Request Form
           </h2>
@@ -307,7 +307,7 @@ export default function OvertimeRequestPageClient({
           </form>
         </section>
 
-        <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
+        <section className="rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-apple-charcoal">
               Your Overtime Requests
@@ -334,7 +334,7 @@ export default function OvertimeRequestPageClient({
 
       {confirmOpen ? (
         <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
             <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Confirm Submission

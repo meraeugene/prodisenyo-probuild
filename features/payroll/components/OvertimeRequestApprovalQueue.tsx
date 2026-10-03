@@ -132,7 +132,7 @@ export default function OvertimeRequestApprovalQueue({
 
   return (
     <section className="flex flex-col">
-      <div className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-6">
+      <div className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
             Staff request forms
@@ -157,7 +157,7 @@ export default function OvertimeRequestApprovalQueue({
             sortedRequests.map((request) => (
               <article
                 key={request.id}
-                className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_14px_36px_-28px_rgba(15,23,42,.35)] transition   sm:p-6"
+                className="group flex w-full min-w-0 flex-col rounded-2xl border border-transparent bg-white p-5 shadow-workspace transition   sm:p-6"
               >
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -274,7 +274,7 @@ export default function OvertimeRequestApprovalQueue({
                         type="button"
                         onClick={() => handleApprove(request.id)}
                         disabled={isPending}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-workspace-button shadow-workspace-button/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
                       >
                         {pendingActionId === request.id &&
                         pendingActionType === "approve" ? (
@@ -300,7 +300,7 @@ export default function OvertimeRequestApprovalQueue({
 
       {rejectRequestId ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
             <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Return Overtime Request

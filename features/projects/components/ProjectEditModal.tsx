@@ -56,7 +56,7 @@ export default function ProjectEditModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex h-[100dvh] w-full items-center justify-center overflow-y-auto bg-slate-950/65 p-4 backdrop-blur-[2px]">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-apple-mist bg-white p-6 shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-transparent bg-white p-6 shadow-workspace-dialog">
         <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-lg font-bold text-apple-charcoal">Edit Project</h3>
           <button type="button" onClick={onClose} aria-label="Close edit project" className="flex h-8 w-8 items-center justify-center rounded-lg border border-apple-mist text-apple-smoke hover:bg-apple-mist/50">

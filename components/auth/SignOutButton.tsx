@@ -28,15 +28,16 @@ function SignOutButtonContent({
       <button
         type="submit"
         disabled={busy}
-        className={`group relative flex h-10 w-full items-center gap-3 rounded-lg border border-apple-mist/60 px-3 text-sm text-apple-smoke transition-all hover:bg-apple-mist/40 hover:text-apple-charcoal  disabled:cursor-not-allowed disabled:opacity-70 ${
+        aria-label={busy ? "Logging out" : "Logout"}
+        className={`group relative flex min-h-10 w-full items-center gap-3 rounded-[10px] px-3 text-sm text-[#365753] transition-colors hover:bg-teal-50/60 hover:text-[#076d69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:cursor-not-allowed disabled:opacity-70 ${
           collapsed ? "justify-center px-2.5" : ""
         }`}
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-full text-apple-smoke transition-colors group-hover:text-apple-charcoal">
+        <div className="flex shrink-0 items-center justify-center">
           {busy ? (
             <LoaderCircle className="h-4 w-4 animate-spin" />
           ) : (
-            <LogOut size={15} />
+            <LogOut size={17} strokeWidth={1.7} aria-hidden="true" />
           )}
         </div>
         {!collapsed ? (

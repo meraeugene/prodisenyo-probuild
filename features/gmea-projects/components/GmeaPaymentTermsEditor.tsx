@@ -96,7 +96,7 @@ export default function GmeaPaymentTermsEditor({
       </div>
 
       {terms.map((term, index) => (
-        <div key={term.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_24px_-22px_rgba(15,23,42,.35)]">
+        <div key={term.id} className="rounded-2xl border border-transparent bg-white p-4 shadow-workspace">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-teal-700">Payment term {index + 1}</p>

@@ -110,7 +110,7 @@ export function PayrollCalculationWorkspace(
 
   return (
     <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-y-auto bg-slate-950/35 p-4 sm:p-8">
-      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex w-full max-w-[1200px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex w-full max-w-[1200px] flex-col overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
         <PayrollCalculationHeader
           employeeName={props.employeeName}
           roleName={props.roleName}

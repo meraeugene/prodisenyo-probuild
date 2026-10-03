@@ -1,37 +1,36 @@
-import type { ProjectRecord, ProjectStatus } from "../types";
+import type { ProjectRecord } from "../types";
 import { formatProjectCurrency, getProjectStatusPresentation } from "../utils/projectPresentation";
+import styles from "./projects.module.css";
 
 export default function CeoProjectsTable({ projects, onOpenProject }: {
   projects: ProjectRecord[];
   onOpenProject: (projectId: string) => void;
 }) {
-  return (
-    <div className="overflow-x-auto border-t border-slate-200">
-      <div className="min-w-[1080px]">
-        <div className="grid grid-cols-[1.15fr_1fr_.9fr_.85fr_.85fr_.95fr_.95fr_1.15fr_.6fr] gap-4 border-b border-slate-200 px-4 py-3 text-[9px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-          <span>Project</span><span>Location</span><span>Progress</span><span>Budget</span><span>Actual Spent</span><span>Schedule</span><span>Engineer</span><span>Status</span><span>View Details</span>
-        </div>
-        <div className="divide-y divide-slate-100">
-          {projects.map((project) => {
-            const status = getProjectStatusPresentation(project);
-            const statusColor: Record<ProjectStatus, string> = { active: "text-emerald-700", planning: "text-blue-700", completed: "text-sky-700", on_hold: "text-amber-700" };
-            return (
-              <div key={project.id} className="grid grid-cols-[1.15fr_1fr_.9fr_.85fr_.85fr_.95fr_.95fr_1.15fr_.6fr] items-center gap-4 px-4 py-3 text-[11px] hover:bg-slate-50/70">
-                <div className="min-w-0"><p className="truncate font-semibold text-slate-950">{project.name}</p><p className="mt-0.5 truncate text-[9px] text-slate-400">PRJ-{project.id.slice(0, 8).toUpperCase()}</p></div>
-                <p className="truncate text-slate-500">{project.location}</p>
-                <div><p className="font-semibold text-slate-700">{project.progress}%</p><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-emerald-600" style={{ width: `${project.progress}%` }} /></div></div>
-                <strong className="truncate font-semibold text-slate-900 tabular-nums">{formatProjectCurrency(project.budget)}</strong>
-                <strong className="truncate font-semibold text-slate-900 tabular-nums">{formatProjectCurrency(project.spent)}</strong>
-                <p className="truncate text-slate-500">{project.endDate}</p>
-                <p className="truncate text-slate-600">{project.status === "planning" ? project.estimateEngineer : project.engineer}</p>
-                <span className={`inline-flex items-center gap-1.5 whitespace-nowrap font-semibold ${statusColor[project.status]}`}><i className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />{status.label}</span>
-                <button type="button" onClick={() => onOpenProject(project.id)} className="text-left font-semibold text-blue-700 hover:text-blue-900">View</button>
-              </div>
-            );
-          })}
-          {!projects.length ? <p className="py-14 text-center text-sm text-slate-500">No matching projects.</p> : null}
-        </div>
-      </div>
+  return <>
+    <div className="relative overflow-x-auto">
+      <table className="w-full min-w-[1060px] border-collapse text-left text-[13px]">
+        <caption className="sr-only">Project budgets, delivery progress, assignments, and status</caption>
+        <thead><tr className="border-y border-[#edf3f1] text-xs text-[#53736f]">
+          {["Project", "Location", "Progress", "Budget", "Actual spend", "Target date", "Engineer", "Status", ""].map((label, index) => <th key={index} scope="col" className="whitespace-nowrap px-4 py-3 font-medium">{label || <span className="sr-only">Actions</span>}</th>)}
+        </tr></thead>
+        <tbody>{projects.map(project => {
+          const status = getProjectStatusPresentation(project);
+          const color = status.tone === "rose" ? "text-[#aa5353]" : status.tone === "amber" ? "text-[#986c26]" : "text-[#076d69]";
+          return <tr key={project.id} className="border-b border-[#edf3f1] transition hover:bg-[#f7fcfa]">
+            <th scope="row" className="min-w-40 px-4 py-4 font-medium text-[#1d1d1f]"><button onClick={() => onOpenProject(project.id)} className="text-left hover:text-[#076d69]">{project.name}</button><p className="mt-1 text-[11px] font-normal text-[#53736f]">PRJ-{project.id.slice(0, 8).toUpperCase()}</p></th>
+            <td className="px-4 py-4 text-[#53736f]">{project.location}</td>
+            <td className="min-w-28 px-4 py-4"><span className="tabular-nums">{project.progress}%</span><progress className={`${styles.progress} mt-2`} value={project.progress} max={100} aria-label={`${project.name} progress`} /></td>
+            <td className="whitespace-nowrap px-4 py-4 tabular-nums">{formatProjectCurrency(project.budget)}</td>
+            <td className="whitespace-nowrap px-4 py-4 tabular-nums">{formatProjectCurrency(project.spent)}</td>
+            <td className="whitespace-nowrap px-4 py-4 text-[#53736f]">{project.endDate}</td>
+            <td className="px-4 py-4 text-[#53736f]">{project.status === "planning" ? project.estimateEngineer || "Unassigned" : project.engineer}</td>
+            <td className="px-4 py-4"><span className={`inline-flex items-center gap-2 whitespace-nowrap text-xs ${color}`}><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />{status.label}</span></td>
+            <td className="px-4 py-4"><button type="button" onClick={() => onOpenProject(project.id)} aria-label={`View ${project.name}`} className="rounded-lg px-3 py-2 font-medium text-[#076d69] hover:bg-[#eaf5f3]">View</button></td>
+          </tr>;
+        })}</tbody>
+      </table>
     </div>
-  );
+    {!projects.length && <p role="status" className="px-4 py-14 text-center text-sm text-[#53736f]">No matching projects. Try another search or filter.</p>}
+    <p className="px-4 py-4 text-xs text-[#53736f]" aria-live="polite">Showing {projects.length} {projects.length === 1 ? "project" : "projects"}</p>
+  </>;
 }

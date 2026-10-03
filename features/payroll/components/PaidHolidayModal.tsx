@@ -116,7 +116,7 @@ export default function PaidHolidayModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[120] flex min-h-dvh w-screen items-center justify-center bg-black/45 p-0 sm:p-4 backdrop-blur-sm">
-      <div className="h-[100dvh] w-full max-w-4xl overflow-y-auto border border-slate-200 bg-white p-4 shadow-[0_24px_72px_rgba(7,109,105,0.18)] sm:max-h-[88vh] sm:h-auto sm:rounded-2xl sm:p-6">
+      <div className="h-[100dvh] w-full max-w-4xl overflow-y-auto border border-transparent bg-white p-4 shadow-workspace-dialog sm:max-h-[88vh] sm:h-auto sm:rounded-2xl sm:p-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>

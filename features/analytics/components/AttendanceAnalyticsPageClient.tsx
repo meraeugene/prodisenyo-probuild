@@ -38,7 +38,7 @@ export default function AttendanceAnalyticsPageClient() {
       />
 
       {periodOptions.length > 0 ? (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+        <section className="rounded-[14px] border border-transparent bg-white p-4 shadow-workspace">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm font-semibold text-apple-charcoal">
               Payroll Period
@@ -69,7 +69,7 @@ export default function AttendanceAnalyticsPageClient() {
           <p className="text-sm text-red-700">{error}</p>
         </section>
       ) : (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+        <section className="rounded-[14px] border border-transparent bg-white p-6 shadow-workspace">
           <p className="text-sm text-apple-smoke">
             {isCeo
               ? "No saved payroll periods yet."

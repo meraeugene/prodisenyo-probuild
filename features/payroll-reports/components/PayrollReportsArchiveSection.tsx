@@ -167,7 +167,7 @@ export default function PayrollReportsArchiveSection({
         ? createPortal(
             <div
               data-report-actions-root
-              className="fixed z-[140] min-w-[170px] -translate-x-full overflow-hidden rounded-lg border border-apple-mist bg-white text-left shadow-[0_14px_36px_rgba(16,24,40,0.18)]"
+              className="fixed z-[140] min-w-[170px] -translate-x-full overflow-hidden rounded-lg border border-transparent bg-white text-left shadow-workspace"
               style={{ top: openMenu.top, left: openMenu.left }}
             >
               <button
@@ -234,7 +234,7 @@ export default function PayrollReportsArchiveSection({
                 }
               }}
             >
-              <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-[0_24px_64px_rgba(15,23,42,0.26)]">
+              <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-workspace">
                 <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                     Confirm Delete
@@ -299,7 +299,7 @@ export default function PayrollReportsArchiveSection({
                 }
               }}
             >
-              <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+              <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
                 <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                     Return Payroll

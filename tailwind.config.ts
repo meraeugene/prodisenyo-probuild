@@ -86,6 +86,9 @@ const config: Config = {
         tight: "-0.02em",
       },
       boxShadow: {
+        workspace: "var(--workspace-panel-shadow)",
+        "workspace-button": "0 2px 6px rgb(7 109 105 / 8%)",
+        "workspace-dialog": "0 8px 40px rgb(24 55 52 / 8%)",
         "apple-sm": "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
         apple: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06)",
         "apple-lg": "0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.07)",

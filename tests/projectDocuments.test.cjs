@@ -1,17 +1,9 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const ts = require("typescript");
-const vm = require("node:vm");
+const load = require("./helpers/loadGmeaModule.cjs");
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
 function loadUtility() {
-  const file = path.join(process.cwd(), "features/project-documents/utils/documentValidation.ts");
-  let source = fs.readFileSync(file, "utf8").replace(/import[\s\S]*?from "\.\.\/types";\n/, "const PROJECT_DOCUMENT_CATEGORIES = ['plans','reports','permits','contracts','photos','forms','other'];\n");
-  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const compiledModule = { exports: {} };
-  vm.runInNewContext(output, { module: compiledModule, exports: compiledModule.exports, Set, Error });
-  return compiledModule.exports;
+  return load("features/project-documents/utils/documentValidation.ts");
 }
 
 const utility = loadUtility();

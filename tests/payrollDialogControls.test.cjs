@@ -27,7 +27,8 @@ test('Escape closes the top dialog once, ignores composing input, and cleans up 
   } finally {global.document=previous;}
 });
 test('numbered pagination selects exact pages and supports first and last',()=>{
-  const {PayrollPageControls}=load('features/payroll/components/PayrollPageControls.tsx');
+  const {PayrollPageControls: Controls}=require('./helpers/loadGmeaModule.cjs')('features/payroll/components/PayrollPageControls.tsx');
+  const PayrollPageControls = props => { const element = Controls(props); return element ? element.type(element.props) : null; };
   const changed=[]; const element=PayrollPageControls({page:7,totalPages:12,onChange:p=>changed.push(p)});
   const flatten=nodes=>nodes.flatMap(n=>Array.isArray(n)?flatten(n):n?[n]:[]);
   const buttons=flatten(element.props.children).filter(n=>n.type==='button');

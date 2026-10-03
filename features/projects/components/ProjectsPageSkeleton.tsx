@@ -1,4 +1,5 @@
-import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
+import ProjectsLoadingHeader from "./ProjectsLoadingHeader";
+import styles from "./projects.module.css";
 import {
   SkeletonBlock as Block,
   SkeletonPanel,
@@ -9,15 +10,15 @@ export default function ProjectsPageSkeleton() {
     <div aria-busy="true"
       role="status"
       aria-label="Loading projects"
-      className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8"
+      className={`${styles.page} space-y-6`}
     >
-      <CeoPageHeroSkeleton action="button" />
+      <ProjectsLoadingHeader />
 
-      <section className="grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {Array.from({ length: 5 }, (_, index) => (
           <div
             key={index}
-            className={`min-h-[92px] px-5 py-4 ${index ? "border-t border-slate-200 sm:border-l xl:border-t-0" : ""}`}
+            className={`${styles.panel} min-h-[146px] px-5 py-5`}
           >
             <Block className="h-3 w-28" />
             <div className="mt-3 flex items-end gap-4">
@@ -58,15 +59,15 @@ export default function ProjectsPageSkeleton() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <section className={styles.panel}>
         <div className="flex flex-col gap-3 px-4 py-3 xl:flex-row xl:justify-between">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {[0, 1, 2, 3, 4].map((index) => (
               <Block key={index} className="h-9 w-24" />
             ))}
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
-            <Block className="h-9 w-64" />
+            <Block className="h-9 w-full" />
             <Block className="h-9 w-36" />
             <Block className="h-9 w-36" />
           </div>

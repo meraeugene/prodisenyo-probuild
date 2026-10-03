@@ -28,7 +28,7 @@ export default function MaterialRequestReviewDialog({
       aria-modal="true"
       aria-labelledby="material-review-title"
     >
-      <div className="w-full max-w-md rounded-2xl border border-apple-mist bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl border border-transparent bg-white p-6 shadow-workspace-dialog">
         <h3 id="material-review-title" className="text-lg font-bold text-apple-charcoal">
           {action === "approve" ? "Approve" : "Reject"} Material Request
         </h3>

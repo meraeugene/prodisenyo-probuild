@@ -147,7 +147,7 @@ export default function GmeaEquipmentSection({
           </p>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-[16px] border border-slate-200/80 bg-white shadow-[0_8px_22px_-20px_rgba(15,23,42,.3)]">
+        <div className="mt-4 overflow-hidden rounded-[16px] border border-transparent bg-white shadow-workspace">
           <div className="divide-y divide-slate-100 sm:hidden">
             {items.map((item) => (
               <article key={item.id} className="p-4">

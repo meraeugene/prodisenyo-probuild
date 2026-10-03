@@ -67,7 +67,7 @@ export default function PlanningProjectWorkspaceClient({
 
       <ProjectWorkspaceHeader project={project} />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
+      <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
         <div className="mb-4">
           <h2 className="mt-1 text-xl font-bold text-slate-950">Estimate review</h2>
           <p className="mt-1 text-sm text-slate-500">Review the estimate, then assign an engineer to activate the project.</p>
@@ -81,7 +81,7 @@ export default function PlanningProjectWorkspaceClient({
         />
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
+      <section className="rounded-2xl border border-transparent bg-white p-6 shadow-workspace">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700"> Final assignment</p>

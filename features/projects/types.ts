@@ -30,3 +30,16 @@ export interface EngineerOption {
   id: string;
   name: string;
 }
+
+export type ProjectField =
+  | "name"
+  | "location"
+  | "subject"
+  | "lead"
+  | "estimateEngineerId"
+  | "image"
+  | "budget"
+  | "startDate"
+  | "endDate";
+
+export type FormErrors = Partial<Record<ProjectField, string>>;

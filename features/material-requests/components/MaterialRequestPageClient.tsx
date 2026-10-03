@@ -205,7 +205,7 @@ export default function MaterialRequestPageClient({
       />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             New Request
           </p>
@@ -407,7 +407,7 @@ export default function MaterialRequestPageClient({
           </form>
         </div>
 
-        <div className="rounded-none h-fit border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none h-fit border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
             Request Queue
           </p>

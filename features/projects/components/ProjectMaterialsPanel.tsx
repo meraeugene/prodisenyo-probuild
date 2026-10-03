@@ -78,7 +78,7 @@ export default function ProjectMaterialsPanel({
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
-        <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,.04)]">
+        <section className="min-w-0 overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
           <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div><h2 className="font-semibold text-slate-950">Requested Materials</h2><p className="mt-1 text-xs text-slate-500">Only persisted requests for this project are shown.</p></div>
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -118,8 +118,8 @@ export default function ProjectMaterialsPanel({
         </section>
 
         <aside className="space-y-5">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h2 className="font-semibold text-slate-950">New Material Request</h2><p className="mt-2 text-sm leading-6 text-slate-500">Request materials needed for this assigned project.</p><Link href={`/request-material?projectId=${projectId}`} className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-teal-800 px-4 text-sm font-semibold text-white transition hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2"><Plus size={16} /> Create Material Request</Link></section>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)]"><h2 className="font-semibold text-slate-950">Recent Material Updates</h2><div className="mt-3 divide-y divide-slate-100">{requests.slice(0, 5).map((request) => <div key={request.id} className="flex gap-3 py-3"><div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${request.status === "rejected" ? "bg-rose-50 text-rose-600" : request.status === "submitted" ? "bg-amber-50 text-amber-600" : "bg-teal-50 text-teal-700"}`}></div><div><p className="text-sm font-semibold text-slate-800">{request.material_name}</p><p className="mt-0.5 text-xs text-slate-500">{STATUS_LABELS[request.status]} · {formatDate(request.created_at)}</p></div></div>)}{requests.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">No material updates yet.</p> : null}</div></section>
+          <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace"><h2 className="font-semibold text-slate-950">New Material Request</h2><p className="mt-2 text-sm leading-6 text-slate-500">Request materials needed for this assigned project.</p><Link href={`/request-material?projectId=${projectId}`} className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-teal-800 px-4 text-sm font-semibold text-white transition hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2"><Plus size={16} /> Create Material Request</Link></section>
+          <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace"><h2 className="font-semibold text-slate-950">Recent Material Updates</h2><div className="mt-3 divide-y divide-slate-100">{requests.slice(0, 5).map((request) => <div key={request.id} className="flex gap-3 py-3"><div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${request.status === "rejected" ? "bg-rose-50 text-rose-600" : request.status === "submitted" ? "bg-amber-50 text-amber-600" : "bg-teal-50 text-teal-700"}`}></div><div><p className="text-sm font-semibold text-slate-800">{request.material_name}</p><p className="mt-0.5 text-xs text-slate-500">{STATUS_LABELS[request.status]} · {formatDate(request.created_at)}</p></div></div>)}{requests.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">No material updates yet.</p> : null}</div></section>
         </aside>
       </div>
     </div>
@@ -127,5 +127,5 @@ export default function ProjectMaterialsPanel({
 }
 
 function StatCard({ label, value, helper }: {  label: string; value: number; helper: string; tone: "emerald" | "amber" | "sky" }) {
-  return <article className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]"><div className="flex min-w-0 items-center gap-2"><p className="truncate text-xs font-medium text-slate-500">{label}</p></div><p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p></article>;
+  return <article className="relative min-w-0 rounded-2xl border border-transparent bg-white p-4 shadow-workspace"><div className="flex min-w-0 items-center gap-2"><p className="truncate text-xs font-medium text-slate-500">{label}</p></div><p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{value}</p><p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p></article>;
 }

@@ -1,28 +1,15 @@
-import Image from "next/image";
-import { ClipboardCheck } from "lucide-react";
-import CeoBannerStatusCard from "@/components/CeoBannerStatusCard";
+import Link from "next/link";
 
 export default function CeoDashboardBanner({ name, approvals, href }: {
   name: string; approvals: number; href: string;
 }) {
   return (
-    <header className="relative isolate overflow-hidden rounded-[22px] bg-[#075e5b] px-6 py-8 text-white sm:px-9">
-      <Image src="/gmea-portfolio-architecture.png" alt="" fill priority sizes="(min-width: 1024px) calc(100vw - 320px), 100vw" className="-z-20 object-cover object-right" />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,83,79,.98)_0%,rgba(3,91,87,.88)_38%,rgba(3,82,79,.44)_72%,rgba(3,74,71,.58)_100%)]" />
-      <div className="flex flex-wrap items-start justify-between gap-6">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/75">Prodisenyo Builders Corporation</p>
-          <h1 className="mt-3 text-[34px] font-bold leading-tight tracking-[-0.045em] sm:text-[42px]">Executive dashboard</h1>
-          <p className="mt-3 text-sm text-white/85">Good day, {name}. Your projects, finances, and decisions in one place.</p>
-        </div>
-        <CeoBannerStatusCard
-          icon={ClipboardCheck}
-          label="Awaiting review"
-          value={approvals}
-          href={href}
-          ariaLabel={`Review ${approvals} pending approvals`}
-        />
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.04em] text-[#1d1d1f] sm:text-[32px]">Executive Dashboard</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#53736f]">Good day, {name}. Your projects, finances, and decisions in one place.</p>
       </div>
+      <Link href={href} aria-label={`Review ${approvals} pending approvals`} className="inline-flex min-h-10 items-center justify-center rounded-[10px] bg-[#076d69] px-5 text-[13px] font-medium text-white shadow-[0_2px_6px_rgba(7,109,105,0.08)] transition-colors hover:bg-[#055f5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-4">Review approvals</Link>
     </header>
   );
 }

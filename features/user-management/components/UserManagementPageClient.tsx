@@ -72,14 +72,14 @@ export default function UserManagementPageClient({
   const lastVisibleUser = Math.min(page * 10, filteredUsers.length);
 
   return (
-    <div className="space-y-4 overflow-x-hidden p-0 sm:p-6">
+    <div className="space-y-4 overflow-x-hidden p-4 sm:p-6">
       <DashboardPageHero
         eyebrow="Admin"
         title="User Management"
         description="Create, update, and manage user accounts for all application roles, including GMEA."
       />
 
-      <section className="min-w-0 rounded-none border border-apple-mist bg-white p-4 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[22px] sm:p-5">
+      <section className="min-w-0 rounded-none border border-transparent bg-white p-4 shadow-workspace sm:rounded-[22px] sm:p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -238,7 +238,7 @@ export default function UserManagementPageClient({
 
       {openMenu && openMenuUser
         ? createPortal(
-            <div data-user-actions-root className="fixed z-[140] min-w-[148px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-[0_14px_30px_rgba(15,23,42,0.08)]" style={{ top: openMenu.top, left: openMenu.left }}>
+            <div data-user-actions-root className="fixed z-[140] min-w-[148px] -translate-x-full overflow-hidden rounded-[16px] border border-[#e8f0ea] bg-white text-left shadow-workspace" style={{ top: openMenu.top, left: openMenu.left }}>
               <button type="button" onClick={() => handleEditUser(openMenuUser)} className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] font-semibold text-apple-charcoal transition hover:bg-teal-50/70">
                 <Pencil size={13} /> Edit user
               </button>

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export default function EngineerDashboardRequests({ requests }: { requests: EngineerDashboardMaterialRequest[] }) {
   return (
-    <section className="flex min-h-72 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,0.04)]">
+    <section className="flex min-h-72 flex-col rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
       <h2 className="text-lg font-semibold tracking-tight text-slate-950">Material Requests</h2>
       <div className="mt-4 flex-1 space-y-3">
         {requests.length === 0 ? <p className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">No material requests for this project.</p> : requests.slice(0, 4).map((request) => (

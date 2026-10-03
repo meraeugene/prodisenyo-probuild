@@ -192,7 +192,7 @@ export function SearchableSelect({
         <div
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 top-full mt-1 max-h-52 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+          className="absolute left-0 right-0 top-full mt-1 max-h-52 overflow-y-auto rounded-xl border border-transparent bg-white p-1 shadow-workspace"
         >
           {visible.map((option) => (
             <button

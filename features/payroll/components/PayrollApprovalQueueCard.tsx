@@ -44,7 +44,7 @@ export default function PayrollApprovalQueueCard({
   const notes = parseOvertimeRequestNotes(request.notes).displayNotes;
 
   return (
-    <div className="group flex w-full min-w-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_35px_-25px_rgba(15,23,42,.25)]">
+    <div className="group flex w-full min-w-0 flex-col rounded-2xl border border-transparent bg-white p-6 shadow-workspace">
       <div className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
@@ -154,7 +154,7 @@ export default function PayrollApprovalQueueCard({
               type="button"
               onClick={() => onApprove(request.id)}
               disabled={rowBusy}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-md shadow-teal-900/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-workspace-button shadow-workspace-button/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
               aria-label={`Approve overtime request for ${request.employee_name ?? "employee"}`}
             >
               {approveBusy ? (

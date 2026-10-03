@@ -22,7 +22,7 @@ export default function ProjectPortfolioCard({
   const budgetWarning = role === "ceo" && isOverBudget(project);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
       {imageSrc ? (
         <div className="relative aspect-[16/9] overflow-hidden bg-slate-900">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -124,7 +124,7 @@ export default function ProjectPortfolioCard({
           </span>
           <button
             onClick={onOpen}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-teal-800 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-teal-900"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-teal-800 px-3.5 text-xs font-bold text-white shadow-workspace-button transition hover:bg-teal-900"
           >
             {role === "ceo" ? "View Details" : "Open Workspace"}
             <ArrowRight size={13} />

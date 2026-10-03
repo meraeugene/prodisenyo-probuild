@@ -24,7 +24,7 @@ export default function EmployeeHomePage({ fullName, username }: { fullName: str
 
   return (
     <main className="min-h-full space-y-7 bg-white p-4 sm:p-6 lg:p-8">
-      <DashboardPageHero eyebrow="Employee workspace" title={`Welcome, ${name}`} description="Your requests and account tools, organized in one place." actions={<Link href="/request-overtime" className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#076d69] shadow-sm transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-fit">
+      <DashboardPageHero eyebrow="Employee workspace" title={`Welcome, ${name}`} description="Your requests and account tools, organized in one place." actions={<Link href="/request-overtime" className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#076d69] shadow-workspace-button transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-fit">
           Request overtime <ArrowUpRight size={16} aria-hidden="true" />
         </Link>} />
 
@@ -32,12 +32,12 @@ export default function EmployeeHomePage({ fullName, username }: { fullName: str
         <h2 id="employee-quick-access" className="text-lg font-semibold tracking-tight text-slate-950">Quick access</h2>
         <div className="grid gap-5 md:grid-cols-2">
           {actions.map(({ href, title, description, action }) => (
-            <Link key={href} href={href} className="group flex min-w-0 flex-col overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/80 shadow-[0_8px_24px_-20px_rgba(15,23,42,.18)] backdrop-blur-xl transition   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">
+            <Link key={href} href={href} className="group flex min-w-0 flex-col overflow-hidden rounded-[22px] border border-transparent bg-white shadow-workspace-button  transition   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">
               <div className="flex-1 p-6">
-                <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950 group-hover:text-[#076d69]">{title}</h3>
+                <h3 className="text-lg font-semibold tracking-tight text-slate-950 group-hover:text-[#076d69]">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
               </div>
-              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 text-sm font-semibold text-[#076d69]">
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-white px-6 py-4 text-sm font-semibold text-[#076d69]">
                 <span>{action}</span><ArrowUpRight size={16} aria-hidden="true" />
               </div>
             </Link>

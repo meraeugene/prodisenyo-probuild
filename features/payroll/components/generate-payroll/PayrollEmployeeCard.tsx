@@ -33,7 +33,7 @@ export default function PayrollEmployeeCard({
   const hourlyRate = (metrics.dailyRates[0] ?? FIXED_PAY_RATE_PER_DAY) / 8;
 
   return (
-    <article className="rounded-[10px] border border-[#dce6ea] bg-white p-4 shadow-[0_3px_12px_rgba(23,55,69,0.04)]">
+    <article className="rounded-[10px] border border-[#dce6ea] bg-white p-4 shadow-workspace">
       <div className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#dcebf2] text-xs font-bold text-[#17547a]">
           {getEmployeeInitials(employee.name)}

@@ -172,3 +172,12 @@ export function formatCeoDate(value: string) {
     timeZone: "Asia/Manila",
   }).format(date);
 }
+
+export function formatCeoCompactCurrency(value: number) {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    notation: "compact",
+    maximumFractionDigits: 2,
+  }).format(value);
+}

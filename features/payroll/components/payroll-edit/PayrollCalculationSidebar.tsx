@@ -73,7 +73,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
 
   return (
     <aside className="space-y-3">
-      {props.panel === "summary" ? <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      {props.panel === "summary" ? <section className="overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
         <div className="border-b border-slate-200 px-3.5 py-2.5">
           <h3 className="text-[13px] font-semibold">Calculation Summary</h3>
         </div>
@@ -99,7 +99,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
       </section> : null}
 
       {props.panel === "biometric" && props.hasBiometricOvertime ? (
-        <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <section className="rounded-xl border border-transparent bg-white p-3 shadow-workspace">
           <h3 className="text-[13px] font-semibold">Biometric OT Decision</h3>
           <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
             <span className="rounded-md bg-amber-50 px-2 py-1.5 text-[13px] font-medium text-amber-700">
@@ -126,7 +126,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
         </section>
       ) : null}
 
-      {props.panel === "adjustments" ? <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      {props.panel === "adjustments" ? <section className="rounded-xl border border-transparent bg-white p-3 shadow-workspace">
         <h3 className="text-[13px] font-semibold">Quick Adjustments</h3>
         <div className="mt-2.5 grid grid-cols-2 gap-1.5">
           {actions.map(([key, label]) => (
@@ -144,7 +144,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
       {props.panel === "biometric" && !props.hasBiometricOvertime ? <p className="p-4 text-[13px] text-slate-500">No biometric overtime to review.</p> : null}
 
       {props.panel === "rates" && props.branchRates.length > 1 ? (
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
           <h3 className="px-3.5 py-2.5 text-[13px] font-semibold">Branch Rate Breakdown</h3>
             <div className="divide-y divide-slate-100 border-t border-slate-100">
               {props.branchRates.slice((page - 1) * 5, page * 5).map((entry) => (

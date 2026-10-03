@@ -21,7 +21,7 @@ export default function PayrollRejectedAlertModal({
   return createPortal(
     <div className="fixed inset-0 z-[180] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-[#ccfbf1] bg-[linear-gradient(180deg,#fcfffd_0%,#f0fdfa_100%)] p-7 shadow-[0_28px_90px_rgba(15,23,42,0.28)] sm:p-8">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-[30px] border border-[#ccfbf1] bg-[linear-gradient(180deg,#fcfffd_0%,#f0fdfa_100%)] p-7 shadow-workspace-dialog sm:p-8">
         <div className="grid gap-6 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-center">
           <div className="relative mx-auto w-full max-w-[220px]">
             <div className="absolute inset-x-8 bottom-3 h-12 rounded-full bg-[#5eead4]/30 blur-2xl" />

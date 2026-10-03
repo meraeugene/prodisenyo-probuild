@@ -95,7 +95,7 @@ export default function ProjectDocumentsPanel({
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-5">
+    <section className="rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div><h2 className="text-xl font-semibold text-slate-950">Project Documents</h2><p className="mt-1 text-sm text-slate-500">Project files and uploaded documents.</p></div>
         {canUpload ? <div className="flex gap-2"><select aria-label="Upload category" value={uploadCategory} onChange={(event) => setUploadCategory(event.target.value as ProjectDocumentCategory)} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm capitalize outline-none focus:border-teal-600">{PROJECT_DOCUMENT_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}</select><button type="button" onClick={() => inputRef.current?.click()} disabled={pending} className="inline-flex h-10 items-center gap-2 rounded-lg bg-teal-800 px-4 text-sm font-semibold text-white hover:bg-teal-900 disabled:opacity-60"><UploadCloud size={16} /> Upload Document</button></div> : null}

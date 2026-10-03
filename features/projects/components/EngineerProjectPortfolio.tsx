@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import styles from "./projects.module.css";
+import { selectPortfolioProjects, formatPortfolioDate as formatDate } from "../utils/projectPortfolioSelectors";
 import ProjectThumbnail from "./ProjectThumbnail";
 import type { ProjectRecord, ProjectStatus } from "../types";
 import { getProjectStatusPresentation } from "../utils/projectPresentation";
@@ -15,16 +17,6 @@ const summaryCards = [
   { key: "active", label: "On going", helper: "Operational projects",  tone: "text-teal-700" },
   { key: "completed", label: "Completed", helper: "Successfully completed",  tone: "text-teal-700" },
 ] as const;
-
-function formatDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return "Unavailable";
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
 
 function StatusBadge({ project }: { project: ProjectRecord }) {
   const status = getProjectStatusPresentation(project);
@@ -53,7 +45,7 @@ function ProgressCell({ project }: { project: ProjectRecord }) {
   return (
     <div>
       <span className="text-xs font-semibold text-slate-800">{project.progress}%</span>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e6f3ef]">
         <div className="h-full rounded-full bg-teal-700" style={{ width: `${project.progress}%` }} />
       </div>
     </div>
@@ -79,26 +71,10 @@ export default function EngineerProjectPortfolio({
     }),
     [projects],
   );
-  const visibleProjects = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return projects
-      .filter(
-        (project) =>
-          (status === "all" || project.status === status) &&
-          (!query ||
-            project.name.toLowerCase().includes(query) ||
-            project.location.toLowerCase().includes(query)),
-      )
-      .sort((left, right) => {
-        if (sort === "name") return left.name.localeCompare(right.name);
-        if (sort === "progress_high") return right.progress - left.progress;
-        if (sort === "progress_low") return left.progress - right.progress;
-        return new Date(right.endDate).getTime() - new Date(left.endDate).getTime();
-      });
-  }, [projects, search, sort, status]);
+  const visibleProjects = useMemo(() => selectPortfolioProjects(projects, { status, search, sort }), [projects, search, sort, status]);
 
   return (
-    <section className="space-y-5" aria-labelledby="engineer-projects-heading">
+    <section className="space-y-6" aria-labelledby="engineer-projects-heading">
       <div id="engineer-projects-heading">
         <ProjectsPortfolioHero
           eyebrow="Engineer project portfolio"
@@ -108,21 +84,21 @@ export default function EngineerProjectPortfolio({
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map(({ key, label, helper }) => (
-          <article key={key} className="relative min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.2)]">
+          <article key={key} className={`${styles.panel} p-5`}>
             <div className="flex min-w-0 items-center gap-2">
-              <p className="truncate text-xs font-medium text-slate-500">{label}</p>
+              <p className="text-[15px] font-medium text-[#365b56]">{label}</p>
             </div>
-            <p className="mt-2 break-words text-2xl font-bold tracking-tight text-slate-950 tabular-nums">{counts[key]}</p>
-            <p className="mt-1 text-[11px] leading-4 text-slate-500">{helper}</p>
+            <p className="mt-2 break-words text-[30px] font-semibold tracking-tight text-slate-950 tabular-nums">{counts[key]}</p>
+            <p className="mt-1 text-[13px] leading-5 text-[#53736f]">{helper}</p>
           </article>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className={styles.panel}>
         <div className="grid gap-3 border-b border-slate-200 p-4 lg:grid-cols-[minmax(240px,1fr)_180px_220px]">
-          <label className="relative"><span className="sr-only">Search projects</span><input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects or locations..." className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100" /></label>
-          <label><span className="sr-only">Filter by status</span><select value={status} onChange={(event) => setStatus(event.target.value as "all" | ProjectStatus)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-teal-500"><option value="all">All statuses</option><option value="planning">Pending Cost Estimate</option><option value="active">On Going</option><option value="on_hold">On Hold</option><option value="completed">Completed</option></select></label>
-          <label className="relative"><span className="sr-only">Sort projects</span><select value={sort} onChange={(event) => setSort(event.target.value as SortOption)} className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-3 pr-3 text-sm font-medium text-slate-700 outline-none focus:border-teal-500"><option value="updated">Latest target date</option><option value="progress_high">Highest progress</option><option value="progress_low">Lowest progress</option><option value="name">Project name</option></select></label>
+          <label className="relative"><span className="sr-only">Search projects</span><input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search projects or locations..." className={`${styles.control} w-full`} /></label>
+          <label><span className="sr-only">Filter by status</span><select value={status} onChange={(event) => setStatus(event.target.value as "all" | ProjectStatus)} className={`${styles.control} w-full`}><option value="all">All statuses</option><option value="planning">Pending Cost Estimate</option><option value="active">On Going</option><option value="on_hold">On Hold</option><option value="completed">Completed</option></select></label>
+          <label className="relative"><span className="sr-only">Sort projects</span><select value={sort} onChange={(event) => setSort(event.target.value as SortOption)} className={`${styles.control} w-full`}><option value="updated">Latest target date</option><option value="progress_high">Highest progress</option><option value="progress_low">Lowest progress</option><option value="name">Project name</option></select></label>
         </div>
 
         {!visibleProjects.length ? (
@@ -131,11 +107,11 @@ export default function EngineerProjectPortfolio({
           <>
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[980px] table-fixed text-left">
-                <thead><tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wide text-slate-500"><th className="w-[31%] px-5 py-3">Project</th><th className="w-[19%] px-4 py-3">Progress</th><th className="w-[14%] px-4 py-3">Status</th><th className="w-[13%] px-4 py-3">Start Date</th><th className="w-[13%] px-4 py-3">Target Completion</th><th className="w-[10%] px-4 py-3 text-right">Actions</th></tr></thead>
-                <tbody>{visibleProjects.map((project) => <tr key={project.id} className="border-b border-slate-100 last:border-0 hover:bg-teal-50/20"><td className="px-5 py-3"><div className="flex items-center gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-16 w-20 shrink-0 rounded-lg object-cover" /><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-950">{project.name}</p><p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">{project.location}</p></div></div></td><td className="px-4 py-3"><ProgressCell project={project} /></td><td className="px-4 py-3"><StatusBadge project={project} /></td><td className="px-4 py-3 text-xs font-medium text-slate-600">{formatDate(project.startDate)}</td><td className="px-4 py-3 text-xs font-medium text-slate-800">{formatDate(project.endDate)}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => onOpenProject(project.id)} className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-800 transition hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">{project.status === "planning" ? "Cost Estimate" : "View Details"}</button></td></tr>)}</tbody>
+                <thead><tr className="border-b border-slate-200 bg-white text-xs font-medium text-[#53736f]"><th className="w-[31%] px-5 py-3">Project</th><th className="w-[19%] px-4 py-3">Progress</th><th className="w-[14%] px-4 py-3">Status</th><th className="w-[13%] px-4 py-3">Start Date</th><th className="w-[13%] px-4 py-3">Target Completion</th><th className="w-[10%] px-4 py-3 text-right">Actions</th></tr></thead>
+                <tbody>{visibleProjects.map((project) => <tr key={project.id} className="border-b border-slate-100 last:border-0 hover:bg-teal-50/20"><td className="px-5 py-3"><div className="flex items-center gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-12 w-14 shrink-0 rounded-lg object-cover" /><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-950">{project.name}</p><p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">{project.location}</p></div></div></td><td className="px-4 py-3"><ProgressCell project={project} /></td><td className="px-4 py-3"><StatusBadge project={project} /></td><td className="px-4 py-3 text-xs font-medium text-slate-600">{formatDate(project.startDate)}</td><td className="px-4 py-3 text-xs font-medium text-slate-800">{formatDate(project.endDate)}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => onOpenProject(project.id)} className="h-9 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-800 transition hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">{project.status === "planning" ? "Cost Estimate" : "View Details"}</button></td></tr>)}</tbody>
               </table>
             </div>
-            <div className="divide-y divide-slate-100 lg:hidden">{visibleProjects.map((project) => <article key={project.id} className="p-4"><div className="flex gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-16 w-20 shrink-0 rounded-lg object-cover" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h2 className="truncate text-sm font-semibold text-slate-950">{project.name}</h2><StatusBadge project={project} /></div><p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">{project.location}</p><div className="mt-3"><ProgressCell project={project} /></div></div></div><div className="mt-4 flex items-center justify-between gap-3"><p className="text-xs text-slate-500">{formatDate(project.startDate)} – {formatDate(project.endDate)}</p><button type="button" onClick={() => onOpenProject(project.id)} className="h-9 shrink-0 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-800">{project.status === "planning" ? "Cost Estimate" : "View Details"}</button></div></article>)}</div>
+            <div className="divide-y divide-slate-100 lg:hidden">{visibleProjects.map((project) => <article key={project.id} className="p-4"><div className="flex gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-12 w-14 shrink-0 rounded-lg object-cover" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2"><h2 className="truncate text-sm font-semibold text-slate-950">{project.name}</h2><StatusBadge project={project} /></div><p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">{project.location}</p><div className="mt-3"><ProgressCell project={project} /></div></div></div><div className="mt-4 flex items-center justify-between gap-3"><p className="text-xs text-slate-500">{formatDate(project.startDate)} – {formatDate(project.endDate)}</p><button type="button" onClick={() => onOpenProject(project.id)} className="h-9 shrink-0 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-800">{project.status === "planning" ? "Cost Estimate" : "View Details"}</button></div></article>)}</div>
           </>
         )}
         <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">Showing {visibleProjects.length} of {projects.length} assigned records</div>

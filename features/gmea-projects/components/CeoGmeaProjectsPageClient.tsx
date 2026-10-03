@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import TablePagination from "@/components/TablePagination";
+import CeoGmeaProjectFilters from "./CeoGmeaProjectFilters";
+import { CEO_PROJECT_PAGE_SIZE, type CeoProjectTab } from "../utils/ceoProjectFilters";
 import useSWR from "swr";
 import { getGmeaProjectsDataAction } from "@/actions/gmeaProjects";
 import type { GmeaProject } from "../types";
@@ -12,8 +15,6 @@ import CeoGmeaProjectsTable from "./CeoGmeaProjectsTable";
 import CeoGmeaSummary from "./CeoGmeaSummary";
 import GmeaPortfolioHero from "./GmeaPortfolioHero";
 
-const tabs = ["Active", "Completed", "All Projects", "On Track", "At Risk", "For Collection"] as const;
-const controlClass = "h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
 
 export default function CeoGmeaProjectsPageClient({ projects }: { projects: GmeaProject[] }) {
   const { data: liveProjects = projects } = useSWR("gmea-projects:list", getGmeaProjectsDataAction, {
@@ -22,7 +23,8 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
     refreshInterval: 30000,
   });
   const [months, setMonths] = useState(6);
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Active");
+  const [selectedPage, setPage] = useState(1);
+  const [tab, setTab] = useState<CeoProjectTab>("Active");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState("latest");
@@ -59,8 +61,12 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
     );
   }, [filter, liveProjects, query, sort, tab]);
 
+  const totalPages = Math.max(1, Math.ceil(visible.length / CEO_PROJECT_PAGE_SIZE));
+  const page = Math.min(selectedPage, totalPages);
+  const pageProjects = visible.slice((page - 1) * CEO_PROJECT_PAGE_SIZE, page * CEO_PROJECT_PAGE_SIZE);
+
   return (
-    <div className="min-h-screen bg-slate-50/40 p-4 sm:p-6">
+    <div className="min-h-screen bg-white/40 p-4 sm:p-6">
       <div className="mx-auto max-w-[1600px] space-y-4">
         <GmeaPortfolioHero canEdit={false} />
         <CeoGmeaSummary
@@ -73,28 +79,20 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
         <CeoGmeaCharts data={data} count={portfolioProjects.length} months={months} onMonthsChange={setMonths} />
 
         <section aria-label="Projects" className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <div className="flex flex-col gap-3 px-4 py-3 xl:flex-row xl:items-center xl:justify-between">
-            <nav aria-label="Filter projects by status" className="flex max-w-full gap-1 overflow-x-auto">
-              {tabs.map((name) => (
-                <button key={name} onClick={() => setTab(name)} aria-pressed={tab === name} className={`shrink-0 border-b-2 px-3 py-3 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600 ${tab === name ? "border-emerald-600 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
-                  {name} ({tabCounts[name]})
-                </button>
-              ))}
-            </nav>
-            <div className="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_180px_170px]">
-              <input data-search-field="true" aria-label="Search projects" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects, clients, or locations" className={`${controlClass} min-w-0`} />
-              <select aria-label="Filter projects" value={filter} onChange={(event) => setFilter(event.target.value)} className={controlClass}>
-                <option value="all">All clients</option>
-                {clients.map((client) => <option key={client} value={`client:${client}`}>{client}</option>)}
-                <option value="new">Unread expenses</option>
-                <option value="over-contract">Expenses over contract</option>
-              </select>
-              <select aria-label="Sort projects" value={sort} onChange={(event) => setSort(event.target.value)} className={controlClass}>
-                <option value="latest">Sort: Latest</option><option value="name">Sort: Project Name</option><option value="contract">Sort: Contract Amount</option>
-              </select>
-            </div>
+          <CeoGmeaProjectFilters
+            tab={tab} tabCounts={tabCounts} query={query} filter={filter} sort={sort} clients={clients}
+            onTabChange={(value) => { setTab(value); setPage(1); }}
+            onQueryChange={(value) => { setQuery(value); setPage(1); }}
+            onFilterChange={(value) => { setFilter(value); setPage(1); }}
+            onSortChange={(value) => { setSort(value); setPage(1); }}
+          />
+          <CeoGmeaProjectsTable projects={pageProjects} totalProjects={visible} />
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 px-4 py-4">
+            <p aria-live="polite" className="text-sm text-slate-500">
+              Showing {visible.length ? (page - 1) * CEO_PROJECT_PAGE_SIZE + 1 : 0}–{Math.min(page * CEO_PROJECT_PAGE_SIZE, visible.length)} of {visible.length} projects
+            </p>
+            <TablePagination page={page} totalPages={totalPages} onChange={setPage} label="Project table pages" />
           </div>
-          <CeoGmeaProjectsTable projects={visible} />
         </section>
       </div>
     </div>

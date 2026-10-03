@@ -4,6 +4,14 @@ Prodisenyo ProBuild is a Next.js and Supabase operations system for attendance u
 
 The app is designed for construction and operations teams that need one shared workspace for biometric attendance files, payroll calculations, approval workflows, and project cost tracking.
 
+## Preview with Demo Data
+
+Run `npm run seed:data` to create demo accounts and linked data for all seven roles. Run `npm run seed:delete` to remove the demo data and accounts. Existing accounts and unrelated data are retained.
+
+See [demo data setup and login details](docs/demo-data.md) for credentials, required Supabase migrations, and offline preview commands. In PowerShell, use `npm.cmd` if `npm.ps1` is blocked.
+
+For older databases missing payroll review tables or project progress/GMEA status fields, run `npm run seed:prepare`, apply the generated `supabase/demo-seed-schema-repair.sql` in your Supabase SQL Editor, then rerun the seed.
+
 ## Core Features
 
 - Role-based dashboard experience for CEO, payroll manager, engineer, and employee accounts.

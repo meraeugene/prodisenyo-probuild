@@ -91,7 +91,7 @@ function EstimateReviewCard({
     "Unknown engineer";
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <article className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
       <div className="grid gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
@@ -183,7 +183,7 @@ function EstimateReviewCard({
               type="button"
               onClick={() => onApprove(estimate.id)}
               disabled={pendingAction !== null}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-workspace-button transition hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction?.id === estimate.id &&
               pendingAction.type === "approve" ? (

@@ -123,7 +123,7 @@ export default function EstimateReviewsPageClient({
 
       {state.rejectEstimateId ? (
         <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
             <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Return Estimate

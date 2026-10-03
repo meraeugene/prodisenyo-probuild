@@ -17,7 +17,7 @@ export default function SettingsResetWorkspaceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen w-screen items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl border border-apple-mist bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+      <div className="w-full max-w-lg rounded-2xl border border-transparent bg-white p-6 shadow-workspace-dialog">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600">

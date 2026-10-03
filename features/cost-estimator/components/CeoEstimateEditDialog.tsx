@@ -58,7 +58,7 @@ export default function CeoEstimateEditDialog({
 
   return (
     <div className="fixed inset-0 z-[180] flex items-center justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:p-4">
-      <div className="flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden bg-white shadow-2xl sm:max-h-[94vh] sm:rounded-3xl">
+      <div className="flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden bg-white shadow-workspace-dialog sm:max-h-[94vh] sm:rounded-3xl">
         <header className="flex items-start justify-between border-b border-slate-200 bg-teal-950 px-5 py-4 text-white">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">Controlled CEO edit</p>

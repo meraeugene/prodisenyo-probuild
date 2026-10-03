@@ -108,7 +108,7 @@ export default function CostEstimatorBoard({
               return (
                 <div
                   key={`${group.key}-${index}`}
-                  className="rounded-[14px] border border-apple-mist bg-white p-4 shadow-[0_8px_20px_rgba(7,109,105,0.06)] transition duration-200  hover:border-teal-200 "
+                  className="rounded-[14px] border border-transparent bg-white p-4 shadow-workspace transition duration-200  hover:border-teal-200 "
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -136,7 +136,7 @@ export default function CostEstimatorBoard({
                       </button>
 
                       {menuOpen ? (
-                        <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-40 overflow-hidden rounded-[12px] border border-apple-mist bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
+                        <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-40 overflow-hidden rounded-[12px] border border-transparent bg-white shadow-workspace">
                           <button
                             type="button"
                             onMouseDown={(event) => {

@@ -60,7 +60,7 @@ export default function EngineerProjectOverview({
   return (
     <div className="space-y-5">
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr_.95fr]">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6">
+        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
           <h2 className="text-sm font-semibold text-slate-950">Project Progress</h2>
           <div className="mt-6 flex items-end gap-3">
             <p className="text-4xl font-bold tracking-tight text-slate-950">{overallProgress}%</p>
@@ -78,13 +78,13 @@ export default function EngineerProjectOverview({
           ) : null}
         </article>
 
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6">
+        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
           <h2 className="text-sm font-semibold text-slate-950">Project Information</h2>
           <dl className="mt-4 divide-y divide-slate-100">
           </dl>
         </article>
 
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6">
+        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-slate-950">Materials</h2>
@@ -104,7 +104,7 @@ export default function EngineerProjectOverview({
         </article>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6">
+      <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div><h2 className="text-base font-semibold text-slate-950">Recent Progress Updates</h2><p className="mt-1 text-xs text-slate-500">Latest overall progress reports submitted for this project.</p></div>
           {progressUpdates.length > 0 ? <button type="button" onClick={onUpdateProgress} className="text-sm font-semibold text-teal-800 hover:text-teal-950">View all</button> : null}

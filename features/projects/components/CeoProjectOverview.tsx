@@ -91,7 +91,7 @@ export default function CeoProjectOverview({
           historyClassName=""
         />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
+        <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
           <h2 className="font-bold text-slate-950">Current Cost Items</h2>
           <div className="mt-4 divide-y divide-slate-100">
             {budgetItems.slice(0, 6).map((item) => (
@@ -113,7 +113,7 @@ export default function CeoProjectOverview({
 
 function OverviewCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.04)]">
+    <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
       <div className="mb-6">
         <h2 className="font-semibold tracking-tight text-slate-950">{title}</h2>
       </div>

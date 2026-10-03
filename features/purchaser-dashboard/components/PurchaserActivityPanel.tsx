@@ -3,7 +3,7 @@ import { formatPurchaserDate } from "@/features/purchaser-dashboard/utils/purcha
 
 export default function PurchaserActivityPanel({ items }: { items: PurchaserActivityItem[] }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,.035)]">
+    <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
       <div>
         <h2 className="font-bold text-slate-950">Recent Procurement Activity</h2>
         <p className="mt-0.5 text-xs text-slate-500">Latest saved state for each purchase</p>

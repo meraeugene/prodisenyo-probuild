@@ -108,5 +108,5 @@ function Fact({ label, value, valueClass }: {  label: string; value: string; val
 }
 
 function Metric({ label, value }: {  label: string; value: string }) {
-  return <article className="flex min-h-[90px] items-center gap-3 rounded-[13px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.035)]"><div className="min-w-0"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</p></div></article>;
+  return <article className="flex min-h-[90px] items-center gap-3 rounded-[13px] border border-transparent bg-white px-4 py-4 shadow-workspace"><div className="min-w-0"><p className="text-xs text-slate-600">{label}</p><p className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</p></div></article>;
 }

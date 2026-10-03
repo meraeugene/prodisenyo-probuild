@@ -1,0 +1,81 @@
+/* Shared workspace surfaces, including existing feature panels during migration.
+   Inputs, badges, warning states, and ledger cell boundaries keep their own borders. */
+.workspace-surface {
+  border-radius: 16px;
+  border-color: transparent;
+  background: #fff;
+  box-shadow: var(--workspace-panel-shadow);
+}
+
+[data-workspace] {
+  color: #1d1d1f;
+  --theme-chart-1: 7 109 105;
+  --theme-chart-2: 105 169 155;
+  --theme-chart-3: 160 203 191;
+  --theme-chart-4: 184 222 214;
+  --theme-chart-5: 83 115 111;
+  --theme-chart-grid: 237 243 241;
+  --theme-chart-axis: 83 115 111;
+  --apple-mist: 225 233 231;
+  --apple-silver: 184 222 214;
+  --apple-steel: 83 115 111;
+}
+
+[data-workspace] > :is(main, div, section):not([class~="fixed"]) {
+  background-color: #fff;
+}
+
+/* Only rounded content containers receive elevation; table rows and form controls do not. */
+[data-workspace] :is(section, article, div, a):where([class*="rounded"]):is(
+  [class*="bg-white"][class*="shadow"],
+  [class*="bg-white"][class*="border"][class*="p-4"],
+  [class*="bg-white"][class*="border"][class*="p-5"],
+  [class*="bg-white"][class*="border"][class*="p-6"]
+):not([class*="rounded-full"]):not([role="status"]):not(:where(.workspace-header-actions *)) {
+  background-color: #fff;
+  border-color: transparent;
+  border-radius: 16px;
+  box-shadow: var(--workspace-panel-shadow);
+}
+
+.workspace-header-actions :is(button, a):is([class*="bg-white"], [class*="bg-teal"], [class*="bg-[#076d69]"]):not([class*="text-rose"]):not([class*="text-red"]) {
+  min-height: 40px;
+  border-radius: 10px;
+  border-color: transparent;
+  background: #076d69;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgb(7 109 105 / 8%);
+}
+.workspace-header-actions :is(button, a):is([class*="bg-white"], [class*="bg-teal"], [class*="bg-[#076d69]"]):not([class*="text-rose"]):not([class*="text-red"]):hover { background-color: #065c59; }
+.workspace-header-actions .workspace-secondary-action { background: #fff !important; color: #076d69 !important; border: 1px solid #e1e9e7 !important; box-shadow: none !important; }
+.workspace-header-actions .workspace-secondary-action:hover { background: #f4faf7 !important; }
+.workspace-header-actions :is(button, a):focus-visible { outline: 2px solid #076d69; outline-offset: 3px; }
+.workspace-header-actions :is(button, a):disabled { opacity: .55; }
+.workspace-header-actions select { max-width: 100%; min-width: 0; border: 1px solid #e1e9e7; font-size: 13px; font-weight: 400; border-radius: 10px; }
+
+[data-workspace] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea):where([class*="rounded"]) {
+  border-radius: 10px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+[data-workspace] :is(input, select, textarea):focus-visible { outline: 2px solid #076d69; outline-offset: 2px; }
+[data-workspace] :is(button, a):focus-visible { outline: 2px solid #076d69; outline-offset: 3px; }
+[data-workspace] :is(button, a):where([class*="shadow"]):not(.workspace-surface) { box-shadow: 0 2px 6px rgb(24 55 52 / 5%); }
+[data-workspace] table thead:where([class*="bg-slate"], [class*="bg-gray"]) { background: #fff; }
+[data-workspace] table thead tr:where([class*="bg-slate"], [class*="bg-gray"]) { background: #fff; }
+[data-workspace] table thead :is(th, td) { font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-workspace] *, [data-workspace] *::before, [data-workspace] *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
+
+@media print {
+  .workspace-surface { box-shadow: none; }
+}

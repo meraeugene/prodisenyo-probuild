@@ -73,7 +73,7 @@ export default function PayrollEmployeeActionMenu({
       ref={menuRef}
       role="menu"
       style={{ top: position.top, left: position.left }}
-      className="fixed z-[140] min-w-[170px] -translate-x-full overflow-hidden rounded-[10px] border border-[#d6e1e6] bg-white p-1.5 shadow-[0_16px_36px_rgba(15,23,42,0.14)]"
+      className="fixed z-[140] min-w-[170px] -translate-x-full overflow-hidden rounded-[10px] border border-[#d6e1e6] bg-white p-1.5 shadow-workspace"
     >
       <MenuButton icon={Pencil} label="Edit employee" onClick={handleEdit} />
       <MenuButton icon={Download} label="Export payslip" onClick={handleExport} />

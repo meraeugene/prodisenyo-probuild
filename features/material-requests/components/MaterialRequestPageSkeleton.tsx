@@ -9,7 +9,7 @@ export default function MaterialRequestPageSkeleton() {
       <CeoPageHeroSkeleton action="none" />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="mt-3 h-7 w-56" />
           <div className="mt-5 grid gap-4">
@@ -24,7 +24,7 @@ export default function MaterialRequestPageSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.06)] sm:rounded-[18px]">
+        <div className="rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
           <SkeletonBlock className="h-3 w-28" />
           <SkeletonBlock className="mt-3 h-7 w-64" />
           <div className="mt-5 space-y-3">

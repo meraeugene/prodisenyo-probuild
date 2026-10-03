@@ -24,3 +24,6 @@ yarn-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local visual comparison captures
+/tmp/design-preview/

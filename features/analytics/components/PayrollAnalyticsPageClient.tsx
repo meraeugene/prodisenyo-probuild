@@ -42,7 +42,7 @@ export default function PayrollAnalyticsPageClient() {
         periodLabel={selectedPeriodLabel ? `${selectedPeriodLabel.label} · ${selectedPeriodLabel.siteName}` : undefined}
       />
       {periodOptions.length > 0 ? (
-        <section className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:px-5">
+        <section className="rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><p className="text-sm font-bold text-slate-950">Payroll period</p><p className="mt-1 text-xs text-slate-500">Choose a saved run to update every chart below.</p></div>
             <select
@@ -73,7 +73,7 @@ export default function PayrollAnalyticsPageClient() {
           <p className="text-sm text-red-700">{error}</p>
         </section>
       ) : (
-        <section className="rounded-[14px] border border-apple-mist bg-white p-6 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+        <section className="rounded-[14px] border border-transparent bg-white p-6 shadow-workspace">
           <p className="text-sm text-apple-smoke">
             No saved payroll periods yet.
           </p>

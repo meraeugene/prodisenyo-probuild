@@ -18,14 +18,14 @@ export default function PayrollOverviewPanel({
     { label: "Approved Runs", value: overview.approvedRunCount,  tone: "text-sky-700 bg-sky-50", count: true },
   ];
   const chartRows = [
-    { label: "Regular pay", value: overview.regularPay, color: "bg-teal-700" },
-    { label: "Overtime & holiday", value: overview.overtimePay + overview.holidayPay, color: "bg-amber-500" },
-    { label: "Deductions", value: overview.deductions, color: "bg-rose-600" },
+    { label: "Regular pay", value: overview.regularPay, color: "bg-[#076d69]" },
+    { label: "Overtime & holiday", value: overview.overtimePay + overview.holidayPay, color: "bg-[#69a99b]" },
+    { label: "Deductions", value: overview.deductions, color: "bg-[#cfab65]" },
   ];
   const hasBreakdown = chartRows.some((row) => row.value > 0);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="font-bold text-slate-950">Payroll Overview</h2>

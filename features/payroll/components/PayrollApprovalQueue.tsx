@@ -56,7 +56,7 @@ export default function PayrollApprovalQueue({
 
   return (
     <section className="flex flex-col">
-      <div className="rounded-2xl border border-slate-200/70 bg-white p-5 shadow-[0_10px_30px_-25px_rgba(15,23,42,.25)] sm:p-6">
+      <div className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
             Payroll adjustments
@@ -112,7 +112,7 @@ export default function PayrollApprovalQueue({
 
       {rejectConfirmRequest ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]">
+          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
             <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Return Overtime

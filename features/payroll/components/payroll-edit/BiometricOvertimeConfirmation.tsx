@@ -5,7 +5,7 @@ type Props = { status: "approved" | "rejected"; biometricOvertimeHours: number; 
 export default function BiometricOvertimeConfirmation({ status, biometricOvertimeHours, onClose, onConfirm }: Props) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/35 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-apple-mist bg-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+      <div className="w-full max-w-lg rounded-2xl border border-transparent bg-white shadow-workspace">
         <div className="flex items-start gap-3 border-b border-apple-mist px-5 py-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-apple-steel">

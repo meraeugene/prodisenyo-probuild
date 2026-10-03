@@ -36,22 +36,22 @@ export function buildCeoProjectsAnalytics(
     {
       name: "Active",
       value: projects.filter((project) => project.status === "active").length,
-      color: "#159447",
+      color: "#076d69",
     },
     {
       name: "Pending Estimates",
       value: projects.filter((project) => project.status === "planning").length,
-      color: "#1673ea",
+      color: "#69a99b",
     },
     {
       name: "Completed",
       value: projects.filter((project) => project.status === "completed").length,
-      color: "#93c5fd",
+      color: "#b8ded6",
     },
     {
       name: "On Hold",
       value: projects.filter((project) => project.status === "on_hold").length,
-      color: "#94a3b8",
+      color: "#cfab65",
     },
   ];
   const delayedProjects = projects.filter((project) => {
@@ -74,9 +74,9 @@ export function buildCeoProjectsAnalytics(
     trend,
     statuses,
     risks: [
-      { name: "On Track", value: onTrack, color: "#159447" },
-      { name: "At Risk", value: atRisk, color: "#f5ad19" },
-      { name: "Delayed", value: delayed, color: "#f43f5e" },
+      { name: "On Track", value: onTrack, color: "#076d69" },
+      { name: "At Risk", value: atRisk, color: "#bc8631" },
+      { name: "Delayed", value: delayed, color: "#c16b67" },
     ],
     totalBudget: projects.reduce((sum, project) => sum + project.budget, 0),
     totalSpent: projects.reduce((sum, project) => sum + project.spent, 0),

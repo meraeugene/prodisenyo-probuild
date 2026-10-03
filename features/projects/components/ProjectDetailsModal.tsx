@@ -31,7 +31,7 @@ export default function ProjectDetailsModal({ project, onClose, onEdit, onDelete
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex h-screen min-h-screen w-screen items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white border border-apple-mist rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
+      <div className="w-full max-w-2xl bg-white border border-transparent rounded-2xl p-6 shadow-workspace-dialog animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <h3 className="text-xl font-bold text-apple-charcoal">{project.name}</h3>

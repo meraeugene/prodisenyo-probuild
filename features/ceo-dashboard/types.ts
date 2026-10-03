@@ -4,6 +4,8 @@ export type CeoProjectStatus =
   | "on_hold"
   | "completed";
 
+export type CeoPortfolioFilter = "all" | "on-track" | "at-risk";
+
 export type CeoDashboardProject = {
   id: string;
   name: string;

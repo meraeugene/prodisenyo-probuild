@@ -114,7 +114,7 @@ export default function ProjectProgressUpdateList({
                       <MoreVertical size={18} aria-hidden="true" />
                     </button>
                     {menuOpen ? (
-                      <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-left shadow-lg">
+                      <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl border border-transparent bg-white p-1.5 text-left shadow-workspace">
                         <button
                           type="button"
                           onClick={() => {

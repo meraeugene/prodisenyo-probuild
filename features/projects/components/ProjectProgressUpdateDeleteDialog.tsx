@@ -45,7 +45,7 @@ export default function ProjectProgressUpdateDeleteDialog({
         aria-modal="true"
         aria-labelledby="delete-progress-update-title"
         aria-describedby="delete-progress-update-description"
-        className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-workspace-dialog"
       >
         <h2 id="delete-progress-update-title" className="mt-4 text-lg font-semibold text-slate-950">
           Delete progress update?

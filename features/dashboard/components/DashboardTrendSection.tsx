@@ -34,7 +34,7 @@ export default function DashboardTrendSection({
   latestTrendPoint: TrendPoint | null;
 }) {
   return (
-    <section className="mb-5 rounded-[12px] bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+    <section className="mb-5 rounded-[12px] bg-white p-5 shadow-workspace">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
@@ -106,12 +106,12 @@ export default function DashboardTrendSection({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.32} />
-                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.04} />
+                  <stop offset="5%" stopColor="#076d69" stopOpacity={0.16} />
+                  <stop offset="95%" stopColor="#076d69" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid
-                strokeDasharray="3 3"
+                strokeDasharray="0"
                 vertical={false}
                 stroke="rgb(var(--theme-chart-grid))"
               />
@@ -135,7 +135,7 @@ export default function DashboardTrendSection({
                   const point = payload[0]?.payload as TrendPoint | undefined;
                   if (!point) return null;
                   return (
-                    <div className="rounded-xl border border-apple-mist bg-white p-3 text-apple-charcoal shadow-xl">
+                    <div className="rounded-xl border border-transparent bg-white p-3 text-apple-charcoal shadow-workspace">
                       <p className="text-xs font-semibold">{point.label}</p>
                       <p className="mt-1 text-sm font-semibold text-teal-700">
                         {PESO_SIGN} {formatPayrollNumber(point.total)}
@@ -147,13 +147,13 @@ export default function DashboardTrendSection({
               <Area
                 type="monotone"
                 dataKey="total"
-                stroke="#0d9488"
+                stroke="#076d69"
                 strokeWidth={3}
                 fill="url(#ceoDashboardTrendFill)"
                 dot={{ r: 0 }}
                 activeDot={{
                   r: 5,
-                  fill: "#0d9488",
+                  fill: "#076d69",
                   stroke: "white",
                   strokeWidth: 2,
                 }}

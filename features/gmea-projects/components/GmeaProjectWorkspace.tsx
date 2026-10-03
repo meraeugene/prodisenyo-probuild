@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import useSWR from "swr";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, ChartPie, CheckCircle2, Pencil, ReceiptText, RotateCcw, Trash2 } from "lucide-react";
 import { getGmeaProjectDataAction } from "@/actions/gmeaProjects";
@@ -58,18 +57,16 @@ export default function GmeaProjectWorkspace({
         <ArrowLeft size={16} />
         GMEA projects
       </Link>
-      <header className="relative isolate flex min-h-[230px] flex-wrap items-center justify-between gap-6 overflow-hidden rounded-[22px] bg-[#075e5b] p-6 text-white shadow-[0_20px_55px_rgba(7,83,80,0.16)] sm:p-8">
-        <Image src="/gmea-portfolio-architecture.png" alt="" fill priority sizes="(min-width:1024px) calc(100vw - 320px), 100vw" className="-z-20 object-cover object-right" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,79,76,.98)_0%,rgba(3,91,87,.9)_42%,rgba(3,79,76,.48)_78%,rgba(3,68,65,.62)_100%)]" />
+      <header className="workspace-page-header workspace-header-actions flex flex-wrap items-start justify-between gap-5 bg-white pb-2">
         <div className="min-w-0 flex-1 basis-72">
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/70">
+          <p className="text-xs font-normal text-[#53736f]">
             GMEA Marketing Corporation
           </p>
           <div className="mt-3">
-            <GmeaProjectStatusBadge status={project.status} inverse />
+            <GmeaProjectStatusBadge status={project.status}  />
           </div>
           <p
-            className="mt-2 inline-flex max-w-full rounded-lg px-3 py-1.5 text-sm font-bold uppercase tracking-[0.12em]"
+            className="mt-2 inline-flex max-w-full rounded-lg px-3 py-1.5 text-sm font-semibold uppercase tracking-[0.12em]"
             style={{
               backgroundColor: projectColor(project),
               color: contrastTextColor(projectColor(project)),
@@ -77,23 +74,23 @@ export default function GmeaProjectWorkspace({
           >
             {project.title}
           </p>
-          <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{project.name}</h1>
-          <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
+          <h1 className="mt-2.5 break-words text-[28px] font-semibold leading-none tracking-[-0.045em] sm:text-[32px]">{project.name}</h1>
+          <p className="mt-4 flex items-center gap-2 text-sm text-[#53736f]">
             {project.location}
           </p>
-          <p className="mt-2 flex items-center gap-2 text-sm text-white/80">
+          <p className="mt-2 flex items-center gap-2 text-sm text-[#53736f]">
             {project.client || "Client not set"}
           </p>
         </div>
         {canEdit && (
-          <div className="flex flex-wrap gap-2 rounded-2xl border border-white/20 bg-white/10 p-2 text-slate-900 shadow-inner backdrop-blur-xl">
+          <div className="flex max-w-full flex-wrap gap-2 text-slate-900">
             <button className={secondaryClass + " gap-2 border-transparent bg-slate-50 text-[#076d69]"} onClick={() => setEdit(true)}>
               <Pencil size={15} aria-hidden="true" /> Edit project
             </button>
             <GmeaConfirmButton
               label={project.status === "completed" ? "Reopen project" : "Mark as done"}
               triggerLabel={project.status === "completed" ? "Reopen project" : "Mark as done"}
-              triggerClassName="border-white/50 bg-white/10 px-4 py-2.5 font-semibold text-white hover:border-white/70 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#075e5b]"
+              triggerClassName="rounded-xl bg-white px-4 py-2.5 font-medium text-[#076d69] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#076d69]"
               triggerIcon={project.status === "completed" ? <RotateCcw size={15} aria-hidden="true" /> : <CheckCircle2 size={15} aria-hidden="true" />}
               description={project.status === "completed" ? "Move this project back to the active project list?" : "Move this project to Completed? Its financial records and history will remain available."}
               onConfirm={() => save({ kind: "project_status", value: { status: project.status === "completed" ? "active" : "completed" } })}
@@ -131,7 +128,7 @@ export default function GmeaProjectWorkspace({
         ))}
       </nav>
       <div className={tab === "Contract Cost Summary" ? "grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]" : "block"}>
-        <div className="min-w-0 rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,.055)] sm:p-7">
+        <div className="min-w-0 rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-7">
           {tab === "Expenses" && (
             <GmeaExpensesSection project={project} expenseOptions={expenseOptions} canEdit={canEdit} />
           )}

@@ -73,7 +73,7 @@ export function PayrollReportAnalyticsTooltip({
   if (!active || !payload || payload.length === 0) return null;
 
   return (
-    <div className="min-w-[156px] rounded-xl border border-apple-mist bg-white px-3 py-2 shadow-[0_10px_28px_rgba(2,6,23,0.08)]">
+    <div className="min-w-[156px] rounded-xl border border-transparent bg-white px-3 py-2 shadow-workspace">
       {label ? (
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-apple-smoke">
           {label}

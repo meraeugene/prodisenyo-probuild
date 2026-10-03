@@ -83,7 +83,7 @@ export default function CostEstimatorBoqDetails({
         </div>
       </header>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-slate-200 bg-white px-6 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.035)] sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-3 rounded-[14px] border border-transparent bg-white px-6 py-6 shadow-workspace sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-[22px] font-semibold text-slate-950">{estimate.project_name}</h2>
@@ -121,7 +121,7 @@ const METRIC_TONES = {
 
 function Metric({ label, value }: {  label: string; value: string; tone: keyof typeof METRIC_TONES }) {
   return (
-    <article className="flex min-h-[100px] items-center gap-4 rounded-[14px] border border-slate-200 bg-white px-5 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <article className="flex min-h-[100px] items-center gap-4 rounded-[14px] border border-transparent bg-white px-5 py-5 shadow-workspace">
       <div className="min-w-0">
         <p className="text-sm text-slate-600">{label}</p>
         <p className="mt-1 break-words text-[22px] font-semibold tracking-[-0.025em] text-slate-950">{value}</p>

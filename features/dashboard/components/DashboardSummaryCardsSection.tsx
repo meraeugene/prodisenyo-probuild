@@ -35,7 +35,7 @@ export default function DashboardSummaryCardsSection({
             key={card.key}
             type="button"
             onClick={() => onSelectCard(card.key)}
-            className="rounded-[22px] bg-white p-6 text-left shadow-[0_18px_40px_rgba(7,109,105,0.08)] transition  "
+            className="rounded-[22px] bg-white p-6 text-left shadow-workspace-button transition  "
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">

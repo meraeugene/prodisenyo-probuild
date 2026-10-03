@@ -35,7 +35,7 @@ export default function ProjectPortfolioOverview({
           <button
             type="button"
             onClick={onCreateProject}
-            className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 self-start rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(7,109,105,0.18)] transition-colors hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 sm:self-auto"
+            className="inline-flex h-12 shrink-0 items-center justify-center gap-2.5 self-start rounded-xl bg-teal-800 px-5 text-sm font-semibold text-white shadow-workspace-button transition-colors hover:bg-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 sm:self-auto"
           >
             <Plus aria-hidden="true" size={18} strokeWidth={2.25} />
             Create New Project

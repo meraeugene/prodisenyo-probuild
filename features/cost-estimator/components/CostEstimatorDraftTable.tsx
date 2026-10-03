@@ -80,7 +80,7 @@ export default function CostEstimatorDraftTable({
   }, [activeFilter, items, query]);
 
   return (
-    <section className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)]">
+    <section className="overflow-hidden rounded-[14px] border border-transparent bg-white shadow-workspace">
       <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-[20px] font-semibold text-slate-950">Estimate Items</h2>
