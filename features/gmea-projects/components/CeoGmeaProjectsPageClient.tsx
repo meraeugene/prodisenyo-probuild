@@ -82,7 +82,7 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
               ))}
             </nav>
             <div className="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_180px_170px]">
-              <input aria-label="Search projects" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects, clients, or locations" className={`${controlClass} min-w-0`} />
+              <input data-search-field="true" aria-label="Search projects" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects, clients, or locations" className={`${controlClass} min-w-0`} />
               <select aria-label="Filter projects" value={filter} onChange={(event) => setFilter(event.target.value)} className={controlClass}>
                 <option value="all">All clients</option>
                 {clients.map((client) => <option key={client} value={`client:${client}`}>{client}</option>)}

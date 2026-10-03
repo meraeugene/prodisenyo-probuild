@@ -116,7 +116,7 @@ export default function PaidHolidayModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[120] flex min-h-dvh w-screen items-center justify-center bg-black/45 p-0 sm:p-4 backdrop-blur-sm">
-      <div className="h-[100dvh] w-full max-w-4xl overflow-y-auto border border-teal-200 bg-[#f7fcf8] p-4 shadow-[0_24px_72px_rgba(7,109,105,0.18)] sm:max-h-[88vh] sm:h-auto sm:rounded-2xl sm:p-6">
+      <div className="h-[100dvh] w-full max-w-4xl overflow-y-auto border border-slate-200 bg-white p-4 shadow-[0_24px_72px_rgba(7,109,105,0.18)] sm:max-h-[88vh] sm:h-auto sm:rounded-2xl sm:p-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -128,7 +128,7 @@ export default function PaidHolidayModal({
                 calendar.
               </p>
               {(periodStart || periodEnd) && (
-                <p className="mt-2 inline-flex items-center rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">
+                <p className="mt-2 inline-flex items-center rounded-full border border-slate-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">
                   Payroll Range: {periodStart ?? "-"} to {periodEnd ?? "-"}
                 </p>
               )}
@@ -147,7 +147,7 @@ export default function PaidHolidayModal({
             <button
               type="button"
               onClick={onLoadPhilippineHolidays}
-              className="w-full rounded-xl border border-teal-700 bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-teal-800 sm:w-auto"
+              className="w-full rounded-xl border border-slate-200 bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-teal-800 sm:w-auto"
             >
               Auto Add Philippine Holidays
             </button>
@@ -155,14 +155,14 @@ export default function PaidHolidayModal({
               type="button"
               onClick={onClearHolidays}
               disabled={holidays.length === 0}
-              className="w-full rounded-xl border border-teal-200 bg-white px-3.5 py-2 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               Clear All
             </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4">
-            <div className="rounded-2xl border border-teal-200 bg-white p-3 sm:p-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4">
               <div className="flex items-center justify-between mb-3">
                 <button
                   type="button"
@@ -172,7 +172,7 @@ export default function PaidHolidayModal({
                         new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
                     )
                   }
-                  className="p-1.5 rounded-lg border border-teal-200 text-teal-700 hover:border-teal-500 transition"
+                  className="p-1.5 rounded-lg border border-slate-200 text-teal-700 hover:border-slate-200 transition"
                   aria-label="Previous month"
                 >
                   <ChevronLeft size={16} />
@@ -193,7 +193,7 @@ export default function PaidHolidayModal({
                         new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
                     )
                   }
-                  className="p-1.5 rounded-lg border border-teal-200 text-teal-700 hover:border-teal-500 transition"
+                  className="p-1.5 rounded-lg border border-slate-200 text-teal-700 hover:border-slate-200 transition"
                   aria-label="Next month"
                 >
                   <ChevronRight size={16} />
@@ -234,15 +234,15 @@ export default function PaidHolidayModal({
                   );
                   const dayClass = isSelected
                     ? isHoliday
-                      ? "border-teal-900 bg-teal-900 text-white"
+                      ? "border-slate-200 bg-teal-900 text-white"
                       : isInPayrollRange
-                        ? "border-teal-800 bg-teal-800 text-white"
-                        : "border-[#076d69] bg-[#076d69] text-white"
+                        ? "border-slate-200 bg-teal-800 text-white"
+                        : "border-slate-200 bg-[#076d69] text-white"
                     : isHoliday
-                      ? "border-teal-700 bg-teal-600 text-white"
+                      ? "border-slate-200 bg-teal-600 text-white"
                       : isInPayrollRange
-                        ? "border-teal-200 bg-teal-50 text-teal-700 hover:border-teal-400"
-                        : "border-teal-100 bg-white text-apple-charcoal hover:border-teal-500";
+                        ? "border-slate-200 bg-teal-50 text-teal-700 hover:border-slate-200"
+                        : "border-slate-200 bg-white text-apple-charcoal hover:border-slate-200";
 
                   return (
                     <button
@@ -258,7 +258,7 @@ export default function PaidHolidayModal({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/30 p-3 sm:p-4">
+            <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-apple-charcoal">
                 Manual Holiday Entry
               </div>
@@ -267,14 +267,14 @@ export default function PaidHolidayModal({
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full h-10 px-3 rounded-2xl border border-teal-200 bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all"
+                className="w-full h-10 px-3 rounded-2xl border border-slate-200 bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-slate-200 transition-all"
               />
               <input
                 type="text"
                 value={holidayName}
                 onChange={(e) => setHolidayName(e.target.value)}
                 placeholder="Holiday name (optional)"
-                className="w-full h-10 px-3 rounded-2xl border border-teal-200 bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-500 transition-all"
+                className="w-full h-10 px-3 rounded-2xl border border-slate-200 bg-white text-sm text-apple-charcoal focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-slate-200 transition-all"
               />
 
               <button
@@ -290,7 +290,7 @@ export default function PaidHolidayModal({
                 Add Holiday
               </button>
 
-              <div className="pt-2 border-t border-teal-200">
+              <div className="pt-2 border-t border-slate-200">
                 <p className="text-2xs font-semibold uppercase tracking-widest text-apple-steel mb-2">
                   Selected Holidays ({visibleHolidays.length})
                 </p>
@@ -303,7 +303,7 @@ export default function PaidHolidayModal({
                     visibleHolidays.map((holiday) => (
                       <div
                         key={holiday.date}
-                        className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 flex items-center gap-2"
+                        className="rounded-lg border border-slate-200 bg-teal-50 px-3 py-2 flex items-center gap-2"
                       >
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-teal-800">

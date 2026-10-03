@@ -1,1 +1,1 @@
-export { default } from "@/features/projects/components/ProjectsPageSkeleton";
+export { default } from "../projects/loading";

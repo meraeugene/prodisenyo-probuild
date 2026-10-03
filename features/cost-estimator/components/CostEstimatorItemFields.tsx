@@ -227,7 +227,7 @@ function MaterialFields({
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-semibold text-slate-800 sm:col-span-2">
           Catalog Item <span className="text-rose-500">*</span>
-          <input
+          <input data-search-field="true"
             list={"catalog-" + material.id}
             value={material.searchInput}
             onChange={(event) => handleMaterialName(event.target.value)}

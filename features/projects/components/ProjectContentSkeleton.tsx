@@ -8,5 +8,5 @@ export default function ProjectContentSkeleton({ tab }: { tab: "materials" | "do
     </div>;
   }
   const body = <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]"><SkeletonPanel><Block className="h-7 w-44" /><div className="mt-5 flex flex-wrap gap-3"><Block className="h-10 w-56" /><Block className="h-10 w-40" />{tab === "activity-log" && <><Block className="h-10 w-36" /><Block className="h-10 w-36" /></>}</div><SkeletonRows rows={5} /></SkeletonPanel><SkeletonPanel className="h-fit"><Block className="h-6 w-36" /><SkeletonRows rows={3} /></SkeletonPanel></div>;
-  return <div role="status" aria-label={`Loading ${tab}`}>{tab === "documents" ? <SkeletonPanel className="p-4 sm:p-5"><div className="mb-5 flex justify-between gap-3"><div><Block className="h-7 w-48" /><Block className="mt-1 h-5 w-64" /></div><Block className="h-10 w-28" /></div>{body}</SkeletonPanel> : body}</div>;
+  return <div aria-busy="true" role="status" aria-label={`Loading ${tab}`}>{tab === "documents" ? <SkeletonPanel className="p-4 sm:p-5"><div className="mb-5 flex justify-between gap-3"><div><Block className="h-7 w-48" /><Block className="mt-1 h-5 w-64" /></div><Block className="h-10 w-28" /></div>{body}</SkeletonPanel> : body}</div>;
 }

@@ -1,5 +1,4 @@
 import type { PayrollDashboardData } from "@/features/payroll-dashboard/types";
-import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
 
 export default function PayrollWorkspaceSummaryCards({ data }: { data: PayrollDashboardData }) {
   const cards = [
@@ -13,15 +12,10 @@ export default function PayrollWorkspaceSummaryCards({ data }: { data: PayrollDa
       value: data.workspaceRuns.filter((run) => run.status === "approved").length.toLocaleString("en-PH"),
       tone: "bg-emerald-50 text-emerald-700",
     },
-    {
-      label: "Approved Payroll Expenses",
-      value: formatPayrollCurrency(data.summary.approvedNetPayroll),
-      tone: "bg-teal-50 text-teal-700",
-    },
   ];
 
   return (
-    <section className="grid gap-3 md:grid-cols-3">
+    <section className="grid gap-3 md:grid-cols-2">
       {cards.map(({ label, value }) => (
         <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_26px_rgba(15,23,42,0.04)]">
           <div className="flex items-center justify-between gap-4">

@@ -109,8 +109,8 @@ export function PayrollCalculationWorkspace(
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-3 sm:p-6">
-      <div className="flex h-[min(860px,92dvh)] w-full max-w-[1280px] flex-col overflow-hidden border border-slate-200 bg-[#f8faf9] rounded-2xl shadow-2xl">
+    <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-y-auto bg-slate-950/35 p-4 sm:p-8">
+      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex w-full max-w-[1200px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <PayrollCalculationHeader
           employeeName={props.employeeName}
           roleName={props.roleName}
@@ -133,7 +133,7 @@ export function PayrollCalculationWorkspace(
             document.getElementById(`payroll-tab-${tabs[next][0]}`)?.focus();
           }} onClick={() => setActiveTab(id)} className={`rounded-lg px-3 py-2 text-[13px] font-medium ${activeTab === id ? "bg-teal-50 text-teal-800" : "text-slate-500 hover:bg-slate-50"}`}>{label}</button>)}
         </div>
-        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="p-3 sm:px-5 sm:py-3">
           <div className="space-y-3">
             <div>
               {activeTab === "attendance" && !props.cutoffAttendanceDays?.length ? <p className="p-4 text-[13px] text-slate-500">No cutoff attendance available. Open Biometric Logs to review attendance records.</p> : null}

@@ -104,7 +104,7 @@ export default function CostEstimatorDraftTable({
         </div>
         <label className="relative block w-full lg:w-64">
           <span className="sr-only">Search estimate items</span>
-          <input
+          <input data-search-field="true"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search items..."

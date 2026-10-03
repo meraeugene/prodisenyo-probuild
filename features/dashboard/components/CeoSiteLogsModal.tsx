@@ -66,7 +66,7 @@ export default function CeoSiteLogsModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-apple-charcoal">
                 Read-only Site Logs
               </p>
-              <input
+              <input data-search-field="true"
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}

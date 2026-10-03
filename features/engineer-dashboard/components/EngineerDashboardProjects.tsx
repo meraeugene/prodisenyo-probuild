@@ -41,7 +41,7 @@ export default function EngineerDashboardProjects({ projects, selectedProjectId,
         <div className="flex flex-col gap-2 sm:flex-row">
           <label className="relative block sm:w-72">
             <span className="sr-only">Search projects</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-4 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:ring-2 focus:ring-teal-100" />
+            <input data-search-field="true" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-4 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:ring-2 focus:ring-teal-100" />
           </label>
           <label className="relative block">
             <span className="sr-only">Filter by project</span>

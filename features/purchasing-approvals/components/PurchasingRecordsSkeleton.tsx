@@ -1,8 +1,8 @@
-const pulse = "animate-pulse rounded-lg bg-slate-100";
+const pulse = "animate-pulse motion-reduce:animate-none rounded-lg bg-slate-100";
 
 export default function PurchasingRecordsSkeleton() {
   return (
-    <div role="status" aria-label="Loading purchases" className="space-y-3">
+    <div aria-busy="true" role="status" aria-label="Loading purchases" className="space-y-3">
       {Array.from({ length: 4 }, (_, index) => (
         <div key={index} className="rounded-[22px] border border-slate-100 bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.05)]">
           <div className="flex flex-col justify-between gap-5 sm:flex-row">

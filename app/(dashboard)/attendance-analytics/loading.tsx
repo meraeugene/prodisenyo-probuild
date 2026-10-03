@@ -1,5 +1,1 @@
-import { AttendanceAnalyticsLoadingState } from "@/features/analytics/components/AttendanceAnalyticsLoadingState";
-
-export default function Loading() {
-  return <AttendanceAnalyticsLoadingState />;
-}
+export { default } from "@/features/analytics/components/AttendanceAnalyticsPageSkeleton";

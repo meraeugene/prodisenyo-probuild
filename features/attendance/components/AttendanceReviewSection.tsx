@@ -153,7 +153,7 @@ export default function AttendanceReviewSection({
 
               <div className="relative w-full">
 
-                <input
+                <input data-search-field="true"
                   type="text"
                   value={step2NameFilter}
                   onChange={(e) => setStep2NameFilter(e.target.value)}

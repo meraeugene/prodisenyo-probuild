@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import PayrollBranchRateTable from "./PayrollBranchRateTable";
+import { PayrollPageControls } from "./PayrollPageControls";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveEmployeeBranchRatesAction } from "@/actions/payrollRates";
@@ -21,6 +23,7 @@ interface PayrollRateModalProps {
 
 export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedPage, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [branchFilter, setBranchFilter] = useState<"all" | "multi">("all");
 
@@ -77,6 +80,10 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
       );
     });
   }, [editableRows, searchTerm, branchFilter, branchCountByEmployee]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / 5));
+  const page = Math.min(selectedPage, totalPages);
+  const visibleRows = filteredRows.slice((page - 1) * 5, page * 5);
 
   if (!payroll.showPayrollRateModal) return null;
 
@@ -184,10 +191,10 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-0 sm:p-4 backdrop-blur-sm">
-      <div className="flex h-[100dvh] w-full max-w-5xl flex-col overflow-hidden rounded-none border border-apple-mist bg-white p-4 shadow-apple-xs sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:p-6">
-        <div>
-          <h3 className="text-lg font-bold text-apple-charcoal">
+    <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-hidden bg-black/40 p-4 sm:p-6 backdrop-blur-sm">
+      <div role="dialog" aria-modal="true" aria-labelledby="branch-rate-title" className="flex max-h-[min(85dvh,720px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-apple-xs sm:p-6">
+        <div className="shrink-0">
+          <h3 id="branch-rate-title" className="text-lg font-bold text-apple-charcoal">
             Edit Employee Rates Per Branch
           </h3>
           <p className="text-sm text-apple-smoke">
@@ -198,22 +205,22 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           </p>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full max-w-md">
-              <input
+              <input data-search-field="true"
                 type="text"
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) => { setSearchTerm(event.target.value); setPage(1); }}
                 placeholder="Search employee, role, or branch"
-                className="h-11 w-full rounded-2xl border border-apple-silver bg-white pl-3 pr-4 text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-3 pr-4 text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
               />
             </div>
 
-            <div className="inline-flex rounded-2xl border border-apple-mist bg-apple-snow/70 p-1">
+            <div className="inline-flex rounded-2xl border border-slate-200 bg-apple-snow/70 p-1">
               <button
                 type="button"
-                onClick={() => setBranchFilter("all")}
+                onClick={() => { setBranchFilter("all"); setPage(1); }}
                 className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
                   branchFilter === "all"
                     ? "bg-teal-700 text-white"
@@ -224,7 +231,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               </button>
               <button
                 type="button"
-                onClick={() => setBranchFilter("multi")}
+                onClick={() => { setBranchFilter("multi"); setPage(1); }}
                 className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
                   branchFilter === "multi"
                     ? "bg-teal-700 text-white"
@@ -243,173 +250,20 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           </p>
         </div>
 
-        <div className="mt-4 min-h-0 flex-1 overflow-auto rounded-2xl border border-apple-mist">
-          <table className="min-w-[760px] text-sm sm:min-w-full">
-            <thead className="sticky top-0 z-10 bg-apple-snow/95 backdrop-blur-sm">
-              <tr className="border-b border-apple-mist">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  Employee
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  Role
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  Branch
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  Daily Rate
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  Regular Paid Hours
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-apple-steel">
-                  OT Multiplier
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.length > 0 ? (
-                filteredRows.map((row) => {
-                  const draftConfig = normalizeEmployeeBranchRateConfig(
-                    payroll.payrollRateDraft[row.key],
-                    row.fallbackRate,
-                  );
-
-                  return (
-                    <tr
-                      key={row.key}
-                      className="border-b border-apple-mist/70 last:border-0"
-                    >
-                    <td className="px-4 py-3 font-medium text-apple-charcoal">
-                      <div className="flex items-center gap-2">
-                        <span>{row.worker}</span>
-                        {(branchCountByEmployee.get(
-                          row.worker.trim().toLowerCase(),
-                        ) ?? 0) > 1 ? (
-                          <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-700">
-                            Multi-branch
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-apple-ash">{row.role}</td>
-                    <td className="px-4 py-3 text-apple-ash">
-                      {row.siteLabel}
-                    </td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={draftConfig.dailyRate}
-                        onChange={(event) => {
-                          const parsed = Number.parseFloat(event.target.value);
-                          payroll.setPayrollRateDraft((prev) => ({
-                            ...prev,
-                            [row.key]: {
-                              ...normalizeEmployeeBranchRateConfig(
-                                prev[row.key],
-                                row.fallbackRate,
-                              ),
-                              dailyRate:
-                                Number.isFinite(parsed) && parsed >= 0
-                                  ? parsed
-                                  : 0,
-                            },
-                          }));
-                        }}
-                        className="h-10 w-full rounded-2xl border border-apple-silver bg-white px-3 text-right text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
-                      />
-                      <p className="mt-1 text-right text-[11px] text-apple-steel">
-                        Hourly:{" "}
-                        {formatPayrollNumber(draftConfig.dailyRate / 8)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min={0.01}
-                        step="0.25"
-                        value={draftConfig.regularPaidHours}
-                        onChange={(event) => {
-                          const parsed = Number.parseFloat(event.target.value);
-                          payroll.setPayrollRateDraft((prev) => ({
-                            ...prev,
-                            [row.key]: {
-                              ...normalizeEmployeeBranchRateConfig(
-                                prev[row.key],
-                                row.fallbackRate,
-                              ),
-                              regularPaidHours:
-                                Number.isFinite(parsed) && parsed > 0
-                                  ? parsed
-                                  : row.fallbackRegularPaidHours,
-                            },
-                          }));
-                        }}
-                        className="h-10 w-full rounded-2xl border border-apple-silver bg-white px-3 text-right text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
-                      />
-                      <p className="mt-1 text-right text-[11px] text-apple-steel">
-                        Max regular hours paid
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min={0.01}
-                        max={5}
-                        step="0.01"
-                        value={draftConfig.overtimeMultiplier}
-                        onChange={(event) => {
-                          const parsed = Number.parseFloat(event.target.value);
-                          payroll.setPayrollRateDraft((prev) => ({
-                            ...prev,
-                            [row.key]: {
-                              ...normalizeEmployeeBranchRateConfig(
-                                prev[row.key],
-                                row.fallbackRate,
-                              ),
-                              overtimeMultiplier:
-                                Number.isFinite(parsed) && parsed > 0
-                                  ? Math.min(parsed, 5)
-                                  : draftConfig.overtimeMultiplier,
-                            },
-                          }));
-                        }}
-                        className="h-10 w-full rounded-2xl border border-apple-silver bg-white px-3 text-right text-sm text-apple-charcoal transition-all focus:border-apple-charcoal focus:outline-none focus:ring-2 focus:ring-apple-charcoal/15"
-                      />
-                      <p className="mt-1 text-right text-[11px] text-apple-steel">
-                        Use 1.00 for straight-time OT
-                      </p>
-                    </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-sm text-apple-steel"
-                  >
-                    No employee branch rates matched your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <PayrollBranchRateTable rows={visibleRows} payroll={payroll} branchCountByEmployee={branchCountByEmployee} />
+        <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-apple-steel">
+            Showing {filteredRows.length ? (page - 1) * 5 + 1 : 0}-{Math.min(page * 5, filteredRows.length)} of {filteredRows.length} rows in alphabetical order
+          </p>
+          <PayrollPageControls page={page} totalPages={totalPages} onChange={setPage} label="Employee branch rate pages" />
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-apple-steel">
-            Showing {filteredRows.length} row
-            {filteredRows.length === 1 ? "" : "s"} in alphabetical order
-          </p>
-
+        <div className="mt-4 flex shrink-0 flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={payroll.closePayrollRateModal}
-              className="h-10 w-full rounded-xl border border-apple-silver px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal sm:w-auto"
+              className="h-10 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold text-apple-ash transition hover:border-apple-charcoal sm:w-auto"
             >
               Cancel
             </button>

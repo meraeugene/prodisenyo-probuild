@@ -38,7 +38,7 @@ export default function CostEstimatorHeader({
     selectedEstimate.status !== "submitted";
 
   return (
-    <header className="sticky top-[69px] z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:top-0">
+    <header className="sticky top-[var(--dashboard-header-height,76px)] z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:top-0">
       <div className="flex min-h-[48px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="grid w-full gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3 xl:w-auto">
           {estimates.length > 0 ? (

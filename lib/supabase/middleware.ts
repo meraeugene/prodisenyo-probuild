@@ -92,7 +92,7 @@ const CEO_ONLY_PREFIXES = [
 ] as const;
 const CEO_REDIRECT_PATH = "/dashboard";
 const ADMIN_REDIRECT_PATH = "/add-user";
-const PAYROLL_MANAGER_REDIRECT_PATH = "/payroll-dashboard";
+const PAYROLL_MANAGER_REDIRECT_PATH = "/payroll-workspace";
 const ENGINEER_REDIRECT_PATH = "/overview";
 const EMPLOYEE_REDIRECT_PATH = "/home";
 const PURCHASER_REDIRECT_PATH = "/purchaser-dashboard";
@@ -116,7 +116,6 @@ const EMPLOYEE_ALLOWED_PREFIXES = [
 ] as const;
 const PAYROLL_MANAGER_ALLOWED_PREFIXES = [
   "/home",
-  "/payroll-dashboard",
   "/payroll-workspace",
   "/upload-attendance",
   "/review-attendance",

@@ -5,10 +5,10 @@ const load = require("./helpers/loadGmeaModule.cjs");
 
 const userId = "11111111-1111-4111-8111-111111111111";
 const roleHomes = {
-  gmea: "/gmea-projects",
+  gmea: "/gmea-overview",
   admin: "/add-user",
   ceo: "/dashboard",
-  payroll_manager: "/payroll-dashboard",
+  payroll_manager: "/payroll-workspace",
   purchaser: "/purchaser-dashboard",
   engineer: "/overview",
   employee: "/home",
@@ -84,6 +84,16 @@ test("every active account role has a valid login destination", async () => {
 test("inactive accounts cannot pass server role checks", async () => {
   const auth = loadAuth({ id: userId, role: "ceo", is_active: false });
   await assert.rejects(auth.requireRole("ceo"), /REDIRECT:\/auth\/login/);
+});
+
+test("payroll managers land in the workspace from retired and restricted routes", async () => {
+  const profile = { id: userId, role: "payroll_manager", is_active: true };
+  for (const pathname of ["/payroll-dashboard", "/dashboard", "/add-user"]) {
+    const { response } = await runMiddleware(profile, pathname);
+    assert.equal(new URL(response.headers.get("location")).pathname, "/payroll-workspace");
+  }
+  const { response } = await runMiddleware(profile, "/payroll-workspace");
+  assert.equal(response.headers.get("location"), null);
 });
 
 test("middleware clears invalid authenticated sessions", async () => {

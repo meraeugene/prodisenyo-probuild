@@ -7,7 +7,6 @@ function ProjectCardSkeleton() {
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-start gap-2">
-            <Block className="h-4 w-4 shrink-0 rounded-full" />
             <div className="min-w-0 flex-1">
               <Block className="h-5 w-36" />
               <Block className="mt-2 h-3 w-full max-w-72" />
@@ -40,7 +39,7 @@ function ProjectCardSkeleton() {
 
 export default function GmeaProjectsPageSkeleton() {
   return (
-    <div role="status" aria-label="Loading GMEA projects" className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
+    <div aria-busy="true" role="status" aria-label="Loading GMEA projects" className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-4">
         <CeoPageHeroSkeleton action="button" />
 
@@ -48,7 +47,6 @@ export default function GmeaProjectsPageSkeleton() {
           {Array.from({ length: 3 }, (_, index) => (
             <section key={index} className="min-h-[84px] rounded-[12px] bg-slate-50/70 px-5 py-4 shadow-[0_8px_22px_-20px_rgba(15,23,42,.22)]">
               <div className="flex items-center gap-2">
-                <Block className="h-3 w-3 rounded-full" />
                 <Block className="h-3 w-28" />
               </div>
               <Block className="mt-2 h-7 w-32" />

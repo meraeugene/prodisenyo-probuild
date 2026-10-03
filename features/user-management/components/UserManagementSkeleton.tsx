@@ -3,7 +3,7 @@ import { SkeletonBlock as Block } from "@/components/LoadingSkeleton";
 
 export default function UserManagementSkeleton() {
   return (
-    <div
+    <div aria-busy="true"
       role="status"
       aria-label="Loading user management"
       className="space-y-4 overflow-x-hidden p-0 sm:p-6"

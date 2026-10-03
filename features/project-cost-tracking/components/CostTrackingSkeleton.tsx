@@ -1,7 +1,7 @@
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 
 export default function CostTrackingSkeleton() {
-  return <div role="status" aria-label="Loading cost tracking" className="space-y-5">
+  return <div aria-busy="true" role="status" aria-label="Loading cost tracking" className="space-y-5">
     <Block className="h-7 w-36" />
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)]">{[0,1,2].map(i => <Block key={i} className="h-11 w-full rounded-xl" />)}</div>
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_19rem]">

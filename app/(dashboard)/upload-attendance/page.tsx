@@ -1,7 +1,6 @@
 "use client";
 
 import { saveAttendanceImportAction } from "@/actions/attendance";
-import DashboardPageHero from "@/components/DashboardPageHero";
 import UploadZone from "@/components/UploadZone";
 import { useAppState } from "@/features/app/AppStateProvider";
 import { useRouter } from "next/navigation";
@@ -39,22 +38,18 @@ export default function UploadAttendancePage() {
   }
 
   return (
-    <div className="space-y-4 p-0 sm:p-4">
+    <div className="p-0">
       <PayrollWorkflowNavigation current={1} canReview={attendance.dailyRows.length > 0} />
-      <DashboardPageHero
-        isUploadAttendance
-        eyebrow="Attendance"
-        title="Upload Attendance"
-        description="Import biometric attendance files and sync them into the payroll workspace."
-      />
-      <section className="rounded-none border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)] sm:rounded-[14px]">
-        <UploadZone
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          onParsed={handleUploadParsed}
-          onClearWorkspace={handleReset}
-        />
-      </section>
+      <div className="px-4 py-6 sm:px-6 xl:px-7">
+        <section aria-label="Upload attendance" className="rounded-[14px] border border-apple-mist bg-white p-5 shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+          <UploadZone
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            onParsed={handleUploadParsed}
+            onClearWorkspace={handleReset}
+          />
+        </section>
+      </div>
     </div>
   );
 }

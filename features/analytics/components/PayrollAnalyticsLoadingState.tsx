@@ -1,14 +1,10 @@
-function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <div
-      className={`max-w-full animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none ${className}`}
-    />
-  );
-}
+
+import { SkeletonBlock } from "@/components/LoadingSkeleton";
+
 
 export function PayrollAnalyticsLoadingState() {
   return (
-    <section role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-sm">
+    <section aria-busy="true" role="status" aria-label="Loading payroll insights" className="overflow-hidden rounded-2xl border border-apple-mist bg-white shadow-sm">
       <div className="space-y-10 px-5 py-6 sm:px-8 sm:py-8">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -24,7 +20,7 @@ export function PayrollAnalyticsLoadingState() {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3"><SkeletonBlock className="h-4 w-40" /><SkeletonBlock className="h-10 w-72" /></div>
-          <div className="h-[360px] rounded-2xl border border-apple-mist bg-white p-4 sm:p-6"><div className="flex h-full items-end gap-4 border-b border-l border-slate-100 p-4">{[40,65,50,80,70,90].map((height, i) => <div key={i} className="flex-1 animate-pulse rounded-t-lg bg-slate-200/70 motion-reduce:animate-none" style={{ height: `${height}%` }} />)}</div></div>
+          <div className="h-[360px] rounded-2xl border border-apple-mist bg-white p-4 sm:p-6"><div className="flex h-full items-end gap-4 border-b border-l border-slate-100 p-4">{[40,65,50,80,70,90].map((height, i) => <div key={i} className="flex-1 animate-pulse motion-reduce:animate-none rounded-t-lg bg-slate-200/70 motion-reduce:animate-none" style={{ height: `${height}%` }} />)}</div></div>
         </div>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">

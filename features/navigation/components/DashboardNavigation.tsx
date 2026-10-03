@@ -26,7 +26,6 @@ const PRIMARY_NAV_ITEMS = [
 ];
 
 const PAYROLL_MANAGER_GENERAL_ITEMS = [
-  { href: "/payroll-dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/payroll-workspace", label: "Payroll Workspace", icon: WalletCards },
 ] as const;
 

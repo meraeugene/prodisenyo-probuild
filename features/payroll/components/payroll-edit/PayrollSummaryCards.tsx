@@ -49,7 +49,7 @@ export function PayrollSummaryCards(props: PayrollSummaryCardsProps) {
   return (
     <section
       aria-label="Payroll totals"
-      className="grid shrink-0 grid-cols-2 gap-2 border-b border-slate-200 bg-white px-3 py-2.5 sm:grid-cols-3 sm:px-4 xl:grid-cols-6"
+      className="grid shrink-0 grid-cols-2 gap-2 border-b border-slate-200 bg-white px-3 py-2.5 sm:grid-cols-3 sm:px-4 lg:grid-cols-6"
     >
       {cards.map((card) => {
         return (

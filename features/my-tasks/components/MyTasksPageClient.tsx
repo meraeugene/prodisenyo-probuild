@@ -6,7 +6,6 @@ import type { TaskRecord, TaskStatus, TaskPriority } from "../types";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import { 
   ClipboardCheck, 
-  Search, 
   Calendar, 
   TrendingUp, 
   AlertCircle, 
@@ -136,8 +135,8 @@ export default function MyTasksPageClient() {
         </div>
 
         <div className="relative w-full md:w-72">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver" />
-          <input
+          
+          <input data-search-field="true"
             type="text"
             placeholder="Search tasks, projects..."
             value={searchTerm}

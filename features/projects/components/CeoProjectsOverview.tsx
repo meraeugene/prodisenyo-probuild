@@ -66,7 +66,7 @@ export default function CeoProjectsOverview({ projects, onCreateProject, onOpenP
             })}
           </nav>
           <div className="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_160px_160px]">
-            <input value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search projects" placeholder="Search projects, location, or engineer" className={`${controlClass} min-w-0`} />
+            <input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search projects" placeholder="Search projects, location, or engineer" className={`${controlClass} min-w-0`} />
             <select aria-label="Sort projects" value={sort} onChange={(event) => setSort(event.target.value)} className={controlClass}><option value="latest">Sort: Latest Update</option><option value="name">Sort: Project Name</option><option value="budget">Sort: Highest Budget</option></select>
             <select aria-label="Filter by location" value={location} onChange={(event) => setLocation(event.target.value)} className={controlClass}><option value="all">All Locations</option>{locations.map((value) => <option key={value} value={value}>{value}</option>)}</select>
           </div>

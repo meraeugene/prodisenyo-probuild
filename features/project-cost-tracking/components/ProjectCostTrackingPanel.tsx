@@ -80,7 +80,7 @@ export default function ProjectCostTrackingPanel({
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)]">
         <label className="relative">
           <span className="sr-only">Search costs</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" />
+          <input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tracked costs..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" />
         </label>
         <label>
           <span className="sr-only">Filter by category</span>

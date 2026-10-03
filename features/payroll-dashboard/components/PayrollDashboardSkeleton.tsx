@@ -10,20 +10,20 @@ function TableRows({ columns, minWidth }: { columns: number; minWidth: string })
 
 export default function PayrollDashboardSkeleton() {
   return (
-    <main role="status" aria-label="Loading payroll dashboard" className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <main aria-busy="true" role="status" aria-label="Loading payroll dashboard" className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <header className="mb-5 flex min-h-[210px] flex-col justify-center gap-4 rounded-[22px] bg-[#075e5b] p-8 sm:flex-row sm:items-center sm:justify-between">
         <div><Block light className="h-3 w-32" /><Block light className="mt-3 h-9 w-72" /><Block light className="mt-3 h-5 w-96" /></div>
         <Block light className="h-11 w-44 shrink-0 rounded-xl" />
       </header>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[0,1,2,3].map(i => <SkeletonPanel key={i} className="rounded-xl p-4"><div className="flex items-start gap-3"><Block className="h-10 w-10 shrink-0" /><div><Block className="h-4 w-32" /><Block className="mt-1 h-7 w-24" /></div></div></SkeletonPanel>)}
+        {[0,1,2,3].map(i => <SkeletonPanel key={i} className="rounded-xl p-4"><div className="flex items-start gap-3"><div><Block className="h-4 w-32" /><Block className="mt-1 h-7 w-24" /></div></div></SkeletonPanel>)}
       </div>
       <div className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,.75fr)]">
         <SkeletonPanel className="overflow-hidden p-0"><PanelHeading /><TableRows columns={6} minWidth="min-w-[780px]" /></SkeletonPanel>
         <SkeletonPanel>
           <div className="flex justify-between gap-3"><div><Block className="h-6 w-36" /><Block className="mt-0.5 h-4 w-44" /></div><Block className="h-4 w-20" /></div>
-          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} className="flex items-center gap-2 rounded-xl border border-slate-100 p-3"><Block className="h-8 w-8 shrink-0 rounded-full" /><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
-          <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]"><div className="flex h-44 items-center justify-center"><div className="h-[136px] w-[136px] animate-pulse rounded-full border-[22px] border-slate-200/70 motion-reduce:animate-none" /></div><div className="space-y-3">{[0,1,2].map(i => <div key={i} className="flex justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-4 w-16" /></div>)}</div></div>
+          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} className="flex items-center gap-2 rounded-xl border border-slate-100 p-3"><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
+          <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]"><div className="flex h-44 items-center justify-center"><div className="h-[136px] w-[136px] animate-pulse motion-reduce:animate-none rounded-full border-[22px] border-slate-200/70 motion-reduce:animate-none" /></div><div className="space-y-3">{[0,1,2].map(i => <div key={i} className="flex justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-4 w-16" /></div>)}</div></div>
           <Block className="mt-4 h-10 w-full" />
         </SkeletonPanel>
       </div>

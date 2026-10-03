@@ -90,7 +90,7 @@ export default function PurchasingWorkspace() {
         </span>} />
 
       <div className="relative max-w-sm">
-        <input value={search} onChange={(event) => setSearch(event.target.value)}
+        <input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)}
           placeholder="Search project, material, supplier..."
           className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-3 pr-3 text-sm outline-none focus:border-[#076d69]" />
       </div>

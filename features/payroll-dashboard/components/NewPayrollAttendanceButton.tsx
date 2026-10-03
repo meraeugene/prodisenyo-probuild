@@ -1,14 +1,10 @@
 "use client";
 
-import { Plus, Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/features/app/AppStateProvider";
 
-export default function NewPayrollAttendanceButton({
-  showUploadIcon = false,
-}: {
-  showUploadIcon?: boolean;
-}) {
+export default function NewPayrollAttendanceButton() {
   const router = useRouter();
   const { handleReset } = useAppState();
 
@@ -25,7 +21,6 @@ export default function NewPayrollAttendanceButton({
     >
       <Plus size={17} />
       New Payroll Attendance
-      {showUploadIcon ? <Upload size={15} className="opacity-70" /> : null}
     </button>
   );
 }

@@ -1,16 +1,12 @@
 "use client";
+import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
-function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-2xl bg-apple-mist/70 ${className}`}
-    />
-  );
-}
+
+
 
 export function DashboardOverviewSkeleton() {
   return (
-    <div className="space-y-5 p-6">
+    <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-5 p-6">
       <section className="rounded-[12px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-5 shadow-[0_18px_36px_rgba(7,109,105,0.18)] sm:rounded-[16px] sm:p-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-3 flex-1 w-full sm:w-auto">
@@ -88,7 +84,7 @@ export function DashboardOverviewSkeleton() {
 
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="space-y-4">
+    <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-4">
       <section className="rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-6 shadow-[0_18px_36px_rgba(7,109,105,0.18)]">
         <div className="space-y-3">
           <SkeletonBlock className="h-3 w-28 bg-white/15" />

@@ -44,12 +44,12 @@ function PunchPair({
   const outSite = timeOutSite ? extractSiteName(timeOutSite) : "";
 
   return (
-    <span className="inline-flex items-center whitespace-nowrap">
+    <span className="inline-flex flex-wrap items-center gap-y-1">
       <span>{timeIn ? formatLogTime(timeIn) : "-"}</span>
       {timeIn && inSite ? (
         <span className="ml-1 text-[13px] text-slate-400">({inSite})</span>
       ) : null}
-      <span className="mx-1.5 text-slate-300"></span>
+      <span className="mx-1.5 text-slate-300">&ndash;</span>
       <span>{timeOut ? formatLogTime(timeOut) : "-"}</span>
       {timeOut && outSite ? (
         <span className="ml-1 text-[13px] text-slate-400">({outSite})</span>
@@ -63,7 +63,7 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
   const totalPages = Math.max(1, Math.ceil(days.length / 5));
   const page = Math.min(selectedPage, totalPages);
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <section className="min-w-0">
       <div className="flex min-h-11 items-center justify-between border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2">
           <div>
@@ -73,9 +73,9 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
         </div>
         <span className="rounded-md bg-slate-100 px-2 py-1 text-[13px] font-medium text-slate-500">{days.length} dates</span>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] text-[13px]">
-          <thead className="sticky top-0 z-10 bg-slate-50 text-[13px] uppercase tracking-[0.08em] text-slate-500">
+      <div className="min-w-0">
+        <table className="w-full text-[13px]">
+          <thead className="bg-slate-50 text-[13px] uppercase tracking-[0.08em] text-slate-500">
             <tr>
               {['Date/Week', 'Time In - Out', 'OT In - Out', 'Raw', 'Classification', 'Regular', 'Payable', 'Action'].map((label) => (
                 <th key={label} className="px-3 py-2 text-left font-medium">{label}</th>

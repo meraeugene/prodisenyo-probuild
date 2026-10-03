@@ -4,7 +4,7 @@ import PayrollReportsArchiveSkeleton from "./PayrollReportsArchiveSkeleton";
 
 export default function PayrollApprovalsPageSkeleton() {
   return (
-    <div
+    <div aria-busy="true"
       role="status"
       aria-label="Loading payroll approvals"
       className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8"

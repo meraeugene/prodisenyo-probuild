@@ -55,7 +55,7 @@ export default function PayrollWorkspaceControls({
       <div className="flex flex-col gap-3 py-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
         <div className="grid flex-1 gap-3 md:grid-cols-2 2xl:max-w-[760px] 2xl:grid-cols-[minmax(220px,1fr)_170px_190px]">
           <label className="relative block">
-            <input
+            <input data-search-field="true"
               type="search"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}

@@ -108,7 +108,7 @@ export default function UserManagementPageClient({
         <div className="mt-5 grid gap-2 md:grid-cols-[minmax(240px,1fr)_190px_160px]">
           <label className="relative block">
             <span className="sr-only">Search users</span>
-            <input
+            <input data-search-field="true"
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}

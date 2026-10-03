@@ -1,14 +1,10 @@
-function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(230,250,247,0.95),rgba(240,253,250,1),rgba(230,250,247,0.95))] bg-[length:200%_100%] ${className}`}
-    />
-  );
-}
+
+import { SkeletonBlock } from "@/components/LoadingSkeleton";
+
 
 export default function CostEstimatorPageSkeleton() {
   return (
-    <div>
+    <div role="status" aria-busy="true" aria-label="Loading content">
       <header className="sticky top-0 z-20 border-b border-apple-mist bg-white/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85">
         <div className="flex min-h-[48px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap items-center gap-3">

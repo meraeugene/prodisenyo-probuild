@@ -6,7 +6,6 @@ import {
   CheckCircle,
   ClipboardList,
   Package,
-  Search,
   ThumbsDown,
   ThumbsUp,
   User,
@@ -186,9 +185,9 @@ export default function MaterialApprovalsPageClient({
           ))}
         </div>
         <label className="relative w-full sm:w-64">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-apple-silver" />
+          
           <span className="sr-only">Search material requests</span>
-          <input
+          <input data-search-field="true"
             type="search"
             placeholder="Search material, project..."
             value={searchTerm}

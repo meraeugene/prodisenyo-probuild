@@ -1,14 +1,10 @@
-function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-2xl bg-[linear-gradient(90deg,rgba(230,250,247,0.95),rgba(240,253,250,1),rgba(230,250,247,0.95))] bg-[length:200%_100%] ${className}`}
-    />
-  );
-}
+
+import { SkeletonBlock } from "@/components/LoadingSkeleton";
+
 
 export function AttendanceAnalyticsLoadingState() {
   return (
-    <section className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
+    <section role="status" aria-busy="true" aria-label="Loading content" className="overflow-hidden rounded-[14px] border border-apple-mist bg-white shadow-[0_10px_30px_rgba(7,109,105,0.07)]">
       <div className="border-b border-apple-mist px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
         <SkeletonBlock className="h-3 w-24 rounded-full" />
         <SkeletonBlock className="mt-4 h-8 w-72 max-w-full" />
@@ -56,11 +52,11 @@ export function AttendanceAnalyticsLoadingState() {
                 <div className="absolute inset-x-0 top-[46%] border-t border-dashed border-apple-mist/80" />
                 <div className="absolute inset-x-0 top-[72%] border-t border-dashed border-apple-mist/80" />
                 <div className="absolute bottom-0 left-[6%] right-[4%] top-[10%]">
-                  <div className="absolute bottom-[14%] left-[6%] h-[34%] w-[14%] rounded-t-[32px] bg-apple-mist/60" />
-                  <div className="absolute bottom-[14%] left-[22%] h-[48%] w-[14%] rounded-t-[32px] bg-apple-mist/70" />
-                  <div className="absolute bottom-[14%] left-[38%] h-[30%] w-[14%] rounded-t-[32px] bg-apple-mist/60" />
-                  <div className="absolute bottom-[14%] left-[54%] h-[64%] w-[14%] rounded-t-[32px] bg-apple-mist/80" />
-                  <div className="absolute bottom-[14%] left-[70%] h-[44%] w-[14%] rounded-t-[32px] bg-apple-mist/65" />
+                  <div className="absolute bottom-[14%] left-[6%] h-[34%] w-[14%] rounded-t-[32px] bg-slate-200/70/60" />
+                  <div className="absolute bottom-[14%] left-[22%] h-[48%] w-[14%] rounded-t-[32px] bg-slate-200/70" />
+                  <div className="absolute bottom-[14%] left-[38%] h-[30%] w-[14%] rounded-t-[32px] bg-slate-200/70/60" />
+                  <div className="absolute bottom-[14%] left-[54%] h-[64%] w-[14%] rounded-t-[32px] bg-slate-200/70" />
+                  <div className="absolute bottom-[14%] left-[70%] h-[44%] w-[14%] rounded-t-[32px] bg-slate-200/70/65" />
                 </div>
               </div>
             </div>

@@ -61,7 +61,7 @@ export default function ProjectWorkspaceTabSkeleton({
   if (tab === "cost-tracking") return <CostTrackingSkeleton />;
 
   return (
-    <div aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">
+    <div role="status" aria-busy="true" aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">
       <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4">
         <Skeleton className="h-4 w-72 bg-teal-100" />
       </div>
@@ -106,7 +106,7 @@ function Skeleton({
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded ${
+      className={`animate-pulse motion-reduce:animate-none rounded ${
         strong ? "bg-slate-200" : "bg-slate-100"
       } ${className}`}
     />

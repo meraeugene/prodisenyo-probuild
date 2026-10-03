@@ -72,7 +72,7 @@ export default function PayrollTable({
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-full sm:max-w-xs">
-          <input
+          <input data-search-field="true"
             type="text"
             value={query}
             onChange={(e) => {

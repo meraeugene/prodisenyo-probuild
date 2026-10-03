@@ -52,7 +52,7 @@ export default function BudgetTrackerHeader({
   const canSaveDraft = saveState === "dirty";
 
   return (
-    <header className="sticky top-[69px] z-20 w-full border-b border-apple-mist bg-white/95 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:top-0">
+    <header className="sticky top-[var(--dashboard-header-height,76px)] z-20 w-full border-b border-apple-mist bg-white/95 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:top-0">
       <div className="flex min-h-[48px] flex-col gap-3 px-3 sm:hidden">
         {selectedProject ? (
           <select

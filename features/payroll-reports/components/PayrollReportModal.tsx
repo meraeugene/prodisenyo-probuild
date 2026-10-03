@@ -7,7 +7,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   RefreshCw,
-  Search,
   X,
 } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -572,11 +571,8 @@ export default function PayrollReportModal({
                     </div>
                     <div className="mt-3 flex flex-col sm:flex-row items-center gap-2">
                       <div className="relative min-w-[220px] w-full sm:w-fit">
-                        <Search
-                          size={14}
-                          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-apple-smoke"
-                        />
-                        <input
+                        
+                        <input data-search-field="true"
                           type="search"
                           value={search}
                           onChange={(event) => setSearch(event.target.value)}

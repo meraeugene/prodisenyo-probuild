@@ -1,17 +1,11 @@
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
+import { SkeletonStats, SkeletonListPanel, SkeletonTable, SkeletonHeading } from "@/components/PageSkeletonParts";
+import { SkeletonPanel } from "@/components/LoadingSkeleton";
 export default function PurchaserDashboardSkeleton() {
-  return (
-    <main className="animate-pulse space-y-5 bg-white px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex min-h-[210px] items-center justify-between gap-4 rounded-[22px] bg-[#075e5b] p-8">
-        <div><div className="h-3 w-32 rounded bg-white/20" /><div className="mt-3 h-9 w-64 rounded bg-white/25" /><div className="mt-3 h-4 w-96 max-w-full rounded bg-white/15" /></div>
-        <div className="hidden h-11 w-72 rounded-xl bg-white/25 sm:block" />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[0, 1, 2, 3].map((item) => <div key={item} className="h-28 rounded-2xl border border-slate-100 bg-slate-50" />)}
-      </div>
-      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,.8fr)]">
-        <div className="h-96 rounded-2xl border border-slate-100 bg-slate-50" />
-        <div className="h-96 rounded-2xl border border-slate-100 bg-slate-50" />
-      </div>
-    </main>
-  );
+  return <main role="status" aria-busy="true" aria-label="Loading purchaser dashboard" className="min-h-full space-y-5 bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <CeoPageHeroSkeleton action="button" />
+    <SkeletonStats helper cardClassName="min-h-28 rounded-[22px] p-5" count={4} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" />
+    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,.8fr)]"><SkeletonPanel className="p-0"><div className="px-5 py-4"><SkeletonHeading /></div><SkeletonTable columns={5} /></SkeletonPanel><SkeletonListPanel rows={5} /></div>
+    <div className="grid gap-5 xl:grid-cols-3"><SkeletonListPanel rows={3} /><SkeletonListPanel rows={3} /><SkeletonListPanel rows={3} /></div>
+  </main>;
 }

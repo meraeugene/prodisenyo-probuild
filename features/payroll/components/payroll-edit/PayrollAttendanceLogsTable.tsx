@@ -44,7 +44,7 @@ export function PayrollAttendanceLogsTable(
   const page = Math.min(selectedPage, totalPages);
   const visibleLogs = props.logs.slice((page - 1) * 5, page * 5);
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <section className="min-w-0">
       <div className="flex min-h-11 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
         <div className="flex items-center gap-2">
           <div>
@@ -57,8 +57,8 @@ export function PayrollAttendanceLogsTable(
         </span>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-[13px]">
+      <div className="min-w-0">
+        <table className="w-full text-[13px]">
           <thead className="bg-slate-50 text-[13px] uppercase tracking-[0.08em] text-slate-500">
             <tr>
               {[
@@ -114,11 +114,11 @@ export function PayrollAttendanceLogsTable(
                       {isMultiBranch ? (
                         <>
                           <span className="inline-flex rounded bg-amber-50 px-1.5 py-0.5 text-[13px] font-medium text-amber-700">MULTI BRANCH</span>
-                          <span className="mt-1 block whitespace-nowrap text-[13px]">{sitePath.join(" -> ")}</span>
+                          <span className="mt-1 block break-words text-[13px]">{sitePath.join(" -> ")}</span>
                         </>
                       ) : sitePath[0] || "-"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 tabular-nums text-[13px] text-slate-700">
+                    <td className="px-3 py-2 tabular-nums text-[13px] text-slate-700">
                       {timeIn ? formatLogTime(timeIn) : "-"}
                       {timeIn && log.timeInSite ? <span className="ml-1 text-[13px] text-slate-400">({extractSiteName(log.timeInSite)})</span> : null}
                       <span className="mx-1.5 text-slate-300">–</span>

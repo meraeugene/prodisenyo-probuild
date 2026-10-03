@@ -125,7 +125,7 @@ export function BiometricIdentityResolutionDialog({
               Punches: {punches.slice(0, 8).map(formatLogTime).join(", ") || "-"}
             </p>
           </div>
-          <input
+          <input data-search-field="true"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search canonical employee..."

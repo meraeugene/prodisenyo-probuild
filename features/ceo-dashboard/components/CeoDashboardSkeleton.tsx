@@ -17,7 +17,7 @@ function MetricStripSkeleton() {
 
 export default function CeoDashboardSkeleton() {
   return (
-    <main role="status" aria-label="Loading dashboard" className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <main aria-busy="true" role="status" aria-label="Loading dashboard" className="min-h-full bg-slate-50/40 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <CeoPageHeroSkeleton />
       <div className="mt-4 space-y-4">
         <MetricStripSkeleton />

@@ -98,7 +98,7 @@ export default function GmeaProjectsPageClient({
             <div className="flex w-full flex-col gap-2.5 sm:max-w-[560px] sm:flex-row">
               <label className="relative min-w-0 flex-1">
                 <span className="sr-only">Search projects</span>
-                <input
+                <input data-search-field="true"
                   aria-label="Search projects"
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
                   placeholder="Search project, client, or location..."

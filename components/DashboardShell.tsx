@@ -43,7 +43,7 @@ export default function DashboardShell({
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const sidebarWidth = collapsed ? "72px" : "264px";
-  const headerHeight = "69px";
+  const headerHeight = "76px";
   const settingsActive = pathname === "/settings";
   const isCeo = profile?.role === "ceo";
   const notificationCounts = useSidebarNotificationCounts(isCeo);
@@ -91,7 +91,7 @@ export default function DashboardShell({
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white [--dashboard-header-height:76px]">
       <div className="min-h-screen">
         {/* Mobile sidebar overlay */}
         {open && (
@@ -137,7 +137,7 @@ export default function DashboardShell({
                   className={cn(
                     "hidden h-8 w-8 items-center justify-center rounded-lg text-apple-smoke transition hover:bg-apple-mist/40 hover:text-apple-charcoal lg:flex",
                     collapsed &&
-                      "absolute -right-3 top-[18px] z-10 rounded-full border border-apple-mist bg-white shadow-sm",
+                      "absolute -right-3 top-[22px] z-10 rounded-full border border-apple-mist bg-white shadow-sm",
                   )}
                   aria-label={
                     collapsed ? "Expand navigation" : "Collapse navigation"
