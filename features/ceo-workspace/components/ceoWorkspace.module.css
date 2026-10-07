@@ -1,0 +1,76 @@
+.workspace {
+  --workspace-panel-shadow: 0 0 0 1px #e4e7ec;
+  --workspace-panel-radius: 7px;
+  --workspace-page-background: #f5f6f8;
+  --workspace-control-radius: 5px;
+  --workspace-accent: #076d69;
+  --ceo-accent: #076d69;
+  background: #f5f6f8;
+}
+.workspace :global(#dashboard-sidebar) { border-right: 1px solid #e4e7ec; box-shadow: none; }
+.workspace :global(nav[aria-label="Main navigation"] a) { border-radius: 5px; min-height: 38px; font-size: 13px; }
+.workspace :global(nav[aria-label="Main navigation"] a[aria-current="page"]) { background: #eaf5f3; color: #065c59; box-shadow: inset 3px 0 #076d69; }
+.workspace :global(nav[aria-label="Main navigation"] h2) { color: #667085; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.workspace :global(#dashboard-content) { background: #f5f6f8; }
+.workspace :global(.workspace-page-header) { background: transparent; border-bottom: 1px solid #e4e7ec; padding-bottom: 20px; }
+.workspace :global(.workspace-page-header h1) { font-size: 26px; letter-spacing: -.025em; }
+.workspace :global(#dashboard-content select), .workspace :global(#dashboard-content input[data-search-field]) { border-radius: 5px; font-size: 13px; }
+.workspace :global(#dashboard-content table thead) { background: #f8f9fb; color: #667085; }
+.workspace :global(.workspace-surface) { border-radius: 7px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 54px; padding: 0 28px; background: white; border-bottom: 1px solid #e4e7ec; font-size: 12px; color: #667085; }
+.topbar strong { color: #344054; font-weight: 600; }
+.accountLink { display: inline-flex; min-width: 0; align-items: center; gap: 8px; border-radius: 5px; padding: 6px 8px; color: #475467; }
+.accountLink > span:nth-child(2) { max-width: 180px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.accountLink:hover { background: #f2f4f7; }
+.avatar { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #eaf5f3; color: #065c59; font-size: 11px; font-weight: 600; }
+.panel { overflow: hidden; min-width: 0; border: 1px solid #e4e7ec; border-radius: 7px; background: white; }
+.toolbar { background: white; }
+.tabs { display: flex; overflow-x: auto; gap: 20px; border-bottom: 1px solid #e4e7ec; padding: 0 18px; }
+.tab { display: inline-flex; align-items: center; flex-shrink: 0; gap: 7px; min-height: 46px; border-bottom: 2px solid transparent; color: #667085; font-size: 13px; }
+.tab:hover { color: #065c59; }
+.tab[aria-pressed="true"] { border-color: #076d69; color: #065c59; font-weight: 600; }
+.count { border-radius: 4px; background: #f2f4f7; padding: 1px 5px; font-size: 11px; color: #667085; }
+.tab[aria-pressed="true"] .count { background: #eaf5f3; color: #065c59; }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 16px 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 140px; font-size: 11px; font-weight: 500; color: #667085; }
+.searchField { flex: 1; min-width: min(260px, 100%); }
+.control { height: 36px; min-width: 0; width: 100%; border: 1px solid #d0d5dd; border-radius: 5px; padding: 0 10px; background: white; color: #344054; font-size: 13px; font-weight: 400; outline: none; }
+.control:hover { border-color: #98a2b3; }
+.control:focus-visible { border-color: #076d69; box-shadow: 0 0 0 3px #ccfbf1; }
+.button, .primaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 12px; border: 1px solid #d0d5dd; border-radius: 5px; background: white; font-size: 13px; font-weight: 500; color: #344054; transition: background .15s; }
+.button:hover { background: #f9fafb; border-color: #98a2b3; }
+.primaryButton { border-color: #076d69; background: #076d69; color: white; }
+.primaryButton:hover { border-color: #065c59; background: #065c59; }
+.button:disabled { opacity: .4; cursor: not-allowed; }
+.button:focus-visible, .primaryButton:focus-visible, .tab:focus-visible, .sortButton:focus-visible, .accountLink:focus-visible { outline: 2px solid #076d69; outline-offset: 3px; }
+.reset { margin-left: auto; }
+.footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid #e4e7ec; padding: 12px 18px; background: #fff; font-size: 12px; color: #667085; }
+.pageControls { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.pageSize { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.pageSize select { width: 64px; height: 32px; }
+.sortButton { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: inherit; }
+.sortButton[data-active="true"] { color: #065c59; }
+.table { width: 100%; min-width: 1060px; border-collapse: collapse; text-align: left; font-size: 13px; }
+.table thead { background: #f8f9fb; color: #667085; }
+.table th, .table td { padding: 12px 16px; border-bottom: 1px solid #eaecf0; }
+.table thead th { font-size: 12px; font-weight: 500; }
+.table tbody tr:hover { background: #f9fafb; }
+.table tfoot { background: #f8f9fb; font-size: 12px; }
+.table tfoot th, .table tfoot td { border-bottom: 0; }
+.empty { padding: 48px 16px; text-align: center; font-size: 13px; color: #667085; }
+.recordLink { font-weight: 500; color: #076d69; }
+.recordLink:hover { text-decoration: underline; }
+.header { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid #e4e7ec; }
+.eyebrow { margin-bottom: 12px; font-size: 11px; color: #667085; }
+.title { font-size: 26px; font-weight: 600; letter-spacing: -.025em; color: #101828; }
+.description { margin-top: 6px; font-size: 13px; color: #667085; line-height: 1.6; }
+.headerActions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 26px; }
+@media(max-width: 639px) {
+  .topbar { height: 44px; padding: 0 16px; }
+  .topbar > span { display: none; }
+  .accountLink > span:nth-child(2) { max-width: 100px; }
+  .field { flex: 1; min-width: min(160px, 100%); }
+  .searchField { flex-basis: 100%; }
+  .reset { margin-left: 0; }
+  .headerActions { padding-top: 0; }
+}

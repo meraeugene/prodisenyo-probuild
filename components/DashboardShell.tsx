@@ -10,6 +10,8 @@ import { useSidebarNotificationCounts } from "@/features/navigation/hooks/useSid
 import { useDashboardSidebar } from "@/features/navigation/hooks/useDashboardSidebar";
 import type { SidebarProfile } from "@/features/navigation/types";
 import { cn } from "@/lib/utils";
+import CeoWorkspaceTopbar from "@/features/ceo-workspace/components/CeoWorkspaceTopbar";
+import ceoStyles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
 
 export default function DashboardShell({ children, profile }: {
   children: React.ReactNode; profile: SidebarProfile | null;
@@ -20,7 +22,7 @@ export default function DashboardShell({ children, profile }: {
   const narrow = collapsed && !open;
 
   return (
-    <div className="min-h-screen bg-white [--dashboard-header-height:72px]">
+    <div className={cn("min-h-screen bg-white [--dashboard-header-height:72px]", profile?.role === "ceo" && ceoStyles.workspace)}>
       <a href="#dashboard-content" className="sr-only fixed left-4 top-4 z-[100] rounded-lg bg-white p-3 text-sm text-[#076d69] shadow-sm focus:not-sr-only">Skip to content</a>
       {open && <button type="button" aria-label="Close navigation overlay" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[2px] lg:hidden" />}
       <aside id="dashboard-sidebar" aria-label="Workspace sidebar" role={open ? "dialog" : undefined} aria-modal={open || undefined} className={cn(
@@ -48,6 +50,7 @@ export default function DashboardShell({ children, profile }: {
           <DashboardBrand />
           <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" aria-expanded={open} aria-controls="dashboard-sidebar" className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[#076d69] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700"><Menu size={20} /></button>
         </div>
+        {profile?.role === "ceo" && <CeoWorkspaceTopbar name={profile.full_name} />}
         <main id="dashboard-content" data-workspace tabIndex={-1} className="min-h-screen bg-white outline-none">{children}</main>
       </div>
     </div>

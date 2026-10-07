@@ -1,7 +1,7 @@
 /* Shared workspace surfaces, including existing feature panels during migration.
    Inputs, badges, warning states, and ledger cell boundaries keep their own borders. */
 .workspace-surface {
-  border-radius: 16px;
+  border-radius: var(--workspace-panel-radius, 16px);
   border-color: transparent;
   background: #fff;
   box-shadow: var(--workspace-panel-shadow);
@@ -22,7 +22,7 @@
 }
 
 [data-workspace] > :is(main, div, section):not([class~="fixed"]) {
-  background-color: #fff;
+  background-color: var(--workspace-page-background, #fff);
 }
 
 /* Only rounded content containers receive elevation; table rows and form controls do not. */
@@ -34,13 +34,13 @@
 ):not([class*="rounded-full"]):not([role="status"]):not(:where(.workspace-header-actions *)) {
   background-color: #fff;
   border-color: transparent;
-  border-radius: 16px;
+  border-radius: var(--workspace-panel-radius, 16px);
   box-shadow: var(--workspace-panel-shadow);
 }
 
 .workspace-header-actions :is(button, a):is([class*="bg-white"], [class*="bg-teal"], [class*="bg-[#076d69]"]):not([class*="text-rose"]):not([class*="text-red"]) {
   min-height: 40px;
-  border-radius: 10px;
+  border-radius: var(--workspace-control-radius, 10px);
   border-color: transparent;
   background: #076d69;
   color: #fff;
@@ -60,8 +60,8 @@
   border-radius: 10px;
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
-[data-workspace] :is(input, select, textarea):focus-visible { outline: 2px solid #076d69; outline-offset: 2px; }
-[data-workspace] :is(button, a):focus-visible { outline: 2px solid #076d69; outline-offset: 3px; }
+[data-workspace] :is(input, select, textarea):focus-visible { outline: 2px solid var(--workspace-accent, #076d69); outline-offset: 2px; }
+[data-workspace] :is(button, a):focus-visible { outline: 2px solid var(--workspace-accent, #076d69); outline-offset: 3px; }
 [data-workspace] :is(button, a):where([class*="shadow"]):not(.workspace-surface) { box-shadow: 0 2px 6px rgb(24 55 52 / 5%); }
 [data-workspace] table thead:where([class*="bg-slate"], [class*="bg-gray"]) { background: #fff; }
 [data-workspace] table thead tr:where([class*="bg-slate"], [class*="bg-gray"]) { background: #fff; }

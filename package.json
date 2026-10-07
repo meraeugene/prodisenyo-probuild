@@ -13,8 +13,10 @@
     "seed:data": "node scripts/seed-data.mjs",
     "seed:prepare": "node scripts/prepare-seed-schema.mjs",
     "seed:delete": "node scripts/delete-seed-data.mjs",
+    "seed:delete:gmea": "node scripts/delete-seed-data.mjs --gmea",
     "test:gmea": "node --test tests/gmea*.test.cjs",
     "test:gmea:browser": "node tests/gmea/browserCheck.cjs",
+    "test:ceo:browser": "node tests/ceo/browserCheck.cjs",
     "gmea:rentals:history": "node scripts/gmea-rentals-history-import.cjs --dry-run"
   },
   "dependencies": {

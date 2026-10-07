@@ -15,6 +15,7 @@ import {
 import ChartMoneyTooltip from "@/components/ChartMoneyTooltip";
 import { buildCeoPortfolio, formatCompactPeso } from "../utils/ceoPortfolio";
 import { formatMoney } from "../utils/gmeaCalculations";
+import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
 
 export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
   data: ReturnType<typeof buildCeoPortfolio>;
@@ -31,7 +32,7 @@ export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
 
   return (
     <section aria-label="Portfolio insights" className="grid gap-3 xl:grid-cols-[1.35fr_.85fr]">
-      <article className="min-w-0 rounded-xl border border-transparent bg-white p-5 shadow-workspace">
+      <article className={`${styles.panel} p-5`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-[18px] font-semibold tracking-tight text-slate-950">Contract vs Expenses Trend</h2>
@@ -40,7 +41,7 @@ export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
               <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#076d69]" />Total Expenses</span>
             </div>
           </div>
-          <select aria-label="Chart period" value={months} onChange={(event) => onMonthsChange(Number(event.target.value))} className="rounded-lg border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-600">
+          <select aria-label="Chart period" value={months} onChange={(event) => onMonthsChange(Number(event.target.value))} className={`${styles.control} !w-auto`}>
             <option value={6}>Last 6 months</option><option value={12}>Last 12 months</option>
           </select>
         </div>
@@ -58,7 +59,7 @@ export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
         </div>
       </article>
 
-      <article className="min-w-0 rounded-xl border border-transparent bg-white p-5 shadow-workspace">
+      <article className={`${styles.panel} p-5`}>
         <h2 className="text-[18px] font-semibold tracking-tight text-slate-950">Collection Status</h2>
         <div className="mt-5 grid items-center gap-5 sm:grid-cols-[170px_minmax(0,1fr)] xl:grid-cols-[160px_minmax(0,1fr)]">
           <div className="relative h-40 w-40" role="img" aria-label={`${collectedPercent}% of the contract amount collected`}>

@@ -75,6 +75,26 @@ test("demo fixtures obey real schema constraints, support reruns, and clean up w
   await db.query("update projects set active_approved_estimate_id=$1 where id=$2", [context.id("estimate:0"), context.id("project:0")]);
   assert.equal((await db.query("select count(*)::int n from payroll_runs")).rows[0].n, 9);
   assert.equal((await db.query("select count(*)::int n from gmea_rental_expense_notifications")).rows[0].n, 2);
+  const { buildDemoCleanupPlan } = await import("../scripts/demo/cleanup.mjs");
+  const gmeaPlan = buildDemoCleanupPlan(true);
+  assert.deepEqual(gmeaPlan.roles, ["gmea"]);
+  assert.equal(gmeaPlan.deleteFiles, false);
+  assert.deepEqual(buildDemoCleanupPlan().order, [...TABLE_ORDER].reverse());
+  // Keep unrelated records inside GMEA too, rather than only testing other modules.
+  await db.query("insert into gmea_projects(id,name,location,duration) values($1,'Real project','CDO','90 Days')", [otherId]);
+  await db.query("insert into gmea_rental_equipment(id,code,name) values($1,'REAL-EQ','Real equipment')", [otherId]);
+  await db.query("insert into gmea_rentals(id,rental_number,customer_name,start_date) values($1,'REAL-R','Real customer','2026-10-01')", [otherId]);
+  for (let pass = 0; pass < 2; pass++) {
+    for (const table of gmeaPlan.order) {
+      await db.query(`delete from ${table} where id=any($1::uuid[])`, [gmeaPlan.tables[table].map((row) => row.id)]);
+    }
+  }
+  for (const table of ["gmea_projects", "gmea_rental_equipment", "gmea_rentals"]) {
+    assert.deepEqual((await db.query(`select id from ${table}`)).rows, [{ id: otherId }]);
+  }
+  assert.equal((await db.query("select count(*)::int n from payroll_runs")).rows[0].n, 9);
+  assert.equal((await db.query("select count(*)::int n from projects")).rows[0].n, 4);
+  assert.equal((await db.query("select count(*)::int n from gmea_rental_expense_notifications")).rows[0].n, 0);
   const futureData = buildDemoData(createDemoContext({}, new Date("2027-04-03T01:00:00Z")));
   for (const table of [...TABLE_ORDER].reverse()) {
     assert.deepEqual(futureData[table].map((row) => row.id), data[table].map((row) => row.id));

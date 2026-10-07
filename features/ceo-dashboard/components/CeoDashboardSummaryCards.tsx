@@ -15,8 +15,8 @@ export default function CeoDashboardSummaryCards({ data }: { data: CeoDashboardD
     <section aria-label="Executive summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
         <article key={card.label} className={`${styles.panel} px-5 py-5`}>
-          <p title={card.fullValue} className="text-[30px] font-semibold leading-none tracking-[-0.035em] text-[#1d1d1f] tabular-nums">{card.value}</p>
-          <h2 className="mt-2 text-[15px] font-medium text-[#294b48]">{card.label}</h2>
+          <h2 className="text-xs font-medium text-slate-500">{card.label}</h2>
+          <p title={card.fullValue} className="mt-3 text-[28px] font-semibold leading-none tracking-[-0.035em] text-slate-900 tabular-nums">{card.value}</p>
           <p className="mt-1.5 text-[13px] text-[#53736f]">{card.note}</p>
         </article>
       ))}

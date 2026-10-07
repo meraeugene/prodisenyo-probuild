@@ -18,6 +18,8 @@ import GmeaRentalCreateForm from "./GmeaRentalCreateForm";
 import GmeaRentalsHeader from "./GmeaRentalsHeader";
 import GmeaRentalsSummary from "./GmeaRentalsSummary";
 import GmeaRentalsAnalyticsNav from "./GmeaRentalsAnalyticsNav";
+import CeoRentalWorkspace from "./CeoRentalWorkspace";
+import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
 
 export default function GmeaRentalsPage({
   equipment,
@@ -149,13 +151,13 @@ export default function GmeaRentalsPage({
   }
 
   return (
-    <main className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
+    <main className={`min-h-full ${canEdit ? "bg-white" : "bg-[#f5f6f8]"} px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8`}>
       <div className="mx-auto max-w-[1440px] space-y-4">
-        <GmeaRentalsHeader
+        {canEdit ? <GmeaRentalsHeader
           canEdit={canEdit}
           onAddEquipment={() => openEquipment()}
           onCreateRental={() => setCreatingRental(true)}
-        />
+        /> : <CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Track rental schedules, equipment availability, and collections." />}
         <GmeaRentalsAnalyticsNav />
         <GmeaRentalsSummary rentals={rentalRows} equipment={items} />
 
@@ -168,6 +170,7 @@ export default function GmeaRentalsPage({
           </p>
         )}
 
+        {!canEdit ? <CeoRentalWorkspace rentals={rentalRows} equipment={items} /> : <>
         <section className="pt-3" aria-labelledby="rentals-heading">
           <div>
             <h2
@@ -218,6 +221,7 @@ export default function GmeaRentalsPage({
             setActivity("all");
           }}
         />
+        </>}
       </div>
 
       {selected !== undefined && (

@@ -57,6 +57,17 @@ Dates are relative to the current date in Asia/Manila, including history for cha
 
 ## Cleanup and previews
 
+To remove only GMEA demo projects, rentals, equipment, workers, and the seed-owned `demo_gmea` account:
+
+```sh
+npm run seed:delete:gmea -- --dry-run
+npm run seed:delete:gmea
+```
+
+This keeps real GMEA records, the regular `gmea` account, and all other demo modules/accounts. Records added under demo projects or rentals may cascade with their parent. Running `seed:data` again recreates the GMEA demos.
+
+Start the app locally with `npm run dev`, then open `http://localhost:3000`. Starting the app does not seed demo data. The user seed defines `admin`; the separate demo seed defines `demo_admin`, so running both seeds creates two administrator accounts.
+
 ```sh
 npm run seed:data -- --dry-run
 npm run seed:delete -- --dry-run

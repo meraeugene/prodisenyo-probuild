@@ -14,7 +14,7 @@ export default function ProjectsPageClient({ role, projects, engineers }: { role
   const project = projects.find(entry => entry.id === projectId);
   if (project) router.push(getProjectEntryHref({ role, projectId, status: project.status }));
  }
- return <div className={styles.page}>
+ return <div className={`${styles.page} ${role === "ceo" ? "!bg-[#f5f6f8]" : ""}`}>
   {role === "ceo" ? <CeoProjectsOverview projects={projects} onCreateProject={form.openCreateModal} onOpenProject={openProject} /> : <EngineerProjectPortfolio projects={projects} onOpenProject={openProject} />}
   <CreateProjectModal form={form} engineers={engineers} />
  </div>;

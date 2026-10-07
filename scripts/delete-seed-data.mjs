@@ -1,24 +1,27 @@
 import process from "node:process";
 import { createDemoClient, checked, listAuthUsers } from "./demo/client.mjs";
 import { isDemoAccount } from "./demo/accounts.mjs";
-import { createDemoContext } from "./demo/context.mjs";
-import { buildDemoData, TABLE_ORDER } from "./demo/data.mjs";
+import { demoAccount } from "./demo/context.mjs";
+import { buildDemoCleanupPlan } from "./demo/cleanup.mjs";
 import { deleteDemoFiles } from "./demo/storage.mjs";
 
 async function main() {
   const args = process.argv.slice(2);
-  if (args.some((arg) => arg !== "--dry-run")) throw new Error("Usage: npm run seed:delete [-- --dry-run]");
+  if (args.some((arg) => !["--dry-run", "--gmea"].includes(arg))) throw new Error("Usage: npm run seed:delete [-- --dry-run] [-- --gmea]");
+  const gmeaOnly = args.includes("--gmea");
+  const plan = buildDemoCleanupPlan(gmeaOnly);
+  const emails = plan.roles.map((role) => demoAccount(role).email);
   if (args.includes("--dry-run")) {
     console.log("Cleanup preview only; no database connection or changes.");
-    console.log(`Delete reserved demo IDs from: ${[...TABLE_ORDER].reverse().join(", ")}`);
-    console.log("Delete only auth accounts marked prodisenyo-ui-demo-v1 with an expected demo email. Demo project children may cascade.");
+    console.log(`Delete reserved demo IDs from: ${plan.order.join(", ")}`);
+    console.log(`Delete only auth accounts marked prodisenyo-ui-demo-v1 with these emails: ${emails.join(", ")}. Demo project children may cascade.`);
+    console.log(plan.deleteFiles ? "Delete the seed's sample PDF files." : "Keep other demo modules, accounts, and files.");
     return;
   }
   const client = await createDemoClient();
-  const tables = buildDemoData(createDemoContext());
   // Exact, stable IDs work across dates, machines, repeated runs and partial failures.
-  for (const table of [...TABLE_ORDER].reverse()) {
-    const ids = tables[table].map((row) => row.id);
+  for (const table of plan.order) {
+    const ids = plan.tables[table].map((row) => row.id);
     for (let start = 0; start < ids.length; start += 200) {
       const result = await client.from(table).delete().in("id", ids.slice(start, start + 200));
       // Permit cleanup when an optional module has not been installed yet.
@@ -27,13 +30,13 @@ async function main() {
     }
     console.log(`Cleaned demo ${table}`);
   }
-  await deleteDemoFiles(client);
+  if (plan.deleteFiles) await deleteDemoFiles(client);
   for (const user of await listAuthUsers(client)) {
-    if (!isDemoAccount(user)) continue;
+    if (!isDemoAccount(user) || !emails.includes(user.email)) continue;
     checked(await client.auth.admin.deleteUser(user.id), `Delete ${user.email}`);
     console.log(`Deleted ${user.email}`);
   }
-  console.log("Demo cleanup complete. Existing accounts and unrelated records were retained.");
+  console.log(`${gmeaOnly ? "GMEA demo" : "Demo"} cleanup complete. Existing accounts and unrelated records were retained.`);
 }
 
 main().catch((error) => {

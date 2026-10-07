@@ -7,6 +7,10 @@ import PayrollApprovalQueueCard from "@/features/payroll/components/PayrollAppro
 import { usePayrollApprovalQueue } from "@/features/payroll/hooks/usePayrollApprovalQueue";
 import type { PendingOvertimeRequest } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 import type { AppRole } from "@/types/database";
+import { useCeoApprovalList } from "../hooks/useCeoApprovalList";
+import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
+import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
+import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
 
 interface PayrollApprovalQueueProps {
   role: AppRole | null;
@@ -33,6 +37,7 @@ export default function PayrollApprovalQueue({
     initialRequests,
     onRequestResolved,
   });
+  const list = useCeoApprovalList(state.pendingRequests);
 
   useEffect(() => {
     if (
@@ -55,8 +60,9 @@ export default function PayrollApprovalQueue({
   if (!roleLoading && role !== "ceo") return null;
 
   return (
-    <section className="flex flex-col">
-      <div className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+    <section aria-label="Payroll overtime adjustments" className="flex flex-col gap-4">
+      <div className={styles.panel}>
+      <div className="p-5">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
             Payroll adjustments
@@ -69,16 +75,18 @@ export default function PayrollApprovalQueue({
           Verify attendance-derived overtime before it reaches payroll.
         </p>
       </div>
+      <CeoListToolbar tabs={list.tabs} tab={list.status} onTabChange={list.setStatus} query={list.query} onQueryChange={list.setQuery} searchLabel="Search payroll adjustments" placeholder="Employee, site, or period" hasFilters={list.hasFilters} onReset={list.reset} />
+      </div>
 
-      <div className="mt-4">
+      <div>
         <div className="min-w-0">
-          {!state.hasRequests ? (
+          {!list.visible.length ? (
             <p className="text-sm text-apple-steel">
-              No overtime requests are waiting for approval.
+              No matching payroll adjustments. Try another search or status.
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {state.pendingRequests.map((request) => (
+              {list.pagination.pageRows.map((request) => (
                 <PayrollApprovalQueueCard
                   key={request.id}
                   request={request}
@@ -102,6 +110,7 @@ export default function PayrollApprovalQueue({
           )}
         </div>
       </div>
+      <div className={styles.panel}><CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Payroll adjustment list" /></div>
 
       {state.activeLogsModalState ? (
         <PayrollApprovalEmployeeLogsModal

@@ -1,5 +1,5 @@
 .page { min-height:100%; background:#fff; color:#1d1d1f; padding:20px 16px 32px; }
-.panel { min-width:0; overflow:hidden; border-radius:16px; background:#fff; box-shadow:var(--workspace-panel-shadow); }
+.panel { min-width:0; overflow:hidden; border-radius:var(--workspace-panel-radius,16px); background:#fff; box-shadow:var(--workspace-panel-shadow); }
 .heading { font-size:18px; font-weight:600; letter-spacing:-.025em; color:#1d1d1f; }
 .control { height:40px; min-width:0; border:1px solid #e1e9e7; border-radius:10px; background:#fff; padding:0 12px; font-size:13px; color:#365b56; outline:none; }
 .control:focus-visible { border-color:#076d69; box-shadow:0 0 0 3px #eaf5f3; }

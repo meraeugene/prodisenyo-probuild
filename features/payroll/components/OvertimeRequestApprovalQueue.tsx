@@ -1,44 +1,17 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Clock3,
-  Loader2,
-  LoaderCircle,
-  MapPin,
-  XCircle,
-} from "lucide-react";
+import { Clock3, LoaderCircle } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import {
   approveOvertimeRequestFormAction,
   rejectOvertimeRequestFormAction,
 } from "@/actions/payroll";
-import {
-  formatOvertimeRequesterRole,
-  type OvertimeRequestRecord,
-} from "@/features/overtime-requests/types";
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function getStatusClasses(status: OvertimeRequestRecord["status"]) {
-  if (status === "approved")
-    return "bg-teal-50 text-teal-700 ring-teal-200/40";
-  if (status === "rejected")
-    return "bg-[#f0fdfa] text-[#0f766e] ring-[#ccfbf1]";
-  return "bg-amber-50 text-amber-700 ring-amber-200/40";
-}
-
-function shouldShowOvertimePay(role: OvertimeRequestRecord["requester_role"]) {
-  return !["payroll_manager", "engineer", "employee"].includes(role);
-}
+import type { OvertimeRequestRecord } from "@/features/overtime-requests/types";
+import OvertimeApprovalRequestCard from "./OvertimeApprovalRequestCard";
+import { useCeoApprovalList } from "../hooks/useCeoApprovalList";
+import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
+import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
+import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
 
 export default function OvertimeRequestApprovalQueue({
   initialRequests,
@@ -72,6 +45,7 @@ export default function OvertimeRequestApprovalQueue({
     () => requests.filter((request) => request.status === "pending").length,
     [requests],
   );
+  const list = useCeoApprovalList(sortedRequests);
 
   function applyRequestPatch(
     requestId: string,
@@ -131,8 +105,9 @@ export default function OvertimeRequestApprovalQueue({
   }
 
   return (
-    <section className="flex flex-col">
-      <div className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+    <section aria-label="Staff overtime approvals" className="flex flex-col gap-4">
+      <div className={styles.panel}>
+      <div className="p-5">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
             Staff request forms
@@ -146,157 +121,26 @@ export default function OvertimeRequestApprovalQueue({
           Review submitted reasons, requested hours, and estimated pay.
         </p>
       </div>
+      <CeoListToolbar tabs={list.tabs} tab={list.status} onTabChange={list.setStatus} query={list.query} onQueryChange={list.setQuery} searchLabel="Search staff requests" placeholder="Employee, site, or reason" hasFilters={list.hasFilters} onReset={list.reset} />
+      </div>
 
-      <div className="mt-4">
+      <div>
         <div className="space-y-4">
-          {sortedRequests.length === 0 ? (
+          {list.visible.length === 0 ? (
             <p className="text-sm text-apple-steel">
-              No overtime request forms are waiting for approval.
+              No matching staff requests. Try another search or status.
             </p>
           ) : (
-            sortedRequests.map((request) => (
-              <article
-                key={request.id}
-                className="group flex w-full min-w-0 flex-col rounded-2xl border border-transparent bg-white p-5 shadow-workspace transition   sm:p-6"
-              >
-                <div className="min-w-0 space-y-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">
-                      {formatOvertimeRequesterRole(request.requester_role)}
-                    </p>
-                    <h3 className="text-[15px] font-bold tracking-tight text-apple-charcoal">
-                      {request.employee_name} • {request.site_name}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset ${getStatusClasses(
-                        request.status,
-                      )}`}
-                    >
-                      {request.status === "approved" ? (
-                        <>
-                          <CheckCircle2 size={12} strokeWidth={2.5} />
-                          Approved
-                        </>
-                      ) : request.status === "rejected" ? (
-                        <>
-                          <XCircle size={12} strokeWidth={2.5} />
-                          Returned
-                        </>
-                      ) : (
-                        <>
-                          <Clock3 size={12} strokeWidth={2.5} />
-                          Pending Approval
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-apple-steel">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin size={14} className="text-apple-smoke" />
-                      {request.site_name}
-                    </div>
-                    <div className="hidden h-3 w-px bg-apple-mist lg:block" />
-                    <div className="font-medium">{request.request_date}</div>
-                  </div>
-
-                  {request.period_label ? (
-                    <p className="text-[13px] text-apple-steel">
-                      <span className="font-medium">Period:</span>{" "}
-                      {request.period_label}
-                    </p>
-                  ) : null}
-
-                  {request.reason ? (
-                    <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 break-words">
-                      &quot;{request.reason}&quot;
-                    </div>
-                  ) : null}
-
-                  <p className="text-[11px] font-medium text-apple-smoke/80">
-                    Submitted {formatDateTime(request.created_at)}
-                  </p>
-
-                  {request.rejection_reason ? (
-                    <p className="rounded-xl border border-[#ccfbf1] bg-[#f0fdfa] px-3 py-2 text-xs text-[#0f766e]">
-                      Return reason:{" "}
-                      <span className="font-semibold">
-                        {request.rejection_reason}
-                      </span>
-                    </p>
-                  ) : null}
-                </div>
-
-                {shouldShowOvertimePay(request.requester_role) ? (
-                  <div className="mt-5 rounded-xl bg-slate-50 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-apple-steel/80">
-                      Overtime Pay
-                    </p>
-                    <div className="mt-1 flex items-baseline gap-1">
-                      <span className="text-2xl font-semibold tracking-tight text-apple-charcoal">
-                        ₱
-                        {request.amount.toLocaleString("en-PH", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-apple-smoke">
-                      
-                      {request.overtime_hours.toLocaleString("en-PH", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{" "}
-                      total hrs
-                    </div>
-                  </div>
-                ) : null}
-
-                {request.status === "pending" ? (
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-6">
-                    <div className="text-[11px] italic text-apple-steel">
-                      Review required before payroll cutoff
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRejectRequestId(request.id);
-                          setRejectionReason("");
-                        }}
-                        disabled={isPending}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#f0fdfa] px-4 text-xs font-bold text-[#0f766e] transition-colors hover:bg-[#ccfbf1] focus:outline-none focus:ring-2 focus:ring-[#ccfbf1] disabled:opacity-50"
-                      >
-                        <XCircle size={16} />
-                        Return
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApprove(request.id)}
-                        disabled={isPending}
-                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#076d69] px-5 text-xs font-bold text-white shadow-workspace-button shadow-workspace-button/10 transition-all hover:bg-[#055f5b]  focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:opacity-60"
-                      >
-                        {pendingActionId === request.id &&
-                        pendingActionType === "approve" ? (
-                          <>
-                            <Loader2 size={14} className="animate-spin" />
-                            Approving...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 size={16} />
-                            Approve Request
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-              </article>
-            ))
+            list.pagination.pageRows.map((request) => <OvertimeApprovalRequestCard
+              key={request.id} request={request} pending={isPending}
+              approving={pendingActionId === request.id && pendingActionType === "approve"}
+              onApprove={handleApprove}
+              onReject={(id) => { setRejectRequestId(id); setRejectionReason(""); }}
+            />)
           )}
         </div>
       </div>
+      <div className={styles.panel}><CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Staff request list" /></div>
 
       {rejectRequestId ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
