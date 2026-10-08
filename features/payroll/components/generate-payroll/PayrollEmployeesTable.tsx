@@ -61,7 +61,10 @@ export default function PayrollEmployeesTable({
   function openActions(employee: GroupedEmployeePayrollRow, button: HTMLButtonElement) {
     const rect = button.getBoundingClientRect();
     setActionEmployee(employee);
-    setMenuPosition({ top: rect.bottom + 6, left: rect.right });
+    setMenuPosition({
+      top: Math.max(8, Math.min(rect.bottom + 6, window.innerHeight - 104)),
+      left: Math.min(window.innerWidth - 8, Math.max(178, rect.right)),
+    });
   }
 
   if (employees.length === 0) {

@@ -3,6 +3,7 @@
 import { LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import {
   formatPayrollReportCompactDateTime,
   formatPayrollReportPeriodLabel,
@@ -93,11 +94,8 @@ export default function PayrollReportsArchiveSection({
     <>
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="flex flex-col gap-3 px-4 py-3 xl:flex-row xl:items-end xl:justify-between">
-          <nav aria-label="Filter payroll reports by status" className="flex max-w-full flex-wrap gap-1">
-            {[["all", "All Payroll Runs"], ["submitted", "Pending Review"], ["approved", "Approved"], ["rejected", "Returned"]].map(([value, label]) => (
-              <button key={value} type="button" onClick={() => setStatusFilter(value)} className={`shrink-0 border-b-2 px-3 py-3 text-xs font-semibold ${statusFilter === value ? "border-emerald-600 text-slate-900" : "border-transparent text-slate-500"}`}>{label} ({statusCounts[value as keyof typeof statusCounts]})</button>
-            ))}
-          </nav>
+          <WorkspaceTabSwitch label="Filter payroll reports by status" mode="filter" value={statusFilter} onChange={setStatusFilter}
+            items={[["all", "All Payroll Runs"], ["submitted", "Pending Review"], ["approved", "Approved"], ["rejected", "Returned"]].map(([value, label]) => ({ value, label, count: statusCounts[value as keyof typeof statusCounts] }))} />
           <div className="grid gap-2 sm:grid-cols-[minmax(210px,1fr)_150px_150px_150px]">
             <input data-search-field="true" aria-label="Search payroll reports" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search payroll runs, site, or period" className="h-9 min-w-0 rounded-lg border border-slate-200 px-3 text-[11px] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
             <select aria-label="Payroll period" value={periodFilter} onChange={(event) => setPeriodFilter(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-[11px]"><option value="all">All Periods</option>{periods.map((period) => <option key={period} value={period}>{period}</option>)}</select>

@@ -63,7 +63,7 @@ export default function GmeaCollectionsSection({
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table data-row-hover="none" className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-slate-50 text-xs font-semibold text-slate-600 [&_th]:py-4">
             <tr>
               <th className="w-12 p-3 text-center">#</th>
@@ -76,7 +76,7 @@ export default function GmeaCollectionsSection({
               <th className="w-56 p-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
+          <tbody className="divide-y divide-slate-100 tabular-nums">
             {terms.map((term, index) => (
               <GmeaPaymentTermRow
                 key={term.id}

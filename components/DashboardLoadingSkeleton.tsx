@@ -7,35 +7,35 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 export function DashboardOverviewSkeleton() {
   return (
     <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-5 p-6">
-      <section className="bg-white pb-2">
+      <section className="pb-2">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-3 flex-1 w-full sm:w-auto">
-            <SkeletonBlock className="h-3 w-32 sm:w-40 bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-10 w-48 sm:h-12 sm:w-72 bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-3 w-full max-w-xs sm:max-w-sm bg-[#eaf4f0]" />
+            <SkeletonBlock className="h-3 w-32 sm:w-40" />
+            <SkeletonBlock className="h-10 w-48 sm:h-12 sm:w-72" />
+            <SkeletonBlock className="h-3 w-full max-w-xs sm:max-w-sm" />
           </div>
           <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
-            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-24 bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-20 bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-9 w-10 bg-[#eaf4f0]" />
+            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-24" />
+            <SkeletonBlock className="h-9 flex-1 sm:flex-none sm:w-20" />
+            <SkeletonBlock className="h-9 w-10" />
           </div>
         </div>
       </section>
 
-      <section className="rounded-[12px] bg-white p-5 shadow-workspace">
+      <section className="rounded-[12px] p-5">
         <div className="mb-5 space-y-2">
           <SkeletonBlock className="h-5 w-44" />
           <SkeletonBlock className="h-4 w-72" />
         </div>
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
+          <div className="rounded-[12px] p-4">
             <div className="mb-4 space-y-2">
               <SkeletonBlock className="h-4 w-36" />
               <SkeletonBlock className="h-3 w-28" />
             </div>
             <SkeletonBlock className="h-[260px] w-full" />
           </div>
-          <div className="rounded-[12px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4">
+          <div className="rounded-[12px] p-4">
             <div className="mb-4 space-y-2">
               <SkeletonBlock className="h-4 w-44" />
               <SkeletonBlock className="h-3 w-24" />
@@ -49,7 +49,7 @@ export function DashboardOverviewSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`overview-kpi-skeleton-${index}`}
-            className="rounded-[22px] bg-white p-6 shadow-workspace"
+            className="rounded-[22px] p-6"
           >
             <div className="flex items-center justify-between">
               <SkeletonBlock className="h-11 w-11 rounded-2xl" />
@@ -61,7 +61,7 @@ export function DashboardOverviewSkeleton() {
         ))}
       </section>
 
-      <section className="rounded-[12px] bg-white p-5 shadow-workspace">
+      <section className="rounded-[12px] p-5">
         <div className="mb-4">
           <SkeletonBlock className="h-5 w-40" />
         </div>
@@ -69,11 +69,11 @@ export function DashboardOverviewSkeleton() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={`department-card-skeleton-${index}`}
-              className="rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-5 shadow-[0_18px_36px_rgba(7,109,105,0.16)]"
+              className="rounded-[16px] p-5"
             >
-              <SkeletonBlock className="h-4 w-28 bg-[#eaf4f0]" />
-              <SkeletonBlock className="mt-8 h-8 w-20 bg-[#eaf4f0]" />
-              <SkeletonBlock className="mt-8 h-9 w-36 bg-[#eaf4f0]" />
+              <SkeletonBlock className="h-4 w-28" />
+              <SkeletonBlock className="mt-8 h-8 w-20" />
+              <SkeletonBlock className="mt-8 h-9 w-36" />
             </div>
           ))}
         </div>
@@ -85,22 +85,22 @@ export function DashboardOverviewSkeleton() {
 export function AnalyticsPageSkeleton() {
   return (
     <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-4">
-      <section className="rounded-[16px] bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] p-6 shadow-[0_18px_36px_rgba(7,109,105,0.18)]">
+      <section className="rounded-[16px] p-6">
         <div className="space-y-3">
-          <SkeletonBlock className="h-3 w-28 bg-[#eaf4f0]" />
-          <SkeletonBlock className="h-12 w-72 bg-[#eaf4f0]" />
-          <SkeletonBlock className="h-5 w-[32rem] max-w-full bg-[#eaf4f0]" />
+          <SkeletonBlock className="h-3 w-28" />
+          <SkeletonBlock className="h-12 w-72" />
+          <SkeletonBlock className="h-5 w-[32rem] max-w-full" />
         </div>
       </section>
 
-      <section className="rounded-[14px] border border-transparent bg-white p-6 shadow-workspace">
+      <section className="rounded-[14px] p-6">
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <SkeletonBlock className="h-[280px] w-full" />
           <SkeletonBlock className="h-[280px] w-full" />
         </div>
       </section>
 
-      <section className="rounded-[14px] border border-transparent bg-white p-6 shadow-workspace">
+      <section className="rounded-[14px] p-6">
         <SkeletonBlock className="h-[240px] w-full" />
       </section>
     </div>

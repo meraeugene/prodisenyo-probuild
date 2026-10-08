@@ -1,95 +1,44 @@
 "use client";
-
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import type { PayrollDashboardRunStatus, PayrollWorkspaceRun } from "@/features/payroll-dashboard/types";
-import { formatPayrollCurrency, formatPayrollDate } from "@/features/payroll-dashboard/utils/payrollDashboard";
-
-type Filter = "draft" | "approved" | "all";
-
-const STATUS_LABELS: Record<PayrollDashboardRunStatus, string> = {
-  draft: "Draft",
-  submitted: "Awaiting CEO",
-  approved: "Approved",
-  rejected: "Returned",
-};
-
-const STATUS_STYLES: Record<PayrollDashboardRunStatus, string> = {
-  draft: "bg-sky-50 text-sky-700",
-  submitted: "bg-violet-50 text-violet-700",
-  approved: "bg-emerald-50 text-emerald-700",
-  rejected: "bg-rose-50 text-rose-700",
-};
-
-function runHref(run: PayrollWorkspaceRun) {
-  if ((run.status === "draft" || run.status === "rejected") && run.attendanceImportId) {
-    const query = new URLSearchParams({ importId: run.attendanceImportId, runId: run.id });
-    return `/generate-payroll?${query.toString()}`;
-  }
-  return `/payroll-analytics?runId=${encodeURIComponent(run.id)}`;
-}
+import WorkspaceListToolbar from "@/components/workspace/WorkspaceListToolbar";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import styles from "@/components/workspace/workspace.module.css";
+import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
+import type { PayrollDashboardRunStatus, PayrollWorkspaceRun } from "../types";
+import { formatPayrollCurrency, formatPayrollDate } from "../utils/payrollDashboard";
+import { PAYROLL_STATUS_LABELS, payrollRunHref } from "../utils/payrollWorkspacePresentation";
 
 export default function PayrollWorkspaceRunsPanel({ runs }: { runs: PayrollWorkspaceRun[] }) {
-  const [filter, setFilter] = useState<Filter>("draft");
-  const counts = useMemo(() => ({
-    draft: runs.filter((run) => run.status === "draft").length,
-    approved: runs.filter((run) => run.status === "approved").length,
-    all: runs.length,
-  }), [runs]);
-  const visibleRuns = useMemo(
-    () => filter === "all" ? runs : runs.filter((run) => run.status === filter),
-    [filter, runs],
-  );
-
-  return (
-    <section className="mt-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-lg font-bold tracking-[-0.02em] text-slate-950">Active Payrolls</h2>
-          <p className="mt-1 text-sm text-slate-500">{runs.length.toLocaleString("en-PH")} payroll records in this workspace</p>
-        </div>
-        <div className="inline-flex w-fit rounded-xl border border-slate-200 bg-slate-50 p-1">
-          {(["draft", "approved", "all"] as const).map((item) => (
-            <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-lg px-3.5 py-2 text-xs font-bold capitalize transition ${filter === item ? "bg-white text-teal-800 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
-              {item === "draft" ? "Drafts" : item} ({counts[item]})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4">
-        {visibleRuns.length ? (
-          <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
-            {visibleRuns.map((run) => (
-              <article key={run.id} className="group rounded-2xl border border-slate-200 bg-white p-4 transition  hover:border-teal-200 ">
-                <div className="flex items-start justify-between gap-3">
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${STATUS_STYLES[run.status]}`}>{STATUS_LABELS[run.status]}</span>
-                </div>
-                <div className="mt-4 flex items-start gap-2 text-sm font-bold text-slate-950"><span>{run.periodLabel}</span></div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-slate-500"><span className="truncate">{run.siteName}</span></div>
-                <div className="mt-5 flex items-end justify-between gap-4 border-t border-slate-100 pt-4">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">Total payroll</p>
-                    <p className="mt-1 text-lg font-bold tracking-[-0.03em] text-slate-950">{formatPayrollCurrency(run.netTotal)}</p>
-                    <p className="mt-1 text-[10px] text-slate-400">Updated {formatPayrollDate(run.updatedAt)}</p>
-                  </div>
-                  <Link href={runHref(run)} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
-                    {run.status === "draft" || run.status === "rejected" ? "Open Payroll" : "View Payroll"}<ArrowUpRight size={13} />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="grid min-h-[270px] place-items-center text-center">
-            <div className="max-w-sm">
-              <h3 className="mt-4 text-sm font-bold text-slate-900">No {filter === "all" ? "payroll records" : `${filter} payrolls`} yet</h3>
-              <p className="mt-1 text-xs leading-5 text-slate-500">New payroll work begins by uploading an attendance file.</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
-  );
+  const [status, setStatus] = useState<PayrollDashboardRunStatus | "all">("draft");
+  const [query, setQuery] = useState("");
+  const [site, setSite] = useState("all");
+  const tabs = [{ value: "all" as const, label: "All payrolls", count: runs.length },
+    ...(["draft", "submitted", "approved", "rejected"] as const).map((value) => ({
+      value, label: PAYROLL_STATUS_LABELS[value], count: runs.filter((run) => run.status === value).length,
+    }))];
+  const filtered = runs.filter((run) => (status === "all" || run.status === status)
+    && (site === "all" || run.siteName === site)
+    && [run.periodLabel, run.siteName].join(" ").toLowerCase().includes(query.trim().toLowerCase()));
+  const pagination = useTablePagination(filtered, JSON.stringify([status, site, query]));
+  return <section aria-label="Payroll records" className={`mt-6 ${styles.panel}`}>
+    <WorkspaceListToolbar tabs={tabs} tab={status} onTabChange={setStatus} query={query} onQueryChange={setQuery}
+      searchLabel="Search payrolls" placeholder="Search period or site" hasFilters={Boolean(query || site !== "all" || status !== "draft")}
+      onReset={() => { setStatus("draft"); setQuery(""); setSite("all"); }}>
+      <label className={styles.field}>Site<select className={styles.control} value={site} onChange={(event) => setSite(event.target.value)}>
+        <option value="all">All sites</option>{[...new Set(runs.map((run) => run.siteName))].sort().map((name) => <option key={name}>{name}</option>)}
+      </select></label>
+    </WorkspaceListToolbar>
+    <div className="overflow-x-auto"><table className={styles.table} style={{ minWidth: 720 }}>
+      <thead><tr><th scope="col">Payroll period</th><th scope="col">Site</th><th scope="col">Status</th><th scope="col">Net payroll</th><th scope="col">Updated</th><th scope="col">Action</th></tr></thead>
+      <tbody>{pagination.pageRows.map((run) => <tr key={run.id}>
+        <th scope="row" className="font-medium">{run.periodLabel}</th><td>{run.siteName}</td>
+        <td><span className="rounded bg-slate-100 px-2 py-1 text-xs">{PAYROLL_STATUS_LABELS[run.status]}</span></td>
+        <td className="tabular-nums">{formatPayrollCurrency(run.netTotal)}</td><td>{formatPayrollDate(run.updatedAt)}</td>
+        <td><Link className={styles.recordLink} href={payrollRunHref(run)}>{run.status === "draft" || run.status === "rejected" ? "Open Payroll" : "View Payroll"}</Link></td>
+      </tr>)}</tbody>
+    </table></div>
+    {!filtered.length && <p className={styles.empty}>No payrolls match these filters.</p>}
+    <WorkspaceListPagination {...pagination} total={filtered.length} noun="payrolls" label="Payroll table" />
+  </section>;
 }

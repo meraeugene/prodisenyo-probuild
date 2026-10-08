@@ -1,45 +1,16 @@
-import DashboardPageHero from "@/components/DashboardPageHero";
-import { SkeletonBlock as Block } from "@/components/LoadingSkeleton";
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
+import { SkeletonBlock, SkeletonPanel } from "@/components/LoadingSkeleton";
+import WorkspaceListSkeleton from "@/components/workspace/WorkspaceListSkeleton";
 
 export default function UserManagementSkeleton() {
-  return (
-    <div aria-busy="true"
-      role="status"
-      aria-label="Loading user management"
-      className="space-y-4 overflow-x-hidden p-0 sm:p-6"
-    >
-      <DashboardPageHero
-        eyebrow="Admin"
-        title="User Management"
-        description="Create, update, and manage user accounts for all application roles, including GMEA."
-      />
-      <section className="rounded-none border border-apple-mist bg-white p-4 sm:rounded-[22px] sm:p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <Block className="h-4 w-20" />
-            <Block className="mt-2 h-7 w-28" />
-          </div>
-          <Block className="h-10 w-28 rounded-xl" />
-        </div>
-        <div className="mt-5 grid gap-2 md:grid-cols-[minmax(240px,1fr)_190px_160px]">
-          <Block className="h-10 rounded-xl" />
-          <Block className="h-10 rounded-xl" />
-          <Block className="h-10 rounded-xl" />
-        </div>
-        <div className="mt-4 overflow-hidden rounded-[16px] border border-apple-mist">
-          <div className="h-9 bg-slate-50" />
-          {[0, 1, 2, 3, 4, 5].map((row) => (
-            <div
-              key={row}
-              className="grid grid-cols-5 gap-3 border-t border-slate-100 px-3 py-4"
-            >
-              {[0, 1, 2, 3, 4].map((column) => (
-                <Block key={column} className="h-5 w-full max-w-28" />
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
+  return <div aria-busy="true" role="status" aria-label="Loading user management" className="space-y-4 overflow-x-hidden p-4 sm:p-6">
+    <CeoPageHeroSkeleton action="none" titleWidth="w-60" />
+    <SkeletonPanel className="p-4 sm:p-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div><SkeletonBlock className="h-4 w-20" /><div className="mt-2 flex items-center gap-3"><SkeletonBlock className="h-7 w-16" /><SkeletonBlock className="h-5 w-24" /></div></div>
+        <SkeletonBlock className="h-10 w-28" />
+      </div>
+      <WorkspaceListSkeleton columns={6} tabs={3} tabLabels={["All accounts", "Active", "Inactive"]} filterCount={1} mobileCards firstColumnLines={2} rowHeight={64} minWidth={0} columnWidths={["24%", "16%", "24%", "17%", "11%", "8%"]} />
+    </SkeletonPanel>
+  </div>;
 }

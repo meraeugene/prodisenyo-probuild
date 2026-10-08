@@ -3,7 +3,7 @@ import Link from "next/link";
 import { formatOverviewMoney } from "../utils/gmeaOverviewSelectors";
 
 type Division = {
-  name: "Electronics & Solar" | "Rentals";
+  name: "Projects Expenses" | "Rentals";
   count: number;
   countLabel: string;
   revenue: number;

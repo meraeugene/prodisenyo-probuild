@@ -58,7 +58,7 @@ export default function SettingsProfileSection({
               type="button"
               onClick={onSaveProfile}
               disabled={!hasProfileChanges || savingProfile || loadingProfile}
-              className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#e3f8f3] px-4 text-sm font-semibold text-[#096d67] transition hover:bg-[#d3f2ea] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#065c59] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {savingProfile ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />

@@ -14,18 +14,18 @@ export function useCeoGmeaPortfolio(projects: GmeaProject[]) {
     fallbackData: projects, revalidateOnFocus: false, refreshInterval: 30000,
   });
   const [months, setMonths] = useState(6);
-  const [tab, setTab] = useState<CeoProjectTab>("Active");
+  const [tab, setTab] = useState<CeoProjectTab>("Ongoing");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState<CeoGmeaSort>("latest");
   const [direction, setDirection] = useState<"asc" | "desc">("desc");
   const activeProjects = useMemo(() => liveProjects.filter((project) => project.status === "active"), [liveProjects]);
   const completedProjects = useMemo(() => liveProjects.filter((project) => project.status === "completed"), [liveProjects]);
-  const portfolioProjects = tab === "Completed" ? completedProjects : tab === "All Projects" ? liveProjects : activeProjects;
+  const portfolioProjects = liveProjects;
   const data = useMemo(() => buildCeoPortfolio(portfolioProjects, months), [portfolioProjects, months]);
   const clients = useMemo(() => selectPortfolioClients(liveProjects), [liveProjects]);
   const tabCounts = useMemo(() => ({
-    "All Projects": liveProjects.length, Active: activeProjects.length, Completed: completedProjects.length,
+    "All Projects": liveProjects.length, Ongoing: activeProjects.length, Completed: completedProjects.length,
     "On Track": activeProjects.filter((project) => getCollectionStatus(project) === "Fully collected").length,
     "At Risk": activeProjects.filter((project) => project.contract_amount > 0 && projectSummary(project).profit < 0).length,
     "For Collection": activeProjects.filter((project) => ["Uncollected", "Partially collected"].includes(getCollectionStatus(project))).length,
@@ -51,8 +51,8 @@ export function useCeoGmeaPortfolio(projects: GmeaProject[]) {
     else changeSort(value);
   }
   function reset() {
-    setTab("Active"); setQuery(""); setFilter("all"); setSort("latest"); setDirection("desc");
+    setTab("Ongoing"); setQuery(""); setFilter("all"); setSort("latest"); setDirection("desc");
   }
   return { months, setMonths, tab, setTab, query, setQuery, filter, setFilter, sort, direction, changeSort, toggleSort, portfolioProjects, data, clients, tabCounts, visible, pagination, reset,
-    hasFilters: tab !== "Active" || query !== "" || filter !== "all" || sort !== "latest" || direction !== "desc" };
+    hasFilters: tab !== "Ongoing" || query !== "" || filter !== "all" || sort !== "latest" || direction !== "desc" };
 }

@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 import { useCeoGmeaPortfolio } from "../hooks/useCeoGmeaPortfolio";
 import type { GmeaProject } from "../types";
 import CeoGmeaProjectFilters from "./CeoGmeaProjectFilters";
@@ -14,7 +14,7 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
   const portfolio = useCeoGmeaPortfolio(projects);
   return <div className="min-h-screen bg-[#f5f6f8] p-4 sm:p-6">
     <div className="mx-auto max-w-[1600px] space-y-5">
-      <CeoPageHeader eyebrow="GMEA / Electronics & Solar" title="Project portfolio" description="Review contracts, project expenses, and outstanding collections." />
+      <CeoPageHeader eyebrow="GMEA / Projects Expenses" title="Project portfolio" description="Review contracts, project expenses, and outstanding collections." />
       <CeoGmeaSummary count={portfolio.portfolioProjects.length} contract={portfolio.data.contract} expenses={portfolio.data.expenses} outstanding={portfolio.data.outstanding} trend={portfolio.data.trend} />
       <CeoGmeaCharts data={portfolio.data} count={portfolio.portfolioProjects.length} months={portfolio.months} onMonthsChange={portfolio.setMonths} />
       <section aria-label="Projects" className={styles.panel}>

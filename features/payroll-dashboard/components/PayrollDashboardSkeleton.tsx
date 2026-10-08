@@ -2,16 +2,16 @@ import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 
 function PanelHeading() {
-  return <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4"><div><Block className="h-6 w-48" /><Block className="mt-0.5 h-4 w-56" /></div><Block className="h-4 w-16" /></div>;
+  return <div className="flex items-center justify-between gap-3 px-5 py-4"><div><Block className="h-6 w-48" /><Block className="mt-0.5 h-4 w-56" /></div><Block className="h-4 w-16" /></div>;
 }
 
 function TableRows({ columns, minWidth }: { columns: number; minWidth: string }) {
-  return <div className="overflow-hidden"><div className={minWidth}><div className="h-10 bg-slate-50/80" />{[0,1,2].map(row => <div key={row} className="grid items-center gap-4 border-t border-slate-100 px-5 py-3.5" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>{Array.from({ length: columns }, (_, column) => <div key={column}><Block className="h-4 w-24" />{column < 2 && <Block className="mt-1 h-3 w-20" />}</div>)}</div>)}</div></div>;
+  return <div className="overflow-hidden"><div className={minWidth}><div className="h-10 bg-slate-50/80" />{[0,1,2].map(row => <div key={row} className="grid items-center gap-4 px-5 py-3.5" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>{Array.from({ length: columns }, (_, column) => <div key={column}><Block className="h-4 w-24" />{column < 2 && <Block className="mt-1 h-3 w-20" />}</div>)}</div>)}</div></div>;
 }
 
 export default function PayrollDashboardSkeleton() {
   return (
-    <main aria-busy="true" role="status" aria-label="Loading payroll dashboard" className="min-h-full bg-white px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <main aria-busy="true" role="status" aria-label="Loading payroll dashboard" className="min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <div className="mb-4"><CeoPageHeroSkeleton action="button" /></div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[0,1,2,3].map(i => <SkeletonPanel key={i} className="rounded-xl p-4"><div className="flex items-start gap-3"><div><Block className="h-4 w-32" /><Block className="mt-1 h-7 w-24" /></div></div></SkeletonPanel>)}
@@ -20,7 +20,7 @@ export default function PayrollDashboardSkeleton() {
         <SkeletonPanel className="overflow-hidden p-0"><PanelHeading /><TableRows columns={6} minWidth="min-w-[780px]" /></SkeletonPanel>
         <SkeletonPanel>
           <div className="flex justify-between gap-3"><div><Block className="h-6 w-36" /><Block className="mt-0.5 h-4 w-44" /></div><Block className="h-4 w-20" /></div>
-          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} className="flex items-center gap-2 rounded-xl border border-slate-100 p-3"><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
+          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} className="flex items-center gap-2 rounded-xl p-3"><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
           <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]"><div className="flex h-44 items-center justify-center"><div className="h-[136px] w-[136px] animate-pulse motion-reduce:animate-none rounded-full border-[22px] border-slate-200/70 motion-reduce:animate-none" /></div><div className="space-y-3">{[0,1,2].map(i => <div key={i} className="flex justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-4 w-16" /></div>)}</div></div>
           <Block className="mt-4 h-10 w-full" />
         </SkeletonPanel>

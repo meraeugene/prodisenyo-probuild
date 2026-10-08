@@ -11,7 +11,7 @@ import OvertimeApprovalRequestCard from "./OvertimeApprovalRequestCard";
 import { useCeoApprovalList } from "../hooks/useCeoApprovalList";
 import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
 import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 
 export default function OvertimeRequestApprovalQueue({
   initialRequests,

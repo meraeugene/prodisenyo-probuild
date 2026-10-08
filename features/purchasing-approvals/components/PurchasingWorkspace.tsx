@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { Download, FileCheck2, LoaderCircle, Pencil, UploadCloud } from "lucide-react";
+import { LoaderCircle, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PurchasingRecordsSkeleton from "@/features/purchasing-approvals/components/PurchasingRecordsSkeleton";
@@ -15,6 +15,12 @@ import {
   type PurchaseStatus,
 } from "@/actions/purchasing";
 import { cn } from "@/lib/utils";
+import WorkspaceListToolbar from "@/components/workspace/WorkspaceListToolbar";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import styles from "@/components/workspace/workspace.module.css";
+import PurchasingRecordsTable from "./PurchasingRecordsTable";
+import { usePurchasingList } from "../hooks/usePurchasingList";
+import { formatPurchaseMoney as money, purchaseStatusLabel } from "../utils/purchasingPresentation";
 
 const STATUS_OPTIONS: PurchaseStatus[] = [
   "draft", "submitted", "approved", "ordered", "received", "cancelled",
@@ -23,17 +29,9 @@ const DELIVERY_OPTIONS: DeliveryStatus[] = [
   "pending", "scheduled", "in_transit", "delivered",
 ];
 
-function money(value: number) {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
 export default function PurchasingWorkspace() {
   const [records, setRecords] = useState<PurchasingRecord[]>([]);
-  const [search, setSearch] = useState("");
+  const list = usePurchasingList(records);
   const [editing, setEditing] = useState<PurchasingRecord | null>(null);
   const [selectedReceiptName, setSelectedReceiptName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -46,12 +44,6 @@ export default function PurchasingWorkspace() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = records.filter((record) =>
-    [record.projectName, record.itemName, record.supplierName, record.quotationReference]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
   const total = records.reduce(
     (sum, record) => sum + record.quantity * (record.actualUnitCost || record.estimatedUnitCost),
     0,
@@ -89,62 +81,23 @@ export default function PurchasingWorkspace() {
            Purchase value: {money(total)}
         </span>} />
 
-      <div className="relative max-w-sm">
-        <input data-search-field="true" value={search} onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search project, material, supplier..."
-          className="h-10 w-full rounded-xl border border-apple-mist bg-white pl-3 pr-3 text-sm outline-none focus:border-[#076d69]" />
-      </div>
-
-      {loading ? (
-        <PurchasingRecordsSkeleton />
-      ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-apple-mist py-16 text-center text-sm text-apple-smoke">
-          No approved material purchases are assigned yet.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((record) => (
-            <article key={record.id} className="rounded-[22px] border border-transparent bg-white p-5 shadow-workspace ">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row">
-                <div>
-                  <p className="text-xs font-semibold uppercase text-apple-steel">{record.projectName}</p>
-                  <h2 className="mt-1 font-bold text-apple-charcoal">{record.itemName}</h2>
-                  <p className="mt-1 text-sm text-apple-smoke">{record.quantity} {record.unit} · {record.supplierName || "Supplier pending"}</p>
-                  <p className="mt-2 text-xs text-apple-steel">Quotation: {record.quotationReference || "Not recorded"} · Delivery: {record.deliveryStatus.replace("_", " ")}</p>
-                  {record.receiptFile ? (
-                    <button type="button" onClick={() => openReceipt(record.receiptFile!.id)} className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100">
-                      <FileCheck2 size={13} /> {record.receiptFile.fileName} <Download size={12} />
-                    </button>
-                  ) : (
-                    <p className="mt-2 text-xs text-apple-steel">Receipt / invoice: {record.receiptInvoiceReference || "Not uploaded"}</p>
-                  )}
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="text-right">
-                    <p className="text-xs text-apple-steel">Actual total</p>
-                    <p className="font-bold text-teal-800">{money(record.quantity * record.actualUnitCost)}</p>
-                    <span className="text-xs font-semibold uppercase text-apple-smoke">{record.status}</span>
-                  </div>
-                  {record.status === "received" ? (
-                    <span className="rounded-lg bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700">
-                      Final
-                    </span>
-                  ) : (
-                    <button onClick={() => { setEditing(record); setSelectedReceiptName(""); }} aria-label="Edit purchase details"
-                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-apple-mist text-teal-700 hover:bg-teal-50">
-                      <Pencil size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-
+      <section aria-label="Purchasing records" className={styles.panel}>
+        <WorkspaceListToolbar tabs={list.tabs} tab={list.status} onTabChange={list.setStatus}
+          query={list.query} onQueryChange={list.setQuery} searchLabel="Search purchases" placeholder="Search project, material, supplier or reference"
+          hasFilters={list.hasFilters} onReset={list.reset}>
+          <label className={styles.field}>Delivery<select className={styles.control} value={list.delivery} onChange={(event) => list.setDelivery(event.target.value)}>
+            <option value="all">All deliveries</option>{DELIVERY_OPTIONS.map((value) => <option key={value} value={value}>{purchaseStatusLabel(value)}</option>)}
+          </select></label>
+        </WorkspaceListToolbar>
+        {loading ? <PurchasingRecordsSkeleton /> : <>
+          <PurchasingRecordsTable records={list.pagination.pageRows} onReceipt={openReceipt} onEdit={(record) => { setEditing(record); setSelectedReceiptName(""); }} />
+          {!list.filtered.length && <p className={styles.empty}>{records.length ? "No purchases match these filters." : "No approved material purchases are assigned yet."}</p>}
+          <WorkspaceListPagination {...list.pagination} total={list.filtered.length} noun="purchases" label="Purchasing table" />
+        </>}
+      </section>
       {editing ? createPortal(
         <div className="fixed inset-0 z-[100] flex h-[100dvh] w-screen items-center justify-center overflow-hidden bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6">
-          <form action={save} className="h-[80dvh] max-h-[80dvh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-[24px] border border-white/80 bg-white p-5 shadow-[0_30px_90px_rgba(15,23,42,0.35)] sm:p-7">
+          <form action={save} className={`${styles.dialog} h-[80dvh] max-h-[80dvh] w-full max-w-2xl space-y-4 overflow-y-auto border border-white/80 bg-white p-5 shadow-[0_30px_90px_rgba(15,23,42,0.35)] sm:p-7`}>
             <input type="hidden" name="id" value={editing.id} />
             <div><h2 className="text-lg font-bold text-apple-charcoal">Update purchase</h2><p className="text-xs text-apple-smoke">{editing.itemName}</p></div>
             <div className="grid gap-3 sm:grid-cols-2">

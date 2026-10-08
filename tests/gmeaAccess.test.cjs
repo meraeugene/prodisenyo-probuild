@@ -263,11 +263,12 @@ test("GMEA Overview combines portfolio totals and excludes voided rental payment
           client: " abc corp ",
           status: "active",
           start_date: "2026-09-25",
+          items: [{ subtotal: 1500 }],
         },
       ],
       payments: [
-        { amount: 500, payment_date: "2026-09-06", status: "posted" },
-        { amount: 300, payment_date: "2026-09-07", status: "voided" },
+        { rental_id: "rental-1", amount: 500, payment_date: "2026-09-06", status: "posted" },
+        { rental_id: "rental-1", amount: 300, payment_date: "2026-09-07", status: "voided" },
       ],
       expenses: [
         {
@@ -286,6 +287,8 @@ test("GMEA Overview combines portfolio totals and excludes voided rental payment
   };
   const summary = buildGmeaOverview(data);
   assert.equal(summary.totalRevenue, 2500);
+  assert.equal(summary.totalCollected, 1500);
+  assert.equal(summary.notCollected, 2000);
   assert.equal(summary.totalExpenses, 200);
   assert.equal(summary.netProfit, 2300);
   assert.equal(summary.activeWork, 2);

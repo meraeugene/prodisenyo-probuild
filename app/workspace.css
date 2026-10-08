@@ -50,7 +50,7 @@
   box-shadow: 0 2px 6px rgb(7 109 105 / 8%);
 }
 .workspace-header-actions :is(button, a):is([class*="bg-white"], [class*="bg-teal"], [class*="bg-[#076d69]"]):not([class*="text-rose"]):not([class*="text-red"]):hover { background-color: #065c59; }
-.workspace-header-actions .workspace-secondary-action { background: #fff !important; color: #076d69 !important; border: 1px solid #e1e9e7 !important; box-shadow: none !important; }
+.workspace-header-actions .workspace-secondary-action { background: #fff !important; color: #076d69 !important; border: 1px solid #076d69 !important; box-shadow: none !important; }
 .workspace-header-actions .workspace-secondary-action:hover { background: #f4faf7 !important; }
 .workspace-header-actions :is(button, a):focus-visible { outline: 2px solid #076d69; outline-offset: 3px; }
 .workspace-header-actions :is(button, a):disabled { opacity: .55; }
@@ -78,4 +78,54 @@
 
 @media print {
   .workspace-surface { box-shadow: none; }
+}
+
+/* The body marker also reaches dialogs and action menus rendered in portals. */
+body[data-workspace-theme="compact"] {
+  --workspace-panel-radius: 7px;
+  --workspace-control-radius: 5px;
+  --workspace-panel-shadow: 0 0 0 1px #e4e7ec;
+  --workspace-accent: #076d69;
+}
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"]) :is(div, section, form):where([class*="bg-white"]):is([class*="rounded"], [class*="shadow-workspace"], [class*="max-w-"]) {
+  border-radius: 7px;
+  border-color: #e4e7ec;
+  box-shadow: none;
+}
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"], [role="menu"]) :is(button, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  border-radius: 5px;
+  font-size: 13px;
+}
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"]) button:not([data-workspace-tab]):not([role="menuitem"]) {
+  min-height: 36px;
+  font-weight: 500;
+  box-shadow: none;
+}
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"]) button:is([class~="h-10"], [class~="h-11"], [class~="h-12"]):not([data-workspace-tab]) { height: 36px; }
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"], [role="menu"]) :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid #076d69;
+  outline-offset: 2px;
+}
+body[data-workspace-theme="compact"] :is([data-workspace], [role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"]) :is(button, a):is([class*="bg-teal-700"], [class*="bg-[#08766f]"], [class*="bg-[#076d69]"]):not([data-workspace-tab]) {
+  background-color: #076d69;
+  border-color: #076d69;
+  color: #fff;
+  box-shadow: none;
+}
+body[data-workspace-theme="compact"] :is([data-workspace], [role="dialog"], [role="alertdialog"], [class~="fixed"][class~="inset-0"]) :is(button, a):is([class*="bg-teal-700"], [class*="bg-[#08766f]"], [class*="bg-[#076d69]"]):not([data-workspace-tab]):hover { background-color: #065c59; }
+body[data-workspace-theme="compact"] :is([role="dialog"], [class~="fixed"][class~="inset-0"]) table thead { background: #f8f9fb; color: #667085; }
+body[data-workspace-theme="compact"] [role="menu"] { border-radius: 5px; border-color: #e4e7ec; box-shadow: 0 8px 24px rgb(16 24 40 / 12%); }
+body[data-workspace-theme="compact"] :is([role="dialog"], [role="alertdialog"]):not(#dashboard-sidebar) { border-radius: 7px; border-color: #e4e7ec; }
+body[data-workspace-theme="compact"] :is([role="dialog"], [class~="fixed"][class~="inset-0"]) [class*="bg-[linear-gradient"] { background-image: none; background-color: #fff; color: #344054; box-shadow: none; }
+body[data-workspace-theme="compact"] :is([role="dialog"], [class~="fixed"][class~="inset-0"]) [class*="bg-[linear-gradient"] :is(p, h2, h3, span):where([class*="text-white"]) { color: #667085; }
+body[data-workspace-theme="compact"] :is([role="dialog"], [class~="fixed"][class~="inset-0"]) [class*="bg-[linear-gradient"] button:where([class*="text-white"]):not([class*="bg-teal"]):not([class*="bg-[#076d69]"]):not([class*="bg-[#08766f]"]) { color: #475467; background-color: #f9fafb; border-color: #d0d5dd; }
+body[data-workspace-theme="compact"] :is([data-workspace], [role="dialog"], [class~="fixed"][class~="inset-0"]) :is([class~="text-blue-700"], [class~="text-blue-900"]) { color: #076d69; }
+body[data-workspace-theme="compact"] [data-payroll-workspace] button:not([data-workspace-tab]) { min-height: 36px; height: 36px; font-size: 13px; font-weight: 500; box-shadow: none; }
+body[data-workspace-theme="compact"] [data-payroll-workspace] :is(input[data-search-field], select) { height: 36px; }
+/* Loading placeholders do not need another panel around the eventual panel. */
+body[data-workspace-theme="compact"] :is([aria-busy="true"], [data-skeleton-panel]) :is(section, article, div):where([class*="rounded"]):is([class*="bg-white"], [class*="shadow"]) {
+  border-color: transparent;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
 }

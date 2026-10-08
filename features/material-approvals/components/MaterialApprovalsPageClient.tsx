@@ -23,6 +23,7 @@ import {
   type MaterialApprovalBucket,
 } from "@/features/material-approvals/utils/materialApproval";
 import { cn } from "@/lib/utils";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import MaterialProcurementDetails from "@/features/purchasing-approvals/components/MaterialProcurementDetails";
 import type { ProjectPurchaseOrder } from "@/features/project-cost-tracking/types";
 
@@ -167,23 +168,7 @@ export default function MaterialApprovalsPageClient({
   return (
     <div className="space-y-4">
       <div className="flex flex-col justify-between gap-4 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
-        <div className="flex gap-1.5 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "rounded-lg border px-3.5 py-1.5 text-xs font-semibold transition-all",
-                activeTab === tab.id
-                  ? "border-teal-800 bg-teal-800 text-white"
-                  : "border-apple-mist bg-white text-apple-smoke hover:bg-apple-mist/50",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <WorkspaceTabSwitch label="Material request status" mode="filter" items={tabs.map(({ id, label }) => ({ value: id, label }))} value={activeTab} onChange={setActiveTab} />
         <label className="relative w-full sm:w-64">
           
           <span className="sr-only">Search material requests</span>

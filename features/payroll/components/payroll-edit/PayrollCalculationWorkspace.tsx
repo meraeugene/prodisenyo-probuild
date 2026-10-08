@@ -1,6 +1,7 @@
 "use client";
 
 import { useDialogEscape } from "@/lib/useDialogEscape";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import { useState, type ReactNode } from "react";
 import type { DailyLogRow } from "@/types";
 import type {
@@ -109,8 +110,8 @@ export function PayrollCalculationWorkspace(
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-y-auto bg-slate-950/35 p-4 sm:p-8">
-      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex w-full max-w-[1200px] flex-col overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
+    <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-y-auto bg-slate-950/35 p-4 sm:p-6">
+      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex h-[80dvh] w-full max-w-[1100px] flex-col overflow-y-auto rounded-[7px] border border-transparent bg-white shadow-workspace">
         <PayrollCalculationHeader
           employeeName={props.employeeName}
           roleName={props.roleName}
@@ -123,17 +124,9 @@ export function PayrollCalculationWorkspace(
         />
         <PayrollSummaryCards {...summaryProps} />
 
-        <div role="tablist" aria-label="Employee payroll details" className="flex shrink-0 flex-wrap gap-1 border-b border-slate-200 bg-white px-3 py-2">
-          {tabs.map(([id, label]) => <button key={id} id={`payroll-tab-${id}`} type="button" role="tab" aria-selected={activeTab === id} tabIndex={activeTab === id ? 0 : -1} aria-controls="payroll-detail-panel" onKeyDown={(event) => {
-            const index = tabs.findIndex(([key]) => key === id);
-            const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
-            if (next === null) return;
-            event.preventDefault();
-            setActiveTab(tabs[next][0]);
-            document.getElementById(`payroll-tab-${tabs[next][0]}`)?.focus();
-          }} onClick={() => setActiveTab(id)} className={`rounded-lg px-3 py-2 text-[13px] font-medium ${activeTab === id ? "bg-teal-50 text-teal-800" : "text-slate-500 hover:bg-slate-50"}`}>{label}</button>)}
-        </div>
-        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="p-3 sm:px-5 sm:py-3">
+        <WorkspaceTabSwitch label="Employee payroll details" mode="panel" idPrefix="payroll-tab" panelId="payroll-detail-panel"
+          items={tabs.map(([value, label]) => ({ value, label }))} value={activeTab} onChange={setActiveTab} className="shrink-0 px-4 py-3 sm:px-5" />
+        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="min-h-[120px] flex-1 overflow-y-auto px-4 pb-5 pt-2 sm:px-5">
           <div className="space-y-3">
             <div>
               {activeTab === "attendance" && !props.cutoffAttendanceDays?.length ? <p className="p-4 text-[13px] text-slate-500">No cutoff attendance available. Open Biometric Logs to review attendance records.</p> : null}

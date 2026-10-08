@@ -5,7 +5,7 @@ export const rentalPrimaryButtonClass =
   "inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:opacity-50";
 
 export const rentalSecondaryButtonClass =
-  "inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-400 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50";
 
 export function rentalLabel(value: string) {
   return value

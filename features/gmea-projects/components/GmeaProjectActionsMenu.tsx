@@ -83,7 +83,7 @@ export default function GmeaProjectActionsMenu({ project, onDetails }: { project
         >
           <p className="text-sm leading-6 text-slate-600">
             {project.status === "completed"
-              ? "Move this project back to the active project list?"
+              ? "Move this project back to the ongoing project list?"
               : "Move this project to Completed? Its financial records and history will remain available."}
           </p>
         </GmeaDialog>

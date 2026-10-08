@@ -85,7 +85,7 @@ export default function GmeaExpensesSection({
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-[1120px] text-left text-sm">
+        <table data-row-hover="none" className="w-full min-w-[1120px] text-left text-sm">
           <thead className="bg-slate-50 text-xs font-semibold text-slate-600 [&_th]:py-4">
             <tr>
               {[
@@ -105,7 +105,7 @@ export default function GmeaExpensesSection({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 tabular-nums [&>tr:hover]:bg-slate-50/60">
+          <tbody className="divide-y divide-slate-100 tabular-nums">
             {visible.map((e) => {
               const a = vatBreakdown(e.amount, e.vat_mode, e.vat_rate);
               return (

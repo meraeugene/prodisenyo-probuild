@@ -5,7 +5,7 @@ import { buildCeoProjectTableTotals } from "../utils/ceoPortfolio";
 import { projectColor } from "../utils/projectAppearance";
 import type { CeoGmeaSort } from "../utils/ceoPortfolioSorting";
 import CeoSortButton from "@/features/ceo-workspace/components/CeoSortButton";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 import GmeaProjectStatusBadge from "./GmeaProjectStatusBadge";
 
 export default function CeoGmeaProjectsTable({ projects, totalProjects = projects, sort, direction = "desc", onSort }: {

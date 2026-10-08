@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import useSWR from "swr";
 import {
   getGmeaRentalEquipmentAction,
@@ -12,13 +12,12 @@ import GmeaEquipmentFormDialog, {
   blankEquipmentForm,
   type EquipmentFormState,
 } from "./GmeaEquipmentFormDialog";
-import GmeaEquipmentSection from "./GmeaEquipmentSection";
-import GmeaRentalPortfolioCard from "./GmeaRentalPortfolioCard";
+
+
 import GmeaRentalCreateForm from "./GmeaRentalCreateForm";
 import GmeaRentalsHeader from "./GmeaRentalsHeader";
 import GmeaRentalsSummary from "./GmeaRentalsSummary";
-import GmeaRentalsAnalyticsNav from "./GmeaRentalsAnalyticsNav";
-import CeoRentalWorkspace from "./CeoRentalWorkspace";
+import RentalRecordsWorkspace from "./RentalRecordsWorkspace";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
 
 export default function GmeaRentalsPage({
@@ -44,9 +43,6 @@ export default function GmeaRentalsPage({
     getGmeaRentalsAction,
     { fallbackData: rentals, refreshInterval: canEdit ? 0 : 30000 },
   );
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
-  const [activity, setActivity] = useState("all");
   const [selected, setSelected] = useState<
     RentalEquipment | null | undefined
   >();
@@ -54,27 +50,6 @@ export default function GmeaRentalsPage({
   const [error, setError] = useState("");
   const [creatingRental, setCreatingRental] = useState(false);
   const [pending, startTransition] = useTransition();
-
-  const visible = useMemo(
-    () =>
-      items.filter((item) => {
-        const found = [
-          item.name,
-          item.equipment_type,
-          item.code,
-          item.plate_number,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query.toLowerCase());
-        return (
-          found &&
-          (status === "all" || item.status === status) &&
-          (activity === "all" || String(item.is_active) === activity)
-        );
-      }),
-    [activity, items, query, status],
-  );
 
   function updateForm<K extends keyof EquipmentFormState>(
     key: K,
@@ -158,7 +133,6 @@ export default function GmeaRentalsPage({
           onAddEquipment={() => openEquipment()}
           onCreateRental={() => setCreatingRental(true)}
         /> : <CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Track rental schedules, equipment availability, and collections." />}
-        <GmeaRentalsAnalyticsNav />
         <GmeaRentalsSummary rentals={rentalRows} equipment={items} />
 
         {error && selected === undefined && (
@@ -170,58 +144,9 @@ export default function GmeaRentalsPage({
           </p>
         )}
 
-        {!canEdit ? <CeoRentalWorkspace rentals={rentalRows} equipment={items} /> : <>
-        <section className="pt-3" aria-labelledby="rentals-heading">
-          <div>
-            <h2
-              id="rentals-heading"
-              className="text-[20px] font-bold tracking-[-0.035em] text-slate-950"
-            >
-              All rentals
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {rentalRows.length} {rentalRows.length === 1 ? "rental" : "rentals"} in
-              your workspace
-            </p>
-          </div>
-          {rentalRows.length ? (
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {rentalRows.map((rental) => (
-                <GmeaRentalPortfolioCard key={rental.id} rental={rental} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-4 rounded-[16px] border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-              <p className="text-sm font-semibold text-slate-900">
-                No rentals yet
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Your rental workspace is ready for its first rental.
-              </p>
-            </div>
-          )}
-        </section>
-
-        <GmeaEquipmentSection
-          items={visible}
-          total={items.length}
-          query={query}
-          status={status}
-          activity={activity}
-          canEdit={canEdit}
-          pending={pending}
-          onQueryChange={setQuery}
-          onStatusChange={setStatus}
-          onActivityChange={setActivity}
-          onEdit={openEquipment}
-          onDeactivate={deactivateEquipment}
-          onClear={() => {
-            setQuery("");
-            setStatus("all");
-            setActivity("all");
-          }}
-        />
-        </>}
+        <RentalRecordsWorkspace rentals={rentalRows} equipment={items} pending={pending}
+          onEditEquipment={canEdit ? openEquipment : undefined}
+          onDeactivateEquipment={canEdit ? deactivateEquipment : undefined} />
       </div>
 
       {selected !== undefined && (

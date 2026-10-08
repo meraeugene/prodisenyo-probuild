@@ -12,11 +12,11 @@ export const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
       href: "/gmea-overview",
       title: "Overview Dashboard",
       description:
-        "Review Electronics & Solar and Rentals performance in one place.",
+        "Review Projects Expenses and Rentals performance in one place.",
     },
     {
       href: "/gmea-projects",
-      title: "Electronics & Solar",
+      title: "Projects Expenses",
       description:
         "Manage projects, collections, expenses, and profit sharing.",
     },

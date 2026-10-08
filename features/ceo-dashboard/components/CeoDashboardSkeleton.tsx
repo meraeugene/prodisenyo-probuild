@@ -1,19 +1,22 @@
-import { SkeletonBlock as Block } from "@/components/LoadingSkeleton";
+﻿import { SkeletonBlock as Block } from "@/components/LoadingSkeleton";
+import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
+import WorkspaceTableSkeleton from "@/components/workspace/WorkspaceTableSkeleton";
 import styles from "./ceoDashboard.module.css";
 
 export default function CeoDashboardSkeleton() {
-  return (
-    <main aria-busy="true" role="status" aria-label="Loading dashboard" className={styles.page}>
-      <div className={styles.topbar}><Block className="h-3 w-44" /><Block className="h-3 w-28" /></div>
-      <div className="flex flex-wrap items-start justify-between gap-4"><div><Block className="h-9 w-64" /><Block className="mt-2 h-4 w-72 max-w-full" /></div><Block className="h-10 w-36 rounded-[10px]" /></div>
-      <div className="mt-6 space-y-5">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <div key={index} className={`${styles.panel} px-5 py-5`}><Block className="h-7 w-24" /><Block className="mt-2 h-4 w-28" /><Block className="mt-1.5 h-3 w-24" /></div>)}</div>
-        <div className={styles.performanceGrid}>
-          <div className={`${styles.panel} p-5`}><Block className="h-5 w-44" /><Block className="mt-5 h-64 w-full" /><Block className="mt-4 h-14 w-full" /></div>
-          <div className={`${styles.panel} p-5`}><Block className="h-5 w-36" /><div className="mt-5 space-y-5">{Array.from({ length: 4 }, (_, index) => <Block key={index} className="h-12 w-full" />)}</div></div>
-        </div>
-        <div className={styles.portfolioGrid}>{[5, 3].map((rows, index) => <div key={index} className={`${styles.panel} p-5`}><Block className="h-5 w-40" /><div className="mt-5 space-y-4">{Array.from({ length: rows }, (_, row) => <Block key={row} className="h-9 w-full" />)}</div></div>)}</div>
+  return <main aria-busy="true" role="status" aria-label="Loading dashboard" className={styles.page}>
+    <div className={styles.topbar}><Block className="h-4 w-64" /><Block className="h-4 w-32" /></div>
+    <CeoPageHeroSkeleton variant="workspace" action="button" titleWidth="w-64" />
+    <div className="mt-6 space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <div key={index} className="min-w-0 px-5 py-5"><Block className="h-4 w-28" /><Block className="mt-3 h-7 w-24" /><Block className="mt-1.5 h-5 w-32" /></div>)}</div>
+      <div className={styles.performanceGrid}>
+        <div className="min-w-0"><div className="flex flex-wrap justify-between gap-3 px-5 pb-2 pt-4"><div><Block className="h-6 w-44" /><Block className="mt-2 h-4 w-64" /></div><Block className="h-9 w-32" /></div><div className="h-64 px-2 pt-2"><Block className="h-full w-full" /></div><div className="grid gap-3 p-5 sm:grid-cols-3">{[0, 1, 2].map(index => <div key={index}><Block className="h-6 w-28" /><Block className="mt-1 h-4 w-24" /></div>)}</div></div>
+        <div className="min-w-0 p-5"><Block className="h-6 w-36" /><div className="mt-5"><WorkspaceTableSkeleton columns={4} rows={4} minWidth={0} rowHeight={72} /></div></div>
       </div>
-    </main>
-  );
+      <div className={styles.portfolioGrid}>
+        <div className="min-w-0 p-5"><div className="flex flex-wrap items-center justify-between gap-3"><Block className="h-6 w-40" /><div className="flex flex-wrap gap-2">{["w-32", "w-28", "w-24"].map(width => <Block key={width} className={`h-9 ${width}`} />)}</div></div><div className="mt-3"><WorkspaceTableSkeleton columns={6} rows={5} minWidth={650} /></div></div>
+        <div className="min-w-0 p-5"><div className="flex flex-wrap items-center justify-between gap-2"><Block className="h-6 w-44" /><Block className="h-4 w-12" /></div><div className="mt-4">{[0, 1, 2].map(index => <div key={index} className="py-4 pl-5"><Block className="h-4 w-24" /><Block className="mt-1 h-5 w-full" /><Block className="mt-1 h-5 w-48" /></div>)}</div></div>
+      </div>
+    </div>
+  </main>;
 }

@@ -5,14 +5,18 @@ import useSWR from "swr";
 
 import { getGmeaProjectsDataAction } from "@/actions/gmeaProjects";
 import type { GmeaProject } from "../types";
-import { projectSummary, sumMoney } from "../utils/gmeaCalculations";
+import { buildGmeaPortfolioSummary } from "../utils/gmeaPortfolioSummary";
 import { filterPortfolioProjects, selectPortfolioClients } from "../utils/gmeaPortfolioFilters";
 import GmeaDialog from "./GmeaDialog";
 import GmeaPortfolioHero from "./GmeaPortfolioHero";
 import GmeaPortfolioStats from "./GmeaPortfolioStats";
 import GmeaProjectForm from "./GmeaProjectForm";
 import GmeaProjectOverview from "./GmeaProjectOverview";
-import GmeaProjectPortfolioCard from "./GmeaProjectPortfolioCard";
+import GmeaPortfolioTable from "./GmeaPortfolioTable";
+import WorkspaceListToolbar from "@/components/workspace/WorkspaceListToolbar";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
+import styles from "@/components/workspace/workspace.module.css";
 
 export default function GmeaProjectsPageClient({
   projects,
@@ -42,113 +46,41 @@ export default function GmeaProjectsPageClient({
       : liveProjects.filter((project) => project.status === statusFilter);
     return filterPortfolioProjects(byStatus, query, filter);
   }, [filter, liveProjects, query, statusFilter]);
+  const pagination = useTablePagination(visible, JSON.stringify([query, filter, statusFilter]));
   const clients = useMemo(() => selectPortfolioClients(liveProjects), [liveProjects]);
   const hasFilters = Boolean(query.trim()) || filter !== "all" || statusFilter !== "active";
 
-  const activeProjects = liveProjects.filter((project) => project.status === "active");
-  const completedCount = liveProjects.length - activeProjects.length;
-  const summaries = activeProjects.map(projectSummary);
-  const contractTotal = sumMoney(summaries.map((summary) => summary.contract));
-  const expenseTotal = sumMoney(summaries.map((summary) => summary.expenses));
+  const { ongoingCount, completedCount, contractTotal, expenseTotal } = useMemo(
+    () => buildGmeaPortfolioSummary(liveProjects), [liveProjects],
+  );
 
   return (
     <div className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-4">
         <GmeaPortfolioHero canEdit={canEdit} onCreate={() => setCreate(true)} />
         <GmeaPortfolioStats
-          projectCount={activeProjects.length}
+          projectCount={ongoingCount}
           contractTotal={contractTotal}
           expenseTotal={expenseTotal}
         />
 
-        <section className="pt-3" aria-labelledby="gmea-project-list-heading">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 id="gmea-project-list-heading" className="text-[20px] font-bold tracking-[-0.035em] text-slate-950">
-                {statusFilter === "active" ? "Active projects" : statusFilter === "completed" ? "Completed projects" : "All projects"}
-              </h2>
-              <p aria-live="polite" className="mt-0.5 text-xs text-slate-500">
-                {visible.length} {visible.length === 1 ? "project" : "projects"}
-                {hasFilters ? ` of ${liveProjects.length} shown` : " in your portfolio"}
-                {hasFilters && (
-                  <button type="button" onClick={() => { setQuery(""); setFilter("all"); setStatusFilter("active"); }} className="ml-3 rounded text-teal-700 underline underline-offset-2 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700">
-                    Clear filters
-                  </button>
-                )}
-              </p>
-              <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1" aria-label="Filter by project status">
-                {([
-                  ["active", "Active", activeProjects.length],
-                  ["completed", "Completed", completedCount],
-                  ["all", "All", liveProjects.length],
-                ] as const).map(([value, label, count]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={statusFilter === value}
-                    onClick={() => setStatusFilter(value)}
-                    className={"rounded-lg px-3 py-1.5 text-xs font-semibold transition " + (statusFilter === value ? "bg-white text-teal-800 shadow-sm" : "text-slate-500 hover:text-slate-900")}
-                  >
-                    {label} ({count})
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-2.5 sm:max-w-[560px] sm:flex-row">
-              <label className="relative min-w-0 flex-1">
-                <span className="sr-only">Search projects</span>
-                <input data-search-field="true"
-                  aria-label="Search projects"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-                  placeholder="Search project, client, or location..."
-                  value={query}
- onChange={(event) => setQuery(event.target.value)}
-                />
-              </label>
-              <label className="relative shrink-0">
-                <span className="sr-only">Filter projects</span>
-                <select
-                  aria-label="Filter projects"
-                  className="h-11 w-full truncate rounded-xl border border-slate-200 bg-white py-0 px-4 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_-20px_rgba(15,23,42,.32)] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 sm:w-52"
-                  value={filter}
- onChange={(event) => setFilter(event.target.value)}
-                >
-                  <option value="all">All projects</option>
-                  <optgroup label="Expenses">
-                    <option value="with-expenses">With expenses</option>
-                    <option value="without-expenses">No expenses yet</option>
-                    <option value="over-contract">Expenses over contract</option>
-                    {!canEdit && <option value="new">Unread expenses</option>}
-                  </optgroup>
-                  <optgroup label="Client">
-                    <option value="missing-client">Client not set</option>
-                    {clients.map((client) => <option key={client} value={`client:${client}`}>{client}</option>)}
-                  </optgroup>
-                </select>
-              </label>
-            </div>
-          </div>
-
-          {visible.length ? (
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {visible.map((project) => (
-                <GmeaProjectPortfolioCard
-                  key={project.id}
-                  project={project}
-                  canEdit={canEdit}
-                  onDetails={() => setDetails(project)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-4 rounded-[16px] border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
-              <p className="text-sm font-semibold text-slate-900">No projects found</p>
-              <p className="mt-1 text-xs text-slate-500">
-                {liveProjects.length ? "Try a different search or filter." : "Your GMEA workspace is ready for its first project."}
-              </p>
-            </div>
-          )}
+        <section aria-label="GMEA project records" className={styles.panel}>
+          <WorkspaceListToolbar tabs={[
+            { value: "active" as const, label: "Ongoing", count: ongoingCount },
+            { value: "completed" as const, label: "Completed", count: completedCount },
+            { value: "all" as const, label: "All projects", count: liveProjects.length },
+          ]} tab={statusFilter} onTabChange={setStatusFilter} query={query} onQueryChange={setQuery}
+            searchLabel="Search projects" placeholder="Search project, client or location" hasFilters={hasFilters}
+            onReset={() => { setQuery(""); setFilter("all"); setStatusFilter("active"); }}>
+            <label className={styles.field}>Filter projects<select aria-label="Filter projects" className={styles.control} value={filter} onChange={(event) => setFilter(event.target.value)}>
+              <option value="all">All projects</option>
+              <optgroup label="Expenses"><option value="with-expenses">With expenses</option><option value="without-expenses">No expenses yet</option><option value="over-contract">Expenses over contract</option>{!canEdit && <option value="new">Unread expenses</option>}</optgroup>
+              <optgroup label="Client"><option value="missing-client">Client not set</option>{clients.map((client) => <option key={client} value={`client:${client}`}>{client}</option>)}</optgroup>
+            </select></label>
+          </WorkspaceListToolbar>
+          <GmeaPortfolioTable projects={pagination.pageRows} canEdit={canEdit} onDetails={setDetails} />
+          {!visible.length && <p className={styles.empty}>{liveProjects.length ? "No projects match these filters." : "Your GMEA workspace is ready for its first project."}</p>}
+          <WorkspaceListPagination {...pagination} total={visible.length} noun="projects" label="GMEA project table" />
         </section>
       </div>
 

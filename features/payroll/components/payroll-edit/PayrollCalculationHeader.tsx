@@ -35,15 +35,15 @@ export function PayrollCalculationHeader({
 }: PayrollCalculationHeaderProps) {
   return (
     <header className="shrink-0 border-b border-slate-200 bg-white">
-      <div className="flex min-h-16 items-center gap-3 px-4 py-2 sm:px-6">
-        <div className="flex shrink-0 items-center gap-3 border-r border-slate-200 pr-4 sm:pr-6">
+      <div className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-3 sm:flex-nowrap sm:px-5">
+        <div className="flex shrink-0 items-center gap-3 sm:border-r sm:border-slate-200 sm:pr-4">
           <h2 className="flex items-center gap-2 text-sm font-medium text-slate-950">
             <Calculator size={16} className="text-teal-700" aria-hidden="true" />
             Calculation Details
           </h2>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="order-2 flex min-w-0 basis-full flex-wrap items-center gap-x-4 gap-y-2 sm:order-none sm:flex-1 sm:basis-0">
           <div className="flex min-w-0 flex-1 basis-60 items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-700 text-[13px] font-medium text-white">
               {getInitials(employeeName)}
@@ -87,7 +87,7 @@ export function PayrollCalculationHeader({
           type="button"
           onClick={onClose}
           aria-label="Close calculation details"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           <X size={18} />
         </button>

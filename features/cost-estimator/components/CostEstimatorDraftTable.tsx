@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
 import type { ProjectEstimateDraftLine } from "@/features/cost-estimator/types";
 
@@ -84,23 +84,7 @@ export default function CostEstimatorDraftTable({
       <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-[20px] font-semibold text-slate-950">Estimate Items</h2>
-          <div className="mt-4 flex flex-wrap gap-5">
-            {sectionFilters.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setActiveFilter(filter)}
-                className={cn(
-                  "border-b-2 pb-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
-                  activeFilter === filter
-                    ? "border-teal-700 text-teal-800"
-                    : "border-transparent text-slate-600 hover:text-slate-950",
-                )}
-              >
-                {filter === "all" ? "All Items" : filter}
-              </button>
-            ))}
-          </div>
+          <WorkspaceTabSwitch label="Estimate item sections" mode="filter" className="mt-4" items={sectionFilters.map((value) => ({ value, label: value === "all" ? "All Items" : value }))} value={activeFilter} onChange={setActiveFilter} />
         </div>
         <label className="relative block w-full lg:w-64">
           <span className="sr-only">Search estimate items</span>

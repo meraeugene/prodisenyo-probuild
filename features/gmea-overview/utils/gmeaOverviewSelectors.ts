@@ -12,6 +12,7 @@ import type {
   GmeaOverviewAlert,
   GmeaOverviewData,
 } from "../types";
+import { buildGmeaOverviewCollections } from "./gmeaOverviewCollections";
 
 export function formatOverviewMoney(value: number) {
   return new Intl.NumberFormat("en-PH", {
@@ -66,7 +67,7 @@ export function buildGmeaOverview(data: GmeaOverviewData) {
   ).length;
   const divisions = [
     {
-      name: "Electronics & Solar" as const,
+      name: "Projects Expenses" as const,
       count: activeProjects,
       countLabel: "Projects",
       revenue: electronicsRevenue,
@@ -95,6 +96,7 @@ export function buildGmeaOverview(data: GmeaOverviewData) {
     },
   ];
   return {
+    ...buildGmeaOverviewCollections(data),
     activeProjects,
     activeRentals,
     activeWork: activeProjects + activeRentals,
@@ -115,7 +117,7 @@ export function selectGmeaOverviewActivity(data: GmeaOverviewData) {
         detail: project.title,
         date: project.created_at,
         href: "/gmea-projects/" + project.id,
-        division: "Electronics & Solar" as const,
+        division: "Projects Expenses" as const,
         kind: "project" as const,
       },
       ...project.expenses.map((expense) => ({
@@ -124,7 +126,7 @@ export function selectGmeaOverviewActivity(data: GmeaOverviewData) {
         detail: expense.description || project.title,
         date: expense.date,
         href: "/gmea-projects/" + project.id,
-        division: "Electronics & Solar" as const,
+        division: "Projects Expenses" as const,
         kind: "expense" as const,
       })),
       ...project.payment_terms.flatMap((term) =>
@@ -137,7 +139,7 @@ export function selectGmeaOverviewActivity(data: GmeaOverviewData) {
           detail: project.title,
           date: receipt.voided_at ?? receipt.recorded_at,
           href: "/gmea-projects/" + project.id,
-          division: "Electronics & Solar" as const,
+          division: "Projects Expenses" as const,
           kind: "payment" as const,
         })),
       ),

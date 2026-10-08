@@ -7,7 +7,7 @@ function Field() {
 
 export default function SettingsPageSkeleton() {
   return (
-    <div aria-busy="true" role="status" aria-label="Loading settings" className="min-h-screen space-y-7 bg-white p-4 sm:p-6 lg:p-8">
+    <div aria-busy="true" role="status" aria-label="Loading settings" className="min-h-screen space-y-7 p-4 sm:p-6 lg:p-8">
       <CeoPageHeroSkeleton action="none" />
       <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,1fr)]">
         <SkeletonPanel className="p-5 sm:p-6">
@@ -17,7 +17,7 @@ export default function SettingsPageSkeleton() {
           </div>
           <div className="my-6 flex flex-wrap items-center gap-6">
             <Block className="h-28 w-28 rounded-full" />
-            <div><Block className="h-4 w-24" /><Block className="mt-2 h-4 w-44" /><Block className="mt-3 h-10 w-40 rounded-lg" /></div>
+            <div><Block className="h-4 w-24" /><Block className="mt-2 h-4 w-44" /><div className="mt-3 flex gap-2"><Block className="h-10 w-40 rounded-lg" /><Block className="h-10 w-24 rounded-lg" /></div></div>
           </div>
           <div className="grid gap-4"><Field /><div className="grid gap-4 md:grid-cols-2"><Field /><Field /></div><Field /></div>
         </SkeletonPanel>

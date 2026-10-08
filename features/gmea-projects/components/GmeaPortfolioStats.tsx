@@ -12,7 +12,7 @@ export default function GmeaPortfolioStats({
 }) {
   const stats = [
     {
-      label: "Active projects",
+      label: "Ongoing projects",
       value: String(projectCount),
     },
     {

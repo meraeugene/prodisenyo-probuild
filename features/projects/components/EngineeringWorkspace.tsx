@@ -6,7 +6,7 @@ import {
   ClipboardList,
   FileText,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import type { ProjectRecord } from "../types";
 import type { ImportedProgressActivity } from "../utils/engineeringProgressImport";
 import {
@@ -86,42 +86,9 @@ export default function EngineeringWorkspace({
         </div>
       </header>
 
-      <nav
-        aria-label="Engineering workspace sections"
-        className="overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 shadow-sm"
-      >
-        <div className="flex min-w-max gap-1">
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onTabChange(item.id)}
-              aria-current={tab === item.id ? "page" : undefined}
-              className={cn(
-                "flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
-                tab === item.id
-                  ? "bg-[#076d69] text-white"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-apple-charcoal",
-              )}
-            >
-              <item.icon size={15} />
-              {item.label}
-              {"count" in item ? (
-                <span
-                  className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold",
-                    tab === item.id
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-600",
-                  )}
-                >
-                  {item.count}
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-      </nav>
+      <WorkspaceTabSwitch label="Engineering workspace sections" items={tabs.map((item) => ({ value: item.id, count: item.count,
+        label: <span className="inline-flex items-center gap-2"><item.icon size={15} aria-hidden="true" />{item.label}</span> }))}
+        value={tab} onChange={onTabChange} />
 
       {tab === "progress" ? (
         <EngineeringProgressWorksheet

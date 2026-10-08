@@ -1,2 +1,3 @@
 import GmeaRentalsSkeleton from "@/features/gmea-rentals/components/GmeaRentalsSkeleton";
-export default function Loading() { return <GmeaRentalsSkeleton view="rentals" />; }
+import { getCurrentProfile } from "@/lib/auth";
+export default async function Loading() { const profile = await getCurrentProfile(); return <GmeaRentalsSkeleton view="rentals" canEdit={profile?.role !== "ceo"} />; }

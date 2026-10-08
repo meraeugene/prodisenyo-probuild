@@ -3,7 +3,7 @@ import { SkeletonBlock as Block, SkeletonPanel, SkeletonRows } from "@/component
 export default function ProjectContentSkeleton({ tab }: { tab: "materials" | "documents" | "activity-log" }) {
   if (tab === "materials") {
     return <div role="status" aria-label="Loading materials" className="space-y-4">
-      <div className="flex flex-col justify-between gap-4 border-b border-slate-100 pb-3 sm:flex-row sm:items-center"><div className="flex gap-1.5 overflow-hidden">{[0,1,2,3].map(i => <Block key={i} className="h-9 w-28 shrink-0 rounded-xl" />)}</div><Block className="h-9 w-full sm:w-64" /></div>
+      <div className="flex flex-col justify-between gap-4 pb-3 sm:flex-row sm:items-center"><div className="flex gap-1.5 overflow-hidden">{[0,1,2,3].map(i => <Block key={i} className="h-9 w-28 shrink-0 rounded-xl" />)}</div><Block className="h-9 w-full sm:w-64" /></div>
       {[0,1,2].map(i => <SkeletonPanel key={i} className="flex flex-col justify-between gap-6 md:flex-row md:items-center"><div className="flex min-w-0 flex-1 items-start gap-4"><Block className="h-16 w-16 shrink-0 rounded-xl" /><div className="min-w-0 flex-1 space-y-2"><Block className="h-5 w-48" /><Block className="h-6 w-56" /><Block className="h-5 w-32" /><Block className="h-4 w-80" /></div></div><div className="flex gap-2 self-end md:self-center"><Block className="h-10 w-24 rounded-xl" /><Block className="h-10 w-24 rounded-xl" /></div></SkeletonPanel>)}
     </div>;
   }

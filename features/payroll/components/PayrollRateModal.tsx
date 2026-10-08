@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import PayrollBranchRateTable from "./PayrollBranchRateTable";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import { PayrollPageControls } from "./PayrollPageControls";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -217,30 +218,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               />
             </div>
 
-            <div className="inline-flex rounded-2xl border border-slate-200 bg-apple-snow/70 p-1">
-              <button
-                type="button"
-                onClick={() => { setBranchFilter("all"); setPage(1); }}
-                className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                  branchFilter === "all"
-                    ? "bg-teal-700 text-white"
-                    : "text-apple-ash hover:bg-white"
-                }`}
-              >
-                All Employees
-              </button>
-              <button
-                type="button"
-                onClick={() => { setBranchFilter("multi"); setPage(1); }}
-                className={`whitespace-nowrap rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                  branchFilter === "multi"
-                    ? "bg-teal-700 text-white"
-                    : "text-apple-ash hover:bg-white"
-                }`}
-              >
-                Multi-branch Only
-              </button>
-            </div>
+            <WorkspaceTabSwitch label="Employee branch filter" mode="filter" value={branchFilter}
+              onChange={(value) => { setBranchFilter(value); setPage(1); }}
+              items={[{ value: "all", label: "All Employees" }, { value: "multi", label: "Multi-branch Only" }]} />
           </div>
 
           <p className="text-xs text-apple-steel">

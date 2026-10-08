@@ -1,6 +1,6 @@
 import { CheckCircle2, Clock3, Loader2, MapPin, XCircle } from "lucide-react";
 import { formatOvertimeRequesterRole, type OvertimeRequestRecord } from "@/features/overtime-requests/types";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 import { formatRequestedAt } from "../utils/payrollApprovalQueueHelpers";
 
 export default function OvertimeApprovalRequestCard({ request, pending, approving, onApprove, onReject }: {

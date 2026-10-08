@@ -1,17 +1,16 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import type { ManagedUserRow } from "../types";
 import { cn } from "@/lib/utils";
 import { useUserManagementPage } from "../hooks/useUserManagementPage";
-import {
-  formatRoleLabel,
-  ROLE_OPTIONS,
-} from "../utils/userManagementForm";
+import { formatRoleLabel } from "../utils/userManagementForm";
 import UserAccountModal from "./UserAccountModal";
+import UserDirectoryFilters from "./UserDirectoryFilters";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
 
 function UserActionsButton({
   user,
@@ -52,6 +51,8 @@ export default function UserManagementPageClient({
     statusFilter,
     page,
     totalPages,
+    pageSize,
+    setPageSize,
     deleteTarget,
     openMenu,
     openMenuUser,
@@ -67,10 +68,6 @@ export default function UserManagementPageClient({
     setPage,
     setDeleteUserId,
   } = state;
-  const firstVisibleUser =
-    filteredUsers.length === 0 ? 0 : (page - 1) * 10 + 1;
-  const lastVisibleUser = Math.min(page * 10, filteredUsers.length);
-
   return (
     <div className="space-y-4 overflow-x-hidden p-4 sm:p-6">
       <DashboardPageHero
@@ -105,41 +102,7 @@ export default function UserManagementPageClient({
           </button>
         </div>
 
-        <div className="mt-5 grid gap-2 md:grid-cols-[minmax(240px,1fr)_190px_160px]">
-          <label className="relative block">
-            <span className="sr-only">Search users</span>
-            <input data-search-field="true"
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search name, username, or email"
-              className="h-10 w-full rounded-[10px] border border-apple-mist bg-white pl-3 pr-3 text-sm text-apple-charcoal outline-none transition focus:border-[#076d69]"
-            />
-          </label>
-          <select
-            aria-label="Filter users by role"
-            value={roleFilter}
-            onChange={(event) => setRoleFilter(event.target.value)}
-            className="h-10 rounded-[10px] border border-apple-mist bg-white px-3 text-sm text-apple-charcoal outline-none focus:border-[#076d69]"
-          >
-            <option value="all">All roles</option>
-            {ROLE_OPTIONS.map((role) => (
-              <option key={role.value} value={role.value}>
-                {role.label}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Filter users by status"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            className="h-10 rounded-[10px] border border-apple-mist bg-white px-3 text-sm text-apple-charcoal outline-none focus:border-[#076d69]"
-          >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
+        <UserDirectoryFilters users={sortedUsers} query={searchQuery} role={roleFilter} status={statusFilter} onQueryChange={setSearchQuery} onRoleChange={setRoleFilter} onStatusChange={setStatusFilter} />
 
         <div className="mt-4 overflow-hidden rounded-[16px] border border-apple-mist">
           <table className="hidden w-full table-fixed text-sm md:table">
@@ -208,18 +171,7 @@ export default function UserManagementPageClient({
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 text-sm text-apple-smoke sm:flex-row sm:items-center sm:justify-between">
-          <p>Showing {firstVisibleUser}–{lastVisibleUser} of {filteredUsers.length}</p>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1} className="inline-flex h-9 items-center gap-1 rounded-lg border border-apple-mist px-3 font-semibold text-apple-charcoal disabled:cursor-not-allowed disabled:opacity-40">
-              <ChevronLeft size={15} /> Previous
-            </button>
-            <span className="min-w-16 text-center">{page} of {totalPages}</span>
-            <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages} className="inline-flex h-9 items-center gap-1 rounded-lg border border-apple-mist px-3 font-semibold text-apple-charcoal disabled:cursor-not-allowed disabled:opacity-40">
-              Next <ChevronRight size={15} />
-            </button>
-          </div>
-        </div>
+        <WorkspaceListPagination page={page} totalPages={totalPages} pageSize={pageSize} total={filteredUsers.length} onPageChange={setPage} onPageSizeChange={setPageSize} noun="accounts" label="User directory" />
       </section>
 
       <UserAccountModal state={state} currentUserId={currentUserId} />

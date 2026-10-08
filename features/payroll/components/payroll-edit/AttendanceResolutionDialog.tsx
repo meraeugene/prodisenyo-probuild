@@ -103,7 +103,7 @@ export function AttendanceResolutionDialog({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex h-[100dvh] w-full flex-col overflow-hidden border border-slate-200 bg-[#fbfcfc] shadow-workspace-dialog sm:h-auto sm:max-h-[92vh] sm:max-w-[1220px] sm:rounded-2xl">
+      <div role="dialog" aria-modal="true" aria-label="Attendance resolution" className="flex h-[100dvh] w-full flex-col overflow-hidden border border-slate-200 bg-[#fbfcfc] shadow-workspace-dialog sm:h-auto sm:max-h-[92vh] sm:max-w-[1220px] sm:rounded-2xl">
         <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 sm:py-5">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 lg:grid-cols-[minmax(0,1fr)_510px_auto] lg:items-center">
             <div className="min-w-0">

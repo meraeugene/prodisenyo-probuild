@@ -1,5 +1,5 @@
-﻿import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
+import styles from "@/components/workspace/workspace.module.css";
 import { CEO_PROJECT_TABS, type CeoProjectTab } from "../utils/ceoProjectFilters";
 import type { CeoGmeaSort } from "../utils/ceoPortfolioSorting";
 

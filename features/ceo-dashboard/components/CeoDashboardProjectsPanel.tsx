@@ -6,6 +6,7 @@ import type { CeoDashboardProject, CeoPortfolioFilter } from "../types";
 import { buildCeoAttentionItems, formatCeoCurrency, formatCeoDate } from "../utils/ceoDashboard";
 import { selectCeoPortfolioProjects, CEO_PROJECT_STATUS_LABELS, CEO_PROJECT_STATUS_STYLES } from "../utils/ceoPortfolioSelectors";
 import styles from "./ceoDashboard.module.css";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 
 export default function CeoDashboardProjectsPanel({ projects }: { projects: CeoDashboardProject[] }) {
   const [filter, setFilter] = useState<CeoPortfolioFilter>("all");
@@ -20,9 +21,7 @@ export default function CeoDashboardProjectsPanel({ projects }: { projects: CeoD
     <section className={`${styles.panel} p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className={styles.heading}>Project Portfolio</h2>
-        <div aria-label="Filter project portfolio" className="flex flex-wrap gap-3">
-          {filters.map((item) => <button key={item.value} type="button" aria-pressed={filter === item.value} onClick={() => setFilter(item.value)} className={`min-h-8 border-b-2 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${filter === item.value ? "border-[#076d69] font-medium text-[#076d69]" : "border-transparent text-[#53736f] hover:text-[#076d69]"}`}>{item.label} ({item.count})</button>)}
-        </div>
+        <WorkspaceTabSwitch label="Filter project portfolio" mode="filter" items={filters} value={filter} onChange={setFilter} />
       </div>
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[650px] text-left text-[11px]">

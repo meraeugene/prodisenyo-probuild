@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { Plus } from "lucide-react";
 import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
 import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 import { useCeoProjectPortfolio } from "../hooks/useCeoProjectPortfolio";
 import type { CeoProjectSort } from "../utils/ceoProjectPortfolio";
 import type { ProjectRecord } from "../types";

@@ -3,7 +3,7 @@ import DashboardPageHero from "@/components/DashboardPageHero";
 export default function GmeaOverviewHeader() {
   return (
     <DashboardPageHero
-      eyebrow="GMEA Marketing Corporation" title="Overview Dashboard" description="Overall performance across Electronics & Solar and Rentals."
+      eyebrow="GMEA Marketing Corporation" title="Overview Dashboard" description="Overall performance across Projects Expenses and Rentals."
     />
   );
 }

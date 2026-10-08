@@ -8,6 +8,7 @@ import {
 } from "@/actions/users";
 import type { ManagedUserRow } from "../types";
 import { EMPTY_FORM, type FormErrors } from "../utils/userManagementForm";
+import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
   const [users, setUsers] = useState(initialUsers);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -17,7 +18,6 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [page, setPage] = useState(1);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<{
     userId: string;
@@ -52,12 +52,8 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
       return matchesQuery && matchesRole && matchesStatus;
     });
   }, [roleFilter, searchQuery, sortedUsers, statusFilter]);
-  const pageSize = 10;
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const paginatedUsers = filteredUsers.slice(
-    (page - 1) * pageSize,
-    page * pageSize,
-  );
+  const { page, totalPages, pageSize, pageRows: paginatedUsers, onPageChange: setPage, onPageSizeChange: setPageSize } =
+    useTablePagination(filteredUsers, JSON.stringify([searchQuery, roleFilter, statusFilter]));
 
   const deleteTarget =
     sortedUsers.find((user) => user.id === deleteUserId) ?? null;
@@ -88,14 +84,6 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [openMenu]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery, roleFilter, statusFilter]);
-
-  useEffect(() => {
-    setPage((current) => Math.min(current, totalPages));
-  }, [totalPages]);
 
   function validateForm() {
     const nextErrors: FormErrors = {};
@@ -276,6 +264,8 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
     statusFilter,
     page,
     totalPages,
+    pageSize,
+    setPageSize,
     deleteTarget,
     openMenu,
     openMenuUser,

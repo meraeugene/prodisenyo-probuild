@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Dialog } from "radix-ui";
 import { X } from "lucide-react";
+import styles from "@/components/workspace/workspace.module.css";
 import {
   rentalPrimaryButtonClass,
   rentalSecondaryButtonClass,
@@ -39,6 +40,7 @@ export default function GmeaRentalsDialog({
           aria-describedby="gmea-rentals-dialog-description"
           onInteractOutside={(event) => event.preventDefault()}
           className={
+            styles.dialog + " " +
             "fixed inset-x-0 bottom-0 z-[151] mx-auto flex max-h-[95dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:bottom-auto sm:top-1/2 sm:w-[calc(100%-2rem)] sm:-translate-y-1/2 sm:rounded-2xl " +
             (wide ? "sm:max-w-5xl" : "sm:max-w-4xl")
           }

@@ -7,6 +7,7 @@ import { highlight } from "@/components/Highlight";
 import type { AttendanceRecord } from "@/types";
 import type { UseAttendanceReviewResult } from "@/features/attendance/hooks/useAttendanceReview";
 import { formatLogTime } from "@/features/payroll/utils/payrollFormatters";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 
 interface AttendanceReviewSectionProps {
   step: number;
@@ -106,34 +107,8 @@ export default function AttendanceReviewSection({
           )}
 
           {records.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => {
-                  setStep2View("daily");
-                }}
-                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
-                  ${
-                    step2View === "daily"
-                      ? "border-[#076d69] bg-[#076d69] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
-                  }`}
-              >
-                Daily View
-              </button>
-              <button
-                onClick={() => {
-                  setStep2View("detailed");
-                }}
-                className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold transition-all duration-150
-                  ${
-                    step2View === "detailed"
-                      ? "border-[#076d69] bg-[#076d69] text-white"
-                      : "border-apple-mist bg-white text-apple-ash hover:border-[#5eead4]"
-                  }`}
-              >
-                Detailed Logs
-              </button>
-            </div>
+            <WorkspaceTabSwitch label="Attendance log view" mode="filter" value={step2View} onChange={setStep2View}
+              items={[{ value: "daily", label: "Daily View" }, { value: "detailed", label: "Detailed Logs" }]} />
           )}
 
           {records.length > 0 && (

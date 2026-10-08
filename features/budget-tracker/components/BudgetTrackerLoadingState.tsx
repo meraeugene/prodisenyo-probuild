@@ -5,18 +5,18 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 export default function BudgetTrackerLoadingState() {
   return (
     <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-4 overflow-x-hidden p-0 sm:p-6">
-      <section className="bg-white p-5 sm:p-6">
+      <section className="p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
-            <SkeletonBlock className="h-3 w-28 bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-10 w-80 max-w-full bg-[#eaf4f0]" />
-            <SkeletonBlock className="h-4 w-full max-w-[40rem] bg-[#eaf4f0]" />
+            <SkeletonBlock className="h-3 w-28" />
+            <SkeletonBlock className="h-10 w-80 max-w-full" />
+            <SkeletonBlock className="h-4 w-full max-w-[40rem]" />
           </div>
-          <SkeletonBlock className="mt-3 h-10 w-36 rounded-xl bg-[#eaf4f0] sm:mt-0" />
+          <SkeletonBlock className="mt-3 h-10 w-36 rounded-xl sm:mt-0" />
         </div>
       </section>
 
-      <section className="rounded-none border border-transparent bg-white p-4 shadow-workspace sm:rounded-[18px] sm:p-5">
+      <section className="rounded-none p-4 sm:rounded-[18px] sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="space-y-3">
             <SkeletonBlock className="h-3 w-24" />
@@ -29,7 +29,7 @@ export default function BudgetTrackerLoadingState() {
           {Array.from({ length: 3 }).map((_, index) => (
             <article
               key={`budget-project-card-skeleton-${index}`}
-              className="rounded-[14px] border border-apple-mist bg-[rgb(var(--apple-snow))] p-4"
+              className="rounded-[14px] p-4"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-2">

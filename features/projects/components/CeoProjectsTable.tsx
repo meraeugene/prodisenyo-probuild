@@ -2,7 +2,7 @@ import type { ProjectRecord } from "../types";
 import { formatProjectCurrency, getProjectStatusPresentation } from "../utils/projectPresentation";
 import styles from "./projects.module.css";
 import CeoSortButton from "@/features/ceo-workspace/components/CeoSortButton";
-import ceoStyles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import ceoStyles from "@/components/workspace/workspace.module.css";
 import { formatPortfolioDate } from "../utils/projectPortfolioSelectors";
 import type { CeoProjectSort } from "../utils/ceoProjectPortfolio";
 

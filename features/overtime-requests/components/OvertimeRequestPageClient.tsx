@@ -1,6 +1,6 @@
 "use client";
 
-import OvertimeRequestCard from "./OvertimeRequestCard";
+import OvertimeRequestHistory from "./OvertimeRequestHistory";
 
 import { useMemo, useState, useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
@@ -144,7 +144,7 @@ export default function OvertimeRequestPageClient({
     <div className="p-4 sm:p-6 xl:flex xl:flex-col">
       <DashboardPageHero eyebrow="Overtime Workflow" title="Request Overtime" />
 
-      <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[1.08fr_0.92fr] xl:items-stretch">
+      <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(320px,0.7fr)_minmax(0,1.3fr)] xl:items-stretch">
         <section className="rounded-none border border-transparent h-fit bg-white p-5 shadow-workspace sm:rounded-[16px]">
           <h2 className="text-lg font-semibold text-apple-charcoal">
             Overtime Request Form
@@ -307,29 +307,7 @@ export default function OvertimeRequestPageClient({
           </form>
         </section>
 
-        <section className="rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[16px] xl:flex xl:h-full xl:min-h-0 xl:flex-col">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-apple-charcoal">
-              Your Overtime Requests
-            </h2>
-            <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-              {sortedRequests.length} request
-              {sortedRequests.length === 1 ? "" : "s"}
-            </span>
-          </div>
-
-          {sortedRequests.length === 0 ? (
-            <p className="text-sm text-apple-steel">
-              No overtime requests submitted yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {sortedRequests.map((request) => (
-                <OvertimeRequestCard key={request.id} request={request} />
-              ))}
-            </div>
-          )}
-        </section>
+        <OvertimeRequestHistory requests={sortedRequests} />
       </div>
 
       {confirmOpen ? (

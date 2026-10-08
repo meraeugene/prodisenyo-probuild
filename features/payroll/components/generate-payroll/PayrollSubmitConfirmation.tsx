@@ -1,10 +1,12 @@
 "use client";
 import { Send } from "lucide-react";
+import { useDialogEscape } from "@/lib/useDialogEscape";
 type Props = { site: string; attendancePeriod: string; isPending: boolean; onClose: () => void; onConfirm: () => void };
 export default function PayrollSubmitConfirmation({ site, attendancePeriod, isPending, onClose, onConfirm }: Props) {
+  useDialogEscape(onClose, 120, !isPending);
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm ">
-      <div className="w-full max-w-xl rounded-[24px] border border-transparent bg-white shadow-workspace">
+      <div role="dialog" aria-modal="true" aria-label="Submit payroll report" className="w-full max-w-xl rounded-[24px] border border-transparent bg-white shadow-workspace">
         <div className="border-b border-apple-mist px-6 py-5">
           <div className="flex items-start gap-4">
             <div className="min-w-0">

@@ -52,7 +52,7 @@ export const inputClass =
 export const buttonClass =
   "inline-flex items-center justify-center gap-2 rounded-xl bg-[#076d69] px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50";
 export const secondaryClass =
-  "inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50";
+  "inline-flex min-h-9 items-center justify-center rounded-[5px] border border-slate-400 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#076d69] disabled:opacity-50";
 
 export function today() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });

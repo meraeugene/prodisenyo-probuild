@@ -97,6 +97,7 @@ export function PayrollAdjustmentDialog({
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/40 p-4">
       <form
+        role="dialog" aria-modal="true" aria-label={FORM_TITLES[activeForm]}
         onSubmit={(event) => {
           event.preventDefault();
           onSubmit();

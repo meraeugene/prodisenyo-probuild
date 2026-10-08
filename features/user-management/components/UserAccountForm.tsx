@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import type { AppRole } from "@/types/database";
 import type { useUserManagementPage } from "../hooks/useUserManagementPage";
 import { ROLE_OPTIONS } from "../utils/userManagementForm";
+import styles from "@/components/workspace/workspace.module.css";
 export default function UserAccountForm({
   form,
   errors,
@@ -23,7 +24,7 @@ export default function UserAccountForm({
   | "handleSubmit"
 > & { currentUserId: string; onClose: () => void }) {
   return (
-    <div className="min-w-0 rounded-[18px] border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+    <div className={`${styles.dialog} min-w-0 border border-transparent bg-white p-5 shadow-workspace sm:p-6`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-apple-steel">

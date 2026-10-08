@@ -51,7 +51,7 @@ export default function PayrollSection({
   const isLogs = workspace.activeView === "logs";
 
   return (
-    <section className="min-h-screen bg-[#fbfcfc] px-4 pb-6 pt-5 sm:px-6 sm:pt-6 xl:px-7">
+    <section data-payroll-workspace="true" className="min-h-screen bg-[#f5f6f8] px-4 pb-6 pt-5 sm:px-6 sm:pt-6 xl:px-7">
       <PayrollWorkspaceHeader
         generated={payroll.payrollGenerated}
         canSubmit={canSubmit}
@@ -78,7 +78,7 @@ export default function PayrollSection({
             totalPayroll={workspace.totalPayroll}
           />
 
-          <div className="rounded-[11px] bg-white">
+          <div data-payroll-records-panel="true" className="rounded-[7px] bg-white p-4 sm:p-5">
             <PayrollWorkspaceControls
               activeView={workspace.activeView}
               allCount={workspace.allEmployees.length}

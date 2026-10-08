@@ -15,6 +15,7 @@ import {
   rentalLabel,
 } from "../utils/rentalUi";
 import RentalStatusBadge from "./RentalStatusBadge";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import GmeaRentalCollectionsSection from "./GmeaRentalCollectionsSection";
 import GmeaRentalCrewSection from "./GmeaRentalCrewSection";
 import GmeaRentalExpensesSection from "./GmeaRentalExpensesSection";
@@ -124,34 +125,8 @@ export default function GmeaRentalWorkspace({
           ))}
         </section>
 
-        <nav
-          aria-label="Rental sections"
-          className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5"
-        >
-          {(
-            [
-              "Equipment",
-              "Collections",
-              "Expenses",
-              "Drivers / Operators",
-            ] as const
-          ).map((label) => (
-            <button
-              key={label}
-              type="button"
-              aria-current={tab === label ? "page" : undefined}
-              onClick={() => setTab(label)}
-              className={
-                "whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-medium transition-colors " +
-                (tab === label
-                  ? "bg-[#076d69] text-white shadow-sm"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
+        <WorkspaceTabSwitch label="Rental sections" items={(["Equipment", "Collections", "Expenses", "Drivers / Operators"] as const).map((value) => ({ value, label: value }))}
+          value={tab} onChange={setTab} />
 
         {tab === "Equipment" && (
           <section

@@ -7,7 +7,7 @@ export type GmeaOverviewData = {
 };
 
 export type GmeaOverviewDivisionFinance = {
-  name: "Electronics & Solar" | "Rentals";
+  name: "Projects Expenses" | "Rentals";
   revenue: number;
   expenses: number;
   profit: number;
@@ -19,7 +19,7 @@ export type GmeaOverviewActivity = {
   detail: string;
   date: string;
   href: string;
-  division: "Electronics & Solar" | "Rentals";
+  division: "Projects Expenses" | "Rentals";
   kind: "project" | "payment" | "expense" | "rental";
 };
 

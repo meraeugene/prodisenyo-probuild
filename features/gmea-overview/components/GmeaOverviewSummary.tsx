@@ -10,6 +10,8 @@ export default function GmeaOverviewSummary({
     totalExpenses: number;
     netProfit: number;
     activeClients: number;
+    totalCollected: number;
+    notCollected: number;
   };
 }) {
   const cards = [
@@ -30,6 +32,8 @@ export default function GmeaOverviewSummary({
       formatOverviewMoney(summary.netProfit),
     ],
     ["Active clients", summary.activeClients],
+    ["Total collected", formatOverviewMoney(summary.totalCollected)],
+    ["Not collected", formatOverviewMoney(summary.notCollected)],
   ] as const;
-  return <WorkspaceSummaryCards ariaLabel="Overview summary" cards={cards.map(([label, value]) => ({ label, value }))} className="xl:grid-cols-5" />;
+  return <WorkspaceSummaryCards ariaLabel="Overview summary" cards={cards.map(([label, value]) => ({ label, value }))} className="xl:grid-cols-4" />;
 }

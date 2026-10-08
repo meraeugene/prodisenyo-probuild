@@ -6,7 +6,7 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
 export default function EstimateReviewsSectionSkeleton() {
   return (
-    <section role="status" aria-busy="true" aria-label="Loading content" className="mt-4 rounded-none border border-transparent bg-white p-5 shadow-workspace sm:rounded-[18px]">
+    <section role="status" aria-busy="true" aria-label="Loading content" className="mt-4 rounded-none p-5 sm:rounded-[18px]">
       <div
         className="flex items-start justify-between gap-3"
         aria-hidden="true"
@@ -20,10 +20,10 @@ export default function EstimateReviewsSectionSkeleton() {
       </div>
 
       <div
-        className="mt-4 overflow-hidden rounded-[20px] border border-apple-mist bg-white"
+        className="mt-4 overflow-hidden rounded-[20px]"
         aria-hidden="true"
       >
-        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] gap-3 border-b border-apple-mist bg-[rgb(var(--apple-snow))] px-3 py-2">
+        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] gap-3 px-3 py-2">
           <SkeletonBlock className="h-3 w-20 rounded-full" />
           <SkeletonBlock className="h-3 w-16 rounded-full" />
           <SkeletonBlock className="h-3 w-20 rounded-full" />
@@ -51,7 +51,7 @@ export default function EstimateReviewsSectionSkeleton() {
                 <SkeletonBlock className="h-8 w-24 rounded-full" />
               </div>
               <div className="flex justify-center">
-                <div className="rounded-xl border border-[#ccfbf1] bg-[#f0fdfa] p-2">
+                <div className="rounded-xl p-2">
                   <SkeletonBlock className="h-4 w-4 rounded-md" />
                 </div>
               </div>

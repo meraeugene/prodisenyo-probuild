@@ -3,7 +3,7 @@
 export default function EstimateReviewsTableSkeleton() {
   return (
     <section
-      className="mt-4 rounded-[18px] border border-transparent bg-white p-5 shadow-workspace"
+      className="mt-4 rounded-[18px] p-5"
       aria-hidden="true"
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -14,8 +14,8 @@ export default function EstimateReviewsTableSkeleton() {
         <div className="h-7 w-24 animate-pulse motion-reduce:animate-none rounded-full bg-slate-200/70" />
       </div>
 
-      <div className="overflow-hidden rounded-[18px] border border-apple-mist">
-        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] gap-3 bg-[rgb(var(--apple-snow))] px-3 py-2">
+      <div className="overflow-hidden rounded-[18px]">
+        <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_0.9fr_0.8fr_1fr] gap-3 px-3 py-2">
           {Array.from({ length: 7 }).map((_, index) => (
             <div
               key={`estimate-review-header-skeleton-${index}`}

@@ -15,7 +15,7 @@ import {
 import ChartMoneyTooltip from "@/components/ChartMoneyTooltip";
 import { buildCeoPortfolio, formatCompactPeso } from "../utils/ceoPortfolio";
 import { formatMoney } from "../utils/gmeaCalculations";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 
 export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
   data: ReturnType<typeof buildCeoPortfolio>;

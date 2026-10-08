@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
-import styles from "@/features/ceo-workspace/components/ceoWorkspace.module.css";
+import styles from "@/components/workspace/workspace.module.css";
 
 export default function CeoDashboardBanner({ name, approvals, href }: {
   name: string; approvals: number; href: string;

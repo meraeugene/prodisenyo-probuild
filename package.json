@@ -17,6 +17,7 @@
     "test:gmea": "node --test tests/gmea*.test.cjs",
     "test:gmea:browser": "node tests/gmea/browserCheck.cjs",
     "test:ceo:browser": "node tests/ceo/browserCheck.cjs",
+    "test:workspace:browser": "node tests/workspace/browserCheck.cjs",
     "gmea:rentals:history": "node scripts/gmea-rentals-history-import.cjs --dry-run"
   },
   "dependencies": {

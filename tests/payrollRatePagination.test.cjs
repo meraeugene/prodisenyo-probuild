@@ -23,6 +23,7 @@ test('branch rate pagination keeps edits across pages and resets search and filt
       useTransition: () => [false, callback => callback()],
     },
     '@/actions/payrollRates': { saveEmployeeBranchRatesAction: async () => ({ saved: 1 }) },
+    '@/components/workspace/WorkspaceTabSwitch': { default: () => null },
     sonner: { toast: {} },
   }).default;
   const payroll = {
@@ -57,7 +58,7 @@ test('branch rate pagination keeps edits across pages and resets search and filt
   nodes = render();
   assert.equal(pager(nodes).props.page, 1);
   assert.equal(table(nodes).props.rows.length, 1);
-  nodes.find(node => node.type === 'button' && node.props.children === 'Multi-branch Only').props.onClick();
+  nodes.find(node => node.props.label === 'Employee branch filter').props.onChange('multi');
   nodes = render();
   assert.equal(pager(nodes).props.page, 1);
   assert.equal(table(nodes).props.rows.length, 0);

@@ -49,7 +49,7 @@ export default function GmeaPaymentTermRow({
 
   return (
     <>
-      <tr className="transition-colors hover:bg-slate-50/70">
+      <tr>
         <td className="p-4 text-slate-500">{index + 1}</td>
         <td className="p-3">
           <p className="font-medium text-slate-900">{term.description}</p>
