@@ -132,10 +132,10 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
         null,
       );
   for (const role of ["gmea", "ceo"])
-    assert.equal(
-      (await request(role, "/gmea-overview")).headers.get("location"),
-      null,
-    );
+    for (const path of ["/gmea-overview", "/gmea-overview/profit", "/gmea-overview/collection-rate"])
+      assert.equal((await request(role, path)).headers.get("location"), null);
+  assert.match((await request(null, "/gmea-overview/loss")).headers.get("location"), /auth\/login/);
+  assert.match((await request("engineer", "/gmea-overview/loss")).headers.get("location"), /overview/);
   assert.match(
     (await request("engineer", "/gmea-rentals")).headers.get("location"),
     /overview/,
@@ -218,6 +218,7 @@ test("GMEA Overview combines portfolio totals and excludes voided rental payment
   );
   const project = {
     id: "project-1",
+    status: "active",
     title: "Solar array",
     client: "ABC Corp",
     contract_amount: 2000,

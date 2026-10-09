@@ -10,6 +10,9 @@ import {
 
 const SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS = 60 * 60 * 24 * 365;
 
+// Prefix checks include individual project, rental, and overview metric pages.
+const GMEA_WORKSPACE_PREFIXES = ["/gmea-projects", "/gmea-rentals", "/gmea-overview"] as const;
+
 type CookieMutation = {
   name: string;
   value: string;
@@ -17,9 +20,7 @@ type CookieMutation = {
 };
 
 const PROTECTED_PREFIXES = [
-  "/gmea-projects",
-  "/gmea-rentals",
-  "/gmea-overview",
+  ...GMEA_WORKSPACE_PREFIXES,
   "/home",
   "/dashboard",
   "/payroll-dashboard",
@@ -56,9 +57,7 @@ const HR_SUBMISSION_REQUIRED_PREFIXES = [
 ] as const;
 
 const CEO_ALLOWED_PREFIXES = [
-  "/gmea-projects",
-  "/gmea-rentals",
-  "/gmea-overview",
+  ...GMEA_WORKSPACE_PREFIXES,
   "/dashboard",
   "/budget-tracker",
   "/estimate-approvals",
@@ -377,7 +376,7 @@ export async function updateSession(request: NextRequest) {
     if (
       !profileError &&
       currentRole === "gmea" &&
-      !["/gmea-projects", "/gmea-rentals", "/gmea-overview", "/settings"].some(
+      ![...GMEA_WORKSPACE_PREFIXES, "/settings"].some(
         (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
       )
     ) {

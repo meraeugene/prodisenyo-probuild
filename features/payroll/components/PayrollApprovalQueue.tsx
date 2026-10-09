@@ -3,7 +3,7 @@
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import PayrollApprovalEmployeeLogsModal from "@/features/payroll/components/PayrollApprovalEmployeeLogsModal";
-import PayrollApprovalQueueCard from "@/features/payroll/components/PayrollApprovalQueueCard";
+import PayrollAdjustmentsTable from "./PayrollAdjustmentsTable";
 import { usePayrollApprovalQueue } from "@/features/payroll/hooks/usePayrollApprovalQueue";
 import type { PendingOvertimeRequest } from "@/features/payroll/utils/payrollApprovalQueueHelpers";
 import type { AppRole } from "@/types/database";
@@ -17,6 +17,7 @@ interface PayrollApprovalQueueProps {
   roleLoading?: boolean;
   initialRequests?: PendingOvertimeRequest[];
   onRequestResolved?: (runId: string | null) => void;
+  onPendingCountChange?: (count: number) => void;
 }
 
 export default function PayrollApprovalQueue({
@@ -24,6 +25,7 @@ export default function PayrollApprovalQueue({
   roleLoading = false,
   initialRequests = [],
   onRequestResolved,
+  onPendingCountChange,
 }: PayrollApprovalQueueProps) {
   const [rejectConfirmRequest, setRejectConfirmRequest] =
     useState<PendingOvertimeRequest | null>(null);
@@ -38,6 +40,10 @@ export default function PayrollApprovalQueue({
     onRequestResolved,
   });
   const list = useCeoApprovalList(state.pendingRequests);
+
+  useEffect(() => {
+    onPendingCountChange?.(state.pendingCount);
+  }, [onPendingCountChange, state.pendingCount]);
 
   useEffect(() => {
     if (
@@ -76,41 +82,14 @@ export default function PayrollApprovalQueue({
         </p>
       </div>
       <CeoListToolbar tabs={list.tabs} tab={list.status} onTabChange={list.setStatus} query={list.query} onQueryChange={list.setQuery} searchLabel="Search payroll adjustments" placeholder="Employee, site, or period" hasFilters={list.hasFilters} onReset={list.reset} />
+      <PayrollAdjustmentsTable requests={list.pagination.pageRows} pending={state.isPending}
+        pendingActionId={state.pendingActionId} pendingActionType={state.pendingActionType}
+        logsLoading={state.employeeLogsLoadingByRequestId} onOpenLogs={state.openRequestLogs}
+        onApprove={(id) => state.handleAction(id, "approve")}
+        onReject={(request) => { setRejectConfirmRequest(request); setRejectionReason(""); }} />
+      {!list.visible.length && <p className={styles.empty}>No matching payroll adjustments. Try another search or status.</p>}
+      <CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Payroll adjustment list" />
       </div>
-
-      <div>
-        <div className="min-w-0">
-          {!list.visible.length ? (
-            <p className="text-sm text-apple-steel">
-              No matching payroll adjustments. Try another search or status.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {list.pagination.pageRows.map((request) => (
-                <PayrollApprovalQueueCard
-                  key={request.id}
-                  request={request}
-                  isPending={state.isPending}
-                  pendingActionId={state.pendingActionId}
-                  pendingActionType={state.pendingActionType}
-                  logsLoading={Boolean(
-                    state.employeeLogsLoadingByRequestId[request.id],
-                  )}
-                  onOpenLogs={state.openRequestLogs}
-                  onApprove={(adjustmentId) =>
-                    state.handleAction(adjustmentId, "approve")
-                  }
-                  onReject={(requestToReject) => {
-                    setRejectConfirmRequest(requestToReject);
-                    setRejectionReason("");
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={styles.panel}><CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Payroll adjustment list" /></div>
 
       {state.activeLogsModalState ? (
         <PayrollApprovalEmployeeLogsModal

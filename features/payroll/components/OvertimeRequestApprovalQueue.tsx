@@ -1,13 +1,13 @@
 "use client";
 
 import { Clock3, LoaderCircle } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   approveOvertimeRequestFormAction,
   rejectOvertimeRequestFormAction,
 } from "@/actions/payroll";
 import type { OvertimeRequestRecord } from "@/features/overtime-requests/types";
-import OvertimeApprovalRequestCard from "./OvertimeApprovalRequestCard";
+import StaffOvertimeRequestsTable from "./StaffOvertimeRequestsTable";
 import { useCeoApprovalList } from "../hooks/useCeoApprovalList";
 import CeoListToolbar from "@/features/ceo-workspace/components/CeoListToolbar";
 import CeoListPagination from "@/features/ceo-workspace/components/CeoListPagination";
@@ -15,8 +15,10 @@ import styles from "@/components/workspace/workspace.module.css";
 
 export default function OvertimeRequestApprovalQueue({
   initialRequests,
+  onPendingCountChange,
 }: {
   initialRequests: OvertimeRequestRecord[];
+  onPendingCountChange?: (count: number) => void;
 }) {
   const [requests, setRequests] = useState(initialRequests);
   const [rejectRequestId, setRejectRequestId] = useState<string | null>(null);
@@ -46,6 +48,10 @@ export default function OvertimeRequestApprovalQueue({
     [requests],
   );
   const list = useCeoApprovalList(sortedRequests);
+
+  useEffect(() => {
+    onPendingCountChange?.(pendingCount);
+  }, [onPendingCountChange, pendingCount]);
 
   function applyRequestPatch(
     requestId: string,
@@ -122,25 +128,12 @@ export default function OvertimeRequestApprovalQueue({
         </p>
       </div>
       <CeoListToolbar tabs={list.tabs} tab={list.status} onTabChange={list.setStatus} query={list.query} onQueryChange={list.setQuery} searchLabel="Search staff requests" placeholder="Employee, site, or reason" hasFilters={list.hasFilters} onReset={list.reset} />
+      <StaffOvertimeRequestsTable requests={list.pagination.pageRows} pending={isPending}
+        approvingId={pendingActionType === "approve" ? pendingActionId : null}
+        onApprove={handleApprove} onReject={(id) => { setRejectRequestId(id); setRejectionReason(""); }} />
+      {!list.visible.length && <p className={styles.empty}>No matching staff requests. Try another search or status.</p>}
+      <CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Staff request list" />
       </div>
-
-      <div>
-        <div className="space-y-4">
-          {list.visible.length === 0 ? (
-            <p className="text-sm text-apple-steel">
-              No matching staff requests. Try another search or status.
-            </p>
-          ) : (
-            list.pagination.pageRows.map((request) => <OvertimeApprovalRequestCard
-              key={request.id} request={request} pending={isPending}
-              approving={pendingActionId === request.id && pendingActionType === "approve"}
-              onApprove={handleApprove}
-              onReject={(id) => { setRejectRequestId(id); setRejectionReason(""); }}
-            />)
-          )}
-        </div>
-      </div>
-      <div className={styles.panel}><CeoListPagination {...list.pagination} total={list.visible.length} noun="requests" label="Staff request list" /></div>
 
       {rejectRequestId ? (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">

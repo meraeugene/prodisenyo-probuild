@@ -18,7 +18,7 @@ export const config = {
     "/projects/:path*",
     "/gmea-projects/:path*",
     "/gmea-rentals/:path*",
-    "/gmea-overview/:path*",
+    "/gmea-overview/:path*", // Includes the dashboard metric detail pages.
     "/cost-estimator/:path*",
     "/estimate-approvals/:path*",
     "/estimate-reviews/:path*",

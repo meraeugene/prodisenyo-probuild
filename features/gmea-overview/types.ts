@@ -6,6 +6,29 @@ export type GmeaOverviewData = {
   rentals: RentalAnalyticsData;
 };
 
+export type GmeaOverviewMetric =
+  | "ongoing" | "revenue" | "expenses" | "profit" | "loss"
+  | "collected" | "uncollected" | "collection-rate";
+
+export type GmeaOverviewRecord = {
+  id: string;
+  name: string;
+  client: string;
+  division: "Projects Expenses" | "Rentals";
+  kind: "project" | "rental" | "shared";
+  status: "active" | "completed" | "draft" | "cancelled" | "shared";
+  href: string;
+  revenue: number;
+  expenses: number;
+  result: number;
+  collected: number;
+  notCollected: number;
+  receivable: number;
+  creditedCollection: number;
+};
+
+export type GmeaOverviewMetricTotals = Record<GmeaOverviewMetric, number>;
+
 export type GmeaOverviewDivisionFinance = {
   name: "Projects Expenses" | "Rentals";
   revenue: number;

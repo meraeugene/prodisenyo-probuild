@@ -1,18 +1,14 @@
 import {
   contractCollectionSummary,
   sumMoney,
-  vatBreakdown,
 } from "@/features/gmea-projects/utils/gmeaCalculations";
-import {
-  expenseTotal,
-  paidRevenue,
-} from "@/features/gmea-rentals/utils/rentalAnalytics";
 import type {
   GmeaOverviewActivity,
   GmeaOverviewAlert,
   GmeaOverviewData,
 } from "../types";
-import { buildGmeaOverviewCollections } from "./gmeaOverviewCollections";
+import { buildGmeaOverviewRecords } from "./gmeaOverviewRecords";
+import { buildGmeaOverviewMetricTotals } from "./gmeaOverviewMetrics";
 
 export function formatOverviewMoney(value: number) {
   return new Intl.NumberFormat("en-PH", {
@@ -23,37 +19,17 @@ export function formatOverviewMoney(value: number) {
   }).format(value);
 }
 
-function projectRevenue(data: GmeaOverviewData) {
-  return sumMoney(data.projects.map((project) => project.contract_amount));
-}
-
-function projectExpenses(data: GmeaOverviewData) {
-  return sumMoney(
-    data.projects.flatMap((project) =>
-      project.expenses.map(
-        (expense) =>
-          vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate)
-            .gross - expense.refunded_amount,
-      ),
-    ),
-  );
-}
-
-function rentalRevenue(data: GmeaOverviewData) {
-  return paidRevenue(data.rentals.payments);
-}
-
-function rentalExpenses(data: GmeaOverviewData) {
-  return expenseTotal(data.rentals.expenses);
-}
-
 export function buildGmeaOverview(data: GmeaOverviewData) {
-  const electronicsRevenue = projectRevenue(data);
-  const electronicsExpenses = projectExpenses(data);
-  const rentalsRevenue = rentalRevenue(data);
-  const rentalsExpenses = rentalExpenses(data);
-  const totalRevenue = sumMoney([electronicsRevenue, rentalsRevenue]);
-  const totalExpenses = sumMoney([electronicsExpenses, rentalsExpenses]);
+  const records = buildGmeaOverviewRecords(data);
+  const metrics = buildGmeaOverviewMetricTotals(records);
+  const projectRecords = records.filter((record) => record.division === "Projects Expenses");
+  const rentalRecords = records.filter((record) => record.division === "Rentals");
+  const electronicsRevenue = sumMoney(projectRecords.map((record) => record.revenue));
+  const electronicsExpenses = sumMoney(projectRecords.map((record) => record.expenses));
+  const rentalsRevenue = sumMoney(rentalRecords.map((record) => record.revenue));
+  const rentalsExpenses = sumMoney(rentalRecords.map((record) => record.expenses));
+  const totalRevenue = metrics.revenue;
+  const totalExpenses = metrics.expenses;
   const projectClients = data.projects.map((project) => project.client);
   const rentalClients = data.rentals.rentals.map((rental) => rental.client);
   const clients = new Set(
@@ -61,14 +37,14 @@ export function buildGmeaOverview(data: GmeaOverviewData) {
       .map((client) => client.trim().toLocaleLowerCase())
       .filter(Boolean),
   );
-  const activeProjects = data.projects.length;
+  const activeProjects = data.projects.filter((project) => project.status === "active").length;
   const activeRentals = data.rentals.rentals.filter(
     (rental) => rental.status === "active",
   ).length;
   const divisions = [
     {
       name: "Projects Expenses" as const,
-      count: activeProjects,
+      count: data.projects.length,
       countLabel: "Projects",
       revenue: electronicsRevenue,
       expenses: electronicsExpenses,
@@ -96,7 +72,12 @@ export function buildGmeaOverview(data: GmeaOverviewData) {
     },
   ];
   return {
-    ...buildGmeaOverviewCollections(data),
+    metrics,
+    totalCollected: metrics.collected,
+    notCollected: metrics.uncollected,
+    totalProfit: metrics.profit,
+    totalLoss: metrics.loss,
+    collectionRate: metrics["collection-rate"],
     activeProjects,
     activeRentals,
     activeWork: activeProjects + activeRentals,

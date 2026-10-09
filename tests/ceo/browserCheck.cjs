@@ -89,6 +89,7 @@ async function main() {
     await page.getByRole("button", { name: "Close navigation", exact: true }).click();
     await page.setViewportSize({ width: 1440, height: 1100 });
     await page.goto(`${base}/overtime-approvals`);
+    await page.getByRole("tab", { name: /^Staff requests/ }).click();
     const staff = page.getByRole("region", { name: "Staff overtime approvals" });
     await staff.getByRole("button", { name: /^Pending/ }).click();
     assert.match(await staff.innerText(), /of 14 requests/);
@@ -102,6 +103,7 @@ async function main() {
     assert.equal(await page.evaluate(() => window.__returnedRequest.rejectionReason), "Please check the hours");
     assert.match(await staff.innerText(), /of 12 requests/);
     const adjustments = page.getByRole("region", { name: "Payroll overtime adjustments" });
+    await page.getByRole("tab", { name: /^Payroll adjustments/ }).click();
     await adjustments.getByRole("searchbox", { name: "Search payroll adjustments" }).fill("Juan Santos");
     assert.match(await adjustments.innerText(), /of 1 requests/);
     await page.screenshot({ path: path.join(screenshots, "ceo-approvals-desktop.png"), fullPage: true });
