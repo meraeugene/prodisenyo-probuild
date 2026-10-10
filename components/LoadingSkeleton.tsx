@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export function SkeletonBlock({ className = "", light = false }: { className?: string; light?: boolean }) {
-  return <div data-skeleton-block="true" aria-hidden="true" className={cn("max-w-full animate-pulse rounded motion-reduce:animate-none", light ? "bg-slate-300" : "bg-slate-200", className)} />;
+  return <div data-skeleton-block="true" data-skeleton-light={light || undefined} aria-hidden="true" className={cn("skeleton-placeholder max-w-full rounded", className)} />;
 }
 
 export function SkeletonPanel({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section data-skeleton-panel="true" className={cn("min-w-0", className)}>{children}</section>;
+  return <section data-skeleton-panel="true" className={cn("skeleton-surface min-w-0 p-5", className)}>{children}</section>;
 }
 
 export function SkeletonRows({ rows = 4 }: { rows?: number }) {

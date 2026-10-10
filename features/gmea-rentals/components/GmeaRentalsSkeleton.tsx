@@ -10,7 +10,7 @@ function AnalyticsNavigationSkeleton() {
 
 function RentalSummarySkeleton({ count }: { count: number }) {
   return <div data-skeleton-stats={count} className={count === 7 ? "grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-3.5 sm:grid-cols-3"}>
-    {Array.from({ length: count }, (_, index) => <div key={index} className="px-5 py-4"><Block className="h-4 w-32" /><Block className="mt-2 h-[33px] w-32" /></div>)}
+    {Array.from({ length: count }, (_, index) => <SkeletonPanel key={index} className="px-5 py-4"><Block className="h-4 w-32" /><Block className="mt-2 h-[33px] w-32" /></SkeletonPanel>)}
   </div>;
 }
 

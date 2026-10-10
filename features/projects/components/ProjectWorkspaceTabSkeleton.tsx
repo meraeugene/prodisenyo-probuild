@@ -1,6 +1,7 @@
 import ProjectOverviewSkeleton from "./ProjectOverviewSkeleton";
 import ProjectContentSkeleton from "./ProjectContentSkeleton";
 import CostTrackingSkeleton from "@/features/project-cost-tracking/components/CostTrackingSkeleton";
+import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
 type WorkspaceTab =
   | "overview"
@@ -24,7 +25,7 @@ export default function ProjectWorkspaceTabSkeleton({
       <div
         aria-label="Loading estimates"
         aria-live="polite"
-        className="overflow-hidden rounded-2xl"
+        data-skeleton-panel="true" className="skeleton-surface overflow-hidden rounded-2xl"
       >
         <div className="grid gap-6 px-5 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center lg:gap-10">
           <div>
@@ -62,7 +63,7 @@ export default function ProjectWorkspaceTabSkeleton({
 
   return (
     <div role="status" aria-busy="true" aria-label={`Loading ${tab}`} aria-live="polite" className="space-y-4">
-      <div className="rounded-xl p-4">
+      <div data-skeleton-panel="true" className="skeleton-surface rounded-xl p-4">
         <Skeleton className="h-4 w-72" />
       </div>
       <ListSkeleton rows={4} />
@@ -72,7 +73,7 @@ export default function ProjectWorkspaceTabSkeleton({
 
 function ListSkeleton({ rows }: { rows: number }) {
   return (
-    <section className="overflow-hidden rounded-xl p-5">
+    <section data-skeleton-panel="true" className="skeleton-surface overflow-hidden rounded-xl p-5">
       <div className="flex items-center justify-between gap-4">
         <Skeleton className="h-6 w-44" strong />
         <Skeleton className="h-9 w-28 rounded-xl" />
@@ -98,17 +99,9 @@ function ListSkeleton({ rows }: { rows: number }) {
 
 function Skeleton({
   className,
-  strong = false,
 }: {
   className: string;
   strong?: boolean;
 }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse motion-reduce:animate-none rounded ${
-        strong ? "bg-slate-200" : "bg-slate-100"
-      } ${className}`}
-    />
-  );
+  return <SkeletonBlock className={className} />;
 }

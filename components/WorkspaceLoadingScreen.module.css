@@ -1,0 +1,71 @@
+.screen {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+  background: #f5f6f8;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Display the mark without the transparent margins in the shared logo asset. */
+.logo {
+  position: relative;
+  width: 76px;
+  aspect-ratio: 942 / 700;
+  overflow: hidden;
+}
+
+.image {
+  position: absolute;
+  top: -36.1%;
+  left: -17.5%;
+  width: 136%;
+  max-width: none;
+  height: auto;
+}
+
+.title {
+  margin: 10px 0 0;
+  color: #1d1d1f;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.035em;
+}
+
+.track {
+  width: 112px;
+  height: 3px;
+  margin-top: 22px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e1e8e7;
+}
+
+.progress {
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: #076d69;
+  animation: travel 1.8s ease-in-out infinite;
+}
+
+@keyframes travel {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(235%); }
+}
+
+@media (min-width: 640px) {
+  .logo { width: 84px; }
+  .title { font-size: 22px; line-height: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress { animation: none; margin: 0 auto; }
+}

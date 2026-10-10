@@ -14,7 +14,7 @@ export default function OvertimeRequestPageSkeleton() {
         </div>
         <SkeletonBlock className="ml-auto mt-3 h-10 w-40" />
       </SkeletonPanel>
-      <div className="min-w-0"><div className="px-4 py-4"><SkeletonBlock className="h-6 w-52" /></div><WorkspaceListSkeleton columns={5} tabs={4} tabLabels={["All requests", "Pending", "Approved", "Rejected"]} filterCount={0} minWidth={640} rowHeight={80} firstColumnLines={3} /></div>
+      <div data-skeleton-panel="true" className="skeleton-surface min-w-0 overflow-hidden"><div className="px-4 py-4"><SkeletonBlock className="h-6 w-52" /></div><WorkspaceListSkeleton embedded columns={5} tabs={4} tabLabels={["All requests", "Pending", "Approved", "Rejected"]} filterCount={0} minWidth={640} rowHeight={80} firstColumnLines={3} /></div>
     </div>
   </div>;
 }

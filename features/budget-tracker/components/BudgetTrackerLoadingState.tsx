@@ -16,7 +16,7 @@ export default function BudgetTrackerLoadingState() {
         </div>
       </section>
 
-      <section className="rounded-none p-4 sm:rounded-[18px] sm:p-5">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-none p-4 sm:rounded-[18px] sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="space-y-3">
             <SkeletonBlock className="h-3 w-24" />
@@ -29,7 +29,7 @@ export default function BudgetTrackerLoadingState() {
           {Array.from({ length: 3 }).map((_, index) => (
             <article
               key={`budget-project-card-skeleton-${index}`}
-              className="rounded-[14px] p-4"
+              data-skeleton-panel="true" className="skeleton-surface rounded-[14px] p-4"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-2">

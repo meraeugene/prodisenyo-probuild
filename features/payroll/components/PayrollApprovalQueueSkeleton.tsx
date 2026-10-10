@@ -9,43 +9,43 @@ export default function PayrollApprovalQueueSkeleton() {
       {Array.from({ length: 2 }).map((_, index) => (
         <div
           key={`approval-skeleton-${index}`}
-          className="rounded-2xl p-6"
+          data-skeleton-panel="true" className="skeleton-surface rounded-2xl p-6"
         >
           <div className="flex h-full flex-col animate-pulse motion-reduce:animate-none">
             <div className="min-w-0 space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="h-5 w-32 rounded-full bg-slate-200/70" />
-                <div className="h-6 w-28 rounded-full bg-slate-200/70" />
+                <div className="h-5 w-32 rounded-full skeleton-placeholder" />
+                <div className="h-6 w-28 rounded-full skeleton-placeholder" />
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <div className="h-4 w-28 rounded-full bg-slate-200/70" />
-                <div className="h-4 w-36 rounded-full bg-slate-200/70" />
+                <div className="h-4 w-28 rounded-full skeleton-placeholder" />
+                <div className="h-4 w-36 rounded-full skeleton-placeholder" />
               </div>
 
               <div className="space-y-2">
-                <div className="h-3 w-40 rounded-full bg-slate-200/70" />
-                <div className="h-10 w-full rounded bg-slate-200" />
+                <div className="h-3 w-40 rounded-full skeleton-placeholder" />
+                <div className="h-10 w-full rounded skeleton-placeholder" />
               </div>
 
               <div className="space-y-2">
-                <div className="h-8 w-36 rounded bg-slate-200" />
+                <div className="h-8 w-36 rounded skeleton-placeholder" />
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl p-4">
+            <div data-skeleton-panel="true" className="skeleton-surface mt-6 rounded-2xl p-4">
               <div className="space-y-2">
-                <div className="h-3 w-20 rounded-full bg-slate-200/70" />
-                <div className="h-8 w-24 rounded-full bg-slate-200/70" />
-                <div className="h-3 w-16 rounded-full bg-slate-200/70" />
+                <div className="h-3 w-20 rounded-full skeleton-placeholder" />
+                <div className="h-8 w-24 rounded-full skeleton-placeholder" />
+                <div className="h-3 w-16 rounded-full skeleton-placeholder" />
               </div>
             </div>
 
             <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6">
-              <div className="h-3 w-36 rounded-full bg-slate-200/70" />
+              <div className="h-3 w-36 rounded-full skeleton-placeholder" />
               <div className="flex gap-2">
-                <div className="h-10 w-24 rounded-xl bg-slate-200/70" />
-                <div className="h-10 w-36 rounded-xl bg-slate-200/70" />
+                <div className="h-10 w-24 rounded-xl skeleton-placeholder" />
+                <div className="h-10 w-36 rounded-xl skeleton-placeholder" />
               </div>
             </div>
           </div>

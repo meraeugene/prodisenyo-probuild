@@ -47,7 +47,7 @@ export default function CostEstimatorPageSkeleton() {
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={`cost-estimator-item-skeleton-${index}`}
-                    className="rounded-[14px] p-4"
+                    data-skeleton-panel="true" className="skeleton-surface rounded-[14px] p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-2">
@@ -93,7 +93,7 @@ export default function CostEstimatorPageSkeleton() {
               <SkeletonBlock className="h-9 w-14" />
             </div>
 
-            <div className="rounded-[16px] px-4 py-4">
+            <div data-skeleton-panel="true" className="skeleton-surface rounded-[16px] px-4 py-4">
               <SkeletonBlock className="h-4 w-full" />
               <SkeletonBlock className="mt-2 h-4 w-4/5" />
             </div>

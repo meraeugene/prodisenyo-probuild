@@ -21,7 +21,7 @@ async function checkLoadingLogo(page, base) {
     const status = page.getByRole("status", { name: "Loading Prodisenyo ProBuild" });
     await status.getByText("Prodisenyo ProBuild", { exact: true }).waitFor();
     const group = await status.boundingBox();
-    const logo = await status.locator("img").boundingBox();
+    const logo = await status.locator("[data-loading-logo]").boundingBox();
     const title = await status.getByText("Prodisenyo ProBuild", { exact: true }).boundingBox();
     assert.ok(Math.abs(group.x + group.width / 2 - viewport.width / 2) < 1);
     assert.ok(Math.abs(group.y + group.height / 2 - viewport.height / 2) < 1);
@@ -33,7 +33,7 @@ async function checkLoadingLogo(page, base) {
 }
 
 async function checkSkeletonLayouts(page, base) {
-  const columns = { admin: 6, "engineer-projects": 6, projects: 9, "payroll-workspace": 6, "generate-payroll": 8, "overtime-request": 5, purchasing: 9, "gmea-projects": 7, "ceo-gmea": 9, "gmea-project": 8, "gmea-rentals": 8, "ceo-rentals": 8, "gmea-reports": 4, "gmea-workspace": 5, "review-attendance": 12 };
+  const columns = { admin: 6, "engineer-projects": 6, projects: 9, "payroll-workspace": 6, "generate-payroll": 8, "overtime-request": 5, purchasing: 9, "gmea-projects": 8, "ceo-gmea": 8, "gmea-project": 8, "gmea-rentals": 6, "ceo-rentals": 6, "gmea-reports": 4, "gmea-workspace": 5, "gmea-metric": 6, "review-attendance": 12 };
   for (const [name, count] of Object.entries(columns)) {
     const skeleton = page.locator(`[data-skeleton-case="${name}"]`);
     assert.equal(await skeleton.locator("table thead th").count(), count, `${name} matches its page's table columns`);

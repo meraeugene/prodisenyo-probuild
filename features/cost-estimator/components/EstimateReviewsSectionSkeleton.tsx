@@ -6,12 +6,12 @@ import { SkeletonBlock } from "@/components/LoadingSkeleton";
 
 export default function EstimateReviewsSectionSkeleton() {
   return (
-    <section role="status" aria-busy="true" aria-label="Loading content" className="mt-4 rounded-none p-5 sm:rounded-[18px]">
+    <section role="status" aria-busy="true" aria-label="Loading content" data-skeleton-panel="true" className="skeleton-surface mt-4 rounded-none p-5 sm:rounded-[18px]">
       <div
-        className="flex items-start justify-between gap-3"
+        className="flex flex-wrap items-start justify-between gap-3"
         aria-hidden="true"
       >
-        <div className="space-y-2">
+        <div className="min-w-0 max-w-full space-y-2">
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="h-7 w-72 max-w-full" />
           <SkeletonBlock className="h-4 w-[26rem] max-w-full" />
@@ -51,7 +51,7 @@ export default function EstimateReviewsSectionSkeleton() {
                 <SkeletonBlock className="h-8 w-24 rounded-full" />
               </div>
               <div className="flex justify-center">
-                <div className="rounded-xl p-2">
+                <div data-skeleton-panel="true" className="skeleton-surface rounded-xl p-2">
                   <SkeletonBlock className="h-4 w-4 rounded-md" />
                 </div>
               </div>

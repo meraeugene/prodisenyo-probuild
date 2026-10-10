@@ -35,6 +35,8 @@ import GmeaProjectWorkspaceSkeleton from "@/features/gmea-projects/components/Gm
 import GmeaRentalsSkeleton from "@/features/gmea-rentals/components/GmeaRentalsSkeleton";
 import SettingsPageSkeleton from "@/features/settings/components/SettingsPageSkeleton";
 import ResetDataSkeleton from "@/features/reset-data/components/ResetDataSkeleton";
+import GmeaProjectMetricSkeleton from "@/features/gmea-projects/components/GmeaProjectMetricSkeleton";
+import GmeaOverviewDetailsSkeleton from "@/features/gmea-overview/components/GmeaOverviewDetailsSkeleton";
 
 const cases: Array<[string, ReactNode]> = [
   ["hero", <CeoPageHeroSkeleton key="hero" />],
@@ -46,6 +48,7 @@ const cases: Array<[string, ReactNode]> = [
   ["engineer-projects", <EngineerProjectsPageSkeleton key="engineer-projects" />],
   ["projects", <ProjectsPageSkeleton key="projects" />],
   ["project-workspace", <ProjectWorkspaceSkeleton key="project-workspace" />],
+  ["engineer-project-workspace", <ProjectWorkspaceSkeleton key="engineer-project-workspace" role="engineer" />],
   ["materials-request", <MaterialRequestPageSkeleton key="materials-request" />],
   ["estimator", <CostEstimatorPageSkeleton key="estimator" />],
   ["estimator-projects", <CostEstimatorProjectsOverviewSkeleton key="estimator-projects" />],
@@ -67,6 +70,8 @@ const cases: Array<[string, ReactNode]> = [
   ["purchaser-dashboard", <PurchaserDashboardSkeleton key="purchaser-dashboard" />],
   ["purchasing", <PurchasingPageSkeleton key="purchasing" />],
   ["gmea-overview", <GmeaOverviewSkeleton key="gmea-overview" />],
+  ["gmea-overview-details", <GmeaOverviewDetailsSkeleton key="gmea-overview-details" />],
+  ["gmea-metric", <GmeaProjectMetricSkeleton key="gmea-metric" />],
   ["gmea-projects", <GmeaProjectsPageSkeleton key="gmea-projects" />],
   ["ceo-gmea", <CeoGmeaProjectsSkeleton key="ceo-gmea" />],
   ["gmea-project", <GmeaProjectWorkspaceSkeleton key="gmea-project" />],

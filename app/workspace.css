@@ -122,10 +122,25 @@ body[data-workspace-theme="compact"] :is([role="dialog"], [class~="fixed"][class
 body[data-workspace-theme="compact"] :is([data-workspace], [role="dialog"], [class~="fixed"][class~="inset-0"]) :is([class~="text-blue-700"], [class~="text-blue-900"]) { color: #076d69; }
 body[data-workspace-theme="compact"] [data-payroll-workspace] button:not([data-workspace-tab]) { min-height: 36px; height: 36px; font-size: 13px; font-weight: 500; box-shadow: none; }
 body[data-workspace-theme="compact"] [data-payroll-workspace] :is(input[data-search-field], select) { height: 36px; }
-/* Loading placeholders do not need another panel around the eventual panel. */
-body[data-workspace-theme="compact"] :is([aria-busy="true"], [data-skeleton-panel]) :is(section, article, div):where([class*="rounded"]):is([class*="bg-white"], [class*="shadow"]) {
-  border-color: transparent;
-  border-radius: 0;
-  background-color: transparent;
-  box-shadow: none;
+/* Loading cards use the same white surfaces and geometry as loaded cards. */
+.skeleton-surface {
+  min-width: 0;
+  background-color: #fff;
+  border-radius: var(--workspace-panel-radius, 16px);
+  box-shadow: var(--workspace-panel-shadow, 0 0 0 1px #e4e7ec);
+}
+.skeleton-placeholder {
+  background-color: #f6f8fa;
+  background-image: linear-gradient(100deg, transparent 20%, #fff 50%, transparent 80%);
+  background-size: 240% 100%;
+  box-shadow: inset 0 0 0 1px rgb(16 24 40 / 3%);
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+}
+.skeleton-placeholder[data-skeleton-light="true"] { background-color: #fff; }
+@keyframes skeleton-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-placeholder { animation: none; background-image: none; }
 }

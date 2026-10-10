@@ -10,7 +10,7 @@ export default function UserManagementSkeleton() {
         <div><SkeletonBlock className="h-4 w-20" /><div className="mt-2 flex items-center gap-3"><SkeletonBlock className="h-7 w-16" /><SkeletonBlock className="h-5 w-24" /></div></div>
         <SkeletonBlock className="h-10 w-28" />
       </div>
-      <WorkspaceListSkeleton columns={6} tabs={3} tabLabels={["All accounts", "Active", "Inactive"]} filterCount={1} mobileCards firstColumnLines={2} rowHeight={64} minWidth={0} columnWidths={["24%", "16%", "24%", "17%", "11%", "8%"]} />
+      <WorkspaceListSkeleton embedded columns={6} tabs={3} tabLabels={["All accounts", "Active", "Inactive"]} filterCount={1} mobileCards firstColumnLines={2} rowHeight={64} minWidth={0} columnWidths={["24%", "16%", "24%", "17%", "11%", "8%"]} />
     </SkeletonPanel>
   </div>;
 }

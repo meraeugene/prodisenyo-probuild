@@ -13,7 +13,7 @@ export default function MaterialRequestPageSkeleton() {
       <CeoPageHeroSkeleton actions={<SkeletonBlock className="h-10 w-28" />} />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-none p-5 sm:rounded-[18px]">
+        <div data-skeleton-panel="true" className="skeleton-surface rounded-none p-5 sm:rounded-[18px]">
           <SkeletonBlock className="h-3 w-24" />
           <SkeletonBlock className="mt-2 h-7 w-56" />
           <div className="mt-4 grid gap-4">
@@ -25,14 +25,14 @@ export default function MaterialRequestPageSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-none p-5 sm:rounded-[18px]">
+        <div data-skeleton-panel="true" className="skeleton-surface rounded-none p-5 sm:rounded-[18px]">
           <SkeletonBlock className="h-3 w-28" />
           <SkeletonBlock className="mt-2 h-7 w-64" />
           <div className="mt-4 space-y-3">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={`material-row-skeleton-${index}`}
-                className="rounded-none p-4 sm:rounded-[14px]"
+                data-skeleton-panel="true" className="skeleton-surface rounded-none p-4 sm:rounded-[14px]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-2">

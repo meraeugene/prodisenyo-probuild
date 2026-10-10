@@ -10,7 +10,7 @@ export default function CostEstimatorProjectsOverviewSkeleton() {
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <article key={`metric-skeleton-${index}`} className="flex min-h-[126px] items-center gap-5 rounded-[14px] px-7 py-6">
+          <article key={`metric-skeleton-${index}`} data-skeleton-panel="true" className="skeleton-surface flex min-h-[126px] items-center gap-5 rounded-[14px] px-7 py-6">
             
             <div className="space-y-2">
               <SkeletonBlock className="h-8 w-12" />
@@ -24,7 +24,7 @@ export default function CostEstimatorProjectsOverviewSkeleton() {
         <SkeletonBlock className="h-8 w-48" />
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <article key={`project-skeleton-${index}`} className="flex min-h-[474px] flex-col rounded-[14px] p-6">
+            <article key={`project-skeleton-${index}`} data-skeleton-panel="true" className="skeleton-surface flex min-h-[474px] flex-col rounded-[14px] p-6">
               <div className="flex items-center justify-between">
                 <SkeletonBlock className="h-7 w-24 rounded-full" />
                 <SkeletonBlock className="h-7 w-20" />

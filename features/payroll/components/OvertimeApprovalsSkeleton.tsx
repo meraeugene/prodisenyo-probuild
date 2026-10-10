@@ -7,9 +7,9 @@ export default function OvertimeApprovalsSkeleton() {
     <div className="mx-auto max-w-[1560px] space-y-4">
       <CeoPageHeroSkeleton action="none" actions={<Block className="h-9 w-44" />} titleWidth="w-64" />
       <div className="flex flex-wrap gap-2"><Block className="h-9 w-48" /><Block className="h-9 w-36" /></div>
-      <div className="min-w-0">
+      <div data-skeleton-panel="true" className="skeleton-surface min-w-0 overflow-hidden">
         <div className="p-5"><div className="flex items-center justify-between gap-4"><Block className="h-7 w-44" /><Block className="h-7 w-28 rounded-full" /></div><Block className="mt-1 h-4 w-full max-w-sm" /></div>
-        <WorkspaceListSkeleton columns={8} tabs={4} tabLabels={["All", "Pending", "Approved", "Returned"]} filterCount={0} minWidth={1120} rowHeight={76} />
+        <WorkspaceListSkeleton embedded columns={8} tabs={4} tabLabels={["All", "Pending", "Approved", "Returned"]} filterCount={0} minWidth={1120} rowHeight={76} />
       </div>
     </div>
   </div>;

@@ -20,8 +20,8 @@ export default function PayrollDashboardSkeleton() {
         <SkeletonPanel className="overflow-hidden p-0"><PanelHeading /><TableRows columns={6} minWidth="min-w-[780px]" /></SkeletonPanel>
         <SkeletonPanel>
           <div className="flex justify-between gap-3"><div><Block className="h-6 w-36" /><Block className="mt-0.5 h-4 w-44" /></div><Block className="h-4 w-20" /></div>
-          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} className="flex items-center gap-2 rounded-xl p-3"><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
-          <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]"><div className="flex h-44 items-center justify-center"><div className="h-[136px] w-[136px] animate-pulse motion-reduce:animate-none rounded-full border-[22px] border-slate-200/70 motion-reduce:animate-none" /></div><div className="space-y-3">{[0,1,2].map(i => <div key={i} className="flex justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-4 w-16" /></div>)}</div></div>
+          <div className="mt-4 grid grid-cols-2 gap-2.5">{[0,1,2,3].map(i => <div key={i} data-skeleton-panel="true" className="skeleton-surface flex items-center gap-2 rounded-xl p-3"><div><Block className="h-3 w-20" /><Block className="mt-0.5 h-5 w-20" /></div></div>)}</div>
+          <div className="mt-2 grid items-center gap-1 sm:grid-cols-[160px_minmax(0,1fr)]"><div className="flex h-44 items-center justify-center"><div className="h-[136px] w-[136px] animate-pulse motion-reduce:animate-none rounded-full border-[22px] border-[#edf1f5] motion-reduce:animate-none" /></div><div className="space-y-3">{[0,1,2].map(i => <div key={i} className="flex justify-between gap-3"><Block className="h-4 w-24" /><Block className="h-4 w-16" /></div>)}</div></div>
           <Block className="mt-4 h-10 w-full" />
         </SkeletonPanel>
       </div>

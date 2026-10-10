@@ -22,20 +22,20 @@ export function DashboardOverviewSkeleton() {
         </div>
       </section>
 
-      <section className="rounded-[12px] p-5">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-[12px] p-5">
         <div className="mb-5 space-y-2">
           <SkeletonBlock className="h-5 w-44" />
           <SkeletonBlock className="h-4 w-72" />
         </div>
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <div className="rounded-[12px] p-4">
+          <div data-skeleton-panel="true" className="skeleton-surface rounded-[12px] p-4">
             <div className="mb-4 space-y-2">
               <SkeletonBlock className="h-4 w-36" />
               <SkeletonBlock className="h-3 w-28" />
             </div>
             <SkeletonBlock className="h-[260px] w-full" />
           </div>
-          <div className="rounded-[12px] p-4">
+          <div data-skeleton-panel="true" className="skeleton-surface rounded-[12px] p-4">
             <div className="mb-4 space-y-2">
               <SkeletonBlock className="h-4 w-44" />
               <SkeletonBlock className="h-3 w-24" />
@@ -49,7 +49,7 @@ export function DashboardOverviewSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`overview-kpi-skeleton-${index}`}
-            className="rounded-[22px] p-6"
+            data-skeleton-panel="true" className="skeleton-surface rounded-[22px] p-6"
           >
             <div className="flex items-center justify-between">
               <SkeletonBlock className="h-11 w-11 rounded-2xl" />
@@ -61,7 +61,7 @@ export function DashboardOverviewSkeleton() {
         ))}
       </section>
 
-      <section className="rounded-[12px] p-5">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-[12px] p-5">
         <div className="mb-4">
           <SkeletonBlock className="h-5 w-40" />
         </div>
@@ -69,7 +69,7 @@ export function DashboardOverviewSkeleton() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={`department-card-skeleton-${index}`}
-              className="rounded-[16px] p-5"
+              data-skeleton-panel="true" className="skeleton-surface rounded-[16px] p-5"
             >
               <SkeletonBlock className="h-4 w-28" />
               <SkeletonBlock className="mt-8 h-8 w-20" />
@@ -85,7 +85,7 @@ export function DashboardOverviewSkeleton() {
 export function AnalyticsPageSkeleton() {
   return (
     <div role="status" aria-busy="true" aria-label="Loading content" className="space-y-4">
-      <section className="rounded-[16px] p-6">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-[16px] p-6">
         <div className="space-y-3">
           <SkeletonBlock className="h-3 w-28" />
           <SkeletonBlock className="h-12 w-72" />
@@ -93,14 +93,14 @@ export function AnalyticsPageSkeleton() {
         </div>
       </section>
 
-      <section className="rounded-[14px] p-6">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-[14px] p-6">
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <SkeletonBlock className="h-[280px] w-full" />
           <SkeletonBlock className="h-[280px] w-full" />
         </div>
       </section>
 
-      <section className="rounded-[14px] p-6">
+      <section data-skeleton-panel="true" className="skeleton-surface rounded-[14px] p-6">
         <SkeletonBlock className="h-[240px] w-full" />
       </section>
     </div>

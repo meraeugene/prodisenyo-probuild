@@ -42,7 +42,10 @@ const purchases: PurchasingRecord[] = projects.map((project, index) => ({
 }));
 Object.assign(window, { __gmeaProjects: gmeaProjects, __equipment: equipment, __rentals: rentals, __purchases: purchases });
 const path = window.location.pathname;
-const role: SidebarProfile["role"] = path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
+const skeletonCase = new URLSearchParams(window.location.search).get("case") || "";
+const homeRole = skeletonCase.startsWith("home-") ? skeletonCase.slice(5) as SidebarProfile["role"] : null;
+const skeletonRole: SidebarProfile["role"] = homeRole || (skeletonCase.startsWith("engineer") ? "engineer" : ["admin", "reset"].includes(skeletonCase) ? "admin" : skeletonCase.startsWith("purchas") ? "purchaser" : skeletonCase === "overtime-request" ? "employee" : skeletonCase.startsWith("gmea") ? "gmea" : ["payroll-workspace", "generate-payroll", "upload-attendance", "review-attendance"].includes(skeletonCase) ? "payroll_manager" : "ceo");
+const role: SidebarProfile["role"] = path === "/skeletons" ? skeletonRole : path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
 createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <WorkspaceLoadingScreen /> : <DashboardShell profile={{ id: "project-01", full_name: "Maria Santos", username: "maria", role, avatar_path: null }}>
   {path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
     : path === "/engineer" ? <EngineerHarness />
