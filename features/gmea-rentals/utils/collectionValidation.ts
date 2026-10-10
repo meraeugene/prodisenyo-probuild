@@ -1,4 +1,4 @@
-import type { RentalCollectionMutation } from "../types";
+import { RENTAL_PAYMENT_TYPES, type RentalCollectionMutation, type RentalPaymentType } from "../types";
 import { validEquipmentId } from "./equipmentValidation";
 
 function text(value: unknown, label: string, required = false, max = 500) {
@@ -40,6 +40,10 @@ export function normalizeRentalCollectionMutation(
       throw new Error("Invalid payment.");
     }
     const value = command.value as Record<string, unknown>;
+    const paymentType = value.payment_type ?? "unclassified";
+    if (!RENTAL_PAYMENT_TYPES.includes(paymentType as RentalPaymentType)) {
+      throw new Error("Select a valid payment type.");
+    }
     const amount = Math.round(Number(value.amount) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1e10) {
       throw new Error("Payment amount must be greater than zero.");
@@ -50,6 +54,7 @@ export function normalizeRentalCollectionMutation(
         id: validEquipmentId(value.id),
         amount,
         payment_date: paymentDate(value.payment_date),
+        payment_type: paymentType as RentalPaymentType,
         method: text(value.method, "Payment method", false, 100),
         reference_number: text(
           value.reference_number,

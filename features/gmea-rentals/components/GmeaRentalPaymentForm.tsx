@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { GmeaRental } from "../types";
+import type { GmeaRental, RentalPaymentType } from "../types";
+import { rentalPaymentTypeLabels } from "../utils/rentalIncomeSelectors";
 import { rentalCollectionSummary } from "../utils/collectionCalculations";
 import { formatRentalMoney, rentalInputClass } from "../utils/rentalUi";
 import { useGmeaRentalCollectionMutation } from "../hooks/useGmeaRentalCollectionMutation";
@@ -23,6 +24,7 @@ export default function GmeaRentalPaymentForm({
     id: crypto.randomUUID(),
     amount: balance.toString(),
     payment_date: today(),
+    payment_type: "full_payment" as RentalPaymentType,
     method: "",
     reference_number: "",
     notes: "",
@@ -49,6 +51,14 @@ export default function GmeaRentalPaymentForm({
       saveLabel="Record payment"
     >
       <div className="space-y-4">
+        <label className="block space-y-1.5 text-sm font-medium text-slate-700">
+          <span>Payment type *</span>
+          <select className={rentalInputClass} value={form.payment_type} onChange={event =>
+            setForm(current => ({ ...current, payment_type: event.target.value as RentalPaymentType }))}>
+            {(["down_payment", "full_payment", "partial_payment"] as const).map(type =>
+              <option key={type} value={type}>{rentalPaymentTypeLabels[type]}</option>)}
+          </select>
+        </label>
         <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3">
           <p className="text-xs font-medium text-teal-700">Remaining balance</p>
           <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950 tabular-nums">

@@ -11,6 +11,7 @@ const migrations = [
   "gmea-rentals-04-collections.sql",
   "gmea-rentals-05-expenses-workers.sql",
   "gmea-rentals-06-ceo-expense-unread.sql",
+  "gmea-rentals-08-income-payment-types.sql",
 ].map((name) => fs.readFileSync("supabase/" + name, "utf8"));
 
 test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) => {
@@ -198,6 +199,7 @@ test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) 
       method: "Bank",
       reference_number: "REF-1",
       notes: "Deposit",
+      payment_type: "down_payment",
     },
   };
   await db.query(
@@ -209,6 +211,12 @@ test("GMEA Rentals foundation is isolated, readable, and idempotent", async (t) 
     [createdRental],
   );
   assert.equal(afterPayment.rows[0].version, 2);
+  const storedType = await db.query("select payment_type from public.gmea_rental_payments where id=$1", [paymentId]);
+  assert.equal(storedType.rows[0].payment_type, "down_payment");
+  const legacyType = await db.query("select payment_type from public.gmea_rental_payments where rental_id=$1", [rental]);
+  assert.equal(legacyType.rows[0].payment_type, "unclassified");
+  await assert.rejects(db.query("select public.mutate_gmea_rental_collection($1,$2,2,$3::jsonb)", [gmea, createdRental,
+    JSON.stringify({ ...recordPayment, value: { ...recordPayment.value, id: randomUUID(), payment_type: "invalid" } })]), /valid payment type/);
   await assert.rejects(
     db.query("select public.mutate_gmea_rental_collection($1,$2,2,$3::jsonb)", [
       gmea,

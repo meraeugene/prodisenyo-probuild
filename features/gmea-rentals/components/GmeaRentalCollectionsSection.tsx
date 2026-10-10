@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CreditCard } from "lucide-react";
 import type { GmeaRental, RentalPayment } from "../types";
 import { rentalCollectionSummary } from "../utils/collectionCalculations";
+import { rentalPaymentTypeLabels } from "../utils/rentalIncomeSelectors";
 import {
   formatRentalDate,
   formatRentalMoney,
@@ -118,7 +119,7 @@ export default function GmeaRentalCollectionsSection({
                   {formatRentalDate(payment.payment_date)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {[payment.method, payment.reference_number, payment.notes]
+                  {[rentalPaymentTypeLabels[payment.payment_type ?? "unclassified"], payment.method, payment.reference_number, payment.notes]
                     .filter(Boolean)
                     .join(" · ") || "No additional details"}
                 </p>

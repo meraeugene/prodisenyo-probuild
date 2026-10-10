@@ -9,6 +9,7 @@ const { chromium } = require("@playwright/test");
 const { assertTabColors, checkSkeletonLayouts, checkLoadingLogo } = require("./designAssertions.cjs");
 
 async function main() {
+  const rentalIncomeOnly = process.argv.includes("--rental-income");
   const bundle = await build({ entryPoints: ["tests/workspace/uiHarness.tsx"], bundle: true, write: false, outdir: "out", platform: "browser", format: "iife", jsx: "automatic", define: { "process.env.NODE_ENV": '"development"' }, plugins: [require("./browserAdapters.cjs"), require("../ceo/browserAdapters.cjs")] });
   const js = bundle.outputFiles.find((file) => file.path.endsWith(".js")).text;
   const modulesCss = bundle.outputFiles.find((file) => file.path.endsWith(".css"))?.text || "";
@@ -30,13 +31,13 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
-    const scenarios = [
+    const scenarios = rentalIncomeOnly ? [] : [
       ["payroll", "Payroll workspace", "Payroll records", "Search payrolls", /All payrolls/, "Payroll table rows per page"],
       ["admin", "Administration workspace", null, "Search users", /All accounts/, "User directory rows per page"],
       ["employee", "Employee workspace", "Your overtime requests", "Search requests", /All requests/, "Overtime history rows per page"],
       ["purchaser", "Purchasing workspace", "Purchasing records", "Search purchases", /All purchases/, "Purchasing table rows per page"],
       ["gmea-projects", "GMEA workspace", "GMEA project records", "Search projects", /All projects/, "GMEA project table rows per page"],
-      ["gmea-rentals", "GMEA workspace", "Rental and equipment records", "Search rentals", /Rentals 28/, "Rental workspace rows per page"],
+      ["gmea-rentals", "GMEA workspace", "Rental and equipment records", "Search rentals", /Rental Bookings 28/, "Rental workspace rows per page"],
     ];
     for (const [route, title, region, search, allTab, size] of scenarios) {
       await page.goto(`${base}/${route}`);
@@ -72,6 +73,7 @@ async function main() {
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `${route} mobile horizontal overflow`);
       await page.setViewportSize({ width: 1440, height: 1100 });
     }
+    if (!rentalIncomeOnly) {
     await page.goto(`${base}/purchaser`);
     const purchaseList = page.getByRole("region", { name: "Purchasing records", exact: true });
     await purchaseList.getByRole("button", { name: /^Ordered/ }).click();
@@ -93,7 +95,60 @@ async function main() {
     await page.getByRole("button", { name: "Add user", exact: true }).click();
     await page.getByRole("dialog").waitFor();
     await page.getByRole("heading", { name: "Add a new user", exact: true }).waitFor();
+    }
     await page.goto(`${base}/gmea-rentals`);
+    const income = page.getByRole("region", { name: "Rental income workspace", exact: true });
+    await income.getByRole("heading", { name: "Monthly rental income", exact: true }).waitFor();
+    assert.equal(await income.getByLabel("Income month", { exact: true }).inputValue(), "2026-05");
+    assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /18,000/);
+    await income.getByLabel("Income month",{exact:true}).fill("2026-04");
+    assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /10,000/);
+    await income.getByLabel("Income month",{exact:true}).fill("2026-05");
+    assert.match(await income.innerText(), /Down Payment collected/);
+    assert.match(await income.innerText(), /Full Payment collected/);
+    assert.doesNotMatch(await income.innerText(), /\b(DP|FP)\b/);
+    await income.getByRole("button", {name:/^Needs review/}).click();
+    assert.match(await income.innerText(), /Held: Full Payment/);
+    assert.match(await income.innerText(), /Payment date unconfirmed/);
+    await income.getByText("Original Excel rows",{exact:true}).click();
+    assert.match(await income.locator("tbody").innerText(), /9,?000/);
+    assert.equal(await income.locator('a[href*="historical-1"]').count(),0);
+    await income.getByRole("button", { name: "Companies", exact: true }).click();
+    assert.equal(await income.locator("tbody tr").count(), 2);
+    await income.getByRole("button", { name: "Harbor Logistics", exact: true }).click();
+    await income.getByRole("heading", { name: "Rental income transactions", exact: true }).waitFor();
+    assert.equal(await income.locator("tbody tr").count(), 1);
+    assert.match(await income.locator("tbody").innerText(), /10,000/);
+    await income.getByRole("button", { name: "Clear income filters", exact: true }).click();
+    assert.equal(await income.locator("tbody tr").count(), 4);
+    await income.getByRole("button", { name: /^Payment history for / }).first().click();
+    const paymentHistory = page.getByRole("dialog");
+    await paymentHistory.waitFor();
+    assert.match(await paymentHistory.innerText(), /Method: Cash/);
+    await paymentHistory.getByRole("button", { name: "Close", exact: true }).click();
+    await income.locator("table").evaluate(table => { table.parentElement.scrollLeft = 0; });
+    await page.screenshot({ path: path.join(screenshots, "rental-income-desktop.png"), fullPage: true });
+    await page.getByRole("button", { name: "Rental Expenses", exact: true }).click();
+    await page.getByRole("heading", { name: "Monthly rental expenses", exact: true }).waitFor();
+    await page.getByLabel("Reporting month", { exact: true }).fill("2025-04");
+    await page.getByRole("button", { name: "Weekly", exact: true }).click();
+    await page.getByRole("heading", { name: "Weekly rental expenses", exact: true }).waitFor();
+    await page.getByRole("button", { name: "History", exact: true }).click();
+    await page.getByRole("heading", { name: "Expense history", exact: true }).waitFor();
+    await page.getByRole("button", { name: "Rental Income", exact: true }).click();
+    assert.equal(await income.getByLabel("Income month", { exact: true }).inputValue(), "2026-05");
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, "Income mobile overflow");
+    await page.screenshot({ path: path.join(screenshots, "rental-income-mobile.png"), fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1100 });
+    await page.getByRole("button", { name: "Rental Expenses", exact: true }).click();
+    await page.getByRole("button", { name: "Monthly Overview", exact: true }).click();
+    assert.equal(await page.getByLabel("Reporting month", { exact: true }).inputValue(), "2025-04");
+    if (rentalIncomeOnly) {
+      assert.deepEqual(errors, []);
+      console.log("Rental income browser checks passed: monthly totals, full payment labels, company drill-down, review source rows, independent expense months, weekly/history views, and mobile layout.");
+      return;
+    }
     await page.getByRole("button", { name: /Equipment 28/ }).click();
     await page.getByRole("combobox", { name: "Filter equipment by status" }).selectOption("available");
     assert.match(await page.getByRole("region", { name: "Rental and equipment records" }).innerText(), /of 14 units/);

@@ -130,6 +130,15 @@ export async function saveGmeaRentalCollectionAction(
     throw new Error("Reload this rental before saving.");
   }
   const command = normalizeRentalCollectionMutation(input);
+  if (command.kind === "record_payment" && command.value.payment_type !== "unclassified") {
+    const schema = await gmeaRentalsWriter().from("gmea_rental_payments").select("payment_type").limit(1);
+    if (schema.error) {
+      if (["42703", "PGRST204"].includes(schema.error.code)) {
+        throw new Error("Payment types are not available yet. Please ask an administrator to finish setting up rental income.");
+      }
+      throw new Error(schema.error.message);
+    }
+  }
   const { data, error } = await gmeaRentalsWriter().rpc(
     "mutate_gmea_rental_collection",
     {

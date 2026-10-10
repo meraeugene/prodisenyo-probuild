@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { HistoricalIncomeRecord } from "../incomeTypes";
 import {
   createSupabaseAdminClient,
   createSupabaseServerClient,
@@ -50,6 +51,7 @@ type RentalPaymentRow = {
   rental_id: string;
   amount: number;
   payment_date: string;
+  payment_type?: "down_payment" | "full_payment" | "partial_payment" | "unclassified";
   method: string;
   reference_number: string;
   notes: string;
@@ -121,6 +123,7 @@ type Table<T> = {
 type RentalsDatabase = {
   public: {
     Tables: {
+      gmea_rental_income_imports: Table<{source_hash: string; source_name: string; records: HistoricalIncomeRecord[]; imported_by: string; imported_at: string}>;
       gmea_rental_equipment: Table<EquipmentRow>;
       gmea_rentals: Table<RentalRow>;
       gmea_rental_items: Table<RentalItemRow>;

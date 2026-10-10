@@ -27,3 +27,6 @@ next-env.d.ts
 
 # Local visual comparison captures
 /tmp/design-preview/
+
+# Private workbook copies and database import audit backups
+/tmp/rental-income-import/

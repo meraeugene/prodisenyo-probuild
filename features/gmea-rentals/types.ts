@@ -58,11 +58,15 @@ export type RentalItem = {
   subtotal: number;
 };
 
+export const RENTAL_PAYMENT_TYPES = ["down_payment", "full_payment", "partial_payment", "unclassified"] as const;
+export type RentalPaymentType = (typeof RENTAL_PAYMENT_TYPES)[number];
+
 export type RentalPayment = {
   id: string;
   rental_id: string;
   amount: number;
   payment_date: string;
+  payment_type?: RentalPaymentType;
   method: string;
   reference_number: string;
   notes: string;
@@ -168,6 +172,7 @@ export type RentalCollectionMutation =
         | "id"
         | "amount"
         | "payment_date"
+        | "payment_type"
         | "method"
         | "reference_number"
         | "notes"

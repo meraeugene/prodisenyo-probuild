@@ -20,6 +20,7 @@ import { useState } from "react";
 import SkeletonHarness from "./SkeletonHarness";
 import PayrollWorkflowNavigation from "@/features/payroll/components/generate-payroll/PayrollWorkflowNavigation";
 import WorkspaceLoadingScreen from "@/components/WorkspaceLoadingScreen";
+import { incomeRentals, historicalIncome } from "./rentalIncomeFixtures";
 
 function EngineerHarness() {
   const [tab, setTab] = useState<"progress" | "materials">("progress");
@@ -40,7 +41,8 @@ const purchases: PurchasingRecord[] = projects.map((project, index) => ({
   supplierName: "Hardware Co.", estimatedUnitCost: 100, actualUnitCost: 120, quotationReference: `Q-${index}`, status: index % 2 ? "ordered" : "received",
   deliveryStatus: index % 2 ? "scheduled" : "delivered", receiptInvoiceReference: "INV-1", receiptFile: null, notes: "", updatedAt: "2026-10-07",
 }));
-Object.assign(window, { __gmeaProjects: gmeaProjects, __equipment: equipment, __rentals: rentals, __purchases: purchases });
+Object.assign(window, { __gmeaProjects: gmeaProjects, __equipment: equipment, __rentals: incomeRentals, __historicalIncome: historicalIncome,
+  __rentalOperations: { equipment, workers: [], categories: [], expenses: [] }, __purchases: purchases });
 const path = window.location.pathname;
 const skeletonCase = new URLSearchParams(window.location.search).get("case") || "";
 const homeRole = skeletonCase.startsWith("home-") ? skeletonCase.slice(5) as SidebarProfile["role"] : null;
@@ -56,7 +58,7 @@ createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <
     : path === "/gmea-project" ? <GmeaProjectWorkspace project={{ ...gmeaProjects[0], color: "#CC0000" }} expenseOptions={{ invoiceNames: [], suppliers: [], methods: [] }} canEdit />
     : path === "/purchaser" ? <PurchasingWorkspace />
     : path === "/gmea-projects" ? <GmeaProjectsPageClient projects={gmeaProjects} canEdit />
-    : path === "/gmea-rentals" ? <GmeaRentalsPage equipment={equipment} rentals={rentals} initialOperations={{ equipment, workers: [], categories: [], expenses: [] }} canEdit />
+    : path === "/gmea-rentals" ? <GmeaRentalsPage equipment={equipment} rentals={incomeRentals} historicalIncome={historicalIncome} initialOperations={{ equipment, workers: [], categories: [], expenses: [] }} canEdit />
     : role === "employee" ? <OvertimeRequestPageClient initialRequests={overtimeRequests} initialEmployeeName="Juan Santos" />
     : <div className="space-y-5 p-4 sm:p-6"><DashboardPageHero eyebrow="Workspace" title="Payroll" description="Manage your records." />
       <PayrollWorkspaceRunsPanel runs={payrolls} /></div>}

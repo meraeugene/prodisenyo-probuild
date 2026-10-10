@@ -10,6 +10,7 @@ import type {
 } from "../types";
 import { gmeaRentalsReader } from "./gmeaRentalsDatabase";
 import type { RentalAnalyticsData } from "../utils/rentalAnalytics";
+import { readAllRentalRows } from "./readAllRentalRows";
 
 export async function requireGmeaRentalsAccess(write = false) {
   return requireRole(write ? APP_ROLES.GMEA : [APP_ROLES.GMEA, APP_ROLES.CEO]);
@@ -34,25 +35,21 @@ export async function getGmeaRentalEquipment(): Promise<RentalEquipment[]> {
 export async function getGmeaRentals(id?: string): Promise<GmeaRental[]> {
   await requireGmeaRentalsAccess();
   const db = await gmeaRentalsReader();
-  let query = db
-    .from("gmea_rentals")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .order("id");
-  if (id) query = query.eq("id", id);
-  const { data: rentals, error } = await query;
-  if (error) throw new Error("Unable to load rentals. " + error.message);
+  const rentals = await readAllRentalRows((from, to) => {
+    let query = db.from("gmea_rentals").select("*")
+      .order("created_at", { ascending: false }).order("id");
+    if (id) query = query.eq("id", id);
+    return query.range(from, to);
+  }, "rentals");
   const ids = (rentals ?? []).map((r) => r.id);
-  const { data: items, error: itemError } = ids.length
-    ? await db
+  const items = ids.length
+    ? await readAllRentalRows((from, to) => db
         .from("gmea_rental_items")
         .select("*")
         .in("rental_id", ids)
         .order("created_at")
-        .order("id")
-    : { data: [], error: null };
-  if (itemError)
-    throw new Error("Unable to load rental equipment. " + itemError.message);
+        .order("id").range(from, to), "rental equipment")
+    : [];
   const payments: RentalPayment[] = [];
   let assignments: RentalWorkerAssignment[] = [];
   if (ids.length) {

@@ -8,11 +8,14 @@ import GmeaRentalExpenseForm from "./GmeaRentalExpenseForm";
 import styles from "@/components/workspace/workspace.module.css";
 import reportStyles from "./rentalWeeklyReports.module.css";
 
-export default function GmeaRentalWeeklyReports({ operations, canEdit, view, onViewWeek }: {
+export default function GmeaRentalWeeklyReports({ operations, canEdit, view, onViewWeek, reportingMonth, onReportingMonthChange }: {
   operations: RentalOperationsData; canEdit: boolean; view: "monthly" | "weekly"; onViewWeek: () => void;
+  reportingMonth?: string; onReportingMonthChange?: (month: string) => void;
 }) {
   const weeks = useMemo(() => buildRentalReportingWeeks(operations.expenses), [operations.expenses]);
-  const [month, setMonth] = useState(() => weeks.at(-1)?.month || new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }).slice(0,7));
+  const [localMonth, setLocalMonth] = useState(() => weeks.at(-1)?.month || new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }).slice(0,7));
+  const month = reportingMonth ?? localMonth;
+  const setMonth = onReportingMonthChange ?? setLocalMonth;
   const [selected, setSelected] = useState("");
   const [editor, setEditor] = useState<{ expense?: RentalExpense; week: RentalWeekMetadata; newWeek?: boolean }>();
   const monthly = weeks.filter(week => week.month === month);

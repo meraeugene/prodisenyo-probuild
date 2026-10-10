@@ -10,16 +10,24 @@ import WorkspaceListPagination from "@/components/workspace/WorkspaceListPaginat
 import styles from "@/components/workspace/workspace.module.css";
 import RentalRecordsTable from "./RentalRecordsTable";
 import EquipmentRecordsTable from "./EquipmentRecordsTable";
-import GmeaRentalExpenseLedger from "./GmeaRentalExpenseLedger";
-import GmeaRentalWeeklyReports from "./GmeaRentalWeeklyReports";
+import GmeaRentalExpensesWorkspace from "./GmeaRentalExpensesWorkspace";
+import GmeaRentalIncomeWorkspace from "./GmeaRentalIncomeWorkspace";
+import { useRentalIncomePage } from "../hooks/useRentalIncomePage";
+import { buildRentalReportingWeeks } from "../utils/rentalReportingWeeks";
 import GmeaRentalsSummary from "./GmeaRentalsSummary";
+import type { RentalIncomeRecord } from "../incomeTypes";
 
-export default function RentalRecordsWorkspace({ rentals, equipment, operations, onEditEquipment, onDeactivateEquipment, pending }: {
+export default function RentalRecordsWorkspace({ rentals, equipment, operations, historicalIncome = [], onEditEquipment, onDeactivateEquipment, pending }: {
+  historicalIncome?: RentalIncomeRecord[];
   rentals: GmeaRental[]; equipment: RentalEquipment[]; onEditEquipment?: (item: RentalEquipment) => void;
   onDeactivateEquipment?: (item: RentalEquipment) => Promise<void>; pending?: boolean;
   operations: RentalOperationsData;
 }) {
-  const [view, setView] = useState<"monthly" | "weekly" | "history" | "rentals" | "equipment">("monthly");
+  const [view, setView] = useState<"income" | "expenses" | "rentals" | "equipment">("income");
+  const incomeState = useRentalIncomePage(useMemo(()=>[...rentals,...historicalIncome], [rentals,historicalIncome]));
+  const [expenseView, setExpenseView] = useState<"monthly" | "weekly" | "history">("monthly");
+  const [expenseMonth, setExpenseMonth] = useState(() => buildRentalReportingWeeks(operations.expenses).at(-1)?.month
+    || new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }).slice(0, 7));
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [activity, setActivity] = useState("all");
@@ -27,8 +35,10 @@ export default function RentalRecordsWorkspace({ rentals, equipment, operations,
   const equipmentRows = useMemo(() => selectEquipment(equipment, query, status).filter((item) => activity === "all" || String(item.is_active) === activity), [equipment, query, status, activity]);
   const pagination = useTablePagination<GmeaRental | RentalEquipment>(view === "rentals" ? rentalRows : equipmentRows, JSON.stringify([view, query, status, activity]));
   return <section aria-label="Rental and equipment records" className={styles.panel}>
-    <WorkspaceTabSwitch label="Rental workspace sections" className={styles.filterTabs} items={[{ value: "monthly", label: "Monthly" }, { value: "weekly", label: "Weekly" }, { value: "rentals", label: "Rentals", count: rentals.length }, { value: "equipment", label: "Equipment", count: equipment.length }, { value: "history", label: "History" }]} value={view} onChange={(value) => { setView(value); setQuery(""); setStatus("all"); setActivity("all"); }} />
-    {view === "monthly" || view === "weekly" ? <GmeaRentalWeeklyReports operations={operations} canEdit={!!onEditEquipment} view={view} onViewWeek={() => setView("weekly")} /> : view === "history" ? <GmeaRentalExpenseLedger operations={operations} rentals={rentals} canEdit={!!onEditEquipment} initialPeriod="all" historical /> : <>
+    <WorkspaceTabSwitch label="Rental workspace sections" className={styles.filterTabs} items={[{ value: "income", label: "Rental Income" }, { value: "expenses", label: "Rental Expenses" }, { value: "rentals", label: "Rental Bookings", count: rentals.length }, { value: "equipment", label: "Equipment", count: equipment.length }]} value={view} onChange={(value) => { setView(value); setQuery(""); setStatus("all"); setActivity("all"); }} />
+    {view === "income" ? <GmeaRentalIncomeWorkspace state={incomeState} /> : view === "expenses" ? <GmeaRentalExpensesWorkspace
+      operations={operations} rentals={rentals} canEdit={!!onEditEquipment} view={expenseView} onViewChange={setExpenseView}
+      month={expenseMonth} onMonthChange={setExpenseMonth} /> : <>
     <div className="px-4 pt-4 sm:px-5"><GmeaRentalsSummary rentals={rentals} equipment={equipment} /></div>
     <div className={styles.filters}>
       <label className={`${styles.field} ${styles.searchField}`}>{view === "rentals" ? "Search rentals" : "Search equipment"}<input type="search" data-search-field className={styles.control} value={query} onChange={event => setQuery(event.target.value)} placeholder={view === "rentals" ? "Rental number, client, or location" : "Equipment, asset code, or plate"} /></label>

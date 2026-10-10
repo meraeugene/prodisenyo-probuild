@@ -69,7 +69,7 @@ async function main() {
     await rentalList.getByRole("combobox", { name: "Filter equipment by status" }).selectOption("available");
     assert.equal(await rentalList.locator("tbody tr").count(), 10);
     assert.match(await rentalList.innerText(), /of 14 units/);
-    await rentalList.getByRole("button", { name: "Rentals 28", exact: true }).click();
+    await rentalList.getByRole("button", { name: "Rental Bookings 28", exact: true }).click();
     await rentalList.getByRole("searchbox", { name: "Search rentals" }).fill("Harbor");
     assert.equal(await rentalList.locator("tbody tr").count(), 1);
     await rentalList.getByRole("button", { name: "Reset filters" }).click();

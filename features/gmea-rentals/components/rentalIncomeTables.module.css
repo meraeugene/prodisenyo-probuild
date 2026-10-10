@@ -1,0 +1,15 @@
+table.incomeTable {
+  min-width: 860px;
+  border: 1px solid #eaecf0;
+}
+
+table.incomeTable th,
+table.incomeTable td {
+  border: 1px solid #eaecf0;
+  vertical-align: middle;
+}
+
+table.incomeTable tfoot th,
+table.incomeTable tfoot td {
+  border: 1px solid #eaecf0;
+}
