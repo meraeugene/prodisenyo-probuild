@@ -1,5 +1,6 @@
 import type {
   ContractPaymentTerm,
+  Expense,
   GmeaProject,
   VatMode,
 } from "../types";
@@ -62,10 +63,19 @@ export function allocatePercentages(total: number, percentages: number[]) {
 
 export function postedReceiptTotal(term: ContractPaymentTerm) {
   return sumMoney(
-    term.receipts
+    [...term.receipts
       .filter((receipt) => receipt.status === "posted")
       .map((receipt) => receipt.amount),
+      ...(term.imported_receipts ?? []).map((receipt) => receipt.amount)],
   );
+}
+
+export function expenseBreakdown(expense: Expense) {
+  if (expense.workbook_balance) {
+    const amount = money(expense.workbook_balance.amount);
+    return { base: amount, vat: 0, gross: amount };
+  }
+  return vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate);
 }
 
 export function paymentTermSummary(term: ContractPaymentTerm) {
@@ -105,6 +115,12 @@ export function contractCollectionSummary(project: GmeaProject) {
   };
 }
 
+export function projectExpenseTotal(project: Pick<GmeaProject, "expenses">) {
+  // Reimbursing the person who paid an expense does not reverse the project cost.
+  return sumMoney(project.expenses.map((expense) =>
+    expenseBreakdown(expense).gross));
+}
+
 export function projectSummary(project: GmeaProject) {
   const {
     baseContract,
@@ -112,12 +128,7 @@ export function projectSummary(project: GmeaProject) {
     taxAmount,
     totalContract: contract,
   } = projectContractBreakdown(project);
-  const expenses = sumMoney(
-    project.expenses.map(
-      (expense) =>
-        vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross,
-    ),
-  );
+  const expenses = projectExpenseTotal(project);
   const profit = money(contract - taxAmount - expenses);
   const distributable = Math.max(0, profit);
   const shares = allocatePercentages(

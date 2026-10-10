@@ -289,6 +289,8 @@ The supplied salary decision is still the literal placeholder
 
 ## Import tooling and safety
 
+October 9, 2026 update: the newer `ALL EXPENSES (1).xlsx` was partially imported at the user's request via the existing role-checked RPCs. The older analysis and unexecuted migration described below concern the earlier workbook. See `docs/gmea-rental-expenses-review.md` for the current source hash, 1,284 inserted expenses, 137 holds, and verified Monthly/Weekly UI.
+
 'scripts/gmea-rentals-history-import.cjs' defaults to DRY RUN, creates
 deterministic IDs and source fingerprints, detects duplicate or changed
 sources, and blocks apply mode while review errors remain. Apply mode requires

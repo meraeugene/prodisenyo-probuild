@@ -73,7 +73,7 @@ export function removePaymentTerm(
   if (terms.length <= 1) throw new Error("A payment schedule needs at least one term.");
   const removed = terms.find((term) => term.id === termId);
   if (!removed) throw new Error("Payment term not found.");
-  if (removed.receipts.length) throw new Error("Terms with receipt history cannot be deleted.");
+  if (removed.receipts.length || removed.imported_receipts?.length) throw new Error("Terms with receipt history cannot be deleted.");
 
   const remaining = terms.filter((term) => term.id !== termId).map(paymentTermInput);
   const balanceIndex = remaining.length - 1;
@@ -106,7 +106,7 @@ export function updatePaymentTerm(
     return next;
   }
 
-  const balancingIndex = next.findLastIndex((term, index) => index !== updatedIndex && !terms[index].receipts.length);
+  const balancingIndex = next.findLastIndex((term, index) => index !== updatedIndex && !terms[index].receipts.length && !terms[index].imported_receipts?.length);
   if (balancingIndex < 0) throw new Error("Another term without receipt history is needed to balance the schedule.");
   const difference = money(contractAmount - sumMoney(next.map((term) => term.amount)));
   const balancedAmount = money(next[balancingIndex].amount + difference);

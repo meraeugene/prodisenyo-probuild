@@ -12,7 +12,7 @@ export default function GmeaProjectStatusBadge({
     <span className={
       "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold " +
       (completed
-        ? inverse ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+        ? inverse ? "bg-green-200 text-green-950" : "bg-green-100 text-green-800"
         : "bg-yellow-200 text-yellow-900")
     }>
       {completed ? "Completed" : "Ongoing"}

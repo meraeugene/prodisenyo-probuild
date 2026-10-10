@@ -10,8 +10,8 @@ import {
 
 const SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS = 60 * 60 * 24 * 365;
 
-// Prefix checks include individual project, rental, and overview metric pages.
-const GMEA_WORKSPACE_PREFIXES = ["/gmea-projects", "/gmea-rentals", "/gmea-overview"] as const;
+// CEO/GMEA protection covers project metric pages and legacy overview redirects.
+const GMEA_WORKSPACE_PREFIXES = ["/gmea-projects/summary", "/gmea-projects", "/gmea-rentals", "/gmea-overview"] as const;
 
 type CookieMutation = {
   name: string;
@@ -284,7 +284,7 @@ export async function updateSession(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname =
         currentRole === "gmea"
-          ? "/gmea-overview"
+          ? "/gmea-projects"
           : currentRole === "admin"
             ? ADMIN_REDIRECT_PATH
             : currentRole === "ceo"
@@ -381,7 +381,7 @@ export async function updateSession(request: NextRequest) {
       )
     ) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/gmea-overview";
+      redirectUrl.pathname = "/gmea-projects";
       redirectUrl.search = "";
       return redirect(redirectUrl);
     }

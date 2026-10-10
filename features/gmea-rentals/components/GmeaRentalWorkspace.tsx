@@ -19,6 +19,7 @@ import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import GmeaRentalCollectionsSection from "./GmeaRentalCollectionsSection";
 import GmeaRentalCrewSection from "./GmeaRentalCrewSection";
 import GmeaRentalExpensesSection from "./GmeaRentalExpensesSection";
+import GmeaRentalDeleteButton from "./GmeaRentalDeleteButton";
 export default function GmeaRentalWorkspace({
   rental: initialRental,
   initialOperations,
@@ -31,7 +32,7 @@ export default function GmeaRentalWorkspace({
   const [tab, setTab] = useState<
     "Equipment" | "Collections" | "Expenses" | "Drivers / Operators"
   >("Equipment");
-  const { data: rental = initialRental } = useSWR(
+  const { data: rental = initialRental, error: rentalError } = useSWR(
     ["gmea-rental", initialRental.id],
     ([, id]) => getGmeaRentalAction(id),
     {
@@ -40,7 +41,7 @@ export default function GmeaRentalWorkspace({
       refreshInterval: canEdit ? 0 : 30000,
     },
   );
-  const { data: operations = initialOperations } = useSWR(
+  const { data: operations = initialOperations, error: operationsError } = useSWR(
     "gmea-rentals:operations",
     getGmeaRentalOperationsAction,
     {
@@ -49,6 +50,7 @@ export default function GmeaRentalWorkspace({
       refreshInterval: canEdit ? 0 : 30000,
     },
   );
+  if (!rental) return <main className="p-6"><p role="status">This rental is no longer available.</p><Link href="/gmea-rentals" className="mt-4 inline-block text-teal-700">Back to rentals</Link></main>;
   const total = rental.items.reduce((sum, item) => sum + item.subtotal, 0);
   return (
     <main className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
@@ -86,9 +88,10 @@ export default function GmeaRentalWorkspace({
                 </span>
               </div>
             </div>
-            <RentalStatusBadge status={rental.status} />
+            <div className="flex items-start gap-3"><RentalStatusBadge status={rental.status} />{canEdit && <GmeaRentalDeleteButton kind="rental" id={rental.id} version={rental.version} name={rental.rental_number} detail />}</div>
           </div>
         </header>
+        {(rentalError || operationsError) && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh this rental. Please reload to try again.</p>}
         <section
           aria-label="Rental summary"
           className="grid gap-4 sm:grid-cols-3"

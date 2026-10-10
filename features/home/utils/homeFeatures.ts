@@ -9,16 +9,15 @@ type FeatureCard = {
 export const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
   gmea: [
     {
-      href: "/gmea-overview",
-      title: "Overview Dashboard",
-      description:
-        "Review Projects Expenses and Rentals performance in one place.",
-    },
-    {
       href: "/gmea-projects",
-      title: "Projects Expenses",
+      title: "Projects",
       description:
         "Manage projects, collections, expenses, and profit sharing.",
+    },
+    {
+      href: "/gmea-rentals",
+      title: "Rentals",
+      description: "Manage equipment, rental schedules, payments, and rental expenses.",
     },
     {
       href: "/settings",

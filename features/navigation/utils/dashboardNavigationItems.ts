@@ -3,8 +3,7 @@ import type { AppRole } from "@/types/database";
 import type { SidebarNavigationGroup, SidebarNavigationItem } from "../types";
 
 const GMEA_ITEMS = [
-  { href: "/gmea-overview", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/gmea-projects", label: "Projects Expenses", icon: FolderKanban },
+  { href: "/gmea-projects", label: "Projects", icon: FolderKanban },
   { href: "/gmea-rentals", label: "Rentals", icon: Truck, badgeKey: "gmeaRentalExpenses" },
 ] as const satisfies readonly SidebarNavigationItem[];
 

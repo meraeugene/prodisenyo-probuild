@@ -1,5 +1,5 @@
 ﻿import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
-import WorkspaceListSkeleton from "@/components/workspace/WorkspaceListSkeleton";
+import GmeaRentalExpensesSkeleton from "./GmeaRentalExpensesSkeleton";
 import { SkeletonBlock as Block, SkeletonPanel } from "@/components/LoadingSkeleton";
 import { SkeletonStats, SkeletonTable, SkeletonListPanel, SkeletonHeading } from "@/components/PageSkeletonParts";
 type View = "rentals" | "dashboard" | "reports" | "workspace";
@@ -22,11 +22,11 @@ export default function GmeaRentalsSkeleton({ view = "rentals", canEdit = true }
       {workspace ? <><Block className="h-5 w-32" /><header className="workspace-page-header pb-2"><div className="flex flex-col justify-between gap-5 sm:flex-row"><div className="min-w-0"><Block className="h-4 w-44" /><Block className="mt-2.5 h-[26px] w-52" /><div className="mt-4 flex flex-wrap gap-4"><Block className="h-5 w-32" /><Block className="h-5 w-40" /><Block className="h-5 w-52" /></div></div><Block className="h-6 w-24" /></div></header></>
         : <CeoPageHeroSkeleton variant={!canEdit && !analytics ? "workspace" : "dashboard"} action="none" titleWidth="w-56" actions={analytics ? <AnalyticsNavigationSkeleton /> : canEdit ? <><Block className="h-9 w-36" /><Block className="h-9 w-28" /></> : undefined} />}
       {view === "reports" && <SkeletonPanel className="p-5"><div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end"><SkeletonHeading /><div><Block className="mb-1 h-4 w-12" /><Block className="h-10 w-40" /></div></div></SkeletonPanel>}
-      {analytics ? <RentalSummarySkeleton count={view === "dashboard" ? 7 : 3} /> : <SkeletonStats count={3} helper={workspace} compact={workspace} className="grid gap-4 sm:grid-cols-3" />}
-      {view === "rentals" && <WorkspaceListSkeleton columns={8} tabs={2} tabLabels={["Rentals", "Equipment"]} rowHeight={64} firstColumnLines={2} />}
+      {analytics ? <RentalSummarySkeleton count={view === "dashboard" ? 7 : 3} /> : workspace ? <SkeletonStats count={3} helper compact className="grid gap-4 sm:grid-cols-3" /> : null}
+      {view === "rentals" && <GmeaRentalExpensesSkeleton canEdit={canEdit} />}
       {view === "dashboard" && <section className="grid gap-4 xl:grid-cols-2">{[0, 1, 2, 3].map(index => <SkeletonListPanel key={index} />)}</section>}
       {view === "reports" && <><section className="grid gap-4 lg:grid-cols-2"><SkeletonListPanel /><SkeletonListPanel /></section><SkeletonPanel className="p-0"><div className="p-5"><SkeletonHeading /></div><SkeletonTable columns={4} minWidth={640} /></SkeletonPanel></>}
-      {workspace && <><div className="flex flex-wrap gap-2">{["w-28", "w-28", "w-24", "w-40"].map(width => <Block key={width} className={`h-9 ${width}`} />)}</div><SkeletonPanel className="p-5 sm:p-7"><div className="flex flex-wrap justify-between gap-2"><SkeletonHeading /><Block className="h-7 w-36" /></div><div className="mt-5"><SkeletonTable columns={5} minWidth={720} /></div></SkeletonPanel></>}
+      {workspace && <><div className="flex flex-wrap gap-2">{["w-28", "w-28", "w-24", "w-40"].map((width, index) => <Block key={index} className={`h-9 ${width}`} />)}</div><SkeletonPanel className="p-5 sm:p-7"><div className="flex flex-wrap justify-between gap-2"><SkeletonHeading /><Block className="h-7 w-36" /></div><div className="mt-5"><SkeletonTable columns={5} minWidth={720} /></div></SkeletonPanel></>}
     </div>
   </main>;
 }

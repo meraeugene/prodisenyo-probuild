@@ -18,6 +18,7 @@ export function useGmeaRentalCollectionMutation(rental: GmeaRental) {
     try {
       await saveGmeaRentalCollectionAction(rental.id, rental.version, command);
       await mutate(["gmea-rental", rental.id]);
+      await mutate("gmea-rentals:list");
       router.refresh();
     } catch (cause) {
       const message =

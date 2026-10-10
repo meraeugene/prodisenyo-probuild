@@ -12,6 +12,7 @@ import {
 } from "../utils/rentalUi";
 import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperationsMutation";
 import GmeaRentalExpenseForm from "./GmeaRentalExpenseForm";
+import GmeaRentalConfirmAction from "./GmeaRentalConfirmAction";
 
 export default function GmeaRentalExpensesSection({
   rental,
@@ -65,11 +66,6 @@ export default function GmeaRentalExpensesSection({
   const equipmentById = new Map(
     operations.equipment.map((item) => [item.id, item.name]),
   );
-
-  function remove(expense: RentalExpense) {
-    if (!window.confirm("Delete this rental expense?")) return;
-    void saveExpense(expense, { kind: "delete" }).catch(() => undefined);
-  }
 
   function openExpense(expense: RentalExpense) {
     setEditor(expense);
@@ -239,14 +235,16 @@ export default function GmeaRentalExpensesSection({
                           {canEdit ? "Edit" : "Details"}
                         </button>
                         {canEdit && (
-                        <button
-                          type="button"
+                        <GmeaRentalConfirmAction
                           disabled={pending}
-                          onClick={() => remove(expense)}
+                          label="Delete rental expense"
+                          triggerLabel="Delete"
+                          pendingLabel="Deleting…"
+                          description={`Permanently delete ${expense.description} (${formatRentalMoney(amount.gross)})? Expense totals will be recalculated.`}
+                          onConfirm={() => saveExpense(expense, { kind: "delete" })}
+                          icon={<Trash2 size={14} aria-hidden="true" />}
                           className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
+                        />
                         )}
                       </div>
                   </td>

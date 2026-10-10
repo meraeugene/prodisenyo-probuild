@@ -17,8 +17,9 @@ export const config = {
     "/budget-tracker/:path*",
     "/projects/:path*",
     "/gmea-projects/:path*",
+    "/gmea-projects/summary/:path*", // Clickable project financial cards (CEO/GMEA).
     "/gmea-rentals/:path*",
-    "/gmea-overview/:path*", // Includes the dashboard metric detail pages.
+    "/gmea-overview/:path*", // Protect legacy links before redirecting to Projects.
     "/cost-estimator/:path*",
     "/estimate-approvals/:path*",
     "/estimate-reviews/:path*",

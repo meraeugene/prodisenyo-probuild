@@ -53,7 +53,7 @@ createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <
     : path === "/gmea-project" ? <GmeaProjectWorkspace project={{ ...gmeaProjects[0], color: "#CC0000" }} expenseOptions={{ invoiceNames: [], suppliers: [], methods: [] }} canEdit />
     : path === "/purchaser" ? <PurchasingWorkspace />
     : path === "/gmea-projects" ? <GmeaProjectsPageClient projects={gmeaProjects} canEdit />
-    : path === "/gmea-rentals" ? <GmeaRentalsPage equipment={equipment} rentals={rentals} canEdit />
+    : path === "/gmea-rentals" ? <GmeaRentalsPage equipment={equipment} rentals={rentals} initialOperations={{ equipment, workers: [], categories: [], expenses: [] }} canEdit />
     : role === "employee" ? <OvertimeRequestPageClient initialRequests={overtimeRequests} initialEmployeeName="Juan Santos" />
     : <div className="space-y-5 p-4 sm:p-6"><DashboardPageHero eyebrow="Workspace" title="Payroll" description="Manage your records." />
       <PayrollWorkspaceRunsPanel runs={payrolls} /></div>}

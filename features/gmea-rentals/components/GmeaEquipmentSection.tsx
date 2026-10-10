@@ -6,6 +6,7 @@ import {
   rentalLabel,
 } from "../utils/rentalUi";
 import RentalStatusBadge from "./RentalStatusBadge";
+import GmeaRentalConfirmAction from "./GmeaRentalConfirmAction";
 
 function EquipmentActions({
   item,
@@ -16,7 +17,7 @@ function EquipmentActions({
   item: RentalEquipment;
   pending: boolean;
   onEdit: (item: RentalEquipment) => void;
-  onDeactivate: (item: RentalEquipment) => void;
+  onDeactivate: (item: RentalEquipment) => Promise<void>;
 }) {
   return (
     <div className="flex items-center justify-end gap-1">
@@ -28,14 +29,16 @@ function EquipmentActions({
         <Pencil size={14} aria-hidden="true" /> Edit
       </button>
       {item.is_active && (
-        <button
-          type="button"
+        <GmeaRentalConfirmAction
           disabled={pending}
-          onClick={() => onDeactivate(item)}
+          label={`Deactivate ${item.name}`}
+          triggerLabel="Deactivate"
+          pendingLabel="Deactivating…"
+          description="This equipment will be inactive and unavailable for new rental bookings. Its history will be kept."
+          onConfirm={() => onDeactivate(item)}
+          icon={<Power size={14} aria-hidden="true" />}
           className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-        >
-          <Power size={14} aria-hidden="true" /> Deactivate
-        </button>
+        />
       )}
     </div>
   );
@@ -67,7 +70,7 @@ export default function GmeaEquipmentSection({
   onStatusChange: (value: string) => void;
   onActivityChange: (value: string) => void;
   onEdit: (item: RentalEquipment) => void;
-  onDeactivate: (item: RentalEquipment) => void;
+  onDeactivate: (item: RentalEquipment) => Promise<void>;
   onClear: () => void;
 }) {
   const hasFilters =

@@ -33,7 +33,7 @@ test("GMEA role home and server access agree; CEO cannot mutate", async () => {
       },
     );
     if (role === "gmea") {
-      assert.equal(auth.getRoleHomePath(role), "/gmea-overview");
+      assert.equal(auth.getRoleHomePath(role), "/gmea-projects");
       await requireGmeaAccess(true);
     } else await assert.rejects(requireGmeaAccess(true), /REDIRECT/);
     if (["gmea", "ceo"].includes(role)) await requireGmeaAccess();
@@ -109,11 +109,11 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
   );
   assert.match(
     (await request("gmea", "/dashboard")).headers.get("location"),
-    /gmea-overview/,
+    /gmea-projects/,
   );
   assert.match(
     (await request("gmea", "/auth/login")).headers.get("location"),
-    /gmea-overview/,
+    /gmea-projects/,
   );
   for (const role of ["gmea", "ceo"])
     assert.equal(
@@ -132,10 +132,12 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
         null,
       );
   for (const role of ["gmea", "ceo"])
-    for (const path of ["/gmea-overview", "/gmea-overview/profit", "/gmea-overview/collection-rate"])
+    for (const path of ["/gmea-projects/summary/profit", "/gmea-projects/summary/collection-rate", "/gmea-overview", "/gmea-overview/profit", "/gmea-overview/collection-rate"])
       assert.equal((await request(role, path)).headers.get("location"), null);
   assert.match((await request(null, "/gmea-overview/loss")).headers.get("location"), /auth\/login/);
   assert.match((await request("engineer", "/gmea-overview/loss")).headers.get("location"), /overview/);
+  assert.match((await request(null, "/gmea-projects/summary/loss")).headers.get("location"), /auth\/login/);
+  assert.match((await request("engineer", "/gmea-projects/summary/loss")).headers.get("location"), /overview/);
   assert.match(
     (await request("engineer", "/gmea-rentals")).headers.get("location"),
     /overview/,
@@ -290,8 +292,8 @@ test("GMEA Overview combines portfolio totals and excludes voided rental payment
   assert.equal(summary.totalRevenue, 2500);
   assert.equal(summary.totalCollected, 1500);
   assert.equal(summary.notCollected, 2000);
-  assert.equal(summary.totalExpenses, 200);
-  assert.equal(summary.netProfit, 2300);
+  assert.equal(summary.totalExpenses, 212);
+  assert.equal(summary.netProfit, 2288);
   assert.equal(summary.activeWork, 2);
   assert.equal(summary.activeClients, 1);
   const alerts = selectGmeaOverviewAlerts(data, "2026-09-20");

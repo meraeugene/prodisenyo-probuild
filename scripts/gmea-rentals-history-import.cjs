@@ -5,6 +5,8 @@ const path = require("node:path");
 const XLSX = require("xlsx");
 const { loadEnvConfig } = require("@next/env");
 const { createClient } = require("@supabase/supabase-js");
+const { deduplicate, flagCrossPeriodIssues } = require("./lib/rentalHistoryRecordReview.cjs");
+const { readRentalImportTable } = require("./lib/readGmeaRentalImportState.cjs");
 
 const aliases = new Map(Object.entries({
   YELLOW: "Yellow Dump Truck",
@@ -387,37 +389,6 @@ function parseSummarySheet(name, sheet, sourceMonth = reportMonth(name)) {
   return { summary, income };
 }
 
-function semanticKey(record) {
-  return [record.sourceMonth, record.date, record.kind, record.category,
-    norm(record.payee || record.rawDescription)].join("|");
-}
-
-function deduplicate(records) {
-  const monthly = records.filter((x) => x.kind === "monthly-equipment");
-  const groups = new Map();
-  for (const item of records.filter((x) => x.kind !== "monthly-equipment")) {
-    const key = semanticKey(item);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(item);
-  }
-  const unique = [], duplicates = [], conflicts = [];
-  for (const group of groups.values()) {
-    if (new Set(group.map((x) => x.amount)).size > 1) {
-      for (const item of group) {
-        item.issues.push("conflicting duplicate/revision in weekly sheet");
-        conflicts.push(item);
-      }
-    } else {
-      unique.push(group[0]);
-      for (const item of group.slice(1)) {
-        duplicates.push({ ...item, duplicateOf: group[0].sourceLocator });
-      }
-    }
-  }
-  return { records: [...monthly, ...unique, ...conflicts],
-    duplicates, conflicts };
-}
-
 async function databaseState(enabled) {
   if (!enabled) {
     return { connected: false, reason: "disabled",
@@ -434,17 +405,12 @@ async function databaseState(enabled) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const [equipmentRows, categoryRows, expenseRows] = await Promise.all([
-    db.from("gmea_rental_equipment").select("id,code,name,status,is_active"),
-    db.from("gmea_rental_expense_categories")
-      .select("id,name,is_active,sort_order"),
-    db.from("gmea_rental_expenses")
-      .select("id,equipment_id,category_id,expense_date,description,amount,notes"),
+    readRentalImportTable(db, "gmea_rental_equipment"),
+    readRentalImportTable(db, "gmea_rental_expense_categories"),
+    readRentalImportTable(db, "gmea_rental_expenses"),
   ]);
-  for (const result of [equipmentRows, categoryRows, expenseRows]) {
-    if (result.error) throw new Error(result.error.message);
-  }
-  return { connected: true, db, equipment: equipmentRows.data || [],
-    categories: categoryRows.data || [], expenses: expenseRows.data || [] };
+  return { connected: true, db, equipment: equipmentRows,
+    categories: categoryRows, expenses: expenseRows };
 }
 
 function compareDatabase(records, database) {
@@ -576,6 +542,8 @@ function summarize(input) {
       unknownCategories: unknownCategories.length,
       blockedByUnresolvedDate: blockedByDate.length,
       blockedForAnotherReason: blockedOther.length,
+      possibleCrossPeriodDuplicateGroups: input.crossPeriodDuplicates.length,
+      blockedRecords: blockedByDate.length + blockedOther.length,
       skippedSubtotalControls: input.controls.length },
     categoryTotals: {
       labor: categoryTotals.Labor,
@@ -601,6 +569,7 @@ function summarize(input) {
     unknownEquipment: unknownEquipment.map(issueView),
     unknownCategories: unknownCategories.map(issueView),
     conflictingRevisions: conflicts.map(issueView),
+    crossPeriodDuplicates: input.crossPeriodDuplicates.map(group => group.map(issueView)),
     duplicateRecords: duplicates.map((x) => ({
       ...issueView(x), duplicateOf: x.duplicateOf,
     })),
@@ -671,9 +640,7 @@ async function applyImport(report, database, args) {
   if (!/^[0-9a-f-]{36}$/i.test(args.actor || "")) {
     throw new Error("Apply mode requires a valid --actor UUID.");
   }
-  const blocking = report.totals.invalidOrAmbiguousDates +
-    report.totals.unknownEquipment + report.totals.unknownCategories +
-    report.totals.conflictingRevisions;
+  const blocking = report.totals.blockedRecords;
   if (blocking) {
     throw new Error(`Apply blocked: ${blocking} records require review.`);
   }
@@ -752,6 +719,7 @@ async function main() {
   }
   const deduped = deduplicate(records);
   records = deduped.records;
+  const crossPeriodDuplicates = flagCrossPeriodIssues(records);
   const database = await databaseState(args.database);
   const plannedEquipment = compareDatabase(records, database);
   const report = summarize({
@@ -759,6 +727,7 @@ async function main() {
     inventory,
     records,
     duplicates: deduped.duplicates,
+    crossPeriodDuplicates,
     summaries,
     incomes,
     controls,

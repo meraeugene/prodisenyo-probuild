@@ -37,13 +37,30 @@ test("overview profit and loss retain losing completed records and shared rental
   assert.equal(summary.activeWork, 2);
   assert.equal(summary.divisions[0].count, 2);
   assert.equal(summary.totalRevenue, 3550);
-  assert.equal(summary.totalExpenses, 3060);
-  assert.equal(summary.totalProfit, 1130);
+  assert.equal(summary.totalExpenses, 3072);
+  assert.equal(summary.totalProfit, 1118);
   assert.equal(summary.totalLoss, 640);
-  assert.equal(summary.netProfit, 490);
+  assert.equal(summary.netProfit, 478);
   assert.equal(summary.totalProfit - summary.totalLoss, summary.netProfit);
   assert.deepEqual(selectGmeaOverviewMetricRecords(records, "loss").map(row => row.id), ["project:b", "rental:a", "rental:shared"]);
   assert.deepEqual({ totalCollected: summary.totalCollected, notCollected: summary.notCollected }, buildGmeaOverviewCollections(data));
+  assert.deepEqual(data, before);
+});
+
+test("Sir Edward reimbursements do not reduce costs or hide a project's loss", () => {
+  const data = {
+    projects: [project("bulua", "completed", 175000, [], [expense(175195, { refunded_amount: 2183 })])],
+    rentals: { rentals: [], expenses: [], payments: [], equipment: [], categories: [] },
+  };
+  const before = structuredClone(data);
+  const summary = buildGmeaOverview(data);
+  const record = buildGmeaOverviewRecords(data)[0];
+  assert.equal(record.expenses, 175195);
+  assert.equal(record.result, -195);
+  assert.equal(summary.totalExpenses, 175195);
+  assert.equal(summary.totalProfit, 0);
+  assert.equal(summary.totalLoss, 195);
+  assert.equal(summary.netProfit, -195);
   assert.deepEqual(data, before);
 });
 
@@ -69,7 +86,7 @@ test("each drilldown reconciles to its dashboard metric, including filtered tota
   }
   const projects = selectGmeaOverviewMetricRecords(records, "profit", "  CLIENT A  ", "Projects Expenses");
   assert.deepEqual(projects.map(row => row.id), ["project:a"]);
-  assert.equal(buildGmeaOverviewMetricTotals(projects).profit, 900);
+  assert.equal(buildGmeaOverviewMetricTotals(projects).profit, 888);
   assert.deepEqual(selectGmeaOverviewMetricRecords(records, "ongoing").map(row => row.id).sort(), ["project:a", "rental:a"]);
 });
 
@@ -129,26 +146,20 @@ test("all eight summary cards are links; redundant clients and combined profit/l
   assert.ok(!html.includes("Net profit / loss"));
 });
 
-test("metric routes require CEO/GMEA access and reject unknown metrics before querying data", async () => {
-  let role, reads = 0;
+test("legacy metric links require CEO/GMEA access and redirect to project details", async () => {
+  let role;
   const Route = load("app/(dashboard)/gmea-overview/[metric]/page.tsx", {
-    "next/navigation": { notFound() { throw new Error("NOT_FOUND"); } },
+    "next/navigation": { notFound() { throw new Error("NOT_FOUND"); }, redirect(path) { throw new Error("REDIRECT:" + path); } },
     "@/lib/auth": { APP_ROLES: { GMEA: "gmea", CEO: "ceo" }, async requireRole(allowed) {
       if (!allowed.includes(role)) throw new Error("DENIED");
       return { profile: { role } };
     } },
-    "@/features/gmea-overview/components/GmeaOverviewDetailsPage": { default: () => null },
-    "@/features/gmea-overview/server/gmeaOverviewQueries": { async getGmeaOverviewData() { reads++; return fixture(); } },
   }).default;
   for (role of ["ceo", "gmea"]) for (const metric of GMEA_OVERVIEW_METRICS) {
-    const page = await Route({ params: Promise.resolve({ metric: metric.id }) });
-    assert.equal(page.props.metric, metric.id);
-    assert.equal(page.props.canEdit, role === "gmea");
+    await assert.rejects(Route({ params: Promise.resolve({ metric: metric.id }) }), error => error.message === `REDIRECT:/gmea-projects/summary/${metric.id}`);
   }
-  const before = reads;
   for (role of ["engineer", "admin", "employee", "payroll_manager", "purchaser", null])
     await assert.rejects(Route({ params: Promise.resolve({ metric: "profit" }) }), /DENIED/);
   role = "ceo";
   await assert.rejects(Route({ params: Promise.resolve({ metric: "unknown" }) }), /NOT_FOUND/);
-  assert.equal(reads, before);
 });

@@ -1,1 +1,1 @@
-export { default } from "@/features/gmea-overview/components/GmeaOverviewSkeleton";
+export { default } from "@/features/gmea-projects/components/GmeaProjectsPageSkeleton";

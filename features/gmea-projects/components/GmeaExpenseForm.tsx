@@ -9,6 +9,7 @@ import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import GmeaExpenseItemsField from "./GmeaExpenseItemsField";
 import { MoneyField, SearchableSelect, TextField } from "./GmeaFields";
+import GmeaExpenseWorkbookDetails from "./GmeaExpenseWorkbookDetails";
 
 export default function GmeaExpenseForm({
   project,
@@ -124,6 +125,7 @@ export default function GmeaExpenseForm({
             </section>
         </div>
       </fieldset>
+      {expense && <GmeaExpenseWorkbookDetails expense={expense} />}
     </GmeaDialog>
   );
 }

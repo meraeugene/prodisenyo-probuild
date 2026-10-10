@@ -1,11 +1,13 @@
 import type { RentalEquipment } from "../types";
 import { formatRentalMoney, rentalLabel } from "../utils/rentalUi";
 import RentalStatusBadge from "./RentalStatusBadge";
+import GmeaRentalDeleteButton from "./GmeaRentalDeleteButton";
+import GmeaRentalConfirmAction from "./GmeaRentalConfirmAction";
 import styles from "@/components/workspace/workspace.module.css";
 
 export default function EquipmentRecordsTable({ equipment, onEdit, onDeactivate, pending }: {
   equipment: RentalEquipment[]; onEdit?: (item: RentalEquipment) => void;
-  onDeactivate?: (item: RentalEquipment) => void; pending?: boolean;
+  onDeactivate?: (item: RentalEquipment) => Promise<void>; pending?: boolean;
 }) {
   return <div className="overflow-x-auto">
     <table className={styles.table} style={{ minWidth: 780 }}>
@@ -17,9 +19,10 @@ export default function EquipmentRecordsTable({ equipment, onEdit, onDeactivate,
         <td className="whitespace-nowrap tabular-nums">{item.default_rate === null ? "—" : formatRentalMoney(item.default_rate)}{item.rate_unit && <span className="text-xs text-slate-500"> / {rentalLabel(item.rate_unit)}</span>}</td>
         <td><RentalStatusBadge status={item.status} /></td>
         <td>{item.is_active ? "Active" : "Inactive"}</td>
-        {onEdit && <td><div className="flex gap-2">
+        {onEdit && <td><div className="flex flex-wrap gap-2">
           <button type="button" disabled={pending} className={styles.button} onClick={() => onEdit(item)} aria-label={`Edit ${item.name}`}>Edit</button>
-          {item.is_active && onDeactivate && <button type="button" disabled={pending} className={`${styles.button} !text-rose-700`} onClick={() => onDeactivate(item)} aria-label={`Deactivate ${item.name}`}>Deactivate</button>}
+          {item.is_active && onDeactivate && <GmeaRentalConfirmAction disabled={pending} className={`${styles.button} !text-rose-700`} label={`Deactivate ${item.name}`} triggerLabel="Deactivate" pendingLabel="Deactivating…" description="This equipment will be inactive and unavailable for new rental bookings. Existing rental and expense history will be kept." onConfirm={() => onDeactivate(item)} />}
+          <GmeaRentalDeleteButton kind="equipment" id={item.id} version={item.version} name={item.name} />
         </div></td>}
       </tr>)}</tbody>
     </table>

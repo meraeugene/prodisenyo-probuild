@@ -10,6 +10,7 @@ import {
 import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperationsMutation";
 import GmeaRentalAssignmentForm from "./GmeaRentalAssignmentForm";
 import GmeaRentalWorkerForm from "./GmeaRentalWorkerForm";
+import GmeaRentalConfirmAction from "./GmeaRentalConfirmAction";
 
 export default function GmeaRentalCrewSection({
   rental,
@@ -96,19 +97,21 @@ export default function GmeaRentalCrewSection({
                       </p>
                     </div>
                     {canEdit && (
-                      <button
-                        type="button"
+                      <GmeaRentalConfirmAction
                         disabled={pending}
-                        onClick={() =>
-                          void saveAssignment({
+                        label={`Remove ${worker?.name ?? "worker"} assignment`}
+                        triggerLabel="Remove"
+                        pendingLabel="Removing…"
+                        description="Remove this worker from the current rental. The worker will remain in the directory."
+                        icon={<Trash2 size={14} aria-hidden="true" />}
+                        onConfirm={() =>
+                          saveAssignment({
                             kind: "remove_assignment",
                             assignment_id: assignment.id,
-                          }).catch(() => undefined)
+                          })
                         }
                         className="inline-flex items-center gap-1.5 self-start rounded-lg px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 sm:self-auto"
-                      >
-                        <Trash2 size={14} /> Remove
-                      </button>
+                      />
                     )}
                   </article>
                 );
@@ -156,18 +159,16 @@ export default function GmeaRentalCrewSection({
                     <Pencil size={14} /> Edit
                   </button>
                   {worker.is_active && (
-                    <button
-                      type="button"
+                    <GmeaRentalConfirmAction
                       disabled={pending}
-                      onClick={() =>
-                        void saveWorker(worker, { kind: "deactivate" }).catch(
-                          () => undefined,
-                        )
-                      }
+                      label={`Deactivate ${worker.name}`}
+                      triggerLabel="Deactivate"
+                      pendingLabel="Deactivating…"
+                      description="The worker will become inactive and cannot be selected for new assignments. Existing rental history will be kept."
+                      icon={<Power size={14} aria-hidden="true" />}
+                      onConfirm={() => saveWorker(worker, { kind: "deactivate" })}
                       className="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50"
-                    >
-                      <Power size={14} /> Deactivate
-                    </button>
+                    />
                   )}
                 </div>
               )}

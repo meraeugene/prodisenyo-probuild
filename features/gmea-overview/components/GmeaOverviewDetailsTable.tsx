@@ -17,7 +17,7 @@ export default function GmeaOverviewDetailsTable({ rows, metric, filteredTotal, 
       <tbody>{rows.map((record) => <tr key={record.id}>
         <td className="max-w-[300px]"><Link href={record.href} className={`${styles.recordLink} break-words`}>{record.name}</Link><p className="mt-1 text-xs text-slate-500">{record.client || "—"}</p></td>
         <td>{record.division}</td>
-        <td><span className={`inline-flex whitespace-nowrap rounded px-2 py-1 text-xs font-medium ${record.status === "active" ? "bg-yellow-200 text-yellow-900" : "bg-slate-100 text-slate-700"}`}>{overviewRecordStatus(record)}</span></td>
+        <td><span className={`inline-flex whitespace-nowrap rounded px-2 py-1 text-xs font-medium ${record.status === "completed" ? "bg-green-100 text-green-800" : record.status === "active" ? "bg-yellow-200 text-yellow-900" : "bg-slate-100 text-slate-700"}`}>{overviewRecordStatus(record)}</span></td>
         {columns.map((column) => <td key={column.field} className={`whitespace-nowrap text-right tabular-nums ${column.field === "metric" && metric === "loss" ? "font-semibold text-rose-700" : ""}`}>
           {formatOverviewMetric(column.field === "metric" ? overviewRecordValue(record, metric) : record[column.field], column.field === "metric" ? metric : "revenue")}
         </td>)}

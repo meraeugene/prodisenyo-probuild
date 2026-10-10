@@ -1,0 +1,9 @@
+.desktop { display: none; }
+.cards { display: block; }
+.table th, .table td { padding: 14px 10px; overflow-wrap: anywhere; vertical-align: top; }
+.table td { font-variant-numeric: tabular-nums; }
+.table[data-row-hover="none"] tbody tr:hover { background: transparent; }
+@media (min-width: 1280px) {
+  .desktop { display: block; }
+  .cards { display: none; }
+}

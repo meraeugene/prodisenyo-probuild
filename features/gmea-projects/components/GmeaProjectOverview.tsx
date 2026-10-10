@@ -1,4 +1,6 @@
 import type { GmeaProject } from "../types";
+import type { ReactNode } from "react";
+import GmeaProjectStatusBadge from "./GmeaProjectStatusBadge";
 import { formatMoney, projectSummary } from "../utils/gmeaCalculations";
 import { formatProjectDuration } from "../utils/gmeaFormatters";
 export default function GmeaProjectOverview({
@@ -7,11 +9,11 @@ export default function GmeaProjectOverview({
   project: GmeaProject;
 }) {
   const s = projectSummary(project);
-  const details = [
+  const details: [string, ReactNode][] = [
     ["Project name", project.name],
     ["Client", project.client],
     ["Project location", project.location],
-    ["Project status", project.status === "completed" ? "Completed" : "Ongoing"],
+    ["Project status", <GmeaProjectStatusBadge key="status" status={project.status} />],
     ["Pre-tax contract amount", formatMoney(s.baseContract)],
     ["Project tax", `${s.taxRate}% (${formatMoney(s.taxAmount)})`],
     ["Total contract amount", formatMoney(s.contract)],

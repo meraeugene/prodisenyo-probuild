@@ -1,9 +1,11 @@
 "use client";
 
-import PayrollEditModal from "@/features/payroll/components/PayrollEditModal";
-import PayrollRateModal from "@/features/payroll/components/PayrollRateModal";
+import dynamic from "next/dynamic";
 import { useAppState } from "@/features/app/AppStateProvider";
 import type { AppRole } from "@/types/database";
+
+const PayrollRateModal = dynamic(() => import("@/features/payroll/components/PayrollRateModal"), { ssr: false });
+const PayrollEditModal = dynamic(() => import("@/features/payroll/components/PayrollEditModal"), { ssr: false });
 
 export default function DashboardOverlays({ role }: { role: AppRole | null }) {
   const { payroll } = useAppState();
@@ -11,8 +13,8 @@ export default function DashboardOverlays({ role }: { role: AppRole | null }) {
 
   return (
     <>
-      <PayrollRateModal payroll={payroll} />
-      <PayrollEditModal payroll={payroll} currentUserRole={role} />
+      {payroll.showPayrollRateModal && <PayrollRateModal payroll={payroll} />}
+      {payroll.editingPayrollRow && payroll.payrollEditDraft && <PayrollEditModal payroll={payroll} currentUserRole={role} />}
     </>
   );
 }

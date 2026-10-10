@@ -22,7 +22,7 @@ function Harness() {
   return <DashboardShell profile={{ id: "ceo", full_name: "Maria Santos", username: "ceo", role, avatar_path: null }}>
     {path === "/overtime-approvals" ? <OvertimeApprovalsPageClient initialRequests={payrollAdjustments} initialOvertimeRequests={overtimeRequests} />
       : path === "/gmea-projects" ? <CeoGmeaProjectsPageClient projects={gmeaProjects} />
-      : path === "/gmea-rentals" ? <div className="space-y-5 p-6"><CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Track rental schedules, equipment availability, and collections." /><CeoRentalWorkspace rentals={rentals} equipment={equipment} /></div>
+      : path === "/gmea-rentals" ? <div className="space-y-5 p-6"><CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Track rental schedules, equipment availability, and collections." /><CeoRentalWorkspace rentals={rentals} equipment={equipment} operations={{ equipment, workers: [], categories: [], expenses: [] }} /></div>
       : path === "/dashboard" ? <CeoDashboardPage fullName="Maria Santos" data={{ projects: projects.map((project) => ({ ...project, estimatedCost: project.budget, latestProgressAt: null, imageUrl: null })), materialRequests: [], estimates: [], progressUpdates: [], documents: [], payrollApprovalCount: 2, overtimeApprovalCount: 1 }} />
       : <div className="p-4 sm:p-6"><CeoProjectsOverview projects={rows} onCreateProject={() => window.dispatchEvent(new Event("create-project"))} onOpenProject={(id) => Object.assign(window, { __openedProject: id })} /></div>}
   </DashboardShell>;

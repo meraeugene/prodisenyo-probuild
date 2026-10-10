@@ -1,5 +1,38 @@
 export type VatMode = "off" | "inclusive" | "exclusive";
 
+export interface WorkbookSource {
+  workbook: string;
+  sheet: string;
+  cells: string;
+  sha256: string;
+  imported_at: string;
+}
+
+export interface WorkbookExpenseBalance {
+  amount: number;
+  source_total: number;
+  itemized_total: number;
+  source: WorkbookSource;
+  original_amount?: number;
+  settlements?: { amount: number; expense_ids: string[]; source: WorkbookSource }[];
+}
+
+export interface ExpenseWorkbookItem {
+  description: string;
+  date: string;
+  amount: number;
+  invoice_number: string;
+  supplier: string;
+  source_cells: string;
+}
+
+export interface ImportedContractReceipt {
+  id: string;
+  amount: number;
+  received_date: string | null;
+  source: WorkbookSource;
+}
+
 export interface Expense {
   id: string;
   date: string;
@@ -15,6 +48,11 @@ export interface Expense {
   method: string;
   notes: string;
   is_new?: boolean;
+  workbook_balance?: WorkbookExpenseBalance;
+  workbook_source?: WorkbookSource;
+  workbook_items?: ExpenseWorkbookItem[];
+  source_previous_values?: { amount: number; invoice_number: string };
+  workbook_import_delta?: number;
 }
 
 export interface Partner {
@@ -49,6 +87,10 @@ export interface ContractPaymentTerm {
   amount: number;
   notes: string;
   receipts: ContractReceipt[];
+  imported_receipts?: ImportedContractReceipt[];
+  /** Workbook label may differ from the fixed peso amount. */
+  display_percentage?: number | null;
+  summary_source?: WorkbookSource;
 }
 
 export type ContractPaymentTermInput = Omit<

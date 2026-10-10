@@ -4,10 +4,11 @@ import { useState, useTransition } from "react";
 import useSWR from "swr";
 import {
   getGmeaRentalEquipmentAction,
+  getGmeaRentalOperationsAction,
   getGmeaRentalsAction,
   saveGmeaRentalEquipmentAction,
 } from "@/actions/gmeaRentals";
-import type { GmeaRental, RentalEquipment } from "../types";
+import type { GmeaRental, RentalEquipment, RentalOperationsData } from "../types";
 import GmeaEquipmentFormDialog, {
   blankEquipmentForm,
   type EquipmentFormState,
@@ -16,7 +17,6 @@ import GmeaEquipmentFormDialog, {
 
 import GmeaRentalCreateForm from "./GmeaRentalCreateForm";
 import GmeaRentalsHeader from "./GmeaRentalsHeader";
-import GmeaRentalsSummary from "./GmeaRentalsSummary";
 import RentalRecordsWorkspace from "./RentalRecordsWorkspace";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
 
@@ -24,10 +24,12 @@ export default function GmeaRentalsPage({
   equipment,
   rentals,
   canEdit,
+  initialOperations,
 }: {
   equipment: RentalEquipment[];
   rentals: GmeaRental[];
   canEdit: boolean;
+  initialOperations: RentalOperationsData;
 }) {
   const { data: items = equipment, mutate } = useSWR(
     "gmea-rentals:equipment",
@@ -43,6 +45,9 @@ export default function GmeaRentalsPage({
     getGmeaRentalsAction,
     { fallbackData: rentals, refreshInterval: canEdit ? 0 : 30000 },
   );
+  const { data: operations = initialOperations, error: operationsError } = useSWR("gmea-rentals:operations", getGmeaRentalOperationsAction, {
+    fallbackData: initialOperations, revalidateOnFocus: !canEdit, refreshInterval: canEdit ? 0 : 30000,
+  });
   const [selected, setSelected] = useState<
     RentalEquipment | null | undefined
   >();
@@ -107,22 +112,9 @@ export default function GmeaRentalsPage({
     });
   }
 
-  function deactivateEquipment(item: RentalEquipment) {
-    startTransition(async () => {
-      if (!window.confirm("Deactivate " + item.name + "?")) return;
-      try {
-        await saveGmeaRentalEquipmentAction(item.id, item.version, {
-          kind: "deactivate",
-        });
-        await mutate();
-      } catch (cause) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Unable to deactivate equipment.",
-        );
-      }
-    });
+  async function deactivateEquipment(item: RentalEquipment) {
+    await saveGmeaRentalEquipmentAction(item.id, item.version, { kind: "deactivate" });
+    await mutate();
   }
 
   return (
@@ -132,8 +124,7 @@ export default function GmeaRentalsPage({
           canEdit={canEdit}
           onAddEquipment={() => openEquipment()}
           onCreateRental={() => setCreatingRental(true)}
-        /> : <CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Track rental schedules, equipment availability, and collections." />}
-        <GmeaRentalsSummary rentals={rentalRows} equipment={items} />
+        /> : <CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Review weekly and monthly expenses, rental schedules, and equipment." />}
 
         {error && selected === undefined && (
           <p
@@ -144,7 +135,8 @@ export default function GmeaRentalsPage({
           </p>
         )}
 
-        <RentalRecordsWorkspace rentals={rentalRows} equipment={items} pending={pending}
+        {operationsError && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh rental expenses. Reload to try again.</p>}
+        <RentalRecordsWorkspace rentals={rentalRows} equipment={items} operations={{ ...operations, equipment: items }} pending={pending}
           onEditEquipment={canEdit ? openEquipment : undefined}
           onDeactivateEquipment={canEdit ? deactivateEquipment : undefined} />
       </div>

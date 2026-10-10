@@ -6,7 +6,7 @@ const { selectCeoPortfolioProjects } = load("features/ceo-dashboard/utils/ceoPor
 const { formatCeoCompactCurrency } = load("features/ceo-dashboard/utils/ceoDashboard.ts");
 
 test("shared sidebar retains each role's landing route and role boundaries", () => {
-  const destinations = { ceo: "/dashboard", admin: "/add-user", gmea: "/gmea-overview", payroll_manager: "/payroll-workspace", engineer: "/overview", purchaser: "/purchaser-dashboard", employee: "/home" };
+  const destinations = { ceo: "/dashboard", admin: "/add-user", gmea: "/gmea-projects", payroll_manager: "/payroll-workspace", engineer: "/overview", purchaser: "/purchaser-dashboard", employee: "/home" };
   for (const [role, destination] of Object.entries(destinations)) {
     const hrefs = getDashboardNavigationGroups(role).flatMap((group) => group.items.map((item) => item.href));
     assert.ok(hrefs.includes(destination), `${role} must retain its primary workspace`);

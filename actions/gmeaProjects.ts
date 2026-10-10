@@ -13,6 +13,7 @@ import {
 } from "@/features/gmea-projects/utils/gmeaValidation";
 import type { GmeaMutation } from "@/features/gmea-projects/types";
 import { APP_ROLES, requireRole } from "@/lib/auth";
+import { protectWorkbookBalances } from "@/features/gmea-projects/utils/workbookBalanceProtection";
 
 export async function getGmeaProjectsDataAction() {
   return getGmeaProjects();
@@ -36,11 +37,14 @@ export async function saveGmeaProjectAction(
   input: GmeaMutation,
 ) {
   const { user } = await requireGmeaAccess(true);
-  const command = normalizeMutation(input);
+  let command = normalizeMutation(input);
   if (projectId) {
     validId(projectId);
     if (!Number.isInteger(version) || (version ?? 0) < 1)
       throw new Error("Reload this project before saving.");
+    const [project] = await getGmeaProjects(projectId);
+    if (!project || project.version !== version) throw new Error("This project changed. Reload before saving again.");
+    command = protectWorkbookBalances(command, project);
   } else if (command.kind !== "create_project")
     throw new Error("Create a project first.");
   const { data, error } = await gmeaWriter().rpc("mutate_gmea_project", {

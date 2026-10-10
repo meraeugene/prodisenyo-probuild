@@ -8,14 +8,14 @@ import type { GmeaProject } from "../types";
 import CeoGmeaProjectFilters from "./CeoGmeaProjectFilters";
 import CeoGmeaCharts from "./CeoGmeaCharts";
 import CeoGmeaProjectsTable from "./CeoGmeaProjectsTable";
-import CeoGmeaSummary from "./CeoGmeaSummary";
+import GmeaProjectMetricSummary from "./GmeaProjectMetricSummary";
 
 export default function CeoGmeaProjectsPageClient({ projects }: { projects: GmeaProject[] }) {
   const portfolio = useCeoGmeaPortfolio(projects);
   return <div className="min-h-screen bg-[#f5f6f8] p-4 sm:p-6">
     <div className="mx-auto max-w-[1600px] space-y-5">
-      <CeoPageHeader eyebrow="GMEA / Projects Expenses" title="Project portfolio" description="Review contracts, project expenses, and outstanding collections." />
-      <CeoGmeaSummary count={portfolio.portfolioProjects.length} contract={portfolio.data.contract} expenses={portfolio.data.expenses} outstanding={portfolio.data.outstanding} trend={portfolio.data.trend} />
+      <CeoPageHeader eyebrow="GMEA / Projects" title="Projects" description="Review contracts, project expenses, and outstanding collections." />
+      <GmeaProjectMetricSummary projects={portfolio.portfolioProjects} />
       <CeoGmeaCharts data={portfolio.data} count={portfolio.portfolioProjects.length} months={portfolio.months} onMonthsChange={portfolio.setMonths} />
       <section aria-label="Projects" className={styles.panel}>
         <CeoGmeaProjectFilters tab={portfolio.tab} tabCounts={portfolio.tabCounts} query={portfolio.query} filter={portfolio.filter} sort={portfolio.sort} clients={portfolio.clients}

@@ -55,13 +55,13 @@ export async function getGmeaRentals(id?: string): Promise<GmeaRental[]> {
     throw new Error("Unable to load rental equipment. " + itemError.message);
   const payments: RentalPayment[] = [];
   let assignments: RentalWorkerAssignment[] = [];
-  if (id) {
+  if (ids.length) {
     const pageSize = 1000;
     for (let from = 0; ; from += pageSize) {
       const { data: page, error: paymentError } = await db
         .from("gmea_rental_payments")
         .select("*")
-        .eq("rental_id", id)
+        .in("rental_id", ids)
         .order("payment_date", { ascending: false })
         .order("recorded_at", { ascending: false })
         .order("id")
@@ -78,6 +78,8 @@ export async function getGmeaRentals(id?: string): Promise<GmeaRental[]> {
       payments.push(...rows);
       if (rows.length < pageSize) break;
     }
+  }
+  if (id) {
     const { data: assignmentRows, error: assignmentError } = await db
       .from("gmea_rental_worker_assignments")
       .select("*")

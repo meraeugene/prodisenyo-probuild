@@ -1,4 +1,4 @@
-import { contractCollectionSummary, projectContractBreakdown, sumMoney, vatBreakdown } from "@/features/gmea-projects/utils/gmeaCalculations";
+import { contractCollectionSummary, projectContractBreakdown, projectExpenseTotal, sumMoney } from "@/features/gmea-projects/utils/gmeaCalculations";
 import { expenseTotal, paidRevenue } from "@/features/gmea-rentals/utils/rentalAnalytics";
 import type { RentalExpense, RentalPayment } from "@/features/gmea-rentals/types";
 import type { GmeaOverviewData, GmeaOverviewRecord } from "../types";
@@ -18,8 +18,7 @@ export function buildGmeaOverviewRecords(data: GmeaOverviewData): GmeaOverviewRe
   const projects: GmeaOverviewRecord[] = data.projects.map((project) => {
     const collection = contractCollectionSummary(project);
     const receivable = projectContractBreakdown(project).totalContract;
-    const expenses = sumMoney(project.expenses.map((expense) =>
-      vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross - expense.refunded_amount));
+    const expenses = projectExpenseTotal(project);
     return {
       id: "project:" + project.id, name: project.title, client: project.client,
       division: "Projects Expenses", kind: "project", status: project.status,

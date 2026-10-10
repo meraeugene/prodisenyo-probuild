@@ -9,7 +9,7 @@ const tones: Record<EquipmentStatus | RentalStatus, string> = {
   inactive: "border-slate-200 bg-slate-100 text-slate-600",
   draft: "border-slate-200 bg-slate-100 text-slate-600",
   active: "border-teal-200 bg-teal-50 text-teal-700",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  completed: "border-green-200 bg-green-100 text-green-800",
   cancelled: "border-rose-200 bg-rose-50 text-rose-700",
 };
 

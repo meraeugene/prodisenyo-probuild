@@ -8,7 +8,8 @@ import {
   inputClass,
   EXPENSE_CATEGORIES,
 } from "../utils/gmeaConstants";
-import { formatMoney, sumMoney, vatBreakdown } from "../utils/gmeaCalculations";
+import { expenseBreakdown, formatMoney, sumMoney } from "../utils/gmeaCalculations";
+import GmeaWorkbookBalanceDetails from "./GmeaWorkbookBalanceDetails";
 import { parseExpenseDescriptions } from "../utils/expenseDescriptions";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaExpenseForm from "./GmeaExpenseForm";
@@ -40,11 +41,9 @@ export default function GmeaExpensesSection({
     }
   }
   const visible = project.expenses.filter(
-    (e) => !category || e.category === category,
+    (e) => !(e.workbook_balance && e.amount === 0) && (!category || e.category === category),
   );
-  const amounts = visible.map((e) =>
-    vatBreakdown(e.amount, e.vat_mode, e.vat_rate),
-  );
+  const amounts = visible.map(expenseBreakdown);
   const expenseStats = [
     { label: "Total expenses", value: sumMoney(amounts.map((amount) => amount.gross)) },
     { label: "Input VAT", value: sumMoney(amounts.map((amount) => amount.vat)) },
@@ -107,10 +106,11 @@ export default function GmeaExpensesSection({
           </thead>
           <tbody className="divide-y divide-slate-100 tabular-nums">
             {visible.map((e) => {
-              const a = vatBreakdown(e.amount, e.vat_mode, e.vat_rate);
+              const a = expenseBreakdown(e);
+              const editable = canEdit && !e.workbook_balance;
               return (
                 <tr key={e.id}>
-                  <td className="whitespace-nowrap p-3">{e.date}</td>
+                  <td className="whitespace-nowrap p-3">{e.date || "Date not provided"}</td>
                   <td className="max-w-64 p-3">
                     <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-800 marker:font-semibold marker:text-teal-700">
                       {parseExpenseDescriptions(e.description).map((item, index) => (
@@ -143,14 +143,14 @@ export default function GmeaExpensesSection({
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        aria-label={canEdit ? "Edit expense" : "Details"}
+                        aria-label={editable ? "Edit expense" : "Details"}
                         className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-teal-700 transition-colors hover:bg-teal-50 hover:text-teal-900"
                         onClick={() => openExpense(e)}
                       >
-                        {canEdit ? <Pencil size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
-                        {canEdit ? "Edit" : "Details"}
+                        {editable ? <Pencil size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
+                        {editable ? "Edit" : "Details"}
                       </button>
-                      {canEdit && (
+                      {editable && (
                         <GmeaConfirmButton
                           label="Delete expense"
                           triggerLabel="Delete"
@@ -182,7 +182,9 @@ export default function GmeaExpensesSection({
           </tbody>
         </table>
       </div>
-      {editor && (
+      {editor?.expense?.workbook_balance ? (
+        <GmeaWorkbookBalanceDetails expense={editor.expense} onClose={() => setEditor(null)} />
+      ) : editor && (
         <GmeaExpenseForm
           project={project}
           expenseOptions={expenseOptions}

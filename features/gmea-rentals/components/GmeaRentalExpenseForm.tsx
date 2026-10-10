@@ -1,120 +1,62 @@
 "use client";
-import { useState } from "react";
 import type { ReactNode } from "react";
 import type {
   GmeaRental,
   RentalEquipment,
   RentalExpense,
   RentalExpenseCategory,
-  RentalVatMode,
 } from "../types";
-import { formatRentalMoney, rentalInputClass } from "../utils/rentalUi";
-import { rentalVatBreakdown } from "../utils/expenseCalculations";
-import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperationsMutation";
+import { rentalInputClass } from "../utils/rentalUi";
+import type { RentalWeekMetadata } from "../utils/rentalReportingWeeks";
+import GmeaRentalWeekFields from "./GmeaRentalWeekFields";
+import GmeaRentalExpenseTotals from "./GmeaRentalExpenseTotals";
+import { useGmeaRentalExpenseForm, type Scope } from "../hooks/useGmeaRentalExpenseForm";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
-type Scope = "rental" | "equipment" | "general";
-const today = () =>
-  new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 
 export default function GmeaRentalExpenseForm({
   rental,
   equipment,
   categories,
   expense,
+  weekContext,
+  lockWeekDates = false,
   readOnly = false,
   onClose,
+  onSaved,
 }: {
-  rental: GmeaRental;
+  rental?: GmeaRental;
   equipment: RentalEquipment[];
   categories: RentalExpenseCategory[];
   expense?: RentalExpense;
+  weekContext?: RentalWeekMetadata;
+  lockWeekDates?: boolean;
   readOnly?: boolean;
   onClose: () => void;
+  onSaved?: (week: RentalWeekMetadata) => void;
 }) {
-  const initialScope: Scope = expense?.rental_id
-    ? "rental"
-    : expense?.equipment_id
-      ? "equipment"
-      : "general";
-  const [scope, setScope] = useState<Scope>(initialScope);
-  const [localError, setLocalError] = useState("");
-  const [form, setForm] = useState({
-    id: expense?.id ?? crypto.randomUUID(),
-    equipment_id: expense?.equipment_id ?? "",
-    category_id: expense?.category_id ?? categories[0]?.id ?? "",
-    date: expense?.date ?? today(),
-    description: expense?.description ?? "",
-    supplier: expense?.supplier ?? "",
-    method: expense?.method ?? "",
-    invoice_number: expense?.invoice_number ?? "",
-    amount: expense?.amount.toString() ?? "",
-    refunded_amount: expense?.refunded_amount.toString() ?? "0",
-    vat_mode: expense?.vat_mode ?? ("off" as RentalVatMode),
-    notes: expense?.notes ?? "",
-    version: expense?.version ?? 1,
-  });
-  const { saveExpense, pending, error } =
-    useGmeaRentalOperationsMutation(rental);
-  const rentalEquipment = equipment.filter((item) =>
-    rental.items.some((row) => row.equipment_id === item.id),
-  );
-  const choices = scope === "rental" ? rentalEquipment : equipment;
-  const vatRate = form.vat_mode === "off" ? 0 : 12;
-  let totals = { base: 0, vat: 0, gross: 0 };
-  try {
-    totals = rentalVatBreakdown(
-      Number(form.amount || 0),
-      form.vat_mode,
-      vatRate,
-    );
-  } catch {}
-  const set = (key: keyof typeof form, value: string | number) =>
-    setForm((current) => ({ ...current, [key]: value }));
-  function changeScope(next: Scope) {
-    setScope(next);
-    setForm((current) => ({ ...current, equipment_id: "" }));
-  }
-  function submit() {
-    if (scope === "equipment" && !form.equipment_id) {
-      setLocalError("Select equipment for an equipment-only expense.");
-      return;
-    }
-    setLocalError("");
-    void saveExpense(expense ?? null, {
-      kind: expense ? "update" : "create",
-      value: {
-        ...form,
-        rental_id: scope === "rental" ? rental.id : null,
-        equipment_id: scope === "general" ? null : form.equipment_id || null,
-        amount: Number(form.amount),
-        refunded_amount: Number(form.refunded_amount),
-        vat_rate: vatRate,
-      },
-    })
-      .then(onClose)
-      .catch(() => undefined);
-  }
+  const { week, scope, form, choices, totals, pending, error, set, changeScope, changeWeek, submit } = useGmeaRentalExpenseForm({ rental, equipment, categories, expense, weekContext, onClose, onSaved });
   return (
     <GmeaRentalsDialog
       title={readOnly ? "Rental expense details" : expense ? "Edit rental expense" : "New rental expense"}
-      description="Record Rentals operational spending and VAT treatment."
+      description={week ? "Record this cutoff’s dated equipment, cash advance, or salary expense." : "Record Rentals operational spending and VAT treatment."}
       onClose={onClose}
       onSave={submit}
       pending={pending}
-      error={localError || error}
+      error={error}
       saveLabel={expense ? "Save changes" : "Add expense"}
       readOnly={readOnly}
       wide
     >
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {week && <GmeaRentalWeekFields week={week} existing={!!expense || lockWeekDates} onChange={changeWeek} />}
         <Field label="Expense scope *">
           <select
             value={scope}
             onChange={(event) => changeScope(event.target.value as Scope)}
             className={rentalInputClass}
           >
-            <option value="rental">This rental</option>
+            {(rental || expense?.rental_id) && <option value="rental">This rental</option>}
             <option value="equipment">Equipment only</option>
             <option value="general">General Rentals operations</option>
           </select>
@@ -148,6 +90,8 @@ export default function GmeaRentalExpenseForm({
         <Field label="Date *">
           <input
             type="date"
+            min={week?.start}
+            max={week?.end}
             value={form.date}
             onChange={(event) => set("date", event.target.value)}
             className={rentalInputClass}
@@ -204,7 +148,7 @@ export default function GmeaRentalExpenseForm({
           <select
             value={form.vat_mode}
             onChange={(event) =>
-              set("vat_mode", event.target.value as RentalVatMode)
+              set("vat_mode", event.target.value)
             }
             className={rentalInputClass}
           >
@@ -233,22 +177,7 @@ export default function GmeaRentalExpenseForm({
             className={rentalInputClass}
           />
         </Field>
-        <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4 text-sm sm:col-span-2 lg:col-span-3">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <p>
-              <span className="block text-xs text-slate-500">Base</span>
-              <strong>{formatRentalMoney(totals.base)}</strong>
-            </p>
-            <p>
-              <span className="block text-xs text-slate-500">Input VAT</span>
-              <strong>{formatRentalMoney(totals.vat)}</strong>
-            </p>
-            <p>
-              <span className="block text-xs text-slate-500">Total</span>
-              <strong>{formatRentalMoney(totals.gross)}</strong>
-            </p>
-          </div>
-        </div>
+        <GmeaRentalExpenseTotals totals={totals} />
         <div className="sm:col-span-2 lg:col-span-3">
           <Field label="Notes">
             <textarea

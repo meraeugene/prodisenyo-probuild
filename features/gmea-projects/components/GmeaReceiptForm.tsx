@@ -45,13 +45,13 @@ export default function GmeaReceiptForm({
         </p>
       </div>
       <MoneyField
-        label="Amount received (PHP) *"
+        label="Paid amount (PHP) *"
         required
         value={form.amount}
         onValueChange={(amount) => setForm((current) => ({ ...current, amount }))}
       />
       <TextField
-        label="Date received *"
+        label="Collected date *"
         type="date"
         required
         max={today()}

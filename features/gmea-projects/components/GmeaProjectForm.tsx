@@ -101,7 +101,7 @@ export default function GmeaProjectForm({
       {(project || step === 1) && (
       <div className="grid gap-4 md:grid-cols-2">
         <TextField
-          label="Project title *"
+          label="Name *"
           required
           placeholder="e.g. MARAMAG"
           maxLength={100}
@@ -130,15 +130,14 @@ export default function GmeaProjectForm({
           onChange={(e) => update("client", e.target.value)}
         />
         <TextField
-          label="Project location *"
+          label="Address *"
           required
           maxLength={300}
           value={form.location}
           onChange={(e) => update("location", e.target.value)}
         />
         <TextField
-          label="Project duration *"
-          required
+          label="Duration"
           placeholder="e.g. 7 days"
           maxLength={100}
           value={form.duration}
@@ -155,7 +154,7 @@ export default function GmeaProjectForm({
       {!project && step === 2 && (
         <div className="space-y-5">
           <MoneyField
-            label="Pre-tax contract amount (PHP) *"
+            label="Contract amount (PHP) *"
             required
             value={contractAmount}
             onValueChange={(value) => {

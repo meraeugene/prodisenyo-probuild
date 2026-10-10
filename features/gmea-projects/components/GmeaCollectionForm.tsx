@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ContractPaymentTermInput, GmeaProject } from "../types";
+import type { ContractPaymentTerm, ContractPaymentTermInput, GmeaProject } from "../types";
 import { postedReceiptTotal, projectContractBreakdown } from "../utils/gmeaCalculations";
 import {
   paymentTermInput,
@@ -12,6 +12,7 @@ import GmeaDialog from "./GmeaDialog";
 import { MoneyField } from "./GmeaFields";
 import GmeaPaymentTermsEditor from "./GmeaPaymentTermsEditor";
 import GmeaContractTaxFields from "./GmeaContractTaxFields";
+import GmeaReceiptForm from "./GmeaReceiptForm";
 
 export default function GmeaCollectionForm({
   project,
@@ -29,11 +30,12 @@ export default function GmeaCollectionForm({
     project.payment_terms.map(paymentTermInput),
   );
   const save = useGmeaMutation(project);
+  const [recording, setRecording] = useState<ContractPaymentTerm | null>(null);
   const protectedAmounts = Object.fromEntries(
     project.payment_terms.map((term) => [term.id, postedReceiptTotal(term)]),
   );
   const protectedTermIds = project.payment_terms
-    .filter((term) => term.receipts.length > 0)
+    .filter((term) => term.receipts.length > 0 || !!term.imported_receipts?.length)
     .map((term) => term.id);
   const totalContract = projectContractBreakdown({
     contract_amount: contractAmount,
@@ -48,6 +50,7 @@ export default function GmeaCollectionForm({
     setRows((current) => recalculatePercentageTerms(current, nextTotal));
   }
 
+  if (recording) return <GmeaReceiptForm project={project} term={recording} onClose={() => setRecording(null)} />;
   return (
     <GmeaDialog
       title={readOnly ? "Payment schedule" : "Edit contract and payment schedule"}
@@ -69,7 +72,7 @@ export default function GmeaCollectionForm({
     >
       <fieldset disabled={readOnly} className="space-y-5">
         <MoneyField
-          label="Pre-tax contract amount (PHP) *"
+          label="Contract amount (PHP) *"
           required
           value={contractAmount}
           onValueChange={(value) => {
@@ -96,6 +99,8 @@ export default function GmeaCollectionForm({
           terms={rows}
           protectedAmounts={protectedAmounts}
           protectedTermIds={protectedTermIds}
+          recordedTerms={project.payment_terms}
+          onRecord={readOnly ? undefined : setRecording}
           onChange={setRows}
         />
       </fieldset>

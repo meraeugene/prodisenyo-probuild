@@ -30,6 +30,7 @@ export default function GmeaRentalVoidPaymentForm({
 
   return (
     <GmeaRentalsDialog
+      compact
       title="Void payment?"
       description="The original payment remains in the audit history and will no longer count toward received totals."
       onClose={onClose}
@@ -37,6 +38,8 @@ export default function GmeaRentalVoidPaymentForm({
       pending={pending}
       error={error}
       saveLabel="Void payment"
+      pendingLabel="Voiding…"
+      danger
     >
       <label className="block space-y-1.5 text-sm font-medium text-slate-700">
         <span>Reason *</span>

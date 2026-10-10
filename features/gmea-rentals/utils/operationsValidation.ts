@@ -7,6 +7,7 @@ import {
 } from "../types";
 import { validEquipmentId } from "./equipmentValidation";
 import { rentalVatBreakdown } from "./expenseCalculations";
+import { rentalWeekMetadata } from "./rentalReportingWeeks";
 
 function object(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -119,12 +120,18 @@ export function normalizeRentalExpenseMutation(
   const vatRate = vatMode === "off" ? 0 : 12;
   const amount = money(value.amount, "Expense amount", true);
   rentalVatBreakdown(amount, vatMode, vatRate);
+  const notes = text(value.notes, "Notes", false, 1000);
+  const week = rentalWeekMetadata(notes);
+  if (notes.startsWith("@rental-week:") && !week) throw new Error("Invalid weekly reporting dates or section.");
+  if (week && (date < week.start || date > week.end)) throw new Error("Expense date must be within the selected week.");
+  const rentalId = optionalId(value.rental_id), equipmentId = optionalId(value.equipment_id);
+  if (week && (rentalId || (week.section === "equipment" ? !equipmentId : equipmentId))) throw new Error("Select equipment for equipment expenses and general operations for cash advances or salaries.");
   return {
     kind: command.kind,
     value: {
       id: validEquipmentId(value.id),
-      rental_id: optionalId(value.rental_id),
-      equipment_id: optionalId(value.equipment_id),
+      rental_id: rentalId,
+      equipment_id: equipmentId,
       category_id: validEquipmentId(value.category_id),
       date,
       description: text(value.description, "Description", true, 1000),
@@ -140,7 +147,7 @@ export function normalizeRentalExpenseMutation(
       refunded_amount: money(value.refunded_amount, "Refunded amount"),
       vat_mode: vatMode,
       vat_rate: vatRate,
-      notes: text(value.notes, "Notes", false, 1000),
+      notes,
       version: Number(value.version) || 1,
     },
   };

@@ -1,5 +1,5 @@
 import type { GmeaProject } from "../types";
-import { contractCollectionSummary, projectContractBreakdown, projectSummary, sumMoney, vatBreakdown } from "./gmeaCalculations";
+import { contractCollectionSummary, projectContractBreakdown, projectSummary, sumMoney, expenseBreakdown } from "./gmeaCalculations";
 
 export type CollectionStatus = "Uncollected" | "Partially collected" | "Fully collected" | "No contract amount";
 
@@ -38,7 +38,7 @@ export function buildCeoPortfolio(projects: GmeaProject[], months: number) {
       contract: sumMoney(projects.filter((project) => project.created_at.startsWith(key)).map((project) => projectContractBreakdown(project).totalContract)),
       expenses: sumMoney(projects.flatMap((project) => project.expenses)
         .filter((expense) => expense.date.startsWith(key))
-        .map((expense) => vatBreakdown(expense.amount, expense.vat_mode, expense.vat_rate).gross)),
+        .map((expense) => expenseBreakdown(expense).gross)),
     };
   });
   return {

@@ -1,0 +1,13 @@
+.desktop { display: none; }
+.cards { display: block; }
+.table th, .table td { overflow-wrap: anywhere; padding: 14px 9px; vertical-align: top; }
+.table td { font-variant-numeric: tabular-nums; }
+.table tfoot { font-weight: 600; }
+.table[data-row-hover="none"] tbody tr:hover { background: transparent; }
+.table td:nth-child(7) { padding-left: 5px; padding-right: 5px; }
+.actions > div { flex-wrap: wrap; gap: 4px; }
+.actions a, .actions button { max-width: 100%; padding-left: 7px; padding-right: 7px; white-space: normal; }
+@media (min-width: 1280px) {
+  .desktop { display: block; }
+  .cards { display: none; }
+}

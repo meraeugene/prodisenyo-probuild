@@ -10,6 +10,7 @@ import GmeaVoidReceiptForm from "./GmeaVoidReceiptForm";
 import GmeaDialog from "./GmeaDialog";
 import { removePaymentTerm } from "../utils/paymentTerms";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
+import { summaryPercentage } from "../utils/projectSummaryColumns";
 
 function formatDate(value: string) {
   const date = /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -59,7 +60,7 @@ export default function GmeaPaymentTermRow({
           </button>
         </td>
         <td className="p-3 text-slate-600">
-          {term.value_mode === "percentage" ? `${term.percentage}%` : "Fixed"}
+          {summaryPercentage(term) !== null ? `${summaryPercentage(term)}%${term.value_mode === "fixed" ? " · Fixed amount" : ""}` : "Fixed"}
         </td>
         <td className="p-3 font-semibold">{formatMoney(term.amount)}</td>
         <td className="p-3">{formatMoney(summary.received)}</td>
@@ -75,7 +76,7 @@ export default function GmeaPaymentTermRow({
               <button type="button" disabled={summary.balance <= 0} onClick={() => setRecording(true)} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-xs font-semibold text-teal-700 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-35">
                 <CreditCard size={14} aria-hidden="true" /> Record payment
               </button>
-              <button type="button" disabled={term.receipts.length > 0 || project.payment_terms.length <= 1} onClick={() => setDeleting(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-35">
+              <button type="button" disabled={term.receipts.length > 0 || !!term.imported_receipts?.length || project.payment_terms.length <= 1} onClick={() => setDeleting(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-35">
                 <Trash2 size={14} aria-hidden="true" /> Delete
               </button>
             </div>
@@ -101,7 +102,13 @@ export default function GmeaPaymentTermRow({
                 )}
               </div>
             ))}
-            {!term.receipts.length && <p className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">No payments recorded.</p>}
+            {term.imported_receipts?.map((receipt) => (
+              <div key={receipt.id} className="rounded-xl border border-slate-200 p-4 text-sm">
+                <p className="font-semibold">{formatMoney(receipt.amount)} · {receipt.received_date ? formatDate(receipt.received_date) : "Date not provided in workbook"}</p>
+                <p className="mt-1 text-xs text-slate-500">Workbook collection · {receipt.source.workbook} · {receipt.source.sheet}!{receipt.source.cells}</p>
+              </div>
+            ))}
+            {!term.receipts.length && !term.imported_receipts?.length && <p className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500">No payments recorded.</p>}
           </div>
         </GmeaDialog>
       )}

@@ -85,9 +85,8 @@ export function normalizeProjectDetails(value: unknown): ProjectDetailsInput {
     color,
     client: text(project.client, "Client", false, 200),
     location: text(project.location, "Project location", true, 300),
-    duration: normalizeProjectDuration(
-      text(project.duration, "Project duration", true, 100),
-    ),
+    duration: text(project.duration, "Duration", false, 100)
+      ? normalizeProjectDuration(text(project.duration, "Duration", false, 100)) : "",
   };
 }
 
@@ -126,6 +125,7 @@ export function normalizeContractTerms(value: unknown): ContractTermsInput {
       description: text(row.description, "Description", true, 300),
       value_mode: valueMode,
       percentage,
+      ...(row.display_percentage != null ? { display_percentage: money(number(row.display_percentage, "Percentage label", 100)) } : {}),
       amount,
       notes: text(row.notes, "Notes", false, 1000),
     };

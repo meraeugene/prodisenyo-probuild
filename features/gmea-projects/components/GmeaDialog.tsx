@@ -74,17 +74,15 @@ export default function GmeaDialog({
           }}
           className={
             styles.dialog + " " +
-            "fixed inset-x-0 bottom-0 z-[151] mx-auto flex max-h-[95dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl sm:bottom-auto sm:top-1/2 sm:w-[calc(100%-2rem)] sm:-translate-y-1/2 sm:rounded-2xl " +
+            "fixed inset-x-0 z-[151] mx-auto flex flex-col overflow-hidden border border-slate-200 bg-white shadow-2xl " +
             (compact
-              ? "sm:max-w-md"
-              : wide
-                ? "sm:max-w-5xl"
-                : "sm:max-w-4xl")
+              ? "top-1/2 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md -translate-y-1/2 rounded-xl"
+              : "bottom-0 max-h-[95dvh] w-full rounded-t-2xl sm:bottom-auto sm:top-1/2 sm:w-[calc(100%-2rem)] sm:-translate-y-1/2 sm:rounded-2xl " + (wide ? "sm:max-w-5xl" : "sm:max-w-4xl"))
           }
         >
-          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-5 sm:px-7">
+          <header className={"flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 " + (compact ? "px-5 py-4" : "px-5 py-5 sm:px-7")}>
             <div>
-              <Dialog.Title className="text-2xl font-semibold tracking-tight text-slate-900">
+              <Dialog.Title className={"font-semibold tracking-tight text-slate-900 " + (compact ? "text-xl" : "text-2xl")}>
                 {title}
               </Dialog.Title>
               {description && (
@@ -110,13 +108,13 @@ export default function GmeaDialog({
             onSubmit={submit}
             className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-5 sm:p-7">
+            <div className={"min-h-0 min-w-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
               <fieldset disabled={pending} className="min-w-0 space-y-5">
                 {children}
               </fieldset>
             </div>
             {(onSave || onAdvance) && (
-              <footer className="shrink-0 space-y-3 border-t border-slate-200 bg-white px-5 py-4 sm:px-7">
+              <footer className={"shrink-0 space-y-3 border-t border-slate-200 bg-white px-5 py-4" + (compact ? "" : " sm:px-7")}>
                 {error && (
                   <p
                     role="alert"
@@ -137,6 +135,7 @@ export default function GmeaDialog({
                   <button
                     type="submit"
                     disabled={pending}
+                    aria-busy={pending}
                     className={
                       danger
                         ? "inline-flex items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-800 disabled:opacity-50"
