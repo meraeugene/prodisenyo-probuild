@@ -14,7 +14,7 @@ import {
 } from "@/features/payroll/utils/payrollWorkspace";
 import type { PayslipExportRecord } from "@/lib/payslipExport";
 
-const PAGE_SIZE = 10;
+import { TABLE_PAGE_SIZE as PAGE_SIZE } from "@/features/shared/pagination";
 
 export function usePayrollWorkspace(payroll: UsePayrollStateResult) {
   const [activeView, setActiveView] = useState<PayrollReviewFilter | "logs">("all");

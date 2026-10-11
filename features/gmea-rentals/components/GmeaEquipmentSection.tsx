@@ -7,6 +7,7 @@ import {
 } from "../utils/rentalUi";
 import RentalStatusBadge from "./RentalStatusBadge";
 import GmeaRentalConfirmAction from "./GmeaRentalConfirmAction";
+import WorkspaceSearchInput from "@/components/workspace/WorkspaceSearchInput";
 
 function EquipmentActions({
   item,
@@ -103,7 +104,7 @@ export default function GmeaEquipmentSection({
         <div className="flex w-full flex-col gap-2.5 sm:flex-row lg:max-w-3xl">
           <label className="relative min-w-0 flex-1">
             <span className="sr-only">Search equipment</span>
-            <input data-search-field="true"
+            <WorkspaceSearchInput
               value={query}
  onChange={(event) => onQueryChange(event.target.value)}
               placeholder="Search name, type, asset code, or plate..."

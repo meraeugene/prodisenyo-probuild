@@ -9,7 +9,7 @@ import { RateInput } from "./RateInput";
 import { InlineInput } from "./InlineInput";
 import { PageButton } from "./PageButton";
 
-const PER_PAGE = 10;
+import { TABLE_PAGE_SIZE as PER_PAGE } from "@/features/shared/pagination";
 
 interface PayrollTableProps {
   employees: Employee[];

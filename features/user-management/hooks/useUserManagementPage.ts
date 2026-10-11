@@ -52,7 +52,7 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
       return matchesQuery && matchesRole && matchesStatus;
     });
   }, [roleFilter, searchQuery, sortedUsers, statusFilter]);
-  const { page, totalPages, pageSize, pageRows: paginatedUsers, onPageChange: setPage, onPageSizeChange: setPageSize } =
+  const { page, totalPages, pageSize, pageRows: paginatedUsers, onPageChange: setPage } =
     useTablePagination(filteredUsers, JSON.stringify([searchQuery, roleFilter, statusFilter]));
 
   const deleteTarget =
@@ -265,7 +265,6 @@ export function useUserManagementPage(initialUsers: ManagedUserRow[]) {
     page,
     totalPages,
     pageSize,
-    setPageSize,
     deleteTarget,
     openMenu,
     openMenuUser,

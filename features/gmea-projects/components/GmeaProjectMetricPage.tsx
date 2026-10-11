@@ -9,6 +9,7 @@ import type { GmeaProject } from "../types";
 import { buildProjectMetricRecords, buildProjectMetricTotals, formatProjectMetric, PROJECT_METRICS, selectProjectMetricRecords, type ProjectMetric } from "../utils/projectMetrics";
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import WorkspaceSearchInput from "@/components/workspace/WorkspaceSearchInput";
 import GmeaProjectMetricTable from "./GmeaProjectMetricTable";
 import styles from "@/components/workspace/workspace.module.css";
 
@@ -32,7 +33,7 @@ export default function GmeaProjectMetricPage({ projects, metric, canEdit }: { p
     <section aria-label={`${definition.label} summary`} className="space-y-2 py-1"><p className={`text-[32px] font-semibold tracking-tight tabular-nums ${metric === "loss" ? "text-rose-700" : "text-[#076d69]"}`}>{formatProjectMetric(totals[metric], metric)}</p><p className="max-w-4xl text-[13px] leading-6 text-[#53736f]">{definition.description}</p></section>
     {error && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh projects. Please reload to try again.</p>}
     <section className={styles.panel} aria-label="Project metric breakdown">
-      <div className={styles.filters}><label className={`${styles.field} ${styles.searchField}`}>Search projects<input data-search-field className={styles.control} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search project, client or location..." /></label><button type="button" className={styles.button} disabled={!query} onClick={() => setQuery("")}>Clear filters</button></div>
+      <div className={styles.filters}><label className={`${styles.field} ${styles.searchField}`}>Search projects<WorkspaceSearchInput value={query} onChange={event => setQuery(event.target.value)} placeholder="Search project, client or location..." /></label><button type="button" className={styles.button} disabled={!query} onClick={() => setQuery("")}>Clear filters</button></div>
       <GmeaProjectMetricTable rows={pagination.pageRows} metric={metric} />
       <p className="border-t border-slate-200 px-5 py-4 text-sm">{query ? "Filtered total" : "Total"} · {visible.length} projects <strong className="ml-3 tabular-nums">{formatProjectMetric(filteredTotals[metric], metric)}</strong></p>
       <WorkspaceListPagination {...pagination} total={visible.length} noun="projects" label="Project details" />

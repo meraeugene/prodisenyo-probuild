@@ -8,6 +8,7 @@ import { formatRentalDate, formatRentalMoney } from "../utils/rentalUi";
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import WorkspaceSearchInput from "@/components/workspace/WorkspaceSearchInput";
 import GmeaRentalExpenseLedgerTable from "./GmeaRentalExpenseLedgerTable";
 import GmeaRentalExpenseForm from "./GmeaRentalExpenseForm";
 import styles from "@/components/workspace/workspace.module.css";
@@ -32,7 +33,7 @@ export default function GmeaRentalExpenseLedger({ operations, rentals, canEdit, 
     </div>
     {!validPeriod && <p role="alert" className="text-sm text-rose-700">Choose a valid reporting period.</p>}
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[["Total expenses", totals.gross], ["Input VAT", totals.vat], ["Refunded", totals.refunded], ["Net expenses", totals.net]].map(([label, value]) => <div key={label} className="min-w-0 rounded border border-slate-200 p-4"><p className="text-xs text-slate-500">{label}</p><p className="mt-2 break-words text-xl font-semibold tabular-nums">{formatRentalMoney(Number(value))}</p></div>)}</div>
-    <div className="flex flex-wrap items-end gap-3"><label className={`${styles.field} ${styles.searchField}`}>Search expenses<input data-search-field type="search" className={styles.control} value={query} onChange={event => setQuery(event.target.value)} placeholder="Description, equipment, supplier, or invoice" /></label>
+    <div className="flex flex-wrap items-end gap-3"><label className={`${styles.field} ${styles.searchField}`}>Search expenses<WorkspaceSearchInput value={query} onChange={event => setQuery(event.target.value)} placeholder="Description, equipment, supplier, or invoice" /></label>
       <label className={styles.field}>Category<select className={styles.control} value={category} onChange={event => setCategory(event.target.value)}><option value="">All categories</option>{operations.categories.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
       <label className={styles.field}>Equipment<select className={styles.control} value={equipment} onChange={event => setEquipment(event.target.value)}><option value="">All equipment and general costs</option><option value="general">No equipment assigned</option>{operations.equipment.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
       <button type="button" className={styles.button} disabled={!query && !category && !equipment} onClick={() => { setQuery(""); setCategory(""); setEquipment(""); }}>Clear filters</button>

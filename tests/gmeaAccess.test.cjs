@@ -123,6 +123,10 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
   for (const role of ["gmea", "ceo"])
     for (const path of [
       "/gmea-rentals",
+      "/gmea-rentals/income",
+      "/gmea-rentals/expenses",
+      "/gmea-rentals/bookings",
+      "/gmea-rentals/equipment",
       "/gmea-rentals/" + id,
       "/gmea-rentals/dashboard",
       "/gmea-rentals/reports",
@@ -142,6 +146,11 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
     (await request("engineer", "/gmea-rentals")).headers.get("location"),
     /overview/,
   );
+  for (const section of ["income", "expenses", "bookings", "equipment"]) {
+    assert.match((await request(null, `/gmea-rentals/${section}`)).headers.get("location"), /auth\/login/);
+    for (const role of ["engineer", "admin", "employee", "payroll_manager", "purchaser"])
+      assert.ok((await request(role, `/gmea-rentals/${section}`)).headers.get("location"));
+  }
   assert.equal(
     (await request("gmea", "/settings")).headers.get("location"),
     null,

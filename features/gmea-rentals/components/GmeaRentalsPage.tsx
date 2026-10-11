@@ -1,5 +1,6 @@
 "use client";
 
+import { rentalSections, type RentalSection } from "../utils/rentalSections";
 import { useState, useTransition } from "react";
 import useSWR from "swr";
 import { getHistoricalRentalIncomeAction } from "@/actions/gmeaRentalIncome";
@@ -23,12 +24,14 @@ import RentalRecordsWorkspace from "./RentalRecordsWorkspace";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
 
 export default function GmeaRentalsPage({
+  section = "income",
   equipment,
   rentals,
   canEdit,
   initialOperations,
   historicalIncome = [],
 }: {
+  section?: RentalSection;
   equipment: RentalEquipment[];
   rentals: GmeaRental[];
   canEdit: boolean;
@@ -123,14 +126,17 @@ export default function GmeaRentalsPage({
     await mutate();
   }
 
+  const { title, description } = rentalSections[section];
+
   return (
     <main className={`min-h-full ${canEdit ? "bg-white" : "bg-[#f5f6f8]"} px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8`}>
       <div className="mx-auto max-w-[1440px] space-y-4">
         {canEdit ? <GmeaRentalsHeader
           canEdit={canEdit}
+          section={section}
           onAddEquipment={() => openEquipment()}
           onCreateRental={() => setCreatingRental(true)}
-        /> : <CeoPageHeader eyebrow="GMEA / Rentals" title="Rentals" description="Review rental income and expenses, monthly overviews, client payments, bookings, and equipment." />}
+        /> : <CeoPageHeader eyebrow="GMEA / Rentals" title={title} description={description} />}
 
         {error && selected === undefined && (
           <p
@@ -144,7 +150,7 @@ export default function GmeaRentalsPage({
         {rentalError && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh rental income and bookings. Reload to try again.</p>}
         {operationsError && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh rental expenses. Reload to try again.</p>}
         {historicalError && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh imported rental income. Reload to try again.</p>}
-        <RentalRecordsWorkspace rentals={rentalRows} historicalIncome={historicalRows} equipment={items} operations={{ ...operations, equipment: items }} pending={pending}
+        <RentalRecordsWorkspace section={section} rentals={rentalRows} historicalIncome={historicalRows} equipment={items} operations={{ ...operations, equipment: items }} pending={pending}
           onEditEquipment={canEdit ? openEquipment : undefined}
           onDeactivateEquipment={canEdit ? deactivateEquipment : undefined} />
       </div>

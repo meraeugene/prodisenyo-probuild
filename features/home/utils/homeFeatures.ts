@@ -44,9 +44,9 @@ export const ROLE_FEATURES: Record<AppRole, FeatureCard[]> = {
   ],
   ceo: [
     {
-      href: "/payroll-analytics",
-      title: "Payroll Analytics",
-      description: "View payroll analytics, trends, and workforce totals.",
+      href: "/payroll-approvals",
+      title: "Payroll",
+      description: "Review payroll records and explore trends in the Analytics tab.",
     },
     {
       href: "/projects",

@@ -34,7 +34,7 @@ import type {
   ReportDetailsState,
 } from "@/features/payroll-reports/types";
 
-const PAYROLL_PAGE_SIZE = 10;
+import { TABLE_PAGE_SIZE as PAYROLL_PAGE_SIZE } from "@/features/shared/pagination";
 
 
 

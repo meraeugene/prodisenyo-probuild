@@ -18,6 +18,9 @@ import WorkspaceListPagination from "@/components/workspace/WorkspaceListPaginat
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 import styles from "@/components/workspace/workspace.module.css";
 import { orderProjectSummary } from "../utils/projectSummaryColumns";
+import { buildCeoPortfolio } from "../utils/ceoPortfolio";
+import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
+import GmeaProjectAnalytics from "./GmeaProjectAnalytics";
 
 export default function GmeaProjectsPageClient({
   projects,
@@ -40,6 +43,9 @@ export default function GmeaProjectsPageClient({
   const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "all">("all");
   const [create, setCreate] = useState(false);
   const [details, setDetails] = useState<GmeaProject | null>(null);
+  const [view, setView] = useState<"projects" | "analytics">("projects");
+  const [months, setMonths] = useState(6);
+  const analytics = useMemo(() => buildCeoPortfolio(liveProjects, months), [liveProjects, months]);
 
   const visible = useMemo(() => {
     const byStatus = statusFilter === "all"
@@ -59,9 +65,10 @@ export default function GmeaProjectsPageClient({
     <div className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-4">
         <GmeaPortfolioHero canEdit={canEdit} onCreate={() => setCreate(true)} />
+        <WorkspaceTabSwitch label="GMEA project views" value={view} onChange={setView}
+          items={[{ value: "projects", label: "Projects" }, { value: "analytics", label: "Analytics" }]} />
         <GmeaProjectMetricSummary projects={liveProjects} />
-
-        <section aria-label="GMEA project records" className={styles.panel}>
+        {view === "analytics" ? <GmeaProjectAnalytics data={analytics} months={months} onMonthsChange={setMonths} /> : <section aria-label="GMEA project records" className={styles.panel}>
           <WorkspaceListToolbar tabs={[
             { value: "active" as const, label: "Ongoing", count: ongoingCount },
             { value: "completed" as const, label: "Completed", count: completedCount },
@@ -78,7 +85,7 @@ export default function GmeaProjectsPageClient({
           <GmeaPortfolioTable projects={pagination.pageRows} totalProjects={visible} canEdit={canEdit} onDetails={setDetails} />
           {!visible.length && <p className={styles.empty}>{liveProjects.length ? "No projects match these filters." : "Your GMEA workspace is ready for its first project."}</p>}
           <WorkspaceListPagination {...pagination} total={visible.length} noun="projects" label="GMEA project table" />
-        </section>
+        </section>}
       </div>
 
       {create && <GmeaProjectForm onClose={() => setCreate(false)} />}

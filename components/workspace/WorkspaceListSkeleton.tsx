@@ -1,8 +1,9 @@
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { SkeletonBlock } from "@/components/LoadingSkeleton";
 import WorkspaceTableSkeleton from "./WorkspaceTableSkeleton";
 import WorkspaceFiltersSkeleton from "./WorkspaceFiltersSkeleton";
 
-export default function WorkspaceListSkeleton({ columns = 6, rows = 10, tabs = 3, filters = true, filterCount = 1, tabLabels, minWidth = 720, rowHeight = 44, firstColumnLines = 1, mobileCards = false, mobileBreakpoint = "md", columnWidths, embedded = false }: {
+export default function WorkspaceListSkeleton({ columns = 6, rows = TABLE_PAGE_SIZE, tabs = 3, filters = true, filterCount = 1, tabLabels, minWidth = 720, rowHeight = 44, firstColumnLines = 1, mobileCards = false, mobileBreakpoint = "md", columnWidths, embedded = false }: {
   columns?: number; rows?: number; tabs?: number; filters?: boolean; filterCount?: number; tabLabels?: readonly string[];
   minWidth?: number; rowHeight?: number; firstColumnLines?: number; mobileCards?: boolean; mobileBreakpoint?: "md" | "lg" | "xl"; columnWidths?: readonly string[]; embedded?: boolean;
 }) {

@@ -6,8 +6,9 @@ import PayrollInsightsDashboard from "@/components/PayrollInsightsDashboard";
 import { useHistoricalDashboardData } from "@/features/dashboard/hooks/useHistoricalDashboardData";
 import PayrollAnalyticsPageSkeleton from "./PayrollAnalyticsPageSkeleton";
 import PayrollAnalyticsHero from "./PayrollAnalyticsHero";
+import { PayrollAnalyticsLoadingState } from "./PayrollAnalyticsLoadingState";
 
-export default function PayrollAnalyticsPageClient() {
+export default function PayrollAnalyticsPageClient({ embedded = false, active = true }: { embedded?: boolean; active?: boolean }) {
   const searchParams = useSearchParams();
   const { data, loading, error, selectedPeriodKey, setSelectedPeriodKey } =
     useHistoricalDashboardData({
@@ -28,19 +29,20 @@ export default function PayrollAnalyticsPageClient() {
 
   useEffect(() => {
     if (!runIdFromQuery) return;
-    if (runIdFromQuery === selectedPeriodKey) return;
     setSelectedPeriodKey(runIdFromQuery);
-  }, [runIdFromQuery, selectedPeriodKey, setSelectedPeriodKey]);
+  }, [runIdFromQuery, setSelectedPeriodKey]);
+
+  if (!active) return null;
 
   if (loading && !data && !error) {
-    return <PayrollAnalyticsPageSkeleton />;
+    return embedded ? <PayrollAnalyticsLoadingState /> : <PayrollAnalyticsPageSkeleton />;
   }
 
   return (
-    <div className="min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8">
-      <PayrollAnalyticsHero
+    <div className={embedded ? "space-y-4" : "min-h-full space-y-4 bg-white p-4 sm:p-6 lg:p-8"}>
+      {!embedded && <PayrollAnalyticsHero
         periodLabel={selectedPeriodLabel ? `${selectedPeriodLabel.label} · ${selectedPeriodLabel.siteName}` : undefined}
-      />
+      />}
       {periodOptions.length > 0 ? (
         <section className="rounded-2xl border border-transparent bg-white p-4 shadow-workspace sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">

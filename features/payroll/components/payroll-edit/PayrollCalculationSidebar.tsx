@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { useState } from "react";
 import { PayrollDetailPagination } from "./PayrollDetailPagination";
 import {
@@ -45,7 +46,7 @@ interface PayrollCalculationSidebarProps {
 
 export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps) {
   const [selectedPage, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(props.branchRates.length / 5));
+  const totalPages = Math.max(1, Math.ceil(props.branchRates.length / TABLE_PAGE_SIZE));
   const page = Math.min(selectedPage, totalPages);
   const summaryRows = [
     ["Attendance", `${props.attendanceDays} days`],
@@ -147,7 +148,7 @@ export function PayrollCalculationSidebar(props: PayrollCalculationSidebarProps)
         <section className="overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
           <h3 className="px-3.5 py-2.5 text-[13px] font-semibold">Branch Rate Breakdown</h3>
             <div className="divide-y divide-slate-100 border-t border-slate-100">
-              {props.branchRates.slice((page - 1) * 5, page * 5).map((entry) => (
+              {props.branchRates.slice((page - 1) * TABLE_PAGE_SIZE, page * TABLE_PAGE_SIZE).map((entry) => (
                 <div
                   key={entry.site}
                   className="flex items-center justify-between gap-3 px-3.5 py-2 text-[13px]"

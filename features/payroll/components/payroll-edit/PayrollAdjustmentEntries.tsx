@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { useState } from "react";
 import { PayrollDetailPagination } from "./PayrollDetailPagination";
 import { Trash2 } from "lucide-react";
@@ -78,7 +79,7 @@ export function PayrollAdjustmentEntries(props: PayrollAdjustmentEntriesProps) {
     })),
   ];
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / 2));
+  const totalPages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
   const page = Math.min(selectedPage, totalPages);
   return (
     <section className="overflow-hidden rounded-xl border border-transparent bg-white shadow-workspace">
@@ -96,7 +97,7 @@ export function PayrollAdjustmentEntries(props: PayrollAdjustmentEntriesProps) {
         </div>
       ) : (
         <div className="grid divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-          {rows.slice((page - 1) * 2, page * 2).map((entry) => (
+          {rows.slice((page - 1) * TABLE_PAGE_SIZE, page * TABLE_PAGE_SIZE).map((entry) => (
             <div
               key={entry.id}
               className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 px-3.5 py-2 text-[13px] odd:border-b odd:border-slate-100 lg:odd:border-b-0"

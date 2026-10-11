@@ -31,13 +31,31 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--ceo-payroll")) {
+      if (!process.argv.includes("--payroll-only")) await require("./checkSearchAndStaffPagination.cjs")(page, base, screenshots);
+      await require("./checkCeoPayroll.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("CEO payroll browser checks passed: records/analytics tabs, retained filters and chart periods, approvals, legacy links, mobile layouts, and single search icons across CEO/GMEA rentals and projects.");
+      return;
+    }
+    if (process.argv.includes("--search-pagination")) {
+      await require("./checkSearchAndStaffPagination.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("Search icons passed for Rentals and GMEA Projects in both roles on desktop/mobile; staff approvals passed fixed five-row pagination, filtering, and approval checks.");
+      return;
+    }
+    if (process.argv.includes("--gmea-projects")) {
+      await require("./checkGmeaProjectAnalytics.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA project Analytics browser checks passed for GMEA and CEO: chart tabs, chart period, preserved filters and pagination, edit permissions, and desktop/mobile layouts.");
+      return;
+    }
     const scenarios = rentalIncomeOnly ? [] : [
       ["payroll", "Payroll workspace", "Payroll records", "Search payrolls", /All payrolls/, "Payroll table rows per page"],
       ["admin", "Administration workspace", null, "Search users", /All accounts/, "User directory rows per page"],
       ["employee", "Employee workspace", "Your overtime requests", "Search requests", /All requests/, "Overtime history rows per page"],
       ["purchaser", "Purchasing workspace", "Purchasing records", "Search purchases", /All purchases/, "Purchasing table rows per page"],
       ["gmea-projects", "GMEA workspace", "GMEA project records", "Search projects", /All projects/, "GMEA project table rows per page"],
-      ["gmea-rentals", "GMEA workspace", "Rental and equipment records", "Search rentals", /Rental Bookings 28/, "Rental workspace rows per page"],
     ];
     for (const [route, title, region, search, allTab, size] of scenarios) {
       await page.goto(`${base}/${route}`);
@@ -46,12 +64,12 @@ async function main() {
       const mainHeader = await page.locator("[data-workspace-header]").boundingBox();
       assert.equal(sidebarHeader.height, mainHeader.height, `${route} sidebar and main header heights match`);
       assert.equal(sidebarHeader.y + sidebarHeader.height, mainHeader.y + mainHeader.height, `${route} header edges align`);
-      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Projects Expenses", exact: true }).count(), 1);
+      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Projects", exact: true }).count(), 1);
       const list = region ? page.getByRole("region", { name: region, exact: true }) : page.locator("#dashboard-content section").first();
       await list.getByRole("button", { name: allTab }).click();
       await list.locator("tbody tr").first().waitFor();
       await assertTabColors(page);
-      assert.equal(await list.locator("tbody tr").count(), 10, `${route} initial page size`);
+      assert.equal(await list.locator("tbody tr").count(), 5, `${route} initial page size`);
       await list.getByRole("button", { name: "Next page", exact: true }).click();
       assert.equal(await list.getByRole("button", { name: "Page 2", exact: true }).getAttribute("aria-current"), "page");
       await list.getByRole("searchbox", { name: search, exact: true }).fill(route === "employee" ? "Juan Santos" : "Harbor");
@@ -59,19 +77,25 @@ async function main() {
       assert.equal(await list.getByRole("button", { name: "Page 1", exact: true }).getAttribute("aria-current"), "page", `${route} filter resets page`);
       await list.getByRole("button", { name: "Reset filters" }).click();
       await list.getByRole("button", { name: allTab }).click();
-      await list.getByRole("combobox", { name: size }).selectOption("25");
-      assert.equal(await list.locator("tbody tr").count(), 25, `${route} page size`);
+      assert.equal(await list.getByRole("combobox", { name: size }).count(), 0, `${route} has fixed pagination`);
+      assert.equal(await list.locator("tbody tr").count(), 5, `${route} page size`);
       await list.getByRole("button", { name: "Last", exact: true }).click();
-      await page.waitForFunction((label) => document.querySelector(`nav[aria-label="${label}"] [aria-current="page"]`)?.textContent === "2", size.replace("rows per page", "pages"));
+      await page.waitForFunction((label) => document.querySelector(`nav[aria-label="${label}"] [aria-current="page"]`)?.textContent === "6", size.replace("rows per page", "pages"));
       assert.equal(await list.locator("tbody tr").count(), 3, `${route} last page`);
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       assert.equal(await page.locator("#dashboard-content").evaluate((element) => getComputedStyle(element).backgroundColor), "rgb(245, 246, 248)");
-      assert.equal(await list.getByRole("button", { name: "Page 2", exact: true }).evaluate((element) => getComputedStyle(element).backgroundColor), "rgb(7, 109, 105)", `${route} selected pagination color`);
+      assert.equal(await list.getByRole("button", { name: "Page 6", exact: true }).evaluate((element) => getComputedStyle(element).backgroundColor), "rgb(7, 109, 105)", `${route} selected pagination color`);
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.setViewportSize({ width: 390, height: 844 });
       await page.evaluate(() => window.scrollTo(0, 0));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `${route} mobile horizontal overflow`);
       await page.setViewportSize({ width: 1440, height: 1100 });
+    }
+    if (process.argv.includes("--pagination")) {
+      await require("./checkRolePagination.cjs")(page, base);
+      assert.deepEqual(errors, []);
+      console.log("Fixed five-row pagination passed across all seven roles, including last pages, filters, payroll generation, and rental pages.");
+      return;
     }
     if (!rentalIncomeOnly) {
     await page.goto(`${base}/purchaser`);
@@ -96,64 +120,12 @@ async function main() {
     await page.getByRole("dialog").waitFor();
     await page.getByRole("heading", { name: "Add a new user", exact: true }).waitFor();
     }
-    await page.goto(`${base}/gmea-rentals`);
-    const income = page.getByRole("region", { name: "Rental income workspace", exact: true });
-    await income.getByRole("heading", { name: "Monthly rental income", exact: true }).waitFor();
-    assert.equal(await income.getByLabel("Income month", { exact: true }).inputValue(), "2026-05");
-    assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /18,000/);
-    await income.getByLabel("Income month",{exact:true}).fill("2026-04");
-    assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /10,000/);
-    await income.getByLabel("Income month",{exact:true}).fill("2026-05");
-    assert.match(await income.innerText(), /Down Payment collected/);
-    assert.match(await income.innerText(), /Full Payment collected/);
-    assert.doesNotMatch(await income.innerText(), /\b(DP|FP)\b/);
-    await income.getByRole("button", {name:/^Needs review/}).click();
-    assert.match(await income.innerText(), /Held: Full Payment/);
-    assert.match(await income.innerText(), /Payment date unconfirmed/);
-    await income.getByText("Original Excel rows",{exact:true}).click();
-    assert.match(await income.locator("tbody").innerText(), /9,?000/);
-    assert.equal(await income.locator('a[href*="historical-1"]').count(),0);
-    await income.getByRole("button", { name: "Companies", exact: true }).click();
-    assert.equal(await income.locator("tbody tr").count(), 2);
-    await income.getByRole("button", { name: "Harbor Logistics", exact: true }).click();
-    await income.getByRole("heading", { name: "Rental income transactions", exact: true }).waitFor();
-    assert.equal(await income.locator("tbody tr").count(), 1);
-    assert.match(await income.locator("tbody").innerText(), /10,000/);
-    await income.getByRole("button", { name: "Clear income filters", exact: true }).click();
-    assert.equal(await income.locator("tbody tr").count(), 4);
-    await income.getByRole("button", { name: /^Payment history for / }).first().click();
-    const paymentHistory = page.getByRole("dialog");
-    await paymentHistory.waitFor();
-    assert.match(await paymentHistory.innerText(), /Method: Cash/);
-    await paymentHistory.getByRole("button", { name: "Close", exact: true }).click();
-    await income.locator("table").evaluate(table => { table.parentElement.scrollLeft = 0; });
-    await page.screenshot({ path: path.join(screenshots, "rental-income-desktop.png"), fullPage: true });
-    await page.getByRole("button", { name: "Rental Expenses", exact: true }).click();
-    await page.getByRole("heading", { name: "Monthly rental expenses", exact: true }).waitFor();
-    await page.getByLabel("Reporting month", { exact: true }).fill("2025-04");
-    await page.getByRole("button", { name: "Weekly", exact: true }).click();
-    await page.getByRole("heading", { name: "Weekly rental expenses", exact: true }).waitFor();
-    await page.getByRole("button", { name: "History", exact: true }).click();
-    await page.getByRole("heading", { name: "Expense history", exact: true }).waitFor();
-    await page.getByRole("button", { name: "Rental Income", exact: true }).click();
-    assert.equal(await income.getByLabel("Income month", { exact: true }).inputValue(), "2026-05");
-    await page.setViewportSize({ width: 390, height: 844 });
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, "Income mobile overflow");
-    await page.screenshot({ path: path.join(screenshots, "rental-income-mobile.png"), fullPage: true });
-    await page.setViewportSize({ width: 1440, height: 1100 });
-    await page.getByRole("button", { name: "Rental Expenses", exact: true }).click();
-    await page.getByRole("button", { name: "Monthly Overview", exact: true }).click();
-    assert.equal(await page.getByLabel("Reporting month", { exact: true }).inputValue(), "2025-04");
+    await require("./checkRentalPages.cjs")(page, base, screenshots);
     if (rentalIncomeOnly) {
       assert.deepEqual(errors, []);
-      console.log("Rental income browser checks passed: monthly totals, full payment labels, company drill-down, review source rows, independent expense months, weekly/history views, and mobile layout.");
+      console.log("Rental browser checks passed: sidebar dropdown, separate pages, charts, filters, payment history, weekly/history views, edit dialogs, role controls, and mobile layouts.");
       return;
     }
-    await page.getByRole("button", { name: /Equipment 28/ }).click();
-    await page.getByRole("combobox", { name: "Filter equipment by status" }).selectOption("available");
-    assert.match(await page.getByRole("region", { name: "Rental and equipment records" }).innerText(), /of 14 units/);
-    await page.getByRole("button", { name: "Edit Excavator 01", exact: true }).click();
-    await page.getByRole("dialog").waitFor();
     await page.goto(`${base}/gmea-projects`);
     await page.getByRole("button", { name: /^Completed/ }).click();
     assert.match(await page.getByRole("region", { name: "GMEA project records" }).innerText(), /of 7 projects/);

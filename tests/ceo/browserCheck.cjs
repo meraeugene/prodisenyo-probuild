@@ -32,15 +32,15 @@ async function main() {
     await page.goto(`${base}/projects`);
     const list = page.getByRole("region", { name: "Project list", exact: true });
     await list.locator("tbody tr").first().waitFor();
-    assert.equal(await list.locator("tbody tr").count(), 10);
+    assert.equal(await list.locator("tbody tr").count(), 5);
     await list.getByRole("button", { name: "Next page", exact: true }).click();
     await page.waitForFunction(() => document.querySelector('nav[aria-label="Project table pages"] [aria-current="page"]')?.textContent === "2");
     await list.getByRole("searchbox", { name: "Search projects" }).fill("Harbor");
     await page.waitForFunction(() => document.querySelectorAll('section[aria-label="Project list"] tbody tr').length === 1);
     await list.getByRole("button", { name: "Reset filters" }).click();
     assert.equal(await list.getByRole("button", { name: "Page 1", exact: true }).getAttribute("aria-current"), "page");
-    await list.getByRole("combobox", { name: "Project table rows per page" }).selectOption("25");
-    assert.equal(await list.locator("tbody tr").count(), 25);
+    assert.equal(await list.getByRole("combobox", { name: "Project table rows per page" }).count(), 0);
+    assert.equal(await list.locator("tbody tr").count(), 5);
     await list.getByRole("button", { name: "Last", exact: true }).click();
     assert.equal(await list.locator("tbody tr").count(), 3);
     await page.evaluate(() => window.dispatchEvent(new Event("shrink-projects")));
@@ -55,7 +55,7 @@ async function main() {
     const gmea = page.getByRole("region", { name: "Projects", exact: true });
     await gmea.locator("tbody tr").first().waitFor();
     await gmea.getByRole("button", { name: /All Projects/ }).click();
-    assert.equal(await gmea.locator("tbody tr").count(), 10);
+    assert.equal(await gmea.locator("tbody tr").count(), 5);
     const total = await gmea.locator("tfoot").innerText();
     await gmea.getByRole("button", { name: "Next page", exact: true }).click();
     assert.equal(await gmea.locator("tfoot").innerText(), total);
@@ -67,7 +67,7 @@ async function main() {
     const rentalList = page.getByRole("region", { name: "Rental and equipment records" });
     await rentalList.getByRole("button", { name: "Equipment 28", exact: true }).click();
     await rentalList.getByRole("combobox", { name: "Filter equipment by status" }).selectOption("available");
-    assert.equal(await rentalList.locator("tbody tr").count(), 10);
+    assert.equal(await rentalList.locator("tbody tr").count(), 5);
     assert.match(await rentalList.innerText(), /of 14 units/);
     await rentalList.getByRole("button", { name: "Rental Bookings 28", exact: true }).click();
     await rentalList.getByRole("searchbox", { name: "Search rentals" }).fill("Harbor");

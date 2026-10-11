@@ -47,22 +47,22 @@ function createQueueHarness(kind) {
     const nodes = elements(Queue({ role: "ceo", initialRequests: rows }));
     return {
       table: nodes.find(node => node.props.requests),
-      pager: nodes.find(node => node.props.onPageSizeChange),
+      pager: nodes.find(node => node.props.onPageChange),
       toolbar: nodes.find(node => node.props.searchLabel),
     };
   } };
 }
 
-for (const kind of ["payroll", "staff"]) {
-  test(`${kind} approval table paginates independently and resets search, status and page size`, () => {
+for (const kind of ["payroll"]) {
+  test(`${kind} approval table paginates independently and resets search and status`, () => {
     const harness = createQueueHarness(kind);
     let view = harness.render();
     const allIds = view.table.props.requests.map(row => row.id);
-    assert.equal(view.table.props.requests.length, 10);
-    assert.equal(view.pager.props.totalPages, 3);
-    view.pager.props.onPageChange(3);
+    assert.equal(view.table.props.requests.length, 5);
+    assert.equal(view.pager.props.totalPages, 6);
+    view.pager.props.onPageChange(6);
     view = harness.render();
-    assert.equal(view.table.props.requests.length, 8);
+    assert.equal(view.table.props.requests.length, 3);
     assert.ok(view.table.props.requests.every(row => !allIds.includes(row.id)));
     view.toolbar.props.onQueryChange("Employee 27");
     view = harness.render();
@@ -73,20 +73,49 @@ for (const kind of ["payroll", "staff"]) {
     assert.equal(view.table.props.requests.length, 0);
     view.toolbar.props.onReset();
     view = harness.render();
-    view.pager.props.onPageSizeChange(25);
-    view = harness.render();
     assert.equal(view.pager.props.page, 1);
-    assert.equal(view.table.props.requests.length, 25);
-    view.pager.props.onPageChange(2);
+    assert.equal(view.table.props.requests.length, 5);
+    view.pager.props.onPageChange(6);
     view = harness.render();
     assert.equal(view.table.props.requests.length, 3);
     assert.equal(harness.rows.length, 28);
   });
 }
 
+test("staff approvals stay at five per page and reset pagination when filters change", () => {
+  const harness = createQueueHarness("staff");
+  let view = harness.render();
+  const firstIds = view.table.props.requests.map(row => row.id);
+  assert.equal(firstIds.length, 5);
+  assert.equal(view.pager.props.totalPages, 6);
+  view.pager.props.onPageChange(2);
+  view = harness.render();
+  assert.equal(view.table.props.requests.length, 5);
+  assert.ok(view.table.props.requests.every(row => !firstIds.includes(row.id)));
+  view.pager.props.onPageChange(6);
+  view = harness.render();
+  assert.equal(view.table.props.requests.length, 3);
+  assert.equal(view.pager.props.pageSize, 5);
+  assert.equal(view.pager.props.totalPages, 6);
+  view.toolbar.props.onQueryChange("Employee 27");
+  view = harness.render();
+  assert.equal(view.pager.props.page, 1);
+  assert.deepEqual(view.table.props.requests.map(row => row.id), ["request-27"]);
+  view.toolbar.props.onReset();
+  view.toolbar.props.onTabChange("pending");
+  view = harness.render();
+  assert.equal(view.table.props.requests.length, 5);
+  assert.equal(view.pager.props.totalPages, 3);
+  view.pager.props.onPageChange(3);
+  view = harness.render();
+  assert.equal(view.table.props.requests.length, 4);
+  assert.ok(view.table.props.requests.every(row => row.status === "pending"));
+  assert.equal(harness.rows.length, 28);
+});
+
 test("payroll table actions target the selected page's request and resolved records cannot be approved", () => {
   const harness = createQueueHarness("payroll");
-  harness.render().pager.props.onPageChange(3);
+  harness.render().pager.props.onPageChange(5);
   const view = harness.render();
   const nodes = elements(view.table.type(view.table.props));
   nodes.find(node => node.type === "button" && node.props["aria-label"] === "Approve overtime request for Employee 20").props.onClick();

@@ -228,7 +228,7 @@ export default function PayrollInsightsDashboard({
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
             <ChartCard
               title="Payroll Distribution by Project"
-              height="min-h-[350px]"
+              height="h-auto lg:h-[350px]"
             >
               {projectDistributionData.length === 0 ? (
                 <div className="flex h-full items-center justify-center">

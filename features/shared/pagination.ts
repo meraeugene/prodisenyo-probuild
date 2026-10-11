@@ -1,4 +1,6 @@
-﻿export function buildVisiblePages(
+﻿export const TABLE_PAGE_SIZE = 5;
+
+export function buildVisiblePages(
   currentPage: number,
   totalPages: number,
   maxVisible = 5,

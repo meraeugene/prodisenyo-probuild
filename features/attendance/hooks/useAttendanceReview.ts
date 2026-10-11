@@ -9,7 +9,7 @@ import {
   selectBranchSummaries,
 } from "@/features/attendance/utils/attendanceSelectors";
 
-const PREVIEW_LIMIT = 10;
+import { TABLE_PAGE_SIZE as PREVIEW_LIMIT } from "@/features/shared/pagination";
 
 export interface UseAttendanceReviewResult {
   step2View: Step2View;

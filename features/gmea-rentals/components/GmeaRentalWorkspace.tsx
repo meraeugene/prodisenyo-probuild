@@ -50,13 +50,13 @@ export default function GmeaRentalWorkspace({
       refreshInterval: canEdit ? 0 : 30000,
     },
   );
-  if (!rental) return <main className="p-6"><p role="status">This rental is no longer available.</p><Link href="/gmea-rentals" className="mt-4 inline-block text-teal-700">Back to rentals</Link></main>;
+  if (!rental) return <main className="p-6"><p role="status">This rental is no longer available.</p><Link href="/gmea-rentals/bookings" className="mt-4 inline-block text-teal-700">Back to rentals</Link></main>;
   const total = rental.items.reduce((sum, item) => sum + item.subtotal, 0);
   return (
     <main className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-5">
         <Link
-          href="/gmea-rentals"
+          href="/gmea-rentals/bookings"
           prefetch={false}
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
         >

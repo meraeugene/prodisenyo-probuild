@@ -1,5 +1,6 @@
 import type { SidebarNavigationContext, SidebarNavigationGroup } from "../types";
 import SidebarNavigationLink from "./SidebarNavigationLink";
+import SidebarNavigationDropdown from "./SidebarNavigationDropdown";
 
 export default function SidebarNavigationSection({ group, role, pathname, collapsed, onNavigate, notificationCounts }: SidebarNavigationContext & {
   group: SidebarNavigationGroup;
@@ -11,7 +12,9 @@ export default function SidebarNavigationSection({ group, role, pathname, collap
       ) : (
         <h2 className="px-3 pb-2 pt-6 text-[11px] font-medium text-[#53736f]">{group.label}</h2>
       ))}
-      {group.items.map((item) => (
+      {group.items.map((item) => item.children ? (
+        <SidebarNavigationDropdown key={item.href} item={item} role={role} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} notificationCounts={notificationCounts} />
+      ) : (
         <SidebarNavigationLink
           key={item.href}
           item={item}

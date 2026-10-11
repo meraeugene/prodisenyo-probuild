@@ -17,6 +17,7 @@ export type SidebarNavigationItem = {
   icon: LucideIcon;
   badgeKey?: keyof SidebarNotificationCounts;
   activePaths?: readonly string[];
+  children?: readonly SidebarNavigationItem[];
 };
 
 export type SidebarNavigationGroup = {

@@ -81,7 +81,7 @@ interface PayrollEditModalProps {
   currentUserRole: AppRole | null;
 }
 
-const ALL_REPORT_LOGS_PAGE_SIZE = 5;
+import { TABLE_PAGE_SIZE as ALL_REPORT_LOGS_PAGE_SIZE } from "@/features/shared/pagination";
 
 export default function PayrollEditModal({
   payroll,

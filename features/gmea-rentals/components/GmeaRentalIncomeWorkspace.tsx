@@ -3,11 +3,13 @@
 import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
 import WorkspaceSummaryCards from "@/components/WorkspaceSummaryCards";
 import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import WorkspaceSearchInput from "@/components/workspace/WorkspaceSearchInput";
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 import type { RentalIncomePageState } from "../hooks/useRentalIncomePage";
 import { formatRentalMoney } from "../utils/rentalUi";
 import GmeaRentalIncomeCompaniesTable from "./GmeaRentalIncomeCompaniesTable";
 import GmeaRentalIncomeTransactionsTable from "./GmeaRentalIncomeTransactionsTable";
+import RentalIncomeCharts from "./RentalIncomeCharts";
 import GmeaRentalIncomeReview from "./GmeaRentalIncomeReview";
 import styles from "@/components/workspace/workspace.module.css";
 
@@ -21,12 +23,12 @@ export default function GmeaRentalIncomeWorkspace({ state }: { state: RentalInco
   const validMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(month);
   return <section aria-label="Rental income workspace" className="space-y-4 p-4 sm:p-5">
     <WorkspaceTabSwitch label="Rental income views" value={view} onChange={state.setView}
-      items={[{ value: "monthly", label: "Monthly Overview" }, { value: "companies", label: "Companies" }, { value: "transactions", label: "Transactions" }, {value:"review",label:"Needs review",count:state.reviewRecords.length}]} />
-    <header><h2 className="text-lg font-semibold">{view === "review" ? "Rental income entries needing review" : view === "monthly" ? "Monthly rental income" : view === "companies" ? "Rental companies and clients" : "Rental income transactions"}</h2>
+      items={[{ value: "monthly", label: "Monthly Overview" }, { value: "companies", label: "Companies" }, { value: "transactions", label: "Transactions" }, {value:"review",label:"Needs review",count:state.reviewRecords.length}, { value: "analytics", label: "Analytics" }]} />
+    <header><h2 className="text-lg font-semibold">{view === "analytics" ? "Rental income analytics" : view === "review" ? "Rental income entries needing review" : view === "monthly" ? "Monthly rental income" : view === "companies" ? "Rental companies and clients" : "Rental income transactions"}</h2>
       <p className="mt-1 text-sm text-slate-500">Payments received in the selected month, with separate down payments and full or final payments.</p></header>
     <div className="flex flex-wrap items-end gap-3">
       <label className={styles.field}>Income month<input aria-label="Income month" type="month" className={styles.control} value={month} onChange={event => state.setMonth(event.target.value)} /></label>
-      <label className={`${styles.field} ${styles.searchField}`}>Search income<input type="search" className={styles.control} value={query}
+      <label className={`${styles.field} ${styles.searchField}`}>Search income<WorkspaceSearchInput value={query}
         onChange={event => state.setQuery(event.target.value)} placeholder="Company, rental, location, or equipment" /></label>
       <label className={styles.field}>Company / Client<select className={styles.control} value={company} onChange={event => state.setCompany(event.target.value)}>
         <option value="">All companies and clients</option>{state.companyOptions.map(([key, name]) => <option key={key} value={key}>{name}</option>)}
@@ -45,7 +47,7 @@ export default function GmeaRentalIncomeWorkspace({ state }: { state: RentalInco
       {summary.unclassifiedCount > 0 && <p role="status" className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
         {summary.unclassifiedCount} {summary.unclassifiedCount === 1 ? "receipt has" : "receipts have"} no payment type. {summary.unclassifiedCount === 1 ? "It is" : "They are"} included in total and other collections.
       </p>}
-      {view === "transactions" || view === "monthly" ? <>
+      {view === "analytics" ? <RentalIncomeCharts rentals={state.filteredRentals} month={month} /> : view === "transactions" || view === "monthly" ? <>
         <GmeaRentalIncomeTransactionsTable transactions={state.transactions.filter(row => pageIds.has(row.rental.id))} />
         <WorkspaceListPagination {...transactionPagination} total={transactionRentals.length} noun="rentals" label="Rental income transactions" />
       </> : <>

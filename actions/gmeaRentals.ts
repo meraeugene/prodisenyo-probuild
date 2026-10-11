@@ -22,6 +22,7 @@ import type {
   RentalMutation,
   RentalWorkerMutation,
 } from "@/features/gmea-rentals/types";
+import { rentalSections } from "@/features/gmea-rentals/utils/rentalSections";
 import { normalizeRentalMutation } from "@/features/gmea-rentals/utils/rentalValidation";
 import { normalizeRentalCollectionMutation } from "@/features/gmea-rentals/utils/collectionValidation";
 import {
@@ -66,6 +67,7 @@ export async function markGmeaRentalExpenseViewedAction(expenseId: string) {
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -95,6 +97,7 @@ export async function saveGmeaRentalEquipmentAction(
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -112,6 +115,7 @@ export async function createGmeaRentalAction(input: RentalMutation) {
   });
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -150,6 +154,7 @@ export async function saveGmeaRentalCollectionAction(
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -183,6 +188,7 @@ export async function saveGmeaRentalWorkerAction(
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -211,6 +217,7 @@ export async function saveGmeaRentalAssignmentAction(
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
@@ -244,6 +251,7 @@ export async function saveGmeaRentalExpenseAction(
   );
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-rentals");
+  for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");

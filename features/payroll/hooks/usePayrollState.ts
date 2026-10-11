@@ -71,7 +71,7 @@ import type {
   PayrollRowOverride,
 } from "@/features/payroll/types";
 
-const PREVIEW_LIMIT = 10;
+import { TABLE_PAGE_SIZE as PREVIEW_LIMIT } from "@/features/shared/pagination";
 const MAX_LOG_HOURS_PER_DAY = 16;
 const EMPTY_ADJUSTMENTS: PayrollAdjustmentSet = {
   cashAdvanceEntries: [],

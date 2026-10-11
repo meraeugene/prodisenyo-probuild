@@ -18,7 +18,7 @@ export const config = {
     "/projects/:path*",
     "/gmea-projects/:path*",
     "/gmea-projects/summary/:path*", // Clickable project financial cards (CEO/GMEA).
-    "/gmea-rentals/:path*",
+    "/gmea-rentals/:path*", // Includes income, expenses, bookings, equipment, and rental details.
     "/gmea-overview/:path*", // Protect legacy links before redirecting to Projects.
     "/cost-estimator/:path*",
     "/estimate-approvals/:path*",

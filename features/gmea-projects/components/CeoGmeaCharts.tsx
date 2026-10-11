@@ -19,7 +19,6 @@ import styles from "@/components/workspace/workspace.module.css";
 
 export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
   data: ReturnType<typeof buildCeoPortfolio>;
-  count: number;
   months: number;
   onMonthsChange: (months: number) => void;
 }) {
@@ -64,7 +63,7 @@ export default function CeoGmeaCharts({ data, months, onMonthsChange }: {
         <div className="mt-5 grid items-center gap-5 sm:grid-cols-[170px_minmax(0,1fr)] xl:grid-cols-[160px_minmax(0,1fr)]">
           <div className="relative h-40 w-40" role="img" aria-label={`${collectedPercent}% of the contract amount collected`}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={data.contract ? collectionData : [{ name: "No contract", value: 1, color: "#e6f3ef" }]} dataKey="value" innerRadius={52} outerRadius={72} stroke="#fff" strokeWidth={2}>
+              <PieChart><Pie data={data.contract ? collectionData : [{ name: "No contract", value: 1, color: "#e6f3ef" }]} dataKey="value" innerRadius={52} outerRadius={72} stroke="#fff" strokeWidth={2} isAnimationActive={false}>
                 {(data.contract ? collectionData : [{ name: "No contract", color: "#e6f3ef" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
               </Pie>{data.contract > 0 && <Tooltip content={<ChartMoneyTooltip formatValue={formatMoney} />} wrapperStyle={{ zIndex: 20 }} />}</PieChart>
             </ResponsiveContainer>

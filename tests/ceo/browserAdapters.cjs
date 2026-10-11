@@ -5,7 +5,7 @@ module.exports = {
     const mocks = {
       "next/link": "export default function Link({href,prefetch,children,...props}){return <a href={href} {...props}>{children}</a>}",
       "next/image": "export default function Image({priority,fill,...props}){return <img {...props}/>}",
-      "next/navigation": "export const usePathname=()=>window.location.pathname; export const useRouter=()=>({push:()=>{},refresh:()=>{}});",
+      "next/navigation": "export const usePathname=()=>window.location.pathname; export const useSearchParams=()=>new URLSearchParams(window.location.search); export const useRouter=()=>({push:()=>{},refresh:()=>{}});",
       "@/actions/gmeaProjects": "export async function getGmeaProjectsDataAction(){return window.__gmeaProjects;}",
       "@/features/navigation/hooks/useSidebarNotificationCounts": "export const useSidebarNotificationCounts=()=>({overtime:1,payrollReports:2,estimateReviews:0,gmeaExpenses:0,gmeaRentalExpenses:0});",
       "@/components/auth/SignOutButton": "export default function SignOutButton(){return <button type='button' className='px-3 py-2 text-sm text-slate-500'>Logout</button>}",

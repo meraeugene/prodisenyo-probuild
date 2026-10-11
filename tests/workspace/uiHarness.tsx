@@ -6,12 +6,16 @@ import UserManagementPageClient from "@/features/user-management/components/User
 import OvertimeRequestPageClient from "@/features/overtime-requests/components/OvertimeRequestPageClient";
 import PurchasingWorkspace from "@/features/purchasing-approvals/components/PurchasingWorkspace";
 import GmeaProjectsPageClient from "@/features/gmea-projects/components/GmeaProjectsPageClient";
+import CeoGmeaProjectsPageClient from "@/features/gmea-projects/components/CeoGmeaProjectsPageClient";
+import GmeaProjectMetricPage from "@/features/gmea-projects/components/GmeaProjectMetricPage";
+import OvertimeApprovalsPageClient from "@/features/payroll/components/OvertimeApprovalsPageClient";
+import PayrollReportsPageClient from "@/features/payroll-reports/components/PayrollReportsPageClient";
 import GmeaRentalsPage from "@/features/gmea-rentals/components/GmeaRentalsPage";
 import type { SidebarProfile } from "@/features/navigation/types";
 import type { ManagedUserRow } from "@/features/user-management/types";
 import type { PayrollWorkspaceRun } from "@/features/payroll-dashboard/types";
 import type { PurchasingRecord } from "@/actions/purchasing";
-import { projects, gmeaProjects, rentals, equipment, overtimeRequests } from "../ceo/fixtures";
+import { projects, gmeaProjects, rentals, equipment, overtimeRequests, payrollAdjustments } from "../ceo/fixtures";
 import PayrollHarness from "./PayrollHarness";
 import EngineeringWorkspace from "@/features/projects/components/EngineeringWorkspace";
 import GmeaProjectWorkspace from "@/features/gmea-projects/components/GmeaProjectWorkspace";
@@ -20,7 +24,10 @@ import { useState } from "react";
 import SkeletonHarness from "./SkeletonHarness";
 import PayrollWorkflowNavigation from "@/features/payroll/components/generate-payroll/PayrollWorkflowNavigation";
 import WorkspaceLoadingScreen from "@/components/WorkspaceLoadingScreen";
+import { rentalExpenses } from "./rentalExpenseFixtures";
+import type { RentalSection } from "@/features/gmea-rentals/utils/rentalSections";
 import { incomeRentals, historicalIncome } from "./rentalIncomeFixtures";
+import { payrollReports, payrollInsightRows, payrollInsightAttendance } from "./payrollReportFixtures";
 
 function EngineerHarness() {
   const [tab, setTab] = useState<"progress" | "materials">("progress");
@@ -42,12 +49,13 @@ const purchases: PurchasingRecord[] = projects.map((project, index) => ({
   deliveryStatus: index % 2 ? "scheduled" : "delivered", receiptInvoiceReference: "INV-1", receiptFile: null, notes: "", updatedAt: "2026-10-07",
 }));
 Object.assign(window, { __gmeaProjects: gmeaProjects, __equipment: equipment, __rentals: incomeRentals, __historicalIncome: historicalIncome,
-  __rentalOperations: { equipment, workers: [], categories: [], expenses: [] }, __purchases: purchases });
+  __payrollReports: payrollReports, __payrollInsightRows: payrollInsightRows, __payrollInsightAttendance: payrollInsightAttendance,
+  __rentalOperations: { equipment, workers: [], categories: [], expenses: rentalExpenses }, __purchases: purchases });
 const path = window.location.pathname;
 const skeletonCase = new URLSearchParams(window.location.search).get("case") || "";
 const homeRole = skeletonCase.startsWith("home-") ? skeletonCase.slice(5) as SidebarProfile["role"] : null;
 const skeletonRole: SidebarProfile["role"] = homeRole || (skeletonCase.startsWith("engineer") ? "engineer" : ["admin", "reset"].includes(skeletonCase) ? "admin" : skeletonCase.startsWith("purchas") ? "purchaser" : skeletonCase === "overtime-request" ? "employee" : skeletonCase.startsWith("gmea") ? "gmea" : ["payroll-workspace", "generate-payroll", "upload-attendance", "review-attendance"].includes(skeletonCase) ? "payroll_manager" : "ceo");
-const role: SidebarProfile["role"] = path === "/skeletons" ? skeletonRole : path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
+const role: SidebarProfile["role"] = path === "/request-overtime" ? (new URLSearchParams(window.location.search).get("role") as SidebarProfile["role"]) : new URLSearchParams(window.location.search).get("role") === "ceo" ? "ceo" : path === "/skeletons" ? skeletonRole : path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
 createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <WorkspaceLoadingScreen /> : <DashboardShell profile={{ id: "project-01", full_name: "Maria Santos", username: "maria", role, avatar_path: null }}>
   {path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
     : path === "/engineer" ? <EngineerHarness />
@@ -57,9 +65,12 @@ createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <
     : path === "/payroll-loading" ? <GeneratePayrollSkeleton />
     : path === "/gmea-project" ? <GmeaProjectWorkspace project={{ ...gmeaProjects[0], color: "#CC0000" }} expenseOptions={{ invoiceNames: [], suppliers: [], methods: [] }} canEdit />
     : path === "/purchaser" ? <PurchasingWorkspace />
-    : path === "/gmea-projects" ? <GmeaProjectsPageClient projects={gmeaProjects} canEdit />
-    : path === "/gmea-rentals" ? <GmeaRentalsPage equipment={equipment} rentals={incomeRentals} historicalIncome={historicalIncome} initialOperations={{ equipment, workers: [], categories: [], expenses: [] }} canEdit />
-    : role === "employee" ? <OvertimeRequestPageClient initialRequests={overtimeRequests} initialEmployeeName="Juan Santos" />
+    : path === "/overtime-approvals" ? <OvertimeApprovalsPageClient initialRequests={payrollAdjustments} initialOvertimeRequests={overtimeRequests} />
+    : path === "/payroll-approvals" ? <PayrollReportsPageClient initialData={{ reports: payrollReports }} initialView={new URLSearchParams(window.location.search).get("view") === "analytics" ? "analytics" : "records"} />
+    : path === "/gmea-projects/metrics/ongoing" ? <GmeaProjectMetricPage projects={gmeaProjects} metric="ongoing" canEdit={role === "gmea"} />
+    : path === "/gmea-projects" ? role === "ceo" ? <CeoGmeaProjectsPageClient projects={gmeaProjects} /> : <GmeaProjectsPageClient projects={gmeaProjects} canEdit />
+    : path.startsWith("/gmea-rentals") ? <GmeaRentalsPage key={path} section={(path.split("/")[2] || "income") as RentalSection} equipment={equipment} rentals={incomeRentals} historicalIncome={historicalIncome} initialOperations={{ equipment, workers: [], categories: [], expenses: rentalExpenses }} canEdit={role === "gmea"} />
+    : path === "/request-overtime" || role === "employee" ? <OvertimeRequestPageClient initialRequests={overtimeRequests} initialEmployeeName="Juan Santos" />
     : <div className="space-y-5 p-4 sm:p-6"><DashboardPageHero eyebrow="Workspace" title="Payroll" description="Manage your records." />
       <PayrollWorkspaceRunsPanel runs={payrolls} /></div>}
 </DashboardShell>);

@@ -52,7 +52,6 @@ export default function UserManagementPageClient({
     page,
     totalPages,
     pageSize,
-    setPageSize,
     deleteTarget,
     openMenu,
     openMenuUser,
@@ -171,7 +170,7 @@ export default function UserManagementPageClient({
           ) : null}
         </div>
 
-        <WorkspaceListPagination page={page} totalPages={totalPages} pageSize={pageSize} total={filteredUsers.length} onPageChange={setPage} onPageSizeChange={setPageSize} noun="accounts" label="User directory" />
+        <WorkspaceListPagination page={page} totalPages={totalPages} pageSize={pageSize} total={filteredUsers.length} onPageChange={setPage} noun="accounts" label="User directory" />
       </section>
 
       <UserAccountModal state={state} currentUserId={currentUserId} />

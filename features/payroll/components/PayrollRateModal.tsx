@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { useMemo, useState, useTransition } from "react";
 import PayrollBranchRateTable from "./PayrollBranchRateTable";
 import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
@@ -82,9 +83,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
     });
   }, [editableRows, searchTerm, branchFilter, branchCountByEmployee]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / 5));
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / TABLE_PAGE_SIZE));
   const page = Math.min(selectedPage, totalPages);
-  const visibleRows = filteredRows.slice((page - 1) * 5, page * 5);
+  const visibleRows = filteredRows.slice((page - 1) * TABLE_PAGE_SIZE, page * TABLE_PAGE_SIZE);
 
   if (!payroll.showPayrollRateModal) return null;
 
@@ -233,7 +234,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
         <PayrollBranchRateTable rows={visibleRows} payroll={payroll} branchCountByEmployee={branchCountByEmployee} />
         <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-apple-steel">
-            Showing {filteredRows.length ? (page - 1) * 5 + 1 : 0}-{Math.min(page * 5, filteredRows.length)} of {filteredRows.length} rows in alphabetical order
+            Showing {filteredRows.length ? (page - 1) * TABLE_PAGE_SIZE + 1 : 0}-{Math.min(page * TABLE_PAGE_SIZE, filteredRows.length)} of {filteredRows.length} rows in alphabetical order
           </p>
           <PayrollPageControls page={page} totalPages={totalPages} onChange={setPage} label="Employee branch rate pages" />
         </div>

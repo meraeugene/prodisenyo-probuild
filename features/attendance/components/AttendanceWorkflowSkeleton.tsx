@@ -13,7 +13,7 @@ export default function AttendanceWorkflowSkeleton({ step }: { step: 1 | 2 }) {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{[0, 1].map(index => <div key={index} className="px-4 py-3"><Block className="h-4 w-16" /><Block className="mt-1 h-5 w-24" /><Block className="mt-1 h-5 w-20" /></div>)}</div>
             <div className="flex flex-wrap gap-2"><Block className="h-9 w-24" /><Block className="h-9 w-28" /></div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[0, 1, 2, 3, 4].map(index => <Block key={index} className="h-11 w-full" />)}</div>
-            <SkeletonTable columns={12} rows={10} minWidth={1250} />
+            <SkeletonTable columns={12} minWidth={1250} />
             <div className="flex flex-wrap justify-between gap-3"><Block className="h-4 w-44" /><Block className="h-9 w-52" /></div>
             <div className="flex flex-wrap items-center justify-between gap-4 p-4"><div><Block className="h-5 w-44" /><Block className="mt-1 h-5 w-72" /></div><Block className="h-11 w-60" /></div>
           </div>

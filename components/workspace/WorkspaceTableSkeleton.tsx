@@ -1,7 +1,8 @@
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { SkeletonBlock } from "@/components/LoadingSkeleton";
 import styles from "./workspace.module.css";
 
-export default function WorkspaceTableSkeleton({ columns = 6, rows = 10, minWidth = 720, rowHeight = 44, firstColumnLines = 1, mobileCards = false, mobileBreakpoint = "md", columnWidths }: {
+export default function WorkspaceTableSkeleton({ columns = 6, rows = TABLE_PAGE_SIZE, minWidth = 720, rowHeight = 44, firstColumnLines = 1, mobileCards = false, mobileBreakpoint = "md", columnWidths }: {
   columns?: number; rows?: number; minWidth?: number; rowHeight?: number; firstColumnLines?: number;
   mobileCards?: boolean; mobileBreakpoint?: "md" | "lg" | "xl"; columnWidths?: readonly string[];
 }) {

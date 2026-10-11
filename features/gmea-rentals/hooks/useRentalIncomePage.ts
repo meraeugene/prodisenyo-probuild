@@ -4,7 +4,7 @@ import { buildRentalIncomeCompanies, latestRentalIncomeMonth, rentalClientKey, s
   selectRentalIncomeTransactions, summarizeRentalIncome } from "../utils/rentalIncomeSelectors";
 
 export function useRentalIncomePage(rentals: RentalIncomeRecord[]) {
-  const [view, setView] = useState<"monthly" | "companies" | "transactions" | "review">("monthly");
+  const [view, setView] = useState<"monthly" | "companies" | "transactions" | "review" | "analytics">("monthly");
   const [month, setMonth] = useState(() => latestRentalIncomeMonth(rentals,
     new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }).slice(0, 7)));
   const [query, setQuery] = useState("");

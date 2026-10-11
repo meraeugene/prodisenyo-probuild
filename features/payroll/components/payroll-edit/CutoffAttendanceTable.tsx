@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { useState } from "react";
 import { PayrollDetailPagination } from "./PayrollDetailPagination";
 import type { CutoffAttendanceDay } from "@/features/payroll/utils/payrollAttendanceEngine";
@@ -60,7 +61,7 @@ function PunchPair({
 
 export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTableProps) {
   const [selectedPage, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(days.length / 5));
+  const totalPages = Math.max(1, Math.ceil(days.length / TABLE_PAGE_SIZE));
   const page = Math.min(selectedPage, totalPages);
   return (
     <section className="min-w-0">
@@ -83,7 +84,7 @@ export function CutoffAttendanceTable({ days, onResolve }: CutoffAttendanceTable
             </tr>
           </thead>
           <tbody>
-            {days.slice((page - 1) * 5, page * 5).map((day) => {
+            {days.slice((page - 1) * TABLE_PAGE_SIZE, page * TABLE_PAGE_SIZE).map((day) => {
               const sunday = isSunday(day.date);
 
               return (

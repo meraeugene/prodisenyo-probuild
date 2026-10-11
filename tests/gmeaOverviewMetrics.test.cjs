@@ -90,7 +90,7 @@ test("each drilldown reconciles to its dashboard metric, including filtered tota
   assert.deepEqual(selectGmeaOverviewMetricRecords(records, "ongoing").map(row => row.id).sort(), ["project:a", "rental:a"]);
 });
 
-test("metric detail pagination resets after filters and page size, and uses refreshed record counts", () => {
+test("metric detail pagination resets after filters, and uses refreshed record counts", () => {
   let data = fixture();
   data.projects = Array.from({ length: 28 }, (_, i) => project(String(i).padStart(2, "0"), "active", 100, [], []));
   data.rentals = { rentals: [], expenses: [], payments: [], equipment: [], categories: [] };
@@ -107,10 +107,10 @@ test("metric detail pagination resets after filters and page size, and uses refr
   const render = () => { cursor = 0; return useGmeaOverviewDetails(data, "revenue", false); };
   let view = render();
   assert.equal(view.count, 28);
-  assert.equal(view.pagination.pageRows.length, 10);
-  view.pagination.onPageChange(3);
+  assert.equal(view.pagination.pageRows.length, 5);
+  view.pagination.onPageChange(6);
   view = render();
-  assert.equal(view.pagination.pageRows.length, 8);
+  assert.equal(view.pagination.pageRows.length, 3);
   view.setQuery("Project 27");
   view = render();
   assert.equal(view.pagination.page, 1);
@@ -119,10 +119,8 @@ test("metric detail pagination resets after filters and page size, and uses refr
   assert.equal(view.totals.revenue, 2800);
   view.reset();
   view = render();
-  view.pagination.onPageSizeChange(25);
-  view = render();
-  assert.equal(view.pagination.pageRows.length, 25);
-  view.pagination.onPageChange(2);
+  assert.equal(view.pagination.pageRows.length, 5);
+  view.pagination.onPageChange(6);
   view = render();
   assert.equal(view.pagination.pageRows.length, 3);
   view.setDivision("Rentals");

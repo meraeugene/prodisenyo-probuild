@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
 import { useState } from "react";
 import { PayrollDetailPagination } from "./PayrollDetailPagination";
 
@@ -40,9 +41,9 @@ export function PayrollAttendanceLogsTable(
   props: PayrollAttendanceLogsTableProps,
 ) {
   const [selectedPage, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(props.logs.length / 5));
+  const totalPages = Math.max(1, Math.ceil(props.logs.length / TABLE_PAGE_SIZE));
   const page = Math.min(selectedPage, totalPages);
-  const visibleLogs = props.logs.slice((page - 1) * 5, page * 5);
+  const visibleLogs = props.logs.slice((page - 1) * TABLE_PAGE_SIZE, page * TABLE_PAGE_SIZE);
   return (
     <section className="min-w-0">
       <div className="flex min-h-11 items-center justify-between gap-3 border-b border-slate-200 px-3.5">
