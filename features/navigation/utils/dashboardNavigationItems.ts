@@ -1,9 +1,9 @@
-import { CalendarDays, CircleDollarSign, Receipt, Wrench, BadgeDollarSign, Calculator, Clock3, FolderKanban, House, LayoutDashboard, Trash2, Upload, Users, WalletCards } from "lucide-react";
+import { CalendarDays, CircleDollarSign, Receipt, ReceiptText, Wrench, BadgeDollarSign, Calculator, Clock3, FolderKanban, House, LayoutDashboard, Trash2, Upload, Users, WalletCards } from "lucide-react";
 import type { AppRole } from "@/types/database";
 import type { SidebarNavigationGroup, SidebarNavigationItem } from "../types";
 
 const GMEA_ITEMS = [
-  { href: "/gmea-projects", label: "Operation Expense", icon: FolderKanban },
+  { href: "/gmea-projects", label: "Operation Expense", icon: ReceiptText },
   { href: "/gmea-rentals/income", label: "Rental Income", icon: CircleDollarSign },
   { href: "/gmea-rentals/expenses", label: "Rental Expenses", icon: Receipt, badgeKey: "gmeaRentalExpenses" },
   { href: "/gmea-rentals/bookings", label: "Rental Bookings", icon: CalendarDays },

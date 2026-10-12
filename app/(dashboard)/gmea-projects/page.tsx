@@ -4,6 +4,10 @@
 } from "@/features/gmea-projects/server/gmeaQueries";
 import GmeaProjectsPageClient from "@/features/gmea-projects/components/GmeaProjectsPageClient";
 import CeoGmeaProjectsPageClient from "@/features/gmea-projects/components/CeoGmeaProjectsPageClient";
+export const metadata = {
+  title: "Operation Expense",
+  description: "Track GMEA operating expenses, project costs, and outstanding collections.",
+};
 export default async function Page() {
   const { profile } = await requireGmeaAccess();
   const projects = await getGmeaProjects();
