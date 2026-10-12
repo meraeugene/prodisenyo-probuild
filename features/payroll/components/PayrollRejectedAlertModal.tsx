@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { createPortal } from "react-dom";
 
 export default function PayrollRejectedAlertModal({
@@ -16,6 +17,7 @@ export default function PayrollRejectedAlertModal({
   rejectionReason: string | null;
   onClose: () => void;
 }) {
+  useDialogEscape(onClose, 180, open);
   if (!open) return null;
 
   return createPortal(

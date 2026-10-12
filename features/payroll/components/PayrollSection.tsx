@@ -88,7 +88,7 @@ export default function PayrollSection({
               site={payroll.payrollSiteFilter}
               sort={payroll.payrollSort}
               sites={availableSites}
-              exportDisabled={workspace.payslipRecords.length === 0}
+              exportDisabled={workspace.allEmployees.length === 0}
               onViewChange={workspace.changeView}
               onSearchChange={(value) => {
                 payroll.setPayrollNameFilter(value);
@@ -105,7 +105,7 @@ export default function PayrollSection({
               }}
               onRates={payroll.openPayrollRateModal}
               onHolidays={() => setShowPaidHolidayModal(true)}
-              onExport={() => void exportAllPayslipsToPdf(workspace.payslipRecords)}
+              onExport={() => void exportAllPayslipsToPdf(workspace.buildPayslipRecords())}
             />
 
             {isLogs ? (

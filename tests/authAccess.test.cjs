@@ -88,7 +88,7 @@ test("inactive accounts cannot pass server role checks", async () => {
 
 test("payroll managers land in the workspace from retired and restricted routes", async () => {
   const profile = { id: userId, role: "payroll_manager", is_active: true };
-  for (const pathname of ["/payroll-dashboard", "/dashboard", "/add-user"]) {
+  for (const pathname of ["/payroll-dashboard", "/dashboard", "/add-user", "/payroll-analytics", "/payroll-analytics?runId=submitted-run"]) {
     const { response } = await runMiddleware(profile, pathname);
     assert.equal(new URL(response.headers.get("location")).pathname, "/payroll-workspace");
   }

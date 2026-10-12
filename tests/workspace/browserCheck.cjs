@@ -31,6 +31,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--payroll-layout")) {
+      await require("./checkPayrollLayout.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("Payroll layout checks passed: aligned filters, Escape dismissal, pinned pagination, table columns, and mobile layouts.");
+      return;
+    }
     if (process.argv.includes("--ceo-payroll")) {
       if (!process.argv.includes("--payroll-only")) await require("./checkSearchAndStaffPagination.cjs")(page, base, screenshots);
       await require("./checkCeoPayroll.cjs")(page, base, screenshots);

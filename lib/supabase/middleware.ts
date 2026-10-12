@@ -81,6 +81,7 @@ const ADMIN_ALLOWED_PREFIXES = [
 ] as const;
 
 const CEO_ONLY_PREFIXES = [
+  "/payroll-analytics",
   "/estimate-approvals",
   "/estimate-reviews",
   "/overtime-approvals",
@@ -121,7 +122,6 @@ const PAYROLL_MANAGER_ALLOWED_PREFIXES = [
   "/review-attendance",
   "/generate-payroll",
   "/attendance-analytics",
-  "/payroll-analytics",
   "/request-overtime",
   "/settings",
 ] as const;

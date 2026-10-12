@@ -92,18 +92,21 @@ export default function PayrollEmployeesTable({
         ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-[10px] border border-[#dce6ea] bg-white xl:block">
-        <table className="w-full table-fixed text-left">
+      <div className="hidden overflow-x-auto rounded-[10px] border border-[#dce6ea] bg-white xl:block">
+        <table className="w-full min-w-[1100px] table-fixed text-left [&_td]:break-words">
+          <colgroup>
+            {[22, 14, 19, 8, 10, 11, 8, 8].map((width, index) => <col key={index} style={{ width: `${width}%` }} />)}
+          </colgroup>
           <thead className="bg-[#f6f9fa]">
             <tr className="border-b border-[#dfe8ec]">
-              <HeaderCell className="w-[23%]">Employee</HeaderCell>
-              <HeaderCell className="w-[18%]">Attendance</HeaderCell>
+              <HeaderCell>Employee</HeaderCell>
+              <HeaderCell>Attendance</HeaderCell>
               <HeaderCell>Sites</HeaderCell>
               <HeaderCell>Hours</HeaderCell>
               <HeaderCell>Rate/Hour</HeaderCell>
               <HeaderCell>Pay</HeaderCell>
               <HeaderCell>Status</HeaderCell>
-              <th className="w-16 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-[0.06em] text-[#697c91]">Actions</th>
+              <th className="px-2 py-3 text-center text-[10px] font-bold uppercase tracking-[0.06em] text-[#697c91]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -120,8 +123,8 @@ export default function PayrollEmployeesTable({
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#dcebf2] text-[11px] font-bold text-[#17547a]">{getEmployeeInitials(employee.name)}</span>
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-[#132842]">{highlight(employee.name, search)}</p>
-                        <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.03em] text-[#718499]">{employee.role}</p>
+                        <p className="break-words text-[13px] font-semibold text-[#132842]">{highlight(employee.name, search)}</p>
+                        <p className="mt-0.5 break-words text-[10px] font-medium uppercase tracking-[0.03em] text-[#718499]">{employee.role}</p>
                       </div>
                     </div>
                   </td>
@@ -131,10 +134,10 @@ export default function PayrollEmployeesTable({
                       <div className={needsReview ? "h-full rounded-full bg-[#f5a21b]" : "h-full rounded-full bg-[#20ae72]"} style={{ width: progress + "%" }} />
                     </div>
                   </td>
-                  <td className="truncate px-3 py-2.5 text-xs font-medium text-[#30465c]">{sites.length > 1 ? sites.length + " sites" : sites[0] ?? "—"}</td>
-                  <td className="truncate px-3 py-2.5 text-xs font-medium tabular-nums text-[#30465c]">{metrics.actualTotalHours.toFixed(2)}</td>
-                  <td className="truncate px-3 py-2.5 text-xs font-medium tabular-nums text-[#30465c]">{formatPeso(hourlyRate)}</td>
-                  <td className="truncate px-3 py-2.5 text-xs font-semibold tabular-nums text-[#122a45]">{formatPeso(metrics.totalPay)}</td>
+                  <td className="px-3 py-2.5 text-xs font-medium text-[#30465c]">{sites.length > 1 ? sites.join(", ") : sites[0] ?? "—"}</td>
+                  <td className="px-3 py-2.5 text-xs font-medium tabular-nums text-[#30465c]">{metrics.actualTotalHours.toFixed(2)}</td>
+                  <td className="px-3 py-2.5 text-xs font-medium tabular-nums text-[#30465c]">{formatPeso(hourlyRate)}</td>
+                  <td className="px-3 py-2.5 text-xs font-semibold tabular-nums text-[#122a45]">{formatPeso(metrics.totalPay)}</td>
                   <td className="px-2 py-2.5">
                     <span className={needsReview ? "inline-flex items-center gap-1 rounded-full bg-[#fff0d9] px-2 py-1.5 text-[10px] font-semibold text-[#c96808]" : "inline-flex items-center gap-1 rounded-full bg-[#dff7ee] px-2 py-1.5 text-[10px] font-semibold text-[#078d64]"}>
                       {needsReview ? "Review" : "Ready"}

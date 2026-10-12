@@ -22,6 +22,7 @@ import { PayrollCalculationHeader } from "@/features/payroll/components/payroll-
 import { PayrollCalculationSidebar } from "@/features/payroll/components/payroll-edit/PayrollCalculationSidebar";
 import { PayrollSummaryCards } from "@/features/payroll/components/payroll-edit/PayrollSummaryCards";
 import { CutoffAttendanceTable } from "@/features/payroll/components/payroll-edit/CutoffAttendanceTable";
+import { PayrollDetailPaginationHost } from "./PayrollDetailPagination";
 import type { CutoffAttendanceDay } from "@/features/payroll/utils/payrollAttendanceEngine";
 
 interface BranchRateRow {
@@ -111,7 +112,7 @@ export function PayrollCalculationWorkspace(
 
   return (
     <div className="fixed inset-0 z-50 grid items-center justify-items-center overflow-y-auto bg-slate-950/35 p-4 sm:p-6">
-      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex h-[80dvh] w-full max-w-[1100px] flex-col overflow-y-auto rounded-[7px] border border-transparent bg-white shadow-workspace">
+      <div role="dialog" aria-modal="true" aria-label="Employee calculation details" className="flex h-[80dvh] w-full max-w-[1100px] flex-col overflow-hidden rounded-[7px] border border-transparent bg-white shadow-workspace">
         <PayrollCalculationHeader
           employeeName={props.employeeName}
           roleName={props.roleName}
@@ -126,7 +127,8 @@ export function PayrollCalculationWorkspace(
 
         <WorkspaceTabSwitch label="Employee payroll details" mode="panel" idPrefix="payroll-tab" panelId="payroll-detail-panel"
           items={tabs.map(([value, label]) => ({ value, label }))} value={activeTab} onChange={setActiveTab} className="shrink-0 px-4 py-3 sm:px-5" />
-        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="min-h-[120px] flex-1 overflow-y-auto px-4 pb-5 pt-2 sm:px-5">
+        <PayrollDetailPaginationHost>
+        <main id="payroll-detail-panel" role="tabpanel" aria-labelledby={`payroll-tab-${activeTab}`} className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 pt-2 sm:px-5">
           <div className="space-y-3">
             <div>
               {activeTab === "attendance" && !props.cutoffAttendanceDays?.length ? <p className="p-4 text-[13px] text-slate-500">No cutoff attendance available. Open Biometric Logs to review attendance records.</p> : null}
@@ -183,6 +185,7 @@ export function PayrollCalculationWorkspace(
             />
           </div>
         </main>
+        </PayrollDetailPaginationHost>
 
         <PayrollCalculationFooter
           isSaving={props.isSaving}

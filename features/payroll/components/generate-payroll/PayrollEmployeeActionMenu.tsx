@@ -1,5 +1,7 @@
 "use client";
 
+import { buildPayslipRecord } from "@/features/payroll/utils/payrollPayslipRecords";
+
 import { createPortal } from "react-dom";
 import { Download, Pencil } from "lucide-react";
 import type { PayrollRow } from "@/lib/payrollEngine";
@@ -8,7 +10,6 @@ import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollS
 import {
   buildGroupedEmployeeCompensation,
   buildGroupedEmployeeMetrics,
-  buildPayslipRecord,
   pickRepresentativeRow,
   summarizeGroupedSites,
   type GroupedEmployeePayrollRow,

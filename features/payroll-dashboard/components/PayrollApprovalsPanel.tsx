@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import type { PayrollApprovalRow } from "@/features/payroll-dashboard/types";
 import {
   formatPayrollCurrency,
@@ -20,12 +18,6 @@ export default function PayrollApprovalsPanel({
             Submitted payroll reports awaiting a decision
           </p>
         </div>
-        <Link
-          href="/payroll-analytics"
-          className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-        >
-          Analytics <ArrowRight size={13} />
-        </Link>
       </div>
 
       {approvals.length ? (

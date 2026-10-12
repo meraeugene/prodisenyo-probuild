@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { PaidHolidayItem } from "@/features/payroll/types";
@@ -68,6 +69,7 @@ export default function PaidHolidayModal({
   onLoadPhilippineHolidays,
   onClearHolidays,
 }: PaidHolidayModalProps) {
+  useDialogEscape(onClose, 120, show);
   const [selectedDate, setSelectedDate] = useState("");
   const [holidayName, setHolidayName] = useState("");
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(new Date()));

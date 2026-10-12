@@ -31,12 +31,15 @@ export default function PayrollWorkspaceRunsPanel({ runs }: { runs: PayrollWorks
     </WorkspaceListToolbar>
     <div className="overflow-x-auto"><table className={styles.table} style={{ minWidth: 720 }}>
       <thead><tr><th scope="col">Payroll period</th><th scope="col">Site</th><th scope="col">Status</th><th scope="col">Net payroll</th><th scope="col">Updated</th><th scope="col">Action</th></tr></thead>
-      <tbody>{pagination.pageRows.map((run) => <tr key={run.id}>
+      <tbody>{pagination.pageRows.map((run) => {
+        const href = payrollRunHref(run);
+        return <tr key={run.id}>
         <th scope="row" className="font-medium">{run.periodLabel}</th><td>{run.siteName}</td>
         <td><span className="rounded bg-slate-100 px-2 py-1 text-xs">{PAYROLL_STATUS_LABELS[run.status]}</span></td>
         <td className="tabular-nums">{formatPayrollCurrency(run.netTotal)}</td><td>{formatPayrollDate(run.updatedAt)}</td>
-        <td><Link className={styles.recordLink} href={payrollRunHref(run)}>{run.status === "draft" || run.status === "rejected" ? "Open Payroll" : "View Payroll"}</Link></td>
-      </tr>)}</tbody>
+        <td>{href ? <Link className={styles.recordLink} href={href}>Open Payroll</Link> : <span className="text-slate-400">—</span>}</td>
+      </tr>;
+      })}</tbody>
     </table></div>
     {!filtered.length && <p className={styles.empty}>No payrolls match these filters.</p>}
     <WorkspaceListPagination {...pagination} total={filtered.length} noun="payrolls" label="Payroll table" />

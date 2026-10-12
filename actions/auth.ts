@@ -77,7 +77,6 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
       "/review-attendance",
       "/generate-payroll",
       "/attendance-analytics",
-      "/payroll-analytics",
       "/request-overtime",
       "/settings",
     ]);

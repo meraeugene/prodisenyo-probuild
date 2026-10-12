@@ -10,23 +10,23 @@ import type { UsePayrollStateResult } from "@/features/payroll/hooks/usePayrollS
 import type { LogHourOverrideValue, PayrollRowOverride } from "@/features/payroll/types";
 import {
   allocateCombinedBranchPay,
-  buildEditingPayrollLogs,
   FIXED_PAY_RATE_PER_DAY,
 } from "@/features/payroll/utils/payrollSelectors";
 import {
   extractPayrollPeriod,
   extractSiteName,
   formatCompactPayrollPeriodLabel,
-  formatLogTime,
-  toWeekLabel,
 } from "@/features/payroll/utils/payrollFormatters";
 import {
   buildEmployeeBranchRateKey,
   getLogOverrideKey,
   parsePayrollIdentity,
 } from "@/features/payroll/utils/payrollMappers";
-import type { PayslipExportRecord } from "@/lib/payslipExport";
 import { sumApprovedAttendanceOvertimeHours } from "@/features/payroll/utils/payrollAttendanceEngine";
+
+export type PayrollCalculationInputs = Pick<UsePayrollStateResult,
+  "employeeBranchRates" | "payrollOverrides" | "dailyRows" | "payableHolidayDays"
+>;
 
 const EMPLOYEE_NAME_OVERRIDES: Record<string, string> = {
   pbryanm: "bryanmamerto",
@@ -241,7 +241,7 @@ export function summarizeGroupedSites(rows: PayrollRow[]): Array<{ site: string 
 
 export function buildGroupedEmployeeCompensation(
   employee: GroupedEmployeePayrollRow,
-  payroll: UsePayrollStateResult,
+  payroll: PayrollCalculationInputs,
 ) {
   const hoursBySite = new Map<string, number>();
 
@@ -286,7 +286,7 @@ export function buildGroupedEmployeeCompensation(
 }
 
 function buildMergedLogOverrides(
-  payroll: UsePayrollStateResult,
+  payroll: PayrollCalculationInputs,
 ): Record<string, LogHourOverrideValue> {
   return Object.values(payroll.payrollOverrides).reduce<
     Record<string, LogHourOverrideValue>
@@ -299,7 +299,7 @@ function buildMergedLogOverrides(
 
 function buildGroupedEmployeeLogMetrics(
   employee: GroupedEmployeePayrollRow,
-  payroll: UsePayrollStateResult,
+  payroll: PayrollCalculationInputs,
 ): {
   actualTotalHours: number;
   daysWorked: number;
@@ -362,7 +362,7 @@ function buildGroupedEmployeeLogMetrics(
 
 export function buildGroupedEmployeeMetrics(
   employee: GroupedEmployeePayrollRow,
-  payroll: UsePayrollStateResult,
+  payroll: PayrollCalculationInputs,
 ): GroupedEmployeeMetrics {
   const compensation = buildGroupedEmployeeCompensation(employee, payroll);
   const logMetrics = buildGroupedEmployeeLogMetrics(employee, payroll);
@@ -429,83 +429,6 @@ export function buildGroupedEmployeeMetrics(
     cashAdvancePay: round2(cashAdvancePay),
     totalPay: round2(calculation.netPay + approvedOvertimePay),
     dailyRates,
-  };
-}
-
-export function buildPayslipRecord(
-  employee: GroupedEmployeePayrollRow,
-  periodLabel: string | null,
-  payroll: UsePayrollStateResult,
-): PayslipExportRecord | null {
-  const representativeRow = pickRepresentativeRow(employee.sites);
-  if (!representativeRow) return null;
-  const compensation = buildGroupedEmployeeCompensation(employee, payroll);
-  const metrics = buildGroupedEmployeeMetrics(employee, payroll);
-
-  const site = summarizeGroupedSites(employee.sites)
-    .map((entry) => entry.site)
-    .join(", ");
-  const displayRow: PayrollRow = {
-    ...representativeRow,
-    worker: employee.name,
-    role: employee.role,
-    site,
-    hoursWorked: metrics.paidRegularHours,
-    overtimeHours: employee.sites.reduce((sum, row) => sum + row.overtimeHours, 0),
-    regularPay: compensation.totalBasePay,
-    totalPay: metrics.totalPay,
-  };
-  const mergedLogOverrides = Object.values(payroll.payrollOverrides).reduce<
-    Record<string, LogHourOverrideValue>
-  >((acc, override) => {
-    if (!override.logHours) return acc;
-    Object.assign(acc, override.logHours);
-    return acc;
-  }, {});
-  const employeeLogs = buildEditingPayrollLogs(
-    payroll.dailyRows,
-    displayRow,
-    representativeRow.date,
-  );
-  const holidayDateSet = new Set(
-    payroll.paidHolidays.map((holiday) => holiday.date),
-  );
-
-  return {
-    employee: employee.name,
-    role: employee.role,
-    site: site || "-",
-    period: periodLabel ?? representativeRow.date ?? "-",
-    daysWorked: metrics.daysWorked,
-    totalHours: metrics.actualTotalHours,
-    ratePerDay:
-      compensation.totalPayableDays > 0
-        ? compensation.totalBasePay / compensation.totalPayableDays
-        : metrics.dailyRates[0] ?? 0,
-    totalPay: metrics.totalPay,
-    attendanceLogs: employeeLogs.map((log) => {
-      const overrideHours = mergedLogOverrides[getLogOverrideKey(log)];
-      const nextHours =
-        typeof overrideHours === "number"
-          ? overrideHours
-          : overrideHours
-            ? (overrideHours.regularHours ?? log.regularHours) +
-              (overrideHours.overtimeHours ?? log.overtimeHours)
-            : log.totalHours;
-
-      return {
-        dateLabel: toWeekLabel(log.date),
-        site: extractSiteName(log.site) || "-",
-        time1In: formatLogTime(log.time1In),
-        time1Out: formatLogTime(log.time1Out),
-        time2In: formatLogTime(log.time2In),
-        time2Out: formatLogTime(log.time2Out),
-        otIn: formatLogTime(log.otIn),
-        otOut: formatLogTime(log.otOut),
-        hours: nextHours,
-        isPaidHoliday: holidayDateSet.has(log.date),
-      };
-    }),
   };
 }
 

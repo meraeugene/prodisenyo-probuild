@@ -1,6 +1,7 @@
 "use client";
 
 import { TABLE_PAGE_SIZE } from "@/features/shared/pagination";
+import { useDialogEscape } from "@/lib/useDialogEscape";
 import { useMemo, useState, useTransition } from "react";
 import PayrollBranchRateTable from "./PayrollBranchRateTable";
 import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
@@ -28,6 +29,7 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
   const [selectedPage, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [branchFilter, setBranchFilter] = useState<"all" | "multi">("all");
+  useDialogEscape(() => { if (!isPending) payroll.closePayrollRateModal(); }, 50, payroll.showPayrollRateModal);
 
   const editableRows = useMemo(
     () =>
@@ -207,9 +209,9 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
           </p>
         </div>
 
-        <div className="mt-4 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative w-full max-w-md">
+        <div className="mt-4 flex shrink-0 flex-wrap items-center gap-3">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div className="relative min-w-[min(240px,100%)] flex-1">
               <input data-search-field="true"
                 type="text"
                 value={searchTerm}
@@ -219,12 +221,12 @@ export default function PayrollRateModal({ payroll }: PayrollRateModalProps) {
               />
             </div>
 
-            <WorkspaceTabSwitch label="Employee branch filter" mode="filter" value={branchFilter}
+            <WorkspaceTabSwitch label="Employee branch filter" mode="filter" value={branchFilter} className="shrink-0 !flex-nowrap whitespace-nowrap"
               onChange={(value) => { setBranchFilter(value); setPage(1); }}
               items={[{ value: "all", label: "All Employees" }, { value: "multi", label: "Multi-branch Only" }]} />
           </div>
 
-          <p className="text-xs text-apple-steel">
+          <p className="text-xs text-apple-steel lg:ml-auto">
             Showing {filteredRows.length} of {editableRows.length} branch rate
             row
             {editableRows.length === 1 ? "" : "s"}

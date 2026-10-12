@@ -23,6 +23,7 @@ test('branch rate pagination keeps edits across pages and resets search and filt
       useTransition: () => [false, callback => callback()],
     },
     '@/actions/payrollRates': { saveEmployeeBranchRatesAction: async () => ({ saved: 1 }) },
+    '@/lib/useDialogEscape': { useDialogEscape: () => {} },
     '@/components/workspace/WorkspaceTabSwitch': { default: () => null },
     sonner: { toast: {} },
   }).default;

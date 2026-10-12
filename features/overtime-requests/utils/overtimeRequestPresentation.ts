@@ -19,7 +19,8 @@ export function getOvertimeRequestStatusClasses(status: OvertimeRequestRecord["s
 }
 
 export function getOvertimeRequestStatusLabel(status: OvertimeRequestRecord["status"]) {
-  if (status === "rejected") return "returned";
-  return status;
+  if (status === "rejected") return "Returned";
+  if (status === "approved") return "Approved";
+  return "Pending";
 }
 

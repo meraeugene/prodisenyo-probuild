@@ -47,14 +47,6 @@ export default function PayrollSubmitConfirmation({ site, attendancePeriod, isPe
             </div>
           </div>
 
-          <div className="rounded-[18px] border border-teal-200 bg-teal-50 px-4 py-3">
-            <p className="text-sm leading-6 text-teal-900">
-              This submits the payroll report as pending CEO review. It will
-              only appear in the CEO dashboard totals after the CEO accepts
-              it. Only overtime requests continue through the separate
-              approval flow.
-            </p>
-          </div>
         </div>
 
         <div className="flex flex-col-reverse gap-2 border-t border-apple-mist px-6 py-4 sm:flex-row sm:justify-end">

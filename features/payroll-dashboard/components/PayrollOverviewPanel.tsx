@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import PayrollBreakdownChart from "@/features/payroll-dashboard/components/PayrollBreakdownChart";
 import type { PayrollDashboardOverview } from "@/features/payroll-dashboard/types";
 import { formatPayrollCurrency } from "@/features/payroll-dashboard/utils/payrollDashboard";
@@ -33,12 +32,6 @@ export default function PayrollOverviewPanel({
             All-time approved payroll only
           </p>
         </div>
-        <Link
-          href="/payroll-analytics"
-          className="inline-flex items-center gap-1 text-xs font-bold text-teal-800 hover:text-teal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-        >
-          View report <ArrowRight size={13} />
-        </Link>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">

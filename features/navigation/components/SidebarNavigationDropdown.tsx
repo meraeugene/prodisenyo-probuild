@@ -20,7 +20,7 @@ export default function SidebarNavigationDropdown({ item, role, pathname, collap
         onClick={() => setOpen(value => !value)} className={cn(
           "relative flex min-h-10 w-full items-center gap-3 rounded-[10px] px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700",
           collapsed && "justify-center px-2.5",
-          active ? "bg-[#eaf5f3] font-medium text-[#076d69]" : "text-[#365753] hover:bg-teal-50/60 hover:text-[#076d69]",
+          active ? "border-l-0 bg-[#eaf5f3] font-medium text-[#076d69]" : "text-[#365753] hover:bg-teal-50/60 hover:text-[#076d69]",
         )}>
         <item.icon size={17} strokeWidth={1.7} aria-hidden="true" className="shrink-0" />
         {!collapsed && <><span className="min-w-0 flex-1 text-left">{item.label}</span>
