@@ -1,109 +1,38 @@
 "use client";
 
-import DashboardPageHero from "@/components/DashboardPageHero";
-import CostEstimatorOverviewMetric from "@/features/cost-estimator/components/CostEstimatorOverviewMetric";
-import CostEstimatorOverviewProjectCard from "@/features/cost-estimator/components/CostEstimatorOverviewProjectCard";
-import type {
-  AssignedEstimateProject,
-  ProjectEstimateItemRow,
-  ProjectEstimateRow,
-} from "@/features/cost-estimator/types";
+import WorkspacePageHeader from "@/components/workspace/WorkspacePageHeader";
+import WorkspaceSummaryCards from "@/components/WorkspaceSummaryCards";
+import WorkspaceListToolbar from "@/components/workspace/WorkspaceListToolbar";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import styles from "@/components/workspace/workspace.module.css";
+import { useEstimatePortfolio } from "../hooks/useEstimatePortfolio";
+import type { EstimatePortfolioSort } from "../utils/estimatePortfolio";
+import type { AssignedEstimateProject, ProjectEstimateItemRow, ProjectEstimateRow } from "../types";
+import CostEstimatorProjectsTable from "./CostEstimatorProjectsTable";
 
-export default function CostEstimatorProjectsOverview({
-  estimates,
-  assignedProjects,
-  itemsByEstimateId,
-  pending,
-  onOpenProject,
-  onStartEstimate,
-}: {
-  estimates: ProjectEstimateRow[];
-  assignedProjects: AssignedEstimateProject[];
-  itemsByEstimateId: Record<string, ProjectEstimateItemRow[]>;
-  pending: boolean;
-  onOpenProject: (estimateId: string) => void;
-  onStartEstimate: (projectId: string) => void;
+export default function CostEstimatorProjectsOverview({ estimates, assignedProjects, itemsByEstimateId, pending, onOpenProject, onStartEstimate }: {
+  estimates: ProjectEstimateRow[]; assignedProjects: AssignedEstimateProject[]; itemsByEstimateId: Record<string, ProjectEstimateItemRow[]>;
+  pending: boolean; onOpenProject: (id: string) => void; onStartEstimate: (id: string) => void;
 }) {
-  const assignedProjectsById = new Map(
-    assignedProjects.map((project) => [project.id, project]),
-  );
-  const estimatedProjectIds = new Set(
-    estimates.map((estimate) => estimate.project_id).filter(Boolean),
-  );
-  const projectsWithoutEstimates = assignedProjects.filter(
-    (project) => !estimatedProjectIds.has(project.id),
-  );
-  const queueCount = estimates.length + projectsWithoutEstimates.length;
-  const draftCount =
-    projectsWithoutEstimates.length +
-    estimates.filter((estimate) => estimate.status === "draft").length;
-  const submittedCount = estimates.filter(
-    (estimate) => estimate.status === "submitted",
-  ).length;
-  const approvedCount = estimates.filter(
-    (estimate) => estimate.status === "approved",
-  ).length;
-
-  return (
-    <div className="space-y-5 bg-white p-4 sm:p-6">
-      <DashboardPageHero
-        eyebrow="Engineer workspace"
-        title="Cost Estimator"
-        description="Prepare and manage Bill of Quantities for projects assigned to you."
-      />
-
-      <section aria-label="Estimate summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <CostEstimatorOverviewMetric value={queueCount} label="Projects" />
-        <CostEstimatorOverviewMetric value={draftCount} label="Draft" />
-        <CostEstimatorOverviewMetric value={submittedCount} label="Submitted" />
-        <CostEstimatorOverviewMetric value={approvedCount} label="Approved" />
-      </section>
-
-      <section aria-labelledby="assigned-projects-heading" className="space-y-4 px-3 sm:px-2">
-        <h2 id="assigned-projects-heading" className="text-[24px] font-semibold tracking-[-0.025em] text-slate-950">
-          Assigned Projects
-        </h2>
-
-        {queueCount > 0 ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {projectsWithoutEstimates.map((project) => (
-              <CostEstimatorOverviewProjectCard
-                key={project.id}
-                project={project}
-                estimate={null}
-                items={[]}
-                pending={pending}
-                onOpen={() => onStartEstimate(project.id)}
-              />
-            ))}
-
-            {estimates.map((estimate) => (
-              <CostEstimatorOverviewProjectCard
-                key={estimate.id}
-                project={
-                  estimate.project_id
-                    ? assignedProjectsById.get(estimate.project_id) ?? null
-                    : null
-                }
-                estimate={estimate}
-                items={itemsByEstimateId[estimate.id] ?? []}
-                pending={pending}
-                onOpen={() => onOpenProject(estimate.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-[14px] border border-dashed border-teal-200 bg-teal-50/20 px-5 py-16 text-center">
-            <p className="text-lg font-semibold text-slate-900">
-              No projects assigned for cost estimation
-            </p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-              When the CEO assigns a planning-stage project to you, it will
-              appear here so you can prepare its Bill of Quantities.
-            </p>
-          </div>
-        )}
-      </section>
-    </div>
-  );
+  const portfolio = useEstimatePortfolio(estimates, assignedProjects, itemsByEstimateId);
+  return <div className={`${styles.page} space-y-5`}>
+    <WorkspacePageHeader eyebrow="Engineer / Cost estimator" title="Cost Estimator" description="Prepare project Bills of Quantities, check budgets, and track CEO reviews." />
+    <WorkspaceSummaryCards ariaLabel="Estimate summary" className="grid-cols-2 xl:grid-cols-5" cards={[
+      { label: "Assigned records", value: portfolio.entries.length, hint: "Projects and estimates" },
+      { label: "To prepare", value: portfolio.count("not_started") + portfolio.count("draft"), hint: "Not started or in draft" },
+      { label: "Submitted", value: portfolio.count("submitted"), hint: "Awaiting CEO review" },
+      { label: "Approved", value: portfolio.count("approved"), hint: "Ready for project delivery" },
+      { label: "Returned", value: portfolio.count("rejected"), hint: "Requires correction" },
+    ]} />
+    <section aria-label="Assigned estimate records" className={styles.panel}>
+      <WorkspaceListToolbar tabs={portfolio.tabs} tab={portfolio.status} onTabChange={portfolio.setStatus}
+        query={portfolio.query} onQueryChange={portfolio.setQuery} searchLabel="Search estimates" placeholder="Project name or location" hasFilters={portfolio.hasFilters} onReset={portfolio.reset}>
+        <label className={styles.field}>Sort by<select aria-label="Sort estimates" value={portfolio.sort} onChange={event => portfolio.setSort(event.target.value as EstimatePortfolioSort)} className={styles.control}>
+          <option value="recent">Recently updated</option><option value="name">Project name</option><option value="cost">Highest estimated cost</option>
+        </select></label>
+      </WorkspaceListToolbar>
+      <CostEstimatorProjectsTable entries={portfolio.pagination.pageRows} pending={pending} hasFilters={portfolio.hasFilters} onOpen={entry => entry.estimate ? onOpenProject(entry.estimate.id) : onStartEstimate(entry.id)} />
+      <WorkspaceListPagination {...portfolio.pagination} total={portfolio.rows.length} noun="records" label="Estimate table" />
+    </section>
+  </div>;
 }

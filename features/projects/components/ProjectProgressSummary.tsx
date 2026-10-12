@@ -22,7 +22,7 @@ export default function ProjectProgressSummary({
   const currentPercent = latestUpdate?.overall_percent ?? 0;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-transparent bg-white shadow-workspace">
+    <section className="overflow-hidden rounded-[7px] border border-[#e4e7ec] bg-white shadow-none">
       <div className="bg-white px-5 py-5 text-[#1d1d1f]">
         <p className="text-sm font-medium text-[#53736f]">
           Overall project progress
@@ -54,7 +54,7 @@ export default function ProjectProgressSummary({
             type="button"
             onClick={onToggleForm}
             aria-expanded={isFormOpen}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[7px] bg-teal-700 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
           >
             {isFormOpen ? <X size={17} aria-hidden="true" /> : <Plus size={17} aria-hidden="true" />}
             {isFormOpen ? "Close update form" : "Add progress update"}

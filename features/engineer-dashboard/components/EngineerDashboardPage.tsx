@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import DashboardPageHero from "@/components/DashboardPageHero";
+import Link from "next/link";
+import { Calculator, FolderKanban } from "lucide-react";
+import WorkspacePageHeader from "@/components/workspace/WorkspacePageHeader";
+import styles from "@/components/workspace/workspace.module.css";
 import type { EngineerDashboardData } from "@/features/engineer-dashboard/types";
 import EngineerDashboardAlerts from "./EngineerDashboardAlerts";
 import EngineerDashboardProjects from "./EngineerDashboardProjects";
@@ -18,13 +21,14 @@ export default function EngineerDashboardPage({ data }: { data: EngineerDashboar
   const visibleAlerts = data.alerts.filter((alert) => projectId === "all" || alert.projectId === projectId);
 
   return (
-    <main className="min-h-full bg-[#f7f9fc] p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <DashboardPageHero eyebrow="Engineer workspace" title="Engineer Dashboard" description={`Good day, Engr. ${getFirstName(data.fullName)}. Track assigned projects, estimates, and material requests.`} />
-        <EngineerDashboardSummary values={{ projects: data.projects.length, active: data.projects.filter((project) => project.status === "active" || project.status === "on_hold").length, estimates: data.projects.filter((project) => project.status === "planning").length, completed: data.projects.filter((project) => project.status === "completed").length }} />
+    <div className={styles.page}>
+      <div className="space-y-5">
+        <WorkspacePageHeader eyebrow="Engineer / Overview" title="Engineer Dashboard" description={`Good day, Engr. ${getFirstName(data.fullName)}. Track assigned projects, estimates, and material requests.`}
+          actions={<><Link href="/projects" className={styles.button}><FolderKanban size={15} aria-hidden="true" />Projects</Link><Link href="/cost-estimator" className={styles.primaryButton}><Calculator size={15} aria-hidden="true" />Cost estimator</Link></>} />
+        <EngineerDashboardSummary values={{ projects: data.projects.length, active: data.projects.filter((project) => project.status === "active").length, estimates: data.projects.filter((project) => project.status === "planning").length, completed: data.projects.filter((project) => project.status === "completed").length, onHold: data.projects.filter((project) => project.status === "on_hold").length }} />
         <EngineerDashboardProjects projects={data.projects} selectedProjectId={projectId} onSelectedProjectIdChange={setProjectId} />
         <div className="grid gap-5 lg:grid-cols-2"><EngineerDashboardRequests requests={visibleRequests} /><EngineerDashboardAlerts alerts={visibleAlerts} /></div>
       </div>
-    </main>
+    </div>
   );
 }

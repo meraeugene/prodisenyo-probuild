@@ -42,10 +42,10 @@ export default function SettingsProfileSection({
   onSaveProfile,
 }: SettingsProfileSectionProps) {
   return (
-    <div className="flex min-w-0 flex-col rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+    <div className="flex min-w-0 flex-col rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">
+          <h2 className="text-[15px] font-bold tracking-tight text-slate-900">
             Profile Information
           </h2>
           <p className="mt-1 text-xs leading-5 text-slate-500">
@@ -58,7 +58,7 @@ export default function SettingsProfileSection({
               type="button"
               onClick={onSaveProfile}
               disabled={!hasProfileChanges || savingProfile || loadingProfile}
-              className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#065c59] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center rounded-[7px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#065c59] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {savingProfile ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -79,7 +79,7 @@ export default function SettingsProfileSection({
             />
             <button type="button" aria-label="Change profile photo" disabled={loadingProfile || savingProfile}
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-xl border-2 border-white bg-[#08746f] text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
+              className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-[7px] border-2 border-white bg-[#08746f] text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
               <Camera size={15} aria-hidden="true" />
             </button>
           </div>
@@ -88,11 +88,11 @@ export default function SettingsProfileSection({
             <p className="mt-1 text-xs leading-5 text-slate-500">Recommended size: 512 × 512px. Maximum file size: 2 MB.</p>
             <div className="mt-3 flex flex-wrap gap-3">
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={loadingProfile || savingProfile}
-                className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
+                className="inline-flex h-10 items-center gap-2 rounded-[7px] border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 hover:border-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
                 <Upload size={15} aria-hidden="true" /> Upload Photo
               </button>
               <button type="button" onClick={onRemoveAvatar} disabled={!displayedAvatarUrl || loadingProfile || savingProfile}
-                className="h-10 rounded-lg border border-slate-200 px-4 text-xs font-medium text-slate-500 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
+                className="h-10 rounded-[7px] border border-slate-200 px-4 text-xs font-medium text-slate-500 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 disabled:opacity-50">
                 Remove
               </button>
             </div>
@@ -105,7 +105,7 @@ export default function SettingsProfileSection({
             <span className="text-xs font-semibold text-slate-900">
               Full Name
             </span>
-            <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
+            <div className="group flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
               {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 value={fullName}
@@ -121,7 +121,7 @@ export default function SettingsProfileSection({
               <span className="text-xs font-semibold text-slate-900">
                 Username
               </span>
-              <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
+              <div className="group flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
                 {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
                 <input
                   value={username}
@@ -136,7 +136,7 @@ export default function SettingsProfileSection({
               <span className="text-xs font-semibold text-slate-900">
                 Role
               </span>
-              <div className="flex h-10 items-center rounded-lg border border-[#dce5e8] bg-[#f7fafb] px-4 text-sm text-slate-500">
+              <div className="flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-[#f7fafb] px-4 text-sm text-slate-500">
                 {profile?.role === "ceo" && <UserRound className="mr-3 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />}
                 {roleLabel(profile?.role ?? null)}
               </div>
@@ -147,7 +147,7 @@ export default function SettingsProfileSection({
             <span className="text-xs font-semibold text-slate-900">
               Email Address
             </span>
-            <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
+            <div className="group flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
               {profile?.role === "ceo" && <Mail className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type="email"

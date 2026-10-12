@@ -1,100 +1,30 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import ProjectThumbnail from "@/features/projects/components/ProjectThumbnail";
-import type { EngineerDashboardProject, EngineerProjectStatus } from "@/features/engineer-dashboard/types";
-import { formatDashboardCurrency } from "@/features/engineer-dashboard/utils/engineerDashboard";
-
-type SortMode = "recent" | "name" | "progress";
-
-const STATUS_LABELS: Record<EngineerProjectStatus, string> = {
-  planning: "Estimate pending",
-  active: "On track",
-  on_hold: "On hold",
-  completed: "Completed",
-};
+import { ArrowUpRight, RotateCcw } from "lucide-react";
+import WorkspaceSearchInput from "@/components/workspace/WorkspaceSearchInput";
+import WorkspaceListPagination from "@/components/workspace/WorkspaceListPagination";
+import styles from "@/components/workspace/workspace.module.css";
+import type { EngineerDashboardProject } from "../types";
+import { useEngineerDashboardProjects } from "../hooks/useEngineerDashboardProjects";
+import EngineerDashboardProjectCard from "./EngineerDashboardProjectCard";
 
 export default function EngineerDashboardProjects({ projects, selectedProjectId, onSelectedProjectIdChange }: {
-  projects: EngineerDashboardProject[];
-  selectedProjectId: string;
-  onSelectedProjectIdChange: (projectId: string) => void;
+  projects: EngineerDashboardProject[]; selectedProjectId: string; onSelectedProjectIdChange: (id: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortMode>("recent");
-  const visibleProjects = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return projects
-      .filter((project) => selectedProjectId === "all" || project.id === selectedProjectId)
-      .filter((project) => !normalizedQuery || `${project.name} ${project.location}`.toLowerCase().includes(normalizedQuery))
-      .sort((left, right) => sort === "name" ? left.name.localeCompare(right.name) : sort === "progress" ? right.progress - left.progress : new Date(right.startDate).getTime() - new Date(left.startDate).getTime());
-  }, [projects, query, selectedProjectId, sort]);
-
-  return (
-    <section aria-labelledby="engineer-projects-heading">
-      <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex items-center gap-3">
-          <h2 id="engineer-projects-heading" className="text-lg font-semibold tracking-tight text-[#1d1d1f]">Projects</h2>
-          <span className="rounded-full bg-[#eaf5f3] px-3 py-1 text-xs font-medium text-[#076d69]">{visibleProjects.length} {visibleProjects.length === 1 ? "project" : "projects"}</span>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <label className="relative block sm:w-72">
-            <span className="sr-only">Search projects</span>
-            <input data-search-field="true" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-4 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:ring-2 focus:ring-teal-100" />
-          </label>
-          <label className="relative block">
-            <span className="sr-only">Filter by project</span>
-            <select value={selectedProjectId} onChange={(event) => onSelectedProjectIdChange(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-3 pr-9 text-sm font-semibold text-slate-700 shadow-sm outline-none transition focus:border-teal-400 sm:w-32">
-              <option value="all">Filter</option>
-              {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-            </select>
-          </label>
-          <label className="relative block">
-            <span className="sr-only">Sort projects</span>
-            <select value={sort} onChange={(event) => setSort(event.target.value as SortMode)} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 pr-9 text-sm font-semibold text-slate-700 shadow-sm outline-none transition focus:border-teal-400 sm:w-32">
-              <option value="recent">Recent</option><option value="name">Name</option><option value="progress">Progress</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
-      {visibleProjects.length === 0 ? (
-        <div className="rounded-[20px] border border-dashed border-slate-300 bg-white px-5 py-14 text-center">
-          <p className="font-semibold text-slate-700">No projects match this view</p>
-          <p className="mt-1 text-sm text-slate-500">Try a different search or project filter.</p>
-        </div>
-      ) : (
-        <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-          {visibleProjects.map((project) => <ProjectCard key={project.id} project={project} />)}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ProjectCard({ project }: { project: EngineerDashboardProject }) {
-  const isPlanning = project.status === "planning";
-  const href = isPlanning ? `/cost-estimator?projectId=${project.id}` : `/projects/${project.id}`;
-  const statusTone = isPlanning ? "bg-amber-50 text-amber-700" : project.status === "on_hold" ? "bg-rose-50 text-rose-700" : "bg-teal-50 text-teal-700";
-
-  return (
-    <article className="group overflow-hidden rounded-[20px] border border-transparent bg-white shadow-workspace transition-shadow duration-200 ">
-      {project.imageUrl && <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-24 w-full object-cover" />}
-      <div className="p-4">
-        <h3 className="text-base font-semibold tracking-tight text-[#1d1d1f]">{project.name}</h3>
-        <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-slate-500">{project.location || "Location not set"}</p>
-        {isPlanning ? (
-          <div className="mt-3 border-t border-slate-100 pt-3"><p className="text-xs text-slate-500">Workflow</p><p className="mt-0.5 text-sm font-semibold text-amber-700">Estimate pending</p></div>
-        ) : (
-          <div className="mt-3 border-t border-slate-100 pt-3"><div className="flex items-center justify-between"><p className="text-xs text-[#53736f]">Progress</p><p className="text-sm font-medium text-[#1d1d1f]">{project.progress}%</p></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e6f3ef]"><div className="h-full rounded-full bg-[#076d69]" style={{ width: `${project.progress}%` }} /></div></div>
-        )}
-        <div className="mt-3 border-t border-slate-100 pt-3"><p className="text-xs text-slate-500">Budget</p><p className="mt-0.5 text-sm"><span className="font-semibold text-slate-950">{formatDashboardCurrency(project.spent)}</span><span className="text-slate-400"> / {formatDashboardCurrency(project.budget)}</span></p></div>
-      </div>
-      <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3">
-        <span className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${statusTone}`}>{isPlanning ? "Pending Cost Estimate" : STATUS_LABELS[project.status]}</span>
-        <Link href={href} className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 hover:text-teal-800">{isPlanning ? "Review Estimate" : "View Details"}<ArrowRight size={17} /></Link>
-      </div>
-    </article>
-  );
+  const state = useEngineerDashboardProjects(projects, selectedProjectId);
+  const hasFilters = state.query !== "" || state.sort !== "recent" || selectedProjectId !== "all";
+  return <section aria-label="Dashboard projects" className={styles.panel}>
+    <div className={styles.sectionHeader}><div><h2 className={styles.sectionTitle}>Assigned projects</h2><p className={styles.sectionDescription}>Progress, budgets, and upcoming completion dates.</p></div><Link href="/projects" className="inline-flex items-center gap-1 text-xs font-medium text-[#076d69] hover:underline">All projects<ArrowUpRight size={14} aria-hidden="true" /></Link></div>
+    <div className={styles.filters}>
+      <label className={`${styles.field} ${styles.searchField}`}><span>Search projects</span><WorkspaceSearchInput value={state.query} onChange={event => state.setQuery(event.target.value)} placeholder="Project name or location" /></label>
+      <label className={styles.field}>Project
+        <select aria-label="Filter by project" value={selectedProjectId} onChange={event => onSelectedProjectIdChange(event.target.value)} className={`${styles.control} sm:max-w-60`}><option value="all">All projects</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select>
+      </label>
+      <label className={styles.field}>Sort by<select aria-label="Sort projects" value={state.sort} onChange={event => state.setSort(event.target.value)} className={styles.control}><option value="recent">Recent start date</option><option value="name">Project name</option><option value="progress">Highest progress</option></select></label>
+      <button type="button" disabled={!hasFilters} onClick={() => { state.setQuery(""); state.setSort("recent"); onSelectedProjectIdChange("all"); }} className={`${styles.button} ${styles.reset}`}><RotateCcw size={14} aria-hidden="true" />Reset filters</button>
+    </div>
+    {state.rows.length ? <div className="grid gap-4 border-t border-slate-100 p-4 md:grid-cols-2 xl:grid-cols-3">{state.pagination.pageRows.map(project => <EngineerDashboardProjectCard key={project.id} project={project} />)}</div> : <div className={styles.empty}><p className="font-medium text-slate-800">{hasFilters ? "No matching projects" : "No assigned projects yet"}</p><p className="mt-2">{hasFilters ? "Try a different search or reset your filters." : "Projects assigned to you will appear here."}</p></div>}
+    <WorkspaceListPagination {...state.pagination} total={state.rows.length} noun="projects" label="Dashboard projects" />
+  </section>;
 }

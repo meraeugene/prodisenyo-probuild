@@ -1,11 +1,13 @@
 import CeoPageHeroSkeleton from "@/components/CeoPageHeroSkeleton";
-import { SkeletonHeading, SkeletonStats, SkeletonListPanel, SkeletonToolbar } from "@/components/PageSkeletonParts";
+import { SkeletonHeading, SkeletonStats, SkeletonListPanel } from "@/components/PageSkeletonParts";
+import WorkspaceFiltersSkeleton from "@/components/workspace/WorkspaceFiltersSkeleton";
 import EngineerProjectCardsSkeleton from "./EngineerProjectCardsSkeleton";
+import styles from "@/components/workspace/workspace.module.css";
 export default function EngineerDashboardSkeleton() {
-  return <main role="status" aria-busy="true" aria-label="Loading engineer dashboard" className="min-h-full p-4 sm:p-6 lg:p-8"><div className="mx-auto max-w-[1500px] space-y-6">
+  return <div role="status" aria-busy="true" aria-label="Loading engineer dashboard" className={styles.page}><div className="space-y-5">
     <CeoPageHeroSkeleton action="none" />
-    <SkeletonStats helper count={4} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" />
-    <section className="space-y-4"><div className="flex flex-wrap items-end justify-between gap-4"><SkeletonHeading /><SkeletonToolbar count={3} /></div><EngineerProjectCardsSkeleton /></section>
+    <SkeletonStats helper count={5} className="grid grid-cols-2 gap-4 xl:grid-cols-5" />
+    <section data-skeleton-panel="true" className="skeleton-surface overflow-hidden"><div className="border-b border-slate-100 p-4"><SkeletonHeading /></div><WorkspaceFiltersSkeleton tabs={0} filterCount={2} /><div className="p-4"><EngineerProjectCardsSkeleton /></div></section>
     <div className="grid gap-5 lg:grid-cols-2"><SkeletonListPanel /><SkeletonListPanel rows={3} /></div>
-  </div></main>;
+  </div></div>;
 }

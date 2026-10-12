@@ -19,7 +19,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
       {COST_COLUMNS.map((column) => {
         const columnCosts = costs.filter((cost) => cost.status === column.value);
         return (
-          <section key={column.value} className="flex min-h-[28rem] flex-col rounded-2xl border border-transparent bg-white p-4 shadow-workspace">
+          <section key={column.value} className="flex min-h-[28rem] flex-col rounded-[7px] border border-[#e4e7ec] bg-white p-4 shadow-none">
             <header className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-base font-bold text-slate-950">
@@ -37,13 +37,13 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
 
             <div className="mt-4 flex-1 space-y-3">
               {columnCosts.map((cost) => (
-                <article key={cost.id} className="rounded-xl border border-transparent bg-white p-4 shadow-workspace">
+                <article key={cost.id} className="rounded-[7px] border border-[#e4e7ec] bg-white p-4 shadow-none">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="truncate text-sm font-bold text-slate-950">{cost.name}</h3>
                       <p className="mt-1 text-xs capitalize text-slate-500">{cost.category}</p>
                     </div>
-                    <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${
+                    <span className={`shrink-0 rounded-[7px] px-2.5 py-1 text-[11px] font-semibold ${
                       column.value === "completed"
                         ? "bg-teal-50 text-teal-700"
                         : column.value === "ongoing"
@@ -54,7 +54,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
                     </span>
                   </div>
 
-                  <p className="mt-4 text-lg font-bold text-slate-950">
+                  <p className="mt-4 text-[15px] font-bold text-slate-950">
                     {(column.value === "completed" ? cost.actualSpent : cost.estimatedCost) > 0
                       ? currency.format(column.value === "completed" ? cost.actualSpent : cost.estimatedCost)
                       : "Cost pending"}
@@ -71,7 +71,7 @@ export default function CostTrackingBoard({ costs }: { costs: TrackedProjectCost
                 </article>
               ))}
               {!columnCosts.length ? (
-                <div className="rounded-xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                <div className="rounded-[7px] border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
                   {column.emptyMessage}
                 </div>
               ) : null}

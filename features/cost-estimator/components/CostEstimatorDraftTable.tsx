@@ -80,10 +80,10 @@ export default function CostEstimatorDraftTable({
   }, [activeFilter, items, query]);
 
   return (
-    <section className="overflow-hidden rounded-[14px] border border-transparent bg-white shadow-workspace">
+    <section className="overflow-hidden rounded-[7px] border border-[#e4e7ec] bg-white shadow-none">
       <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="text-[20px] font-semibold text-slate-950">Estimate Items</h2>
+          <h2 className="text-[15px] font-semibold text-slate-950">Estimate Items</h2>
           <WorkspaceTabSwitch label="Estimate item sections" mode="filter" className="mt-4" items={sectionFilters.map((value) => ({ value, label: value === "all" ? "All Items" : value }))} value={activeFilter} onChange={setActiveFilter} />
         </div>
         <label className="relative block w-full lg:w-64">
@@ -92,7 +92,7 @@ export default function CostEstimatorDraftTable({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search items..."
-            className="h-11 w-full rounded-[9px] border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+            className="h-9 w-full rounded-[9px] border border-slate-200 bg-white pl-3 pr-3 text-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
           />
         </label>
       </div>
@@ -144,7 +144,7 @@ export default function CostEstimatorDraftTable({
       {rows.length === 0 ? (
         <div className="px-6 py-16 text-center">
           <p className="font-semibold text-slate-900">{items.length === 0 ? "No BOQ items yet" : "No items match this view"}</p>
-          <p className="mt-2 text-sm text-slate-500">{items.length === 0 ? "Add the first persisted cost item to build this estimate." : "Try another search or category."}</p>
+          <p className="mt-2 text-sm text-slate-500">{items.length === 0 ? "Add the first cost item to build this estimate." : "Try another search or category."}</p>
         </div>
       ) : (
         <p className="border-t border-slate-200 px-5 py-4 text-sm text-slate-500">Showing 1 to {rows.length} of {rows.length} items</p>

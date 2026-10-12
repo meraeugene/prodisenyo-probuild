@@ -24,7 +24,7 @@ export default function CostTrackingSummary({ summary }: { summary: Summary }) {
 
   return (
     <aside className="space-y-4">
-      <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
+      <section className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none">
         <h2 className="text-base font-bold text-slate-950">Cost summary</h2>
         <div className="mt-4 divide-y divide-slate-100">
           {values.map((item) => (

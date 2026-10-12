@@ -1,5 +1,11 @@
 /* Shared workspace surfaces, including existing feature panels during migration.
    Inputs, badges, warning states, and ledger cell boundaries keep their own borders. */
+
+/* Engineer tools share the compact controls and section typography of the admin workspace. */
+[data-workspace-role="engineer"] :is(h2, h3) { font-size: 15px; font-weight: 600; letter-spacing: normal; }
+[data-workspace-role="engineer"] :is(select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"])) { min-width: 0; height: 36px; color: #344054; }
+[data-workspace-role="engineer"] textarea { color: #344054; }
+[data-workspace-role="engineer"] table thead th { text-transform: none; letter-spacing: normal; }
 .workspace-surface {
   border-radius: var(--workspace-panel-radius, 16px);
   border-color: transparent;

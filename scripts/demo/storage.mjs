@@ -11,8 +11,8 @@ export async function preflightStorage(client) {
   for (const file of DEMO_FILES) checked(await client.storage.getBucket(file.bucket), `Check ${file.bucket} storage bucket (apply Supabase migrations)`);
 }
 
-export async function seedDemoFiles(client, tables) {
-  for (const file of DEMO_FILES) {
+export async function seedDemoFiles(client, tables, files = DEMO_FILES) {
+  for (const file of files) {
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const page = doc.addPage();

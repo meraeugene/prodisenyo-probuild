@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, Calculator, CalendarClock, PackageX } from "lucide-react";
 import type { EngineerDashboardAlert } from "@/features/engineer-dashboard/types";
+import styles from "@/components/workspace/workspace.module.css";
 
 const icons = { estimate: Calculator, material: PackageX, schedule: CalendarClock };
 
 export default function EngineerDashboardAlerts({ alerts }: { alerts: EngineerDashboardAlert[] }) {
   return (
-    <section className="flex min-h-72 flex-col rounded-2xl border border-transparent bg-white p-5 shadow-workspace">
-      <div className="flex items-center justify-between"><h2 className="text-lg font-semibold tracking-tight text-slate-950">Workflow Alerts</h2></div>
+    <section className={`${styles.panel} flex min-h-72 flex-col p-5`}>
+      <h2 className={styles.sectionTitle}>Needs attention</h2>
+      <p className={styles.sectionDescription}>Returned estimates, material requests, and schedule alerts.</p>
       <div className="mt-4 flex-1 space-y-3">
         {alerts.length === 0 ? <p className="rounded-xl bg-teal-50 px-4 py-8 text-center text-sm text-teal-700">No workflow items need attention.</p> : alerts.slice(0, 4).map((alert) => {
           const Icon = icons[alert.kind];

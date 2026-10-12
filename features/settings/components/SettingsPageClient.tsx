@@ -4,6 +4,7 @@ import SettingsPasswordSection from "@/features/settings/components/SettingsPass
 import SettingsProfileSection from "@/features/settings/components/SettingsProfileSection";
 import SettingsResetWorkspaceModal from "@/features/settings/components/SettingsResetWorkspaceModal";
 import SettingsHero from "@/features/settings/components/SettingsHero";
+import styles from "@/components/workspace/workspace.module.css";
 import {
   type EditableProfile,
   useSettingsPage,
@@ -18,7 +19,7 @@ export default function SettingsPageClient({
 
   return (
     <>
-      <div className="min-h-screen space-y-7 bg-[#f7f9fc] p-4 sm:p-6 lg:p-8">
+      <div className={`${styles.page} space-y-5`}>
         <SettingsHero />
 
         <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,1fr)]">

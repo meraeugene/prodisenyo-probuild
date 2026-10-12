@@ -1,8 +1,8 @@
-import DashboardPageHero from "@/components/DashboardPageHero";
+import WorkspacePageHeader from "@/components/workspace/WorkspacePageHeader";
 
 export default function SettingsHero() {
   return (
-    <DashboardPageHero
+    <WorkspacePageHeader
       eyebrow="Account" title="Settings" description="Manage your profile and account security."
     />
   );

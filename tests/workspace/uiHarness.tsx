@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import EngineerPagesHarness from "./EngineerPagesHarness";
 import DashboardShell from "@/components/DashboardShell";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import PayrollWorkspaceRunsPanel from "@/features/payroll-dashboard/components/PayrollWorkspaceRunsPanel";
@@ -56,8 +57,8 @@ const skeletonCase = new URLSearchParams(window.location.search).get("case") || 
 const homeRole = skeletonCase.startsWith("home-") ? skeletonCase.slice(5) as SidebarProfile["role"] : null;
 const skeletonRole: SidebarProfile["role"] = homeRole || (skeletonCase.startsWith("engineer") ? "engineer" : ["admin", "reset"].includes(skeletonCase) ? "admin" : skeletonCase.startsWith("purchas") ? "purchaser" : skeletonCase === "overtime-request" ? "employee" : skeletonCase.startsWith("gmea") ? "gmea" : ["payroll-workspace", "generate-payroll", "upload-attendance", "review-attendance"].includes(skeletonCase) ? "payroll_manager" : "ceo");
 const role: SidebarProfile["role"] = path === "/request-overtime" ? (new URLSearchParams(window.location.search).get("role") as SidebarProfile["role"]) : new URLSearchParams(window.location.search).get("role") === "ceo" ? "ceo" : path === "/skeletons" ? skeletonRole : path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
-createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <WorkspaceLoadingScreen /> : <DashboardShell profile={{ id: "project-01", full_name: "Maria Santos", username: "maria", role, avatar_path: null }}>
-  {path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
+createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <WorkspaceLoadingScreen /> : <DashboardShell profile={{ id: "project-01", full_name: "Maria Santos", username: "maria", role: path.startsWith("/engineer-pages/") ? "engineer" : role, avatar_path: null }}>
+  {path.startsWith("/engineer-pages/") ? <EngineerPagesHarness /> : path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
     : path === "/engineer" ? <EngineerHarness />
     : path === "/generate-payroll" ? <><PayrollWorkflowNavigation current={3} /><PayrollHarness /></>
     : path === "/attendance-review" ? <PayrollWorkflowNavigation current={2} />

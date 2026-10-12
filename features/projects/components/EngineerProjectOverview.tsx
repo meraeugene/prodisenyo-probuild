@@ -2,6 +2,8 @@ import { ArrowRight } from "lucide-react";
 import type { ProjectProgressUpdateRecord } from "../progressUpdateTypes";
 import type { ProjectRecord } from "../types";
 import { buildProjectScheduleSummary } from "../utils/engineerProjectOverview";
+import { formatProjectCurrency } from "../utils/projectPresentation";
+import { formatPortfolioDate } from "../utils/projectPortfolioSelectors";
 
 type Submission = { id: string; activity_count: number; submitted_at: string };
 type MaterialRequest = { id: string; material_name: string; status: string; created_at: string };
@@ -60,7 +62,7 @@ export default function EngineerProjectOverview({
   return (
     <div className="space-y-5">
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr_.95fr]">
-        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+        <article className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
           <h2 className="text-sm font-semibold text-slate-950">Project Progress</h2>
           <div className="mt-6 flex items-end gap-3">
             <p className="text-4xl font-bold tracking-tight text-slate-950">{overallProgress}%</p>
@@ -70,21 +72,30 @@ export default function EngineerProjectOverview({
             <div className="h-full rounded-full bg-teal-700 transition-[width]" style={{ width: `${overallProgress}%` }} />
           </div>
           <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
+            <Info label="Budget ceiling" value={formatProjectCurrency(project.budget)} />
+            <Info label="Actual spend" value={formatProjectCurrency(spent)} />
+            <Info label="Remaining budget" value={formatProjectCurrency(remaining)} />
           </dl>
           {canUpdateProgress ? (
-            <button type="button" onClick={onUpdateProgress} className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-teal-700 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
+            <button type="button" onClick={onUpdateProgress} className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-teal-700 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
               Update Progress <ArrowRight size={15} />
             </button>
           ) : null}
         </article>
 
-        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+        <article className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
           <h2 className="text-sm font-semibold text-slate-950">Project Information</h2>
           <dl className="mt-4 divide-y divide-slate-100">
+            <Info label="Client" value={project.client || "Not recorded"} />
+            <Info label="Location" value={project.location || "Not recorded"} />
+            <Info label="Engineer / PM" value={project.engineer || "Not assigned"} />
+            <Info label="Start date" value={formatPortfolioDate(project.startDate)} />
+            <Info label="Target completion" value={formatPortfolioDate(project.endDate)} />
+            <Info label="Schedule" value={schedule.label} tone={schedule.state === "overdue" ? "danger" : "default"} />
           </dl>
         </article>
 
-        <article className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+        <article className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-slate-950">Materials</h2>
@@ -98,13 +109,13 @@ export default function EngineerProjectOverview({
             <MaterialStat label="Approved" value={materialCounts.approved}  tone="emerald" />
             <MaterialStat label="Returned" value={materialCounts.returned}  tone="rose" />
           </div>
-          <button type="button" onClick={onOpenMaterials} className="mt-5 inline-flex w-full items-center justify-between rounded-lg px-1 py-2 text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
+          <button type="button" onClick={onOpenMaterials} className="mt-5 inline-flex w-full items-center justify-between rounded-[7px] px-1 py-2 text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
             View Material Requests <ArrowRight size={16} />
           </button>
         </article>
       </section>
 
-      <section className="rounded-2xl border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+      <section className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div><h2 className="text-base font-semibold text-slate-950">Recent Progress Updates</h2><p className="mt-1 text-xs text-slate-500">Latest overall progress reports submitted for this project.</p></div>
           {progressUpdates.length > 0 ? <button type="button" onClick={onUpdateProgress} className="text-sm font-semibold text-teal-800 hover:text-teal-950">View all</button> : null}

@@ -1,10 +1,10 @@
 "use client";
+import {useEstimateStatusUpdates} from "./useEstimateStatusUpdates";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   deleteProjectEstimateAction,
-  getEngineerEstimateNotificationsAction,
   reopenRejectedEstimateAction,
   saveProjectEstimateDraftAction,
   submitProjectEstimateAction,
@@ -203,14 +203,7 @@ export function useCostEstimatorPage({
   const [pendingMaterialRowId, setPendingMaterialRowId] = useState<
     string | null
   >(null);
-  const [rejectionAlert, setRejectionAlert] = useState<{
-    estimateId: string;
-    projectName: string;
-    rejectionReason: string | null;
-  } | null>(null);
   const pendingExternalSyncRef = useRef(false);
-  const knownRejectionTimesRef = useRef<Record<string, string>>({});
-  const canPlayNotificationSoundRef = useRef(false);
 
   useEffect(() => {
     setEstimates(initialEstimates);
@@ -219,22 +212,6 @@ export function useCostEstimatorPage({
   useEffect(() => {
     setItemsByEstimateId(initialItemsMap);
   }, [initialItemsMap]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const raw = window.sessionStorage.getItem(
-        "cost-estimator:seen-rejection-times",
-      );
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw) as Record<string, string>;
-      knownRejectionTimesRef.current = parsed;
-    } catch {
-      knownRejectionTimesRef.current = {};
-    }
-  }, []);
 
   function syncFromIncomingEstimates() {
     const refreshedSelectedEstimate =
@@ -405,126 +382,7 @@ export function useCostEstimatorPage({
     setSaveMessage("Draft saved");
   }, [hasUnsavedEstimateChanges, selectedEstimate]);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      canPlayNotificationSoundRef.current = true;
-    }, 1000);
-
-    let cancelled = false;
-
-    async function loadEstimateNotifications() {
-      if (cancelled || document.hidden) return;
-
-      try {
-        const response = await getEngineerEstimateNotificationsAction();
-        if (cancelled) return;
-
-        const incomingById = new Map(
-          response.estimates.map((estimate) => [estimate.id, estimate]),
-        );
-
-        setEstimates((current) =>
-          sortEstimatesByUpdatedAt(
-            current.map((estimate) => {
-              const incoming = incomingById.get(estimate.id);
-              if (!incoming) return estimate;
-
-              return {
-                ...estimate,
-                status: incoming.status,
-                rejection_reason: incoming.rejection_reason,
-                rejected_at: incoming.rejected_at,
-                updated_at: incoming.updated_at,
-              };
-            }),
-          ),
-        );
-
-        const latestFreshRejection = response.estimates
-          .filter(
-            (estimate) =>
-              estimate.status === "rejected" && estimate.rejected_at,
-          )
-          .sort(
-            (left, right) =>
-              new Date(right.rejected_at as string).getTime() -
-              new Date(left.rejected_at as string).getTime(),
-          )
-          .find((estimate) => {
-            const known = knownRejectionTimesRef.current[estimate.id];
-            return (
-              !known ||
-              new Date(estimate.rejected_at as string).getTime() >
-                new Date(known).getTime()
-            );
-          });
-
-        response.estimates.forEach((estimate) => {
-          if (estimate.rejected_at) {
-            knownRejectionTimesRef.current[estimate.id] = estimate.rejected_at;
-          }
-        });
-
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(
-            "cost-estimator:seen-rejection-times",
-            JSON.stringify(knownRejectionTimesRef.current),
-          );
-        }
-
-        if (latestFreshRejection) {
-          setRejectionAlert({
-            estimateId: latestFreshRejection.id,
-            projectName: latestFreshRejection.project_name,
-            rejectionReason: latestFreshRejection.rejection_reason,
-          });
-
-          if (canPlayNotificationSoundRef.current) {
-            const audio = new Audio("/sounds/overtime-approval.mp3");
-            audio.volume = 0.9;
-            void audio.play().catch(() => undefined);
-          }
-        }
-      } catch {
-        // Keep polling silent during editing so intermittent failures do not disrupt work.
-      }
-    }
-
-    void loadEstimateNotifications();
-
-    const intervalId = window.setInterval(() => {
-      void loadEstimateNotifications();
-    }, 30000);
-
-    function handleWindowFocus() {
-      void loadEstimateNotifications();
-    }
-
-    function handleVisibilityChange() {
-      if (!document.hidden) {
-        void loadEstimateNotifications();
-      }
-    }
-
-    function handlePageShow() {
-      void loadEstimateNotifications();
-    }
-
-    window.addEventListener("focus", handleWindowFocus);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pageshow", handlePageShow);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleWindowFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pageshow", handlePageShow);
-    };
-  }, []);
-
-  function applyEstimateUpdate(
+  useEstimateStatusUpdates(setEstimates);  function applyEstimateUpdate(
     estimate: ProjectEstimateRow,
     items: ProjectEstimateItemRow[],
   ) {
@@ -851,16 +709,6 @@ export function useCostEstimatorPage({
           selectedEstimate.id,
         );
         applyEstimateUpdate(reopened.estimate, reopened.items);
-        delete knownRejectionTimesRef.current[selectedEstimate.id];
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(
-            "cost-estimator:seen-rejection-times",
-            JSON.stringify(knownRejectionTimesRef.current),
-          );
-        }
-        setRejectionAlert((current) =>
-          current?.estimateId === selectedEstimate.id ? null : current,
-        );
         setSaveState("saved");
         setSaveMessage("Draft saved");
         toast.success("Returned estimate reopened for editing.");
@@ -1571,10 +1419,6 @@ export function useCostEstimatorPage({
     );
   }
 
-  function handleCloseRejectionAlert() {
-    setRejectionAlert(null);
-  }
-
   return {
     sortedEstimates,
     itemsByEstimateId,
@@ -1603,7 +1447,6 @@ export function useCostEstimatorPage({
     pendingDeleteEstimate,
     activeReportEstimate,
     activeReportItems,
-    rejectionAlert,
     handleSelectEstimate,
     handleOpenAssignedProjectSetup,
     handleCloseProjectSetup,
@@ -1627,7 +1470,6 @@ export function useCostEstimatorPage({
     handleRemoveModalMaterial,
     handleSaveItem,
     handleRemoveItem,
-    handleCloseRejectionAlert,
     setActiveReportEstimateId,
   };
 }

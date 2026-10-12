@@ -33,9 +33,9 @@ export default function SettingsPasswordSection({
 }: SettingsPasswordSectionProps) {
   const strength = getPasswordStrength(newPassword);
   return (
-    <section className="flex min-w-0 flex-col rounded-[20px] border border-transparent bg-white p-5 shadow-workspace sm:p-6">
+    <section className="flex min-w-0 flex-col rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none sm:p-6">
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-slate-900">Security</h2>
+        <h2 className="text-[15px] font-bold tracking-tight text-slate-900">Security</h2>
         <p className="mt-0.5 text-xs leading-5 text-slate-500">Keep your account secure with a strong password.</p>
       </div>
 
@@ -45,7 +45,7 @@ export default function SettingsPasswordSection({
             <span className="text-xs font-semibold text-slate-900">
               New Password
             </span>
-            <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
+            <div className="group flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
               {!hideDecorativeIcons && <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type={showNewPassword ? "text" : "password"}
@@ -84,7 +84,7 @@ export default function SettingsPasswordSection({
             <span className="text-xs font-semibold text-slate-900">
               Confirm New Password
             </span>
-            <div className="group flex h-10 items-center rounded-lg border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
+            <div className="group flex h-10 items-center rounded-[7px] border border-[#dce5e8] bg-white px-4 transition focus-within:border-[#076d69] focus-within:ring-2 focus-within:ring-[#076d69]/10">
               {!hideDecorativeIcons && <LockKeyhole className="mr-3 h-4 w-4 text-slate-400 transition group-focus-within:text-[#076d69]" />}
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -121,7 +121,7 @@ export default function SettingsPasswordSection({
             type="button"
             onClick={onChangePassword}
             disabled={changingPassword || !newPassword || !confirmPassword}
-            className="mt-4 inline-flex h-10 w-fit items-center justify-center rounded-lg bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#0f766e] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+            className="mt-4 inline-flex h-10 w-fit items-center justify-center rounded-[7px] bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#0f766e] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#076d69]/10 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
           >
             {changingPassword ? (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />

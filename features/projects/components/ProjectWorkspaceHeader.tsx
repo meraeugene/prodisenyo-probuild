@@ -1,4 +1,6 @@
 import type { ProjectRecord } from "@/features/projects/types";
+import styles from "@/components/workspace/workspace.module.css";
+import { formatPortfolioDate } from "../utils/projectPortfolioSelectors";
 import {
   formatProjectCurrency,
   getProjectStatusPresentation,
@@ -19,19 +21,19 @@ export default function ProjectWorkspaceHeader({
   const status = getProjectStatusPresentation(project);
 
   return (
-    <header className="workspace-page-header workspace-header-actions bg-white pb-2">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <header className={styles.header}>
+      <div className="flex w-full flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="mb-2.5 text-xs font-normal text-[#53736f]">Prodisenyo Projects</p>
+          <p className={styles.eyebrow}>Workspace / Projects</p>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="break-words text-[28px] font-semibold leading-none tracking-[-0.045em] sm:text-[32px]">
+            <h1 className={`${styles.title} break-words`}>
               {project.name}
             </h1>
             <span className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${STATUS_CLASSES[status.tone]}`}>
               {status.label}
             </span>
           </div>
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#53736f]">
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[#667085]">
             <span className="inline-flex items-center gap-1.5">
                {project.status === "planning" ? "Estimate Engineer" : "Engineer / PM"}: {project.status === "planning" ? project.estimateEngineer : project.engineer}
             </span>
@@ -39,7 +41,7 @@ export default function ProjectWorkspaceHeader({
                {project.location}
             </span>
             <span className="inline-flex items-center gap-1.5">
-               {project.startDate} – {project.endDate}
+               {formatPortfolioDate(project.startDate)} – {formatPortfolioDate(project.endDate)}
             </span>
           </div>
         </div>

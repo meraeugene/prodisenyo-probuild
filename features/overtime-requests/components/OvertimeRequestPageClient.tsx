@@ -1,11 +1,13 @@
 "use client";
 
+import OvertimeRequestConfirmDialog from "./OvertimeRequestConfirmDialog";
 import OvertimeRequestHistory from "./OvertimeRequestHistory";
 
 import { useMemo, useState, useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import DashboardPageHero from "@/components/DashboardPageHero";
+import WorkspacePageHeader from "@/components/workspace/WorkspacePageHeader";
+import styles from "@/components/workspace/workspace.module.css";
 import { submitOvertimeRequestAction } from "@/actions/payroll";
 import { type OvertimeRequestRecord } from "@/features/overtime-requests/types";
 
@@ -141,11 +143,11 @@ export default function OvertimeRequestPageClient({
   }
 
   return (
-    <div className="p-4 sm:p-6 xl:flex xl:flex-col">
-      <DashboardPageHero eyebrow="Overtime Workflow" title="Request Overtime" />
+    <div className={`${styles.page} space-y-5`}>
+      <WorkspacePageHeader eyebrow="Requests / Overtime" title="Request Overtime" description="Submit overtime hours and review the status of your requests." />
 
       <div className="mt-4 grid gap-4 overflow-x-hidden xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(320px,0.7fr)_minmax(0,1.3fr)] xl:items-stretch">
-        <section className="rounded-none border border-transparent h-fit bg-white p-5 shadow-workspace sm:rounded-[16px]">
+        <section className={`${styles.panel} h-fit p-5`}>
           <h2 className="text-lg font-semibold text-apple-charcoal">
             Overtime Request Form
           </h2>
@@ -310,92 +312,8 @@ export default function OvertimeRequestPageClient({
         <OvertimeRequestHistory requests={sortedRequests} />
       </div>
 
-      {confirmOpen ? (
-        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-[24px] bg-white shadow-workspace">
-            <div className="border-b border-apple-mist bg-[linear-gradient(135deg,#063b38,#075f5b,#087a75)] px-5 py-4 text-white">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
-                Confirm Submission
-              </p>
-              <h2 className="mt-2 text-lg font-semibold">
-                Submit overtime request?
-              </h2>
-            </div>
+      <OvertimeRequestConfirmDialog open={confirmOpen} pending={isPending} employeeName={employeeName} siteName={siteName} requestDate={requestDate} overtimeHours={overtimeHours} periodLabel={periodLabel} reason={reason} onClose={()=>setConfirmOpen(false)} onConfirm={submitRequest}/>
 
-            <div className="space-y-3 px-5 py-5 text-sm text-apple-smoke">
-              <p>
-                Employee:{" "}
-                <span className="font-semibold text-apple-charcoal">
-                  {employeeName.trim()}
-                </span>
-              </p>
-              <p>
-                Site:{" "}
-                <span className="font-semibold text-apple-charcoal">
-                  {siteName.trim()}
-                </span>
-              </p>
-              <p>
-                Work date:{" "}
-                <span className="font-semibold text-apple-charcoal">
-                  {requestDate}
-                </span>
-              </p>
-              <p>
-                Overtime hours:{" "}
-                <span className="font-semibold text-sky-700">
-                  {Number(overtimeHours || 0).toLocaleString("en-PH", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </p>
-              {periodLabel.trim() ? (
-                <p>
-                  Period:{" "}
-                  <span className="font-semibold text-apple-charcoal">
-                    {periodLabel.trim()}
-                  </span>
-                </p>
-              ) : null}
-              {reason.trim() ? (
-                <p>
-                  Reason:{" "}
-                  <span className="font-semibold text-apple-charcoal">
-                    {reason.trim()}
-                  </span>
-                </p>
-              ) : null}
-
-              <div className="mt-4 flex justify-end gap-2">
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => setConfirmOpen(false)}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-apple-mist px-4 text-sm font-semibold text-apple-charcoal transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={submitRequest}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#076d69] px-4 text-sm font-semibold text-white transition hover:bg-[#055f5b] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isPending ? (
-                    <>
-                      <LoaderCircle size={15} className="mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Confirm Submit"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

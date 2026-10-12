@@ -29,11 +29,11 @@ export default function CostEstimatorBoqTable({
   ).size;
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[14px] border border-transparent bg-white shadow-workspace">
+    <section className="min-w-0 overflow-hidden rounded-[7px] border border-[#e4e7ec] bg-white shadow-none">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-white">
+            <tr className="border-b border-slate-200 bg-[#f8f9fb]">
               <th className="w-24 px-4 py-4 text-left font-semibold text-slate-900">Item No.</th>
               <th className="px-4 py-4 text-left font-semibold text-slate-900">Description</th>
               <th className="w-32 px-4 py-4 text-left font-semibold text-slate-900">Category</th>

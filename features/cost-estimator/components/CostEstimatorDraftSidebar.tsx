@@ -22,10 +22,10 @@ export default function CostEstimatorDraftSidebar({
 
   return (
     <aside className="space-y-5">
-      <section className="rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
-        <h2 className="text-lg font-semibold text-slate-950">BOQ Summary</h2>
+      <section className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none">
+        <h2 className="text-[15px] font-semibold text-slate-950">BOQ Summary</h2>
         <p className="mt-5 text-sm text-slate-600">Estimated Cost</p>
-        <p className="mt-1 break-words text-[25px] font-semibold tracking-[-0.03em] text-teal-700">{formatBudgetMoney(estimatedCost)}</p>
+        <p className="mt-1 break-words text-[15px] font-semibold tracking-[-0.03em] text-teal-700">{formatBudgetMoney(estimatedCost)}</p>
 
         <dl className="mt-5 space-y-4 border-y border-slate-200 py-5 text-sm">
           <div className="flex items-center justify-between gap-4">
@@ -50,8 +50,8 @@ export default function CostEstimatorDraftSidebar({
         </div>
       </section>
 
-      <section className="rounded-[14px] border border-transparent bg-white p-5 shadow-workspace">
-        <label htmlFor="estimate-notes" className="text-lg font-semibold text-slate-950">Notes</label>
+      <section className="rounded-[7px] border border-[#e4e7ec] bg-white p-5 shadow-none">
+        <label htmlFor="estimate-notes" className="text-[15px] font-semibold text-slate-950">Notes</label>
         <textarea
           id="estimate-notes"
           value={notes}
@@ -65,8 +65,8 @@ export default function CostEstimatorDraftSidebar({
         <p className="mt-2 text-right text-xs text-slate-500">{notes.length} / 500 characters</p>
       </section>
 
-      <section className="flex gap-3 rounded-[14px] border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
-        <p><span className="font-semibold">Tip:</span> Save the draft as you build the BOQ, then submit it when every persisted item has been reviewed.</p>
+      <section className="flex gap-3 rounded-[7px] border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
+        <p><span className="font-semibold">Tip:</span> Save the draft as you build the BOQ, then submit it when all items have been reviewed.</p>
       </section>
     </aside>
   );

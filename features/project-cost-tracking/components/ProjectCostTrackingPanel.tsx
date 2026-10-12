@@ -74,7 +74,7 @@ export default function ProjectCostTrackingPanel({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-slate-950">Cost tracking</h1>
+        <h2 className="text-[15px] font-semibold text-slate-950">Cost tracking</h2>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)]">

@@ -25,12 +25,12 @@ export default function ProjectProgressUpdateList({
 
   return (
     <section
-      className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,.04)] ${className ?? ""}`}
+      className={`flex min-w-0 flex-col overflow-hidden rounded-[7px] border border-slate-200 bg-white shadow-[0_6px_22px_rgba(15,23,42,.04)] ${className ?? ""}`}
     >
       <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex min-w-0 items-start">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-slate-950 sm:text-lg">
+            <h2 className="text-base font-semibold text-slate-950 sm:text-[15px]">
               Daily Progress Updates
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
@@ -54,16 +54,16 @@ export default function ProjectProgressUpdateList({
           return (
             <article
               key={update.id}
-              className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300 sm:grid-cols-[72px_minmax(0,1fr)_120px] sm:items-start sm:p-5"
+              className="grid gap-4 rounded-[7px] border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300 sm:grid-cols-[72px_minmax(0,1fr)_120px] sm:items-start sm:p-5"
             >
               <time
                 dateTime={update.progress_date ?? update.created_at}
-                className="flex w-full items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-600 sm:block sm:px-2 sm:py-3 sm:text-center"
+                className="flex w-full items-center gap-2 rounded-[7px] bg-slate-50 px-3 py-2 text-slate-600 sm:block sm:px-2 sm:py-3 sm:text-center"
               >
                 <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
                   {progressDate.month}
                 </span>
-                <span className="text-lg font-bold leading-none text-slate-950 sm:mt-1 sm:block sm:text-2xl">
+                <span className="text-[15px] font-bold leading-none text-slate-950 sm:mt-1 sm:block sm:text-2xl">
                   {progressDate.day}
                 </span>
                 <span className="text-[11px] text-slate-500 sm:mt-1 sm:block">
@@ -90,7 +90,7 @@ export default function ProjectProgressUpdateList({
               <div className="flex items-start justify-between gap-2 sm:justify-end">
                 <div className="text-left sm:text-right">
                   <span className="text-xs font-medium text-slate-500">Overall</span>
-                  <strong className="mt-1 block text-xl font-bold tracking-tight text-teal-800 tabular-nums">
+                  <strong className="mt-1 block text-[15px] font-bold tracking-tight text-teal-800 tabular-nums">
                     {formatProgressPercentage(update.overall_percent)}
                   </strong>
                 </div>
@@ -109,19 +109,19 @@ export default function ProjectProgressUpdateList({
                       onClick={() => setOpenMenuId(menuOpen ? null : update.id)}
                       aria-label="Progress update actions"
                       aria-expanded={menuOpen}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                      className="flex h-9 w-9 items-center justify-center rounded-[7px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
                     >
                       <MoreVertical size={18} aria-hidden="true" />
                     </button>
                     {menuOpen ? (
-                      <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl border border-transparent bg-white p-1.5 text-left shadow-workspace">
+                      <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-[7px] border border-[#e4e7ec] bg-white p-1.5 text-left shadow-none">
                         <button
                           type="button"
                           onClick={() => {
                             setOpenMenuId(null);
                             onView(update);
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                          className="flex w-full items-center gap-2 rounded-[7px] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                         >
                           <Eye size={15} aria-hidden="true" />
                           View details
@@ -132,7 +132,7 @@ export default function ProjectProgressUpdateList({
                             setOpenMenuId(null);
                             onDelete(update);
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+                          className="flex w-full items-center gap-2 rounded-[7px] px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
                         >
                           <Trash2 size={15} aria-hidden="true" />
                           Delete
@@ -147,7 +147,7 @@ export default function ProjectProgressUpdateList({
         })}
 
         {updates.length === 0 ? (
-          <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 px-5 py-12 text-center">
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-[7px] border border-dashed border-slate-200 px-5 py-12 text-center">
             <p className="mt-4 font-semibold text-slate-800">No progress updates yet</p>
             <p className="mt-1 max-w-xs text-sm leading-5 text-slate-500">
               Engineer-submitted daily updates will appear here.

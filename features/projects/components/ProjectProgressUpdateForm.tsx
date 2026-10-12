@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { LoaderCircle, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +18,7 @@ export default function ProjectProgressUpdateForm({
   onCancel,
   modalTitleId,
   compact = false,
+  onPendingChange,
 }: {
   projectId: string;
   initialPercent: number;
@@ -26,6 +27,7 @@ export default function ProjectProgressUpdateForm({
   onCancel?: () => void;
   modalTitleId?: string;
   compact?: boolean;
+  onPendingChange?: (pending: boolean) => void;
 }) {
   const [overallPercent, setOverallPercent] = useState(
     update?.overall_percent ?? initialPercent,
@@ -38,6 +40,7 @@ export default function ProjectProgressUpdateForm({
   );
   const [remarks, setRemarks] = useState(update?.remarks ?? "");
   const [pending, startTransition] = useTransition();
+  useEffect(() => { onPendingChange?.(pending); }, [onPendingChange, pending]);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,9 +75,9 @@ export default function ProjectProgressUpdateForm({
   return (
     <form
       onSubmit={submit}
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,.04)] sm:p-6"
+      className={compact ? "bg-white" : "rounded-[7px] border border-[#e4e7ec] bg-white p-5"}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+      {!compact && <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
         <div className="flex items-start gap-3">
           <div>
             <h2 id={modalTitleId} className="text-base font-semibold text-slate-950">
@@ -97,9 +100,9 @@ export default function ProjectProgressUpdateForm({
             <X size={17} aria-hidden="true" />
           </button>
         ) : null}
-      </div>
+      </div>}
 
-      <div className={compact ? "mt-4 space-y-4" : "mt-5 space-y-5"}>
+      <div className={compact ? "space-y-4" : "mt-5 space-y-5"}>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-semibold text-slate-700">Overall progress</span>

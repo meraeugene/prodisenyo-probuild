@@ -4,27 +4,12 @@ const path = require("node:path");
 module.exports = async function checkRentalPages(page, base, screenshots) {
   await page.goto(base + "/gmea-rentals/income");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
-  const rentalsToggle = nav.getByRole("button", { name: "Rentals", exact: true });
-  assert.equal(await rentalsToggle.getAttribute("aria-expanded"), "true");
+  assert.equal(await nav.getByRole("button", { name: "Rentals", exact: true }).count(), 0);
   for (const [label, route] of [["Rental Income", "income"], ["Rental Expenses", "expenses"], ["Rental Bookings", "bookings"], ["Equipment", "equipment"]])
     assert.equal(await nav.getByRole("link", { name: label, exact: true }).getAttribute("href"), "/gmea-rentals/" + route);
-  await rentalsToggle.click();
-  assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).count(), 0);
-  assert.equal(await nav.locator("[data-open]").getAttribute("inert"), "");
-  await rentalsToggle.focus();
-  await page.keyboard.press("Enter");
   assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).getAttribute("aria-current"), "page");
   assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).evaluate(element => getComputedStyle(element).boxShadow), "none");
-  assert.equal(await nav.locator("[data-open] > div > div").evaluate(element => getComputedStyle(element).borderLeftWidth), "0px");
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  assert.match(await nav.locator("[data-open]").evaluate(element => getComputedStyle(element).transitionProperty), /grid-template-rows/);
-  assert.match(await nav.locator("[data-open]").evaluate(element => getComputedStyle(element).transitionDuration), /0\.2s/);
-  await rentalsToggle.click();
-  await page.waitForFunction(() => document.querySelector('nav[aria-label="Main navigation"] [data-open="false"]').getBoundingClientRect().height === 0);
-  await rentalsToggle.click();
-  await nav.getByRole("link", { name: "Rental Income", exact: true }).waitFor();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  assert.equal(await nav.locator("[data-open]").evaluate(element => getComputedStyle(element).transitionDuration), "0s");
+  assert.equal(await nav.locator("[data-open]").count(), 0);
   assert.equal(await page.getByRole("navigation", { name: "Rental workspace sections" }).count(), 0);
   const income = page.getByRole("region", { name: "Rental income workspace", exact: true });
   const records = income.locator("tbody:not(figure tbody)");
@@ -117,12 +102,9 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   await page.getByRole("dialog").waitFor();
   await page.getByRole("dialog").getByRole("button", { name: "Close dialog", exact: true }).click();
 
-  await page.getByRole("button", { name: "Collapse navigation", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: "Collapse navigation", exact: true }).count(), 0);
   assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).isVisible(), true);
-  await nav.getByRole("button", { name: "Rentals", exact: true }).click();
-  assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).count(), 0);
-  await nav.getByRole("button", { name: "Rentals", exact: true }).click();
-  await page.getByRole("button", { name: "Expand navigation", exact: true }).click();
+  assert.equal(await nav.getByRole("button", { name: "Rentals", exact: true }).count(), 0);
 
   for (const section of ["income", "expenses", "bookings", "equipment"]) {
     await page.goto(base + "/gmea-rentals/" + section);

@@ -49,8 +49,8 @@ export default function CostEstimatorSetupForm({
       });
 
   return (
-    <section className="flex min-h-[calc(100vh-69px)] w-full justify-center px-6 py-10 xl:py-12">
-      <div className="min-h-[720px] w-full max-w-2xl rounded-2xl border border-transparent bg-white p-6 shadow-workspace-dialog">
+    <section className="flex min-h-full w-full justify-center px-4 py-6 sm:px-6">
+      <div className="w-full max-w-2xl rounded-[7px] border border-[#e4e7ec] bg-white p-5 sm:p-6">
         {hasExistingProjects ? (
           <button
             type="button"

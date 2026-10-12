@@ -31,6 +31,19 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--sidebar-menus")) {
+      await require("./checkPermanentNavigation.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("CEO and GMEA navigation passed: full-width sidebar, permanent rental links, active states, and mobile menu dismissal.");
+      return;
+    }
+    if (process.argv.includes("--engineer-pages")) {
+      await require("./checkEngineerPages.cjs")(page, base, screenshots);
+      await require("./checkEngineerWorkflow.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("Engineer pages passed: shared design, search, status filters, pagination, project links, estimate actions, empty states, and responsive layouts.");
+      return;
+    }
     if (process.argv.includes("--payroll-layout")) {
       await require("./checkPayrollLayout.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);
@@ -70,7 +83,7 @@ async function main() {
       const mainHeader = await page.locator("[data-workspace-header]").boundingBox();
       assert.equal(sidebarHeader.height, mainHeader.height, `${route} sidebar and main header heights match`);
       assert.equal(sidebarHeader.y + sidebarHeader.height, mainHeader.y + mainHeader.height, `${route} header edges align`);
-      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Projects", exact: true }).count(), 1);
+      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Operation Expense", exact: true }).count(), 1);
       const list = region ? page.getByRole("region", { name: region, exact: true }) : page.locator("#dashboard-content section").first();
       await list.getByRole("button", { name: allTab }).click();
       await list.locator("tbody tr").first().waitFor();
@@ -129,7 +142,7 @@ async function main() {
     await require("./checkRentalPages.cjs")(page, base, screenshots);
     if (rentalIncomeOnly) {
       assert.deepEqual(errors, []);
-      console.log("Rental browser checks passed: sidebar dropdown, separate pages, charts, filters, payment history, weekly/history views, edit dialogs, role controls, and mobile layouts.");
+      console.log("Rental browser checks passed: static sidebar links, separate pages, charts, filters, payment history, weekly/history views, edit dialogs, role controls, and mobile layouts.");
       return;
     }
     await page.goto(`${base}/gmea-projects`);

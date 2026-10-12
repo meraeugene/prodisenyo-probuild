@@ -19,9 +19,11 @@ export default function DashboardShell({ children, profile }: {
   children: React.ReactNode; profile: SidebarProfile | null;
 }) {
   const pathname = usePathname();
-  const { open, setOpen, collapsed, setCollapsed } = useDashboardSidebar(pathname);
+  const canCollapse = profile?.role !== "ceo" && profile?.role !== "gmea";
+  const { open, setOpen, collapsed, setCollapsed } = useDashboardSidebar(pathname, canCollapse);
+  const sidebarCollapsed = canCollapse && collapsed;
   const notificationCounts = useSidebarNotificationCounts(profile?.role === "ceo");
-  const narrow = collapsed && !open;
+  const narrow = sidebarCollapsed && !open;
   const compact = hasCompactWorkspace(profile?.role);
   useWorkspaceTheme(compact);
 
@@ -36,12 +38,12 @@ export default function DashboardShell({ children, profile }: {
       )}>
         <div data-sidebar-header className={cn("relative flex h-[var(--dashboard-header-height)] shrink-0 items-center justify-between border-b border-[#e4e7ec]", narrow ? "px-[18px]" : "px-3")}>
           <DashboardBrand collapsed={narrow} />
-          <SidebarTooltip active label={narrow ? "Expand sidebar" : "Collapse sidebar"}>
+          {canCollapse && <SidebarTooltip active label={narrow ? "Expand sidebar" : "Collapse sidebar"}>
             <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={narrow ? "Expand navigation" : "Collapse navigation"} aria-expanded={!narrow} aria-controls="dashboard-sidebar" className={cn(
               "hidden h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#53736f] transition-colors hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 lg:flex",
               narrow && "absolute -right-3 top-1/2 -translate-y-1/2 bg-white shadow-[0_1px_6px_rgba(24,55,52,0.06)]",
             )}>{narrow ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}</button>
-          </SidebarTooltip>
+          </SidebarTooltip>}
           <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#53736f] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 lg:hidden"><X size={17} /></button>
         </div>
         <div className="sidebar-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3 pt-4 pb-[max(12px,env(safe-area-inset-bottom))]">
@@ -49,13 +51,13 @@ export default function DashboardShell({ children, profile }: {
           <SidebarAccount profile={profile} pathname={pathname} collapsed={narrow} onNavigate={() => setOpen(false)} />
         </div>
       </aside>
-      <div className={cn("min-h-screen transition-[padding] duration-300 motion-reduce:transition-none", collapsed ? "lg:pl-[72px]" : "lg:pl-[248px]")}>
+      <div className={cn("min-h-screen transition-[padding] duration-300 motion-reduce:transition-none", sidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-[248px]")}>
         <div data-mobile-header className="sticky top-0 z-30 flex h-[var(--dashboard-header-height)] items-center justify-between border-b border-[#e4e7ec] bg-white/95 px-4 backdrop-blur-lg lg:hidden">
           <DashboardBrand />
           <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" aria-expanded={open} aria-controls="dashboard-sidebar" className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[#076d69] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700"><Menu size={20} /></button>
         </div>
         {profile && hasCompactWorkspace(profile.role) && <WorkspaceTopbar profile={profile} />}
-        <main id="dashboard-content" data-workspace tabIndex={-1} className="min-h-screen bg-white outline-none">{children}</main>
+        <main id="dashboard-content" data-workspace data-workspace-role={profile?.role} tabIndex={-1} className="min-h-screen bg-white outline-none">{children}</main>
       </div>
     </div>
   );

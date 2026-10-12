@@ -16,13 +16,13 @@ export default function PlannedMaterialsSection({
   materials: PlannedMaterialRow[];
 }) {
   return (
-    <section className="rounded-2xl border border-teal-200 bg-teal-50/40 p-5 shadow-[0_6px_22px_rgba(15,23,42,.03)]">
+    <section className="rounded-[7px] border border-teal-200 bg-teal-50/40 p-5 shadow-[0_6px_22px_rgba(15,23,42,.03)]">
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
              Approved estimate
           </p>
-          <h2 className="mt-2 text-lg font-bold text-slate-950">Planned Materials</h2>
+          <h2 className="mt-2 text-[15px] font-bold text-slate-950">Planned Materials</h2>
           <p className="mt-1 text-sm text-slate-600">
             Submit materials in phases as they are needed on site.
           </p>
@@ -39,7 +39,7 @@ export default function PlannedMaterialsSection({
             ? Math.min(100, (material.requestedQuantity / material.plannedQuantity) * 100)
             : 0;
           return (
-            <article key={material.estimateItemId} className="rounded-xl border border-teal-100 bg-white p-4">
+            <article key={material.estimateItemId} className="rounded-[7px] border border-teal-100 bg-white p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-bold text-slate-900">{material.materialName}</p>
@@ -61,13 +61,13 @@ export default function PlannedMaterialsSection({
                    {currency.format(material.unitCost)} / {material.unit}
                 </span>
                 {complete ? (
-                  <span className="inline-flex h-9 items-center gap-1 rounded-lg bg-teal-50 px-3 text-xs font-semibold text-teal-700">
+                  <span className="inline-flex h-9 items-center gap-1 rounded-[7px] bg-teal-50 px-3 text-xs font-semibold text-teal-700">
                      Fully requested
                   </span>
                 ) : (
                   <Link
                     href={`/request-material?projectId=${projectId}&estimateItemId=${material.estimateItemId}`}
-                    className="inline-flex h-9 items-center gap-1 rounded-lg bg-teal-800 px-3 text-xs font-semibold text-white hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2"
+                    className="inline-flex h-9 items-center gap-1 rounded-[7px] bg-teal-800 px-3 text-xs font-semibold text-white hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2"
                   >
                     <Plus size={14} /> Request material
                   </Link>
@@ -79,7 +79,7 @@ export default function PlannedMaterialsSection({
       </div>
 
       {!materials.length ? (
-        <div className="mt-4 rounded-xl border border-dashed border-teal-200 bg-white/70 px-4 py-8 text-center text-sm text-slate-500">
+        <div className="mt-4 rounded-[7px] border border-dashed border-teal-200 bg-white/70 px-4 py-8 text-center text-sm text-slate-500">
           No approved estimate materials are available yet.
         </div>
       ) : null}

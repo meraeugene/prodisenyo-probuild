@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export function useDashboardSidebar(pathname: string) {
+export function useDashboardSidebar(pathname: string, allowCollapse = true) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -44,8 +44,8 @@ export function useDashboardSidebar(pathname: string) {
   useEffect(() => {
     setOpen(false);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    setCollapsed(window.matchMedia("(min-width: 1024px)").matches && ["/budget-tracker", "/cost-estimator"].includes(pathname));
-  }, [pathname]);
+    setCollapsed(allowCollapse && window.matchMedia("(min-width: 1024px)").matches && ["/budget-tracker", "/cost-estimator"].includes(pathname));
+  }, [allowCollapse, pathname]);
 
   return { open, setOpen, collapsed, setCollapsed };
 }

@@ -11,6 +11,7 @@
     "test": "node --test tests/**/*.test.cjs",
     "seed:users": "node scripts/seed-users.mjs",
     "seed:data": "node scripts/seed-data.mjs",
+    "seed:engineer": "node scripts/seed-engineer-data.mjs",
     "seed:prepare": "node scripts/prepare-seed-schema.mjs",
     "seed:delete": "node scripts/delete-seed-data.mjs",
     "seed:delete:gmea": "node scripts/delete-seed-data.mjs --gmea",

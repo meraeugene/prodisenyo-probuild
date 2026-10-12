@@ -5,11 +5,10 @@ import CostEstimatorBoqDetails from "@/features/cost-estimator/components/CostEs
 import CostEstimatorConfirmModal from "@/features/cost-estimator/components/CostEstimatorConfirmModal";
 import CostEstimatorDeleteProjectModal from "@/features/cost-estimator/components/CostEstimatorDeleteProjectModal";
 import CostEstimatorDraftWorkspace from "@/features/cost-estimator/components/CostEstimatorDraftWorkspace";
-import CostEstimatorItemModal from "@/features/cost-estimator/components/CostEstimatorItemModal";
+import CostEstimatorDraftItemDialog from "./CostEstimatorDraftItemDialog";
 import CostEstimatorProjectsOverview from "@/features/cost-estimator/components/CostEstimatorProjectsOverview";
 import CostEstimatorSetupForm from "@/features/cost-estimator/components/CostEstimatorSetupForm";
 import EstimateReportModal from "@/features/cost-estimator/components/EstimateReportModal";
-import EstimateRejectedAlertModal from "@/features/cost-estimator/components/EstimateRejectedAlertModal";
 import { useCostEstimatorPage } from "@/features/cost-estimator/hooks/useCostEstimatorPage";
 import type {
   CostCatalogItemRow,
@@ -117,13 +116,6 @@ export default function CostEstimatorPageClient({
           onOpenProject={handleOpenProject}
           onStartEstimate={handleStartEstimate}
         />
-
-        <EstimateRejectedAlertModal
-          open={state.rejectionAlert !== null}
-          projectName={state.rejectionAlert?.projectName ?? ""}
-          rejectionReason={state.rejectionAlert?.rejectionReason ?? null}
-          onClose={state.handleCloseRejectionAlert}
-        />
       </>
     );
   }
@@ -161,13 +153,6 @@ export default function CostEstimatorPageClient({
             onClose={() => state.setActiveReportEstimateId(null)}
           />
         ) : null}
-
-        <EstimateRejectedAlertModal
-          open={state.rejectionAlert !== null}
-          projectName={state.rejectionAlert?.projectName ?? ""}
-          rejectionReason={state.rejectionAlert?.rejectionReason ?? null}
-          onClose={state.handleCloseRejectionAlert}
-        />
       </>
     );
   }
@@ -177,24 +162,6 @@ export default function CostEstimatorPageClient({
         (project) => project.id === state.selectedEstimate?.project_id,
       ) ?? null
     : null;
-  const editingItemTotal =
-    state.editingItemIndices?.reduce(
-      (sum, index) =>
-        sum + (state.estimateForm.items[index]?.lineTotal ?? 0),
-      0,
-    ) ?? 0;
-  const groupedItemCount = new Set(
-    state.estimateForm.items.map(
-      (item) =>
-        item.section.trim().toLowerCase() +
-        "::" +
-        item.itemNumber.trim().toLowerCase(),
-    ),
-  ).size;
-  const modalItemNumber =
-    state.editingItemIndices && state.editingItemIndices.length > 0
-      ? String(Math.min(...state.editingItemIndices) + 1)
-      : String(groupedItemCount + 1);
 
   return (
     <div>
@@ -221,42 +188,7 @@ export default function CostEstimatorPageClient({
         />
       ) : null}
 
-      <CostEstimatorItemModal
-        open={state.itemModalOpen}
-        form={state.itemModalForm}
-        errors={state.itemModalErrors}
-        editingMaterialSnapshots={state.editingMaterialSnapshots}
-        pendingMaterialRowId={state.pendingMaterialRowId}
-        materials={state.materialOptions}
-        computedTotal={state.currentLineTotal}
-        baseEstimateTotal={state.currentEstimateTotal - editingItemTotal}
-        budgetCeiling={draftLinkedProject?.budgetCeiling ?? null}
-        itemNumberLabel={modalItemNumber}
-        editing={Boolean(
-          !state.itemModalReadOnly &&
-          state.editingItemIndices &&
-          state.editingItemIndices.length > 0,
-        )}
-        readOnly={state.itemModalReadOnly}
-        pending={state.pendingEstimateAction}
-        onClose={state.handleCloseAddCostModal}
-        onSelectMaterial={state.handleSelectMaterial}
-        onSelectUnitType={state.handleSelectMaterialUnit}
-        onFieldChange={state.handleItemModalFieldChange}
-        onMaterialRowFieldChange={state.handleMaterialRowFieldChange}
-        onAddMaterial={state.handleAddModalMaterial}
-        onSaveMaterial={state.handleSaveModalMaterial}
-        onEditMaterial={state.handleEditModalMaterial}
-        onCancelMaterial={state.handleCancelModalMaterial}
-        onRemoveMaterial={state.handleRemoveModalMaterial}
-        onSave={state.handleSaveItem}
-        onDelete={() => {
-          if (state.editingItemIndices && state.editingItemIndices.length > 0) {
-            state.handleRemoveItem(state.editingItemIndices);
-          }
-          state.handleCloseAddCostModal();
-        }}
-      />
+      <CostEstimatorDraftItemDialog state={state} budgetCeiling={draftLinkedProject?.budgetCeiling ?? null} />
 
       {state.activeReportEstimate ? (
         <EstimateReportModal
@@ -325,13 +257,6 @@ export default function CostEstimatorPageClient({
           state.handleSubmitEstimate();
         }}
         onCancel={() => setShowSubmitConfirm(false)}
-      />
-
-      <EstimateRejectedAlertModal
-        open={state.rejectionAlert !== null}
-        projectName={state.rejectionAlert?.projectName ?? ""}
-        rejectionReason={state.rejectionAlert?.rejectionReason ?? null}
-        onClose={state.handleCloseRejectionAlert}
       />
     </div>
   );
