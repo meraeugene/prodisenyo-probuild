@@ -1,51 +1,21 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { formatBudgetMoney } from "@/features/cost-estimator/utils/costEstimatorFormatters";
+import { formatBudgetMoney } from "../utils/costEstimatorFormatters";
+import styles from "./costEstimatorItemModal.module.css";
 
-export default function CostEstimatorItemSummary({
-  baseEstimateTotal,
-  itemTotal,
-  budgetCeiling,
-}: {
-  baseEstimateTotal: number;
-  itemTotal: number;
-  budgetCeiling: number | null;
+export default function CostEstimatorItemSummary({ baseEstimateTotal, itemTotal, budgetCeiling }: {
+  baseEstimateTotal: number; itemTotal: number; budgetCeiling: number | null;
 }) {
   const estimatedCost = baseEstimateTotal + itemTotal;
   const remaining = budgetCeiling === null ? null : budgetCeiling - estimatedCost;
-
-  return (
-    <aside className="rounded-[7px] border border-teal-200 bg-teal-50/40 p-5">
-      <h3 className="text-base font-semibold text-slate-950">Estimate Summary</h3>
-      <dl className="mt-7 space-y-6">
-        <div>
-          <dt className="text-xs font-semibold text-slate-700">Estimated Cost</dt>
-          <dd className="mt-2 break-words text-[15px] font-semibold tracking-[-0.025em] text-teal-700">
-            {formatBudgetMoney(estimatedCost)}
-          </dd>
-        </div>
-        <div className="border-t border-slate-200 pt-6">
-          <dt className="text-xs font-semibold text-slate-700">This Item Total</dt>
-          <dd className="mt-2 break-words text-[15px] font-semibold text-slate-950">
-            {formatBudgetMoney(itemTotal)}
-          </dd>
-        </div>
-        <div className="border-t border-slate-200 pt-6">
-          <dt className="text-xs font-semibold text-slate-700">Remaining Budget</dt>
-          <dd
-            className={cn(
-              "mt-2 break-words text-[15px] font-semibold",
-              remaining !== null && remaining < 0
-                ? "text-rose-700"
-                : "text-teal-700",
-            )}
-          >
-            {remaining === null ? "Unavailable" : formatBudgetMoney(remaining)}
-          </dd>
-          <p className="mt-2 text-xs text-slate-500">After saving this item</p>
-        </div>
-      </dl>
-    </aside>
-  );
+  return <aside className={styles.summary} data-panel="summary" aria-label="Estimate summary">
+    <h3 className={styles.paneTitle}>Estimate summary</h3>
+    <dl>
+      <div><dt>This Item Total</dt><dd>{formatBudgetMoney(itemTotal)}</dd></div>
+      <div><dt>Estimated Cost</dt><dd>{formatBudgetMoney(estimatedCost)}</dd></div>
+      <div><dt>Remaining Budget</dt><dd className={remaining !== null && remaining < 0 ? styles.overBudget : undefined}>{remaining === null ? "Unavailable" : formatBudgetMoney(remaining)}</dd>
+        <p>After saving this item</p>
+      </div>
+    </dl>
+  </aside>;
 }

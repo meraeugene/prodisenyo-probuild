@@ -31,6 +31,24 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--gmea-dashboard")) {
+      await require("./checkGmeaDashboard.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA dashboard browser checks passed: overall totals, breakdown, refresh, chart, CEO access, and mobile layout.");
+      return;
+    }
+    if (process.argv.includes("--gmea-finance")) {
+      await require("./checkGmeaFinance.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA finance checks passed: rental income/expense entry, payment history, operation expense saving/editing, weekly/monthly totals, roles, and mobile layout.");
+      return;
+    }
+    if (process.argv.includes("--project-images")) {
+      await require("./checkProjectImagesRemoved.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("Project image removal passed: engineer dashboard/list and CEO creation/engineer assignment on desktop and mobile.");
+      return;
+    }
     if (process.argv.includes("--sidebar-menus")) {
       await require("./checkPermanentNavigation.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);
@@ -83,7 +101,7 @@ async function main() {
       const mainHeader = await page.locator("[data-workspace-header]").boundingBox();
       assert.equal(sidebarHeader.height, mainHeader.height, `${route} sidebar and main header heights match`);
       assert.equal(sidebarHeader.y + sidebarHeader.height, mainHeader.y + mainHeader.height, `${route} header edges align`);
-      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Operation Expense", exact: true }).count(), 1);
+      if (route.startsWith("gmea")) assert.equal(await page.getByRole("link", { name: "Projects", exact: true }).count(), 1);
       const list = region ? page.getByRole("region", { name: region, exact: true }) : page.locator("#dashboard-content section").first();
       await list.getByRole("button", { name: allTab }).click();
       await list.locator("tbody tr").first().waitFor();

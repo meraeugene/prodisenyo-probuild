@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { rememberGmeaInputOptions } from "./utils/rememberGmeaInputOptions";
 import { APP_ROLES, requireRole } from "@/lib/auth";
 import type { Json } from "@/types/database";
 import { gmeaRentalsWriter } from "@/features/gmea-rentals/server/gmeaRentalsDatabase";
@@ -69,6 +70,7 @@ export async function markGmeaRentalExpenseViewedAction(expenseId: string) {
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
 }
@@ -99,6 +101,7 @@ export async function saveGmeaRentalEquipmentAction(
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   return data as string;
@@ -117,6 +120,7 @@ export async function createGmeaRentalAction(input: RentalMutation) {
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   revalidatePath("/gmea-rentals/" + data);
@@ -143,6 +147,7 @@ export async function saveGmeaRentalCollectionAction(
       throw new Error(schema.error.message);
     }
   }
+  if (command.kind === "record_payment") await rememberGmeaInputOptions({ method: command.value.method });
   const { data, error } = await gmeaRentalsWriter().rpc(
     "mutate_gmea_rental_collection",
     {
@@ -156,6 +161,7 @@ export async function saveGmeaRentalCollectionAction(
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   revalidatePath("/gmea-rentals/" + rentalId);
@@ -190,6 +196,7 @@ export async function saveGmeaRentalWorkerAction(
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   return data;
@@ -219,6 +226,7 @@ export async function saveGmeaRentalAssignmentAction(
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   revalidatePath("/gmea-rentals/" + rentalId);
@@ -240,6 +248,7 @@ export async function saveGmeaRentalExpenseAction(
   } else if (command.kind !== "create") {
     throw new Error("Create an expense first.");
   }
+  if (command.kind !== "delete") await rememberGmeaInputOptions({ supplier: command.value.supplier, method: command.value.method });
   const { data, error } = await gmeaRentalsWriter().rpc(
     "mutate_gmea_rental_expense",
     {
@@ -253,6 +262,7 @@ export async function saveGmeaRentalExpenseAction(
   revalidatePath("/gmea-rentals");
   for (const section of Object.keys(rentalSections)) revalidatePath(`/gmea-rentals/${section}`);
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-rentals/dashboard");
   revalidatePath("/gmea-rentals/reports");
   return data;

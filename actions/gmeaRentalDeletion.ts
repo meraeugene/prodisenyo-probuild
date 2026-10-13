@@ -21,7 +21,7 @@ export async function deleteGmeaRentalRecordAction(kind: "rental" | "equipment",
     throw new Error("Unable to delete this record. " + error.message);
   }
   if (!data) throw new Error("This record changed or was already deleted. Reload before trying again.");
-  for (const path of ["/gmea-rentals/income", "/gmea-rentals/expenses", "/gmea-rentals/bookings", "/gmea-rentals/equipment", "/gmea-rentals", "/gmea-overview", "/gmea-rentals/dashboard", "/gmea-rentals/reports"]) revalidatePath(path);
+  for (const path of ["/gmea-rentals/income", "/gmea-rentals/expenses", "/gmea-rentals/bookings", "/gmea-rentals/equipment", "/gmea-rentals", "/gmea-overview", "/gmea-dashboard", "/gmea-rentals/dashboard", "/gmea-rentals/reports"]) revalidatePath(path);
   if (kind === "rental") revalidatePath(`/gmea-rentals/${id}`);
   return id;
 }

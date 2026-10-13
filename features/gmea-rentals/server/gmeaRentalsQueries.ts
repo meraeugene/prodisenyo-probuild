@@ -187,6 +187,7 @@ export async function getGmeaRentalOperations(): Promise<RentalOperationsData> {
     const rows = (page ?? []).map((expense) => ({
       id: expense.id,
       rental_id: expense.rental_id,
+      income_record_id: expense.income_record_id ?? null,
       equipment_id: expense.equipment_id,
       category_id: expense.category_id,
       date: expense.expense_date,

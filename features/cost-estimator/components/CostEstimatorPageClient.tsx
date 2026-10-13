@@ -140,7 +140,7 @@ export default function CostEstimatorPageClient({
             state.setActiveReportEstimateId(state.selectedEstimate?.id ?? null)
           }
           onEdit={
-            state.selectedEstimate.status === "rejected"
+            state.selectedEstimate.status === "rejected" && linkedProject !== null
               ? state.handleReopenRejectedEstimate
               : undefined
           }

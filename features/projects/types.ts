@@ -37,7 +37,6 @@ export type ProjectField =
   | "subject"
   | "lead"
   | "estimateEngineerId"
-  | "image"
   | "budget"
   | "startDate"
   | "endDate";

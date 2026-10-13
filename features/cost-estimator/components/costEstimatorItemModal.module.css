@@ -1,0 +1,58 @@
+.dialog.dialog { width: calc(100% - 48px); max-width: 1120px; }
+.body.body { overflow: visible; padding: 18px 20px; }
+.columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) minmax(190px, .65fr); gap: 20px; align-items: start; }
+.pane { min-width: 0; }
+.paneTitle { margin: 0 0 14px; color: #101828; font-size: 14px; font-weight: 600; }
+.details { display: grid; gap: 14px; }
+.detailRow { display: grid; grid-template-columns: minmax(0, 1fr) 85px; gap: 12px; }
+.field { display: block; min-width: 0; color: #344054; font-size: 12px; font-weight: 600; }
+.field input, .field select, .field textarea { display: block; margin-top: 6px; width: 100%; min-width: 0; height: 36px; border: 1px solid #d0d5dd; border-radius: 5px; background: #fff; padding: 7px 10px; color: #101828; font-size: 13px; font-weight: 400; outline: none; }
+.field textarea { height: 72px; resize: none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: #076d69; box-shadow: 0 0 0 2px #e8f5f3; }
+.field [aria-invalid="true"] { border-color: #fda29b; }
+.field :disabled { background: #f9fafb; color: #667085; }
+.optional, .hint { color: #667085; font-weight: 400; }
+.hint { display: block; margin-top: 4px; font-size: 11px; text-align: right; }
+.error { display: block; margin-top: 4px; color: #b42318; font-size: 11px; font-weight: 400; }
+.lineToolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.lineSelect { flex: 1; min-width: 0; height: 34px; border: 1px solid #d0d5dd; border-radius: 5px; padding: 0 8px; background: #fff; font-size: 12px; }
+.material { padding: 14px; border: 1px solid #e4e7ec; border-radius: 6px; background: #f9fafb; }
+.materialHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.materialHeading h3 { color: #344054; font-size: 12px; font-weight: 600; }
+.materialFields { display: grid; gap: 12px; }
+.numbers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.quoteFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lineTotal { display: flex; justify-content: space-between; gap: 10px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #e4e7ec; color: #344054; font-size: 12px; }
+.lineTotal strong { color: #076d69; }
+.summary { border: 1px solid #cde5e1; border-radius: 6px; padding: 16px; background: #f3f9f8; }
+.summary dl { display: grid; gap: 16px; }
+.summary dl > div + div { border-top: 1px solid #cde5e1; padding-top: 14px; }
+.summary dt { color: #475467; font-size: 12px; }
+.summary dd { margin-top: 6px; overflow-wrap: anywhere; color: #076d69; font-size: 17px; font-weight: 600; }
+.summary dd.overBudget { color: #b42318; }
+.summary p { margin-top: 4px; color: #667085; font-size: 11px; }
+.tabs { display: none; }
+
+@media (max-width: 1099px) and (min-width: 680px) {
+  .columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; }
+  .summary { grid-column: 1 / -1; }
+  .summary dl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .summary dl > div + div { border-top: 0; border-left: 1px solid #cde5e1; padding-top: 0; padding-left: 14px; }
+  .summary .paneTitle { margin-bottom: 10px; }
+}
+
+@media (max-width: 679px) {
+  .dialog.dialog { width: calc(100% - 24px); }
+  .body.body { padding: 14px 16px; }
+  .columns { display: block; }
+  .columns[data-pane="details"] > [data-panel]:not([data-panel="details"]),
+  .columns[data-pane="costs"] > [data-panel]:not([data-panel="costs"]),
+  .columns[data-pane="summary"] > [data-panel]:not([data-panel="summary"]) { display: none; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #e4e7ec; }
+  .tabs button { flex: 1; padding: 10px 4px; border-bottom: 2px solid transparent; color: #667085; font-size: 12px; font-weight: 600; }
+  .tabs button[aria-pressed="true"] { border-color: #076d69; color: #076d69; }
+  .paneTitle { margin-bottom: 12px; }
+}
+
+/* Preserve access with browser zoom, an on-screen keyboard, or an unusually short screen. */
+@media (max-height: 650px) { .body.body { overflow-y: auto; } }

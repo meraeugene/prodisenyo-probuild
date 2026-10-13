@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { mutate } from "swr";
+import { createCustomerRentalExpenseAction } from "@/actions/gmeaCustomerIncome";
 import {
   saveGmeaRentalAssignmentAction,
   saveGmeaRentalExpenseAction,
@@ -17,7 +18,7 @@ import type {
   RentalWorkerMutation,
 } from "../types";
 
-export function useGmeaRentalOperationsMutation(rental?: GmeaRental) {
+export function useGmeaRentalOperationsMutation(rental?: GmeaRental, incomeRecordId?: string) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -29,6 +30,8 @@ export function useGmeaRentalOperationsMutation(rental?: GmeaRental) {
     try {
       await operation();
       await mutate("gmea-rentals:operations");
+      await mutate("gmea-dashboard:overview");
+      await mutate("gmea-input-options");
       if (rental) await mutate(["gmea-rental", rental.id]);
       router.refresh();
     } catch (cause) {
@@ -63,7 +66,7 @@ export function useGmeaRentalOperationsMutation(rental?: GmeaRental) {
       input: RentalExpenseMutation,
     ) =>
       run(() =>
-        saveGmeaRentalExpenseAction(
+        incomeRecordId && !expense ? createCustomerRentalExpenseAction(incomeRecordId, input) : saveGmeaRentalExpenseAction(
           expense?.id ?? null,
           expense?.version ?? null,
           input,

@@ -11,6 +11,9 @@ export type ProjectEstimateRow =
   Database["public"]["Tables"]["project_estimates"]["Row"];
 export type ProjectEstimateItemRow =
   Database["public"]["Tables"]["project_estimate_items"]["Row"];
+export type EstimateMutationResult =
+  | { success: true; estimate: ProjectEstimateRow; items: ProjectEstimateItemRow[] }
+  | { success: false; error: string };
 export interface ReviewProjectEstimateRow extends ProjectEstimateRow {
   requester_profile: Pick<
     Database["public"]["Tables"]["profiles"]["Row"],
@@ -92,6 +95,10 @@ export interface EstimateItemModalMaterialForm {
   referenceQuotation: string;
 }
 
+export type EstimateItemMaterialErrors = Partial<Record<
+  "searchInput" | "unitType" | "quantityInput" | "referenceSupplier" | "referenceQuotation", string
+>>;
+
 export interface CostEstimatorItemModalProps {
   open: boolean;
   form: EstimateItemModalForm;
@@ -101,7 +108,7 @@ export interface CostEstimatorItemModalProps {
     displayName?: string;
     materialRows: Record<
       string,
-      Partial<Record<"searchInput" | "unitType" | "quantityInput", string>>
+      EstimateItemMaterialErrors
     >;
   };
   editingMaterialSnapshots: Record<string, EstimateItemModalMaterialForm>;

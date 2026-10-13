@@ -33,6 +33,8 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
 
   if (role === APP_ROLES.GMEA) {
     return hasAllowedPrefix(pathname, [
+      "/gmea-dashboard",
+      "/gmea-operation-expenses",
       "/gmea-projects",
       "/gmea-rentals",
       "/gmea-overview",
@@ -42,6 +44,8 @@ function isRoleAllowedNextPath(role: AppRole, pathname: string) {
 
   if (role === APP_ROLES.CEO) {
     return hasAllowedPrefix(pathname, [
+      "/gmea-dashboard",
+      "/gmea-operation-expenses",
       "/dashboard",
       "/budget-tracker",
       "/estimate-approvals",

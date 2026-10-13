@@ -23,7 +23,7 @@ Object.assign(window, { __engineerWorkspace: data, __engineerNotifications: { es
 
 export default function EngineerWorkflowHarness() {
   const route = window.location.pathname.split("/").pop();
-  if (route === "estimator-workflow") return <CostEstimatorPageClient estimates={estimates} items={items} catalogItems={[{id:"cement",name:"Portland cement",category:"materials",unit_label:"bags",unit_cost:350,notes:null,is_active:true,created_by:"engineer",updated_by:null,created_at:"2026-10-01",updated_at:"2026-10-01"}]} assignedProjects={assigned} initialProjectId="" />;
+  if (route === "estimator-workflow") return <CostEstimatorPageClient estimates={estimates} items={items} catalogItems={[{id:"cement",name:"Portland cement",category:"materials",unit_label:"bags",unit_cost:350,notes:null,is_active:true,created_by:"engineer",updated_by:null,created_at:"2026-10-01",updated_at:"2026-10-01"}]} assignedProjects={assigned.slice(0, 3)} initialProjectId="" />;
   if (route === "workspace") return <ProjectWorkspaceClient project={project} currentUserId="engineer" canUpdateProgress canCreateEstimate canReviewEstimates={false} {...data} />;
   if (route === "materials") return <MaterialRequestPageClient initialRequests={[]} projects={assigned} defaultProjectId={project.id} />;
   if (route === "overtime") return <OvertimeRequestPageClient initialEmployeeName="Maria Santos" initialRequests={overtimeRequests} />;

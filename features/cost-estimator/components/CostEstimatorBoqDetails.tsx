@@ -19,6 +19,7 @@ export default function CostEstimatorBoqDetails({ estimate, items, budgetCeiling
     <button type="button" onClick={onBack} disabled={pending} className="inline-flex items-center gap-2 text-xs font-medium text-[#076d69] hover:underline"><ArrowLeft size={14} aria-hidden="true" />Back to cost estimator</button>
     <WorkspacePageHeader eyebrow="Engineer / Cost estimator / BOQ" title={`${estimate.project_name} - BOQ Details`} description="Review the Bill of Quantities, estimated costs, and CEO review notes."
       actions={<><button type="button" onClick={onViewReport} className={styles.button}><FileText size={14} aria-hidden="true" />View report</button>{onEdit && <button type="button" onClick={onEdit} disabled={pending} className={styles.primaryButton}><Pencil size={14} aria-hidden="true" />Edit BOQ</button>}</>} />
+    {estimate.status === "rejected" && !onEdit && <p role="status" className="rounded-[7px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">This BOQ can be revised only while its project is awaiting a cost estimate and assigned to you. Review notes remain available below.</p>}
     <EstimateProjectFacts facts={[
       { label: "Project type", value: formatProjectTypeLabel(estimate.project_type) }, { label: "Location", value: estimate.location || "Not recorded" }, { label: "Owner", value: estimate.owner_name || "Not recorded" }, { label: "Status", value: formatEstimateStatusLabel(estimate.status) },
     ]} />

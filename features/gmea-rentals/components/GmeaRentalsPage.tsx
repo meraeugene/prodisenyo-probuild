@@ -18,7 +18,8 @@ import GmeaEquipmentFormDialog, {
 } from "./GmeaEquipmentFormDialog";
 
 
-import GmeaRentalCreateForm from "./GmeaRentalCreateForm";
+import GmeaCustomerIncomeForm from "./GmeaCustomerIncomeForm";
+import GmeaRentalExpenseEntry from "./GmeaRentalExpenseEntry";
 import GmeaRentalsHeader from "./GmeaRentalsHeader";
 import RentalRecordsWorkspace from "./RentalRecordsWorkspace";
 import CeoPageHeader from "@/features/ceo-workspace/components/CeoPageHeader";
@@ -62,7 +63,7 @@ export default function GmeaRentalsPage({
   >();
   const [form, setForm] = useState<EquipmentFormState>(blankEquipmentForm);
   const [error, setError] = useState("");
-  const [creatingRental, setCreatingRental] = useState(false);
+  const [entry, setEntry] = useState<"income" | "expense" | null>(null);
   const [pending, startTransition] = useTransition();
 
   function updateForm<K extends keyof EquipmentFormState>(
@@ -135,7 +136,8 @@ export default function GmeaRentalsPage({
           canEdit={canEdit}
           section={section}
           onAddEquipment={() => openEquipment()}
-          onCreateRental={() => setCreatingRental(true)}
+          onAddIncome={() => setEntry("income")}
+          onAddExpense={() => setEntry("expense")}
         /> : <CeoPageHeader eyebrow="GMEA / Rentals" title={title} description={description} />}
 
         {error && selected === undefined && (
@@ -166,12 +168,9 @@ export default function GmeaRentalsPage({
           error={error}
         />
       )}
-      {creatingRental && (
-        <GmeaRentalCreateForm
-          equipment={items}
-          onClose={() => setCreatingRental(false)}
-        />
-      )}
+      {entry === "income" && <GmeaCustomerIncomeForm onClose={() => setEntry(null)} />}
+      {entry === "expense" && <GmeaRentalExpenseEntry
+        operations={{ ...operations, equipment: items }} onClose={() => setEntry(null)} />}
     </main>
   );
 }

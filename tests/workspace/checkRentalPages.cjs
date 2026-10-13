@@ -5,52 +5,14 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   await page.goto(base + "/gmea-rentals/income");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   assert.equal(await nav.getByRole("button", { name: "Rentals", exact: true }).count(), 0);
-  for (const [label, route] of [["Rental Income", "income"], ["Rental Expenses", "expenses"], ["Rental Bookings", "bookings"], ["Equipment", "equipment"]])
+  for (const [label, route] of [["Rentals", "income"]])
     assert.equal(await nav.getByRole("link", { name: label, exact: true }).getAttribute("href"), "/gmea-rentals/" + route);
-  assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).getAttribute("aria-current"), "page");
-  assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).evaluate(element => getComputedStyle(element).boxShadow), "none");
+  assert.equal(await nav.getByRole("link", { name: "Rentals", exact: true }).getAttribute("aria-current"), "page");
+  assert.equal(await nav.getByRole("link", { name: "Rentals", exact: true }).evaluate(element => getComputedStyle(element).boxShadow), "none");
   assert.equal(await nav.locator("[data-open]").count(), 0);
   assert.equal(await page.getByRole("navigation", { name: "Rental workspace sections" }).count(), 0);
-  const income = page.getByRole("region", { name: "Rental income workspace", exact: true });
-  const records = income.locator("tbody:not(figure tbody)");
-  await income.getByRole("heading", { name: "Monthly rental income", exact: true }).waitFor();
-  assert.equal(await income.getByLabel("Income month", { exact: true }).inputValue(), "2026-05");
-  assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /18,000/);
-  assert.equal(await income.locator("figure").count(), 0);
-  await income.getByRole("button", { name: "Analytics", exact: true }).click();
-  assert.equal(await records.count(), 0);
-  await income.locator("figure .recharts-surface").first().waitFor();
-  assert.equal(await income.locator("figure .recharts-surface").count(), 2);
-  const trend = income.locator("figure").first();
-  await trend.getByText("View chart data", { exact: true }).click();
-  assert.match(await trend.locator("tbody tr").last().innerText(), /May 26/);
-  await trend.getByText("View chart data", { exact: true }).click();
-  await income.getByLabel("Income month", { exact: true }).fill("2026-04");
-  assert.match(await income.getByRole("region", { name: "Monthly rental income totals" }).innerText(), /10,000/);
-  await income.getByLabel("Income month", { exact: true }).fill("2026-05");
-  await income.getByRole("button", { name: /^Needs review/ }).click();
-  assert.match(await income.innerText(), /Payment date unconfirmed/);
-  await income.getByText("Original Excel rows", { exact: true }).click();
-  assert.equal(await income.locator('a[href*="historical-1"]').count(), 0);
-  await income.getByRole("button", { name: "Companies", exact: true }).click();
-  assert.equal(await records.locator("tr").count(), 2);
-  await income.getByRole("button", { name: "Harbor Logistics", exact: true }).click();
-  assert.equal(await records.locator("tr").count(), 1);
-  assert.match(await records.innerText(), /10,000/);
-  await income.getByRole("button", { name: "Clear income filters", exact: true }).click();
-  assert.equal(await records.locator("tr").count(), 4);
-  await income.getByRole("button", { name: /^Payment history for / }).first().click();
-  const paymentHistory = page.getByRole("dialog");
-  await paymentHistory.waitFor();
-  assert.match(await paymentHistory.innerText(), /Method: Cash/);
-  await paymentHistory.getByRole("button", { name: "Close", exact: true }).click();
-  assert.equal(await income.locator("figure").count(), 0);
-  await income.getByRole("button", { name: "Analytics", exact: true }).click();
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: path.join(screenshots, "rental-income-desktop.png"), fullPage: true });
-
-  await nav.getByRole("link", { name: "Rental Expenses", exact: true }).click();
-  await page.getByRole("heading", { name: "Rental Expenses", exact: true }).waitFor();
+  await require("./checkRentalPortfolio.cjs")(page, base, screenshots);
+  await page.goto(base + "/gmea-rentals/expenses");
   await page.getByRole("heading", { name: "Monthly rental expenses", exact: true }).waitFor();
   assert.equal(await page.getByLabel("Reporting month", { exact: true }).inputValue(), "2026-10");
   assert.equal(await page.locator("figure").count(), 0);
@@ -70,7 +32,7 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   await page.getByRole("button", { name: "History", exact: true }).click();
   await page.getByRole("heading", { name: "Expense history", exact: true }).waitFor();
 
-  await nav.getByRole("link", { name: "Rental Bookings", exact: true }).click();
+  await page.goto(base + "/gmea-rentals/bookings");
   await page.getByRole("heading", { name: "Rental Bookings", exact: true }).waitFor();
   const bookings = page.getByRole("region", { name: "Rental booking records", exact: true });
   assert.equal(await bookings.locator("tbody:not(figure tbody) tr").count(), 5);
@@ -85,7 +47,7 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   await bookings.locator("figure summary").click();
   assert.equal(await bookings.locator("figure tbody").evaluate(body => [...body.querySelectorAll("td")].reduce((sum, cell) => sum + Number(cell.textContent), 0)), 1);
   await bookings.getByRole("button", { name: "Reset filters", exact: true }).click();
-  await page.getByRole("button", { name: "New rental", exact: true }).click();
+  await page.getByRole("button", { name: "Rental income", exact: true }).click();
   await page.getByRole("dialog").waitFor();
   await page.getByRole("dialog").getByRole("button", { name: "Close dialog", exact: true }).click();
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -94,7 +56,7 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   assert.equal(await bookings.locator("figure").count(), 0);
   assert.equal(await bookings.locator("tbody tr").count(), 5);
 
-  await nav.getByRole("link", { name: "Equipment", exact: true }).click();
+  await page.goto(base + "/gmea-rentals/equipment");
   await page.getByRole("heading", { name: "Equipment", exact: true }).waitFor();
   await page.getByRole("combobox", { name: "Filter equipment by status" }).selectOption("available");
   assert.match(await page.getByRole("region", { name: "Equipment records" }).innerText(), /of 14 units/);
@@ -103,14 +65,14 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
   await page.getByRole("dialog").getByRole("button", { name: "Close dialog", exact: true }).click();
 
   assert.equal(await page.getByRole("button", { name: "Collapse navigation", exact: true }).count(), 0);
-  assert.equal(await nav.getByRole("link", { name: "Rental Income", exact: true }).isVisible(), true);
+  assert.equal(await nav.getByRole("link", { name: "Rentals", exact: true }).isVisible(), true);
   assert.equal(await nav.getByRole("button", { name: "Rentals", exact: true }).count(), 0);
 
   for (const section of ["income", "expenses", "bookings", "equipment"]) {
     await page.goto(base + "/gmea-rentals/" + section);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("heading", { name: section === "equipment" ? "Equipment" : "Rental " + section[0].toUpperCase() + section.slice(1), exact: true }).waitFor();
-    if (section !== "equipment") {
+    await page.getByRole("heading", { name: section === "income" ? "Rentals" : section === "equipment" ? "Equipment" : "Rental " + section[0].toUpperCase() + section.slice(1), exact: true }).waitFor();
+    if (section !== "equipment" && section !== "income") {
       assert.equal(await page.locator("figure").count(), 0);
       await page.getByRole("button", { name: "Analytics", exact: true }).click();
       await page.locator("figure .recharts-surface").first().waitFor();
@@ -118,7 +80,7 @@ module.exports = async function checkRentalPages(page, base, screenshots) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, section + " mobile overflow");
     await page.screenshot({ path: path.join(screenshots, "rental-" + section + "-mobile.png"), fullPage: true });
     await page.getByRole("button", { name: "Open navigation", exact: true }).click();
-    await nav.getByRole("link", { name: "Rental Income", exact: true }).waitFor();
+    await nav.getByRole("link", { name: "Rentals", exact: true }).waitFor();
     await page.getByRole("button", { name: "Close navigation", exact: true }).click();
     await page.setViewportSize({ width: 1440, height: 1100 });
   }

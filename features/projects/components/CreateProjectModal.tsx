@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { useEffect, useRef } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import Field from "./ProjectFormField";
-import ProjectImageField from "./ProjectImageField";
 import { formatBudgetInput } from "../utils/projectForm";
 import type { useCreateProject } from "../hooks/useCreateProject";
 import type { EngineerOption } from "../types";
@@ -87,7 +86,6 @@ export default function CreateProjectModal({ form, engineers }: { form: ReturnTy
                       </span>
                     ) : null}
                   </label>
-                  <ProjectImageField form={form} />
                   <label className="text-sm font-semibold text-slate-700">
                     Cost estimate engineer / project manager
                     <select

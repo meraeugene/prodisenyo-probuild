@@ -1,0 +1,33 @@
+const assert = require("node:assert/strict");
+const path = require("node:path");
+
+module.exports = async function checkGmeaDashboard(page, base, screenshots) {
+  await page.goto(base + "/gmea-dashboard");
+  const totals = page.getByRole("region", { name: "Overall GMEA financial totals", exact: true });
+  await totals.waitFor();
+  const card = name => totals.locator("article").filter({ has: page.getByText(name, { exact: true }) });
+  assert.match(await card("Total collected income").innerText(), /2,828,000\.00/);
+  assert.match(await card("Total expenses").innerText(), /23,524,530\.40/);
+  assert.match(await card("Net after expenses").innerText(), /-.*20,696,530\.40/);
+  const breakdown = page.getByRole("region", { name: "GMEA income and expense breakdown", exact: true });
+  assert.equal(await breakdown.locator("tbody tr").count(), 3);
+  assert.match(await breakdown.locator("tbody tr").filter({ hasText: "Operation Expenses" }).innerText(), /950\.40/);
+  assert.equal(await page.getByRole("button", { name: "Refresh data", exact: true }).count(), 0);
+  await page.waitForFunction(() => window.__dashboardReads > 0);
+  await page.evaluate(() => { window.__operationExpenses = [...window.__operationExpenses, { ...window.__operationExpenses[0], id: "fresh-cost", amount: 50 }]; });
+  await page.waitForFunction(() => document.querySelector('section[aria-label="Overall GMEA financial totals"]').textContent.includes("23,524,580.40"), null, { timeout: 12000 });
+  assert.match(await card("Net after expenses").innerText(), /-.*20,696,580\.40/);
+  await page.getByText("View chart data", { exact: true }).click();
+  assert.equal(await page.getByRole("region", { name: "GMEA collection and expense trend", exact: true }).locator("tbody tr").count(), 12);
+  await page.getByText("View chart data", { exact: true }).click();
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  await page.screenshot({ path: path.join(screenshots, "gmea-dashboard-desktop.png"), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => new Promise(resolve => { window.scrollTo(0, 0); requestAnimationFrame(() => requestAnimationFrame(resolve)); }));
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.screenshot({ path: path.join(screenshots, "gmea-dashboard-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.goto(base + "/gmea-dashboard?role=ceo");
+  await totals.waitFor();
+  assert.equal(await breakdown.getByRole("link", { name: "Rentals", exact: true }).getAttribute("href"), "/gmea-rentals/income");
+};

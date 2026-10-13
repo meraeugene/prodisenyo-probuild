@@ -3,7 +3,7 @@ const path = require("node:path");
 
 module.exports = async function checkPermanentNavigation(page, base, screenshots) {
   page.setDefaultTimeout(10000);
-  const links = [["Rental Income", "income"], ["Rental Expenses", "expenses"], ["Rental Bookings", "bookings"], ["Equipment", "equipment"]];
+  const links = [["Rentals", "income"]];
   for (const role of ["ceo", "gmea"]) {
     for (const route of ["/gmea-projects", "/gmea-rentals/expenses", "/budget-tracker"]) {
       await page.goto(`${base}${route}?role=${role}`);
@@ -13,12 +13,13 @@ module.exports = async function checkPermanentNavigation(page, base, screenshots
       assert.equal(await sidebar.evaluate(element => element.getBoundingClientRect().width), 248, `${role} sidebar stays full width on ${route}`);
       assert.equal(await sidebar.getByRole("button", { name: /^(Collapse|Expand) navigation$/ }).count(), 0);
       assert.equal(await nav.locator("button[aria-expanded]").count(), 0, `${role} has no expandable menu`);
+      assert.equal(await nav.getByRole("link", { name: /^(Operation Expense|Rental Bookings|Equipment|Rental Expenses)$/ }).count(), 0);
       for (const [label, destination] of links) {
         const link = nav.getByRole("link", { name: label, exact: true });
         assert.equal(await link.isVisible(), true);
         assert.equal(await link.getAttribute("href"), `/gmea-rentals/${destination}`);
       }
-      if (route.endsWith("expenses")) assert.equal(await nav.getByRole("link", { name: "Rental Expenses", exact: true }).getAttribute("aria-current"), "page");
+      if (route.endsWith("expenses")) assert.equal(await nav.getByRole("link", { name: "Rentals", exact: true }).getAttribute("aria-current"), "page");
     }
     await page.goto(`${base}/gmea-projects?role=${role}`);
     await page.locator("[data-workspace-header]").waitFor();

@@ -17,7 +17,7 @@ export default function CeoGmeaProjectsPageClient({ projects }: { projects: Gmea
   const [view, setView] = useState<"projects" | "analytics">("projects");
   return <div className="min-h-screen bg-[#f5f6f8] p-4 sm:p-6">
     <div className="mx-auto max-w-[1600px] space-y-5">
-      <CeoPageHeader eyebrow="GMEA / Operation Expense" title="Operation Expense" description="Track GMEA operating expenses, project costs, and outstanding collections." />
+      <CeoPageHeader eyebrow="GMEA / Projects" title="Projects" description="Track GMEA project costs and collections." />
       <WorkspaceTabSwitch label="GMEA project views" value={view} onChange={setView}
         items={[{ value: "projects", label: "Projects" }, { value: "analytics", label: "Analytics" }]} />
       <GmeaProjectMetricSummary projects={portfolio.portfolioProjects} />

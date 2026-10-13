@@ -12,10 +12,14 @@ import GmeaRentalWeekFields from "./GmeaRentalWeekFields";
 import GmeaRentalExpenseTotals from "./GmeaRentalExpenseTotals";
 import { useGmeaRentalExpenseForm, type Scope } from "../hooks/useGmeaRentalExpenseForm";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
+import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 
 
 export default function GmeaRentalExpenseForm({
   rental,
+  incomeRecordId,
+  leadingContent,
+  allowReportingCutoff = false,
   equipment,
   categories,
   expense,
@@ -26,6 +30,9 @@ export default function GmeaRentalExpenseForm({
   onSaved,
 }: {
   rental?: GmeaRental;
+  incomeRecordId?: string;
+  leadingContent?: ReactNode;
+  allowReportingCutoff?: boolean;
   equipment: RentalEquipment[];
   categories: RentalExpenseCategory[];
   expense?: RentalExpense;
@@ -35,7 +42,7 @@ export default function GmeaRentalExpenseForm({
   onClose: () => void;
   onSaved?: (week: RentalWeekMetadata) => void;
 }) {
-  const { week, scope, form, choices, totals, pending, error, set, changeScope, changeWeek, submit } = useGmeaRentalExpenseForm({ rental, equipment, categories, expense, weekContext, onClose, onSaved });
+  const { week, scope, form, choices, totals, pending, error, set, changeScope, changeWeek, toggleReportingCutoff, submit } = useGmeaRentalExpenseForm({ rental, incomeRecordId, equipment, categories, expense, weekContext, onClose, onSaved });
   return (
     <GmeaRentalsDialog
       title={readOnly ? "Rental expense details" : expense ? "Edit rental expense" : "New rental expense"}
@@ -48,9 +55,13 @@ export default function GmeaRentalExpenseForm({
       readOnly={readOnly}
       wide
     >
+      {leadingContent}
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {allowReportingCutoff && !weekContext && <label className="flex items-center gap-2 text-sm sm:col-span-2 lg:col-span-3">
+          <input type="checkbox" checked={!!week} onChange={event => toggleReportingCutoff(event.target.checked)} />Add workbook reporting cutoff
+        </label>}
         {week && <GmeaRentalWeekFields week={week} existing={!!expense || lockWeekDates} onChange={changeWeek} />}
-        <Field label="Expense scope *">
+        {!incomeRecordId && <Field label="Expense scope *">
           <select
             value={scope}
             onChange={(event) => changeScope(event.target.value as Scope)}
@@ -60,7 +71,7 @@ export default function GmeaRentalExpenseForm({
             <option value="equipment">Equipment only</option>
             <option value="general">General Rentals operations</option>
           </select>
-        </Field>
+        </Field>}
         {scope !== "general" && (
           <Field
             label={
@@ -120,22 +131,8 @@ export default function GmeaRentalExpenseForm({
             />
           </Field>
         </div>
-        <Field label="Supplier / payee">
-          <input
-            maxLength={200}
-            value={form.supplier}
-            onChange={(event) => set("supplier", event.target.value)}
-            className={rentalInputClass}
-          />
-        </Field>
-        <Field label="Payment method">
-          <input
-            maxLength={100}
-            value={form.method}
-            onChange={(event) => set("method", event.target.value)}
-            className={rentalInputClass}
-          />
-        </Field>
+        <GmeaSavedInput field="suppliers" label="Supplier / payee" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={200} readOnly={readOnly} disabled={pending} value={form.supplier} onChange={value => set("supplier", value)} />
+        <GmeaSavedInput field="methods" label="Payment method" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={100} readOnly={readOnly} disabled={pending} value={form.method} onChange={value => set("method", value)} />
         <Field label="OR / invoice number">
           <input
             maxLength={100}

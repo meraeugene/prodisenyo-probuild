@@ -14,6 +14,7 @@ import {
 import type { GmeaMutation } from "@/features/gmea-projects/types";
 import { APP_ROLES, requireRole } from "@/lib/auth";
 import { protectWorkbookBalances } from "@/features/gmea-projects/utils/workbookBalanceProtection";
+import { rememberGmeaInputOptions } from "./utils/rememberGmeaInputOptions";
 
 export async function getGmeaProjectsDataAction() {
   return getGmeaProjects();
@@ -47,6 +48,8 @@ export async function saveGmeaProjectAction(
     command = protectWorkbookBalances(command, project);
   } else if (command.kind !== "create_project")
     throw new Error("Create a project first.");
+  if (command.kind === "expense") await rememberGmeaInputOptions({ supplier: command.value.supplier, method: command.value.method, invoice_name: command.value.invoice_name });
+  if (command.kind === "record_receipt") await rememberGmeaInputOptions({ method: command.value.method });
   const { data, error } = await gmeaWriter().rpc("mutate_gmea_project", {
     p_actor: user.id,
     p_project: projectId,
@@ -56,6 +59,7 @@ export async function saveGmeaProjectAction(
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-projects");
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-projects/" + data);
   return data;
 }
@@ -88,5 +92,6 @@ export async function markGmeaExpenseViewedAction(
   if (error) throw new Error(error.message);
   revalidatePath("/gmea-projects");
   revalidatePath("/gmea-overview");
+  revalidatePath("/gmea-dashboard");
   revalidatePath("/gmea-projects/" + projectId);
 }

@@ -3,7 +3,6 @@ import styles from "@/components/workspace/workspace.module.css";
 import { formatPortfolioDate } from "../utils/projectPortfolioSelectors";
 import { getProjectStatusPresentation } from "../utils/projectPresentation";
 import type { ProjectRecord } from "../types";
-import ProjectThumbnail from "./ProjectThumbnail";
 
 function StatusBadge({ project }: { project: ProjectRecord }) {
   const status = getProjectStatusPresentation(project);
@@ -30,13 +29,13 @@ export default function EngineerProjectsTable({ projects, hasFilters, onOpenProj
       <table className={`${styles.table} !min-w-[980px]`}>
         <thead><tr><th className="w-[30%]">Project</th><th className="w-[16%]">Progress</th><th>Status</th><th>Start date</th><th>Target completion</th><th className="text-right">Actions</th></tr></thead>
         <tbody>{projects.map(project => <tr key={project.id}>
-          <td><div className="flex items-center gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-10 w-12 shrink-0 rounded object-cover" /><div className="min-w-0"><p className="font-medium text-slate-900">{project.name}</p><p className="mt-1 text-xs text-slate-500">{project.location || "Location not set"}</p></div></div></td>
+          <td><div className="min-w-0"><p className="font-medium text-slate-900">{project.name}</p><p className="mt-1 text-xs text-slate-500">{project.location || "Location not set"}</p></div></td>
           <td><ProgressCell project={project} /></td><td><StatusBadge project={project} /></td><td className="whitespace-nowrap text-slate-600">{formatPortfolioDate(project.startDate)}</td><td className="whitespace-nowrap text-slate-600">{formatPortfolioDate(project.endDate)}</td><td className="text-right">{openButton(project)}</td>
         </tr>)}</tbody>
       </table>
     </div>
     <div className="divide-y divide-slate-100 lg:hidden">{projects.map(project => <article key={project.id} className="space-y-4 p-4">
-      <div className="flex items-start gap-3"><ProjectThumbnail src={project.imageUrl} name={project.name} className="h-10 w-12 shrink-0 rounded object-cover" /><div className="min-w-0 flex-1"><h2 className="break-words text-sm font-semibold text-slate-900">{project.name}</h2><p className="mt-1 text-xs text-slate-500">{project.location || "Location not set"}</p></div><StatusBadge project={project} /></div>
+      <div className="flex items-start gap-3"><div className="min-w-0 flex-1"><h2 className="break-words text-sm font-semibold text-slate-900">{project.name}</h2><p className="mt-1 text-xs text-slate-500">{project.location || "Location not set"}</p></div><StatusBadge project={project} /></div>
       <ProgressCell project={project} /><div className="flex flex-wrap items-end justify-between gap-3"><p className="text-xs leading-5 text-slate-500">Target completion<br /><span className="text-slate-700">{formatPortfolioDate(project.endDate)}</span></p>{openButton(project)}</div>
     </article>)}</div>
   </>;

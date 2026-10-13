@@ -125,7 +125,7 @@ export function normalizeRentalExpenseMutation(
   if (notes.startsWith("@rental-week:") && !week) throw new Error("Invalid weekly reporting dates or section.");
   if (week && (date < week.start || date > week.end)) throw new Error("Expense date must be within the selected week.");
   const rentalId = optionalId(value.rental_id), equipmentId = optionalId(value.equipment_id);
-  if (week && (rentalId || (week.section === "equipment" ? !equipmentId : equipmentId))) throw new Error("Select equipment for equipment expenses and general operations for cash advances or salaries.");
+  if (week && (week.section === "equipment" ? !equipmentId : equipmentId)) throw new Error("Select equipment for equipment expenses and a payee without equipment for cash advances or salaries.");
   return {
     kind: command.kind,
     value: {

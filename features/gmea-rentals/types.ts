@@ -108,6 +108,7 @@ export type RentalExpenseCategory = {
 
 export type RentalExpense = {
   id: string;
+  income_record_id?: string | null;
   rental_id: string | null;
   equipment_id: string | null;
   category_id: string;

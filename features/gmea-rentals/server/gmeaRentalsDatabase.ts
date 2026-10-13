@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { HistoricalIncomeRecord } from "../incomeTypes";
+import type { CustomerIncomeEntry } from "../customerIncomeTypes";
 import {
   createSupabaseAdminClient,
   createSupabaseServerClient,
@@ -89,6 +90,7 @@ type RentalExpenseCategoryRow = {
 };
 type RentalExpenseRow = {
   id: string;
+  income_record_id?: string | null;
   rental_id: string | null;
   equipment_id: string | null;
   category_id: string;
@@ -123,6 +125,7 @@ type Table<T> = {
 type RentalsDatabase = {
   public: {
     Tables: {
+      gmea_rental_customer_income: Table<CustomerIncomeEntry>;
       gmea_rental_income_imports: Table<{source_hash: string; source_name: string; records: HistoricalIncomeRecord[]; imported_by: string; imported_at: string}>;
       gmea_rental_equipment: Table<EquipmentRow>;
       gmea_rentals: Table<RentalRow>;
@@ -136,6 +139,12 @@ type RentalsDatabase = {
     };
     Views: Record<string, never>;
     Functions: {
+      save_gmea_customer_income: {
+        Args: { p_actor: string; p_input: unknown }; Returns: string;
+      };
+      create_gmea_customer_expense: {
+        Args: { p_actor: string; p_record: string; p_command: unknown }; Returns: string;
+      };
       mutate_gmea_rental_equipment: {
         Args: {
           p_actor: string;

@@ -10,7 +10,7 @@ export default function GmeaRentalSectionSkeleton({ section }: { section: Rental
       <SkeletonPanel className="space-y-5 p-4 sm:p-5">
         {section !== "equipment" && <div className="flex flex-wrap gap-2"><SkeletonBlock className="h-9 w-28" /><SkeletonBlock className="h-9 w-24" /></div>}
         <div className="flex flex-wrap gap-3"><SkeletonBlock className="h-10 w-40" /><SkeletonBlock className="h-10 w-60" /></div>
-        <SkeletonStats count={section === "income" ? 4 : 3} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" />
+        <SkeletonStats count={section === "income" ? 6 : 3} className={`grid gap-3 sm:grid-cols-2 ${section === "income" ? "xl:grid-cols-3" : "xl:grid-cols-4"}`} />
         <SkeletonTable columns={6} minWidth={720} />
       </SkeletonPanel>
     </div>

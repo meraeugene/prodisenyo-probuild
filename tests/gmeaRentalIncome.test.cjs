@@ -81,6 +81,7 @@ test("typed payment action checks authorization and schema availability before s
   const calls = [];
   const paths = [];
   const actions = load("actions/gmeaRentals.ts", {
+    "./utils/rememberGmeaInputOptions": { rememberGmeaInputOptions: async () => {} },
     "next/cache": { revalidatePath: path => paths.push(path) },
     "@/lib/auth": { APP_ROLES: { CEO: "ceo" } },
     "@/features/gmea-rentals/server/gmeaRentalsQueries": { requireGmeaRentalsAccess: async write => {

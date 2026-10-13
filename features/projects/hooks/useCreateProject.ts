@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createProjectAction } from "@/actions/projects";
@@ -9,46 +9,12 @@ export function useCreateProject() {
   const [showCreate, setShowCreate] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [budgetValue, setBudgetValue] = useState("");
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const clearFieldError = (field: ProjectField) =>
     setFormErrors((current) => ({ ...current, [field]: undefined }));
 
-  function clearProjectImage() {
-    setImagePreviewUrl(null);
-    if (imageInputRef.current) imageInputRef.current.value = "";
-    clearFieldError("image");
-  }
-
   function closeCreateModal() {
     setShowCreate(false);
-    clearProjectImage();
-  }
-
-  function handleProjectImage(file?: File) {
-    if (!file) {
-      clearProjectImage();
-      return;
-    }
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setFormErrors((current) => ({
-        ...current,
-        image: "Choose a JPG, PNG, or WebP image.",
-      }));
-      if (imageInputRef.current) imageInputRef.current.value = "";
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setFormErrors((current) => ({
-        ...current,
-        image: "Project image must be 5 MB or smaller.",
-      }));
-      if (imageInputRef.current) imageInputRef.current.value = "";
-      return;
-    }
-    clearFieldError("image");
-    setImagePreviewUrl(URL.createObjectURL(file));
   }
 
   useEffect(() => {
@@ -58,7 +24,7 @@ export function useCreateProject() {
     document.body.style.overflow = "hidden";
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { setShowCreate(false); setImagePreviewUrl(null); }
+      if (event.key === "Escape") setShowCreate(false);
     };
     window.addEventListener("keydown", closeOnEscape);
 
@@ -67,13 +33,6 @@ export function useCreateProject() {
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [showCreate]);
-
-  useEffect(
-    () => () => {
-      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
-    },
-    [imagePreviewUrl],
-  );
 
   function submit(formData: FormData) {
     const values = {
@@ -122,7 +81,6 @@ export function useCreateProject() {
             engineerId: null,
             estimateEngineerId: values.estimateEngineerId || null,
           },
-          formData,
         );
         toast.success("Pending project created and assigned for cost estimation.");
         closeCreateModal();
@@ -135,6 +93,6 @@ export function useCreateProject() {
       }
     });
   }
-  function openCreateModal() { setFormErrors({}); setBudgetValue(""); clearProjectImage(); setShowCreate(true); }
-  return { showCreate, formErrors, budgetValue, setBudgetValue, imagePreviewUrl, imageInputRef, pending, clearFieldError, clearProjectImage, closeCreateModal, handleProjectImage, submit, openCreateModal };
+  function openCreateModal() { setFormErrors({}); setBudgetValue(""); setShowCreate(true); }
+  return { showCreate, formErrors, budgetValue, setBudgetValue, pending, clearFieldError, closeCreateModal, submit, openCreateModal };
 }

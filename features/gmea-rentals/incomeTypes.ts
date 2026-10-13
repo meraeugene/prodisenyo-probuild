@@ -12,6 +12,7 @@ export type HistoricalIncomeRecord = {
 export type RentalIncomeRecord = Pick<GmeaRental,
   "id" | "rental_number" | "client" | "location" | "items" | "payments" | "status" | "start_date"> & {
   historical?: HistoricalIncomeRecord;
+  customerIncome?: { version: number };
 };
 export type RentalIncomeImport = {
   source_name: string; source_hash: string; parser_version: number;

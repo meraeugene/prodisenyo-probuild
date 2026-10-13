@@ -4,14 +4,15 @@ import type { GmeaRental, RentalEquipment, RentalExpense, RentalExpenseCategory,
 import { rentalVatBreakdown } from "../utils/expenseCalculations";
 import { encodeRentalWeekNotes, rentalExpenseUserNotes, rentalWeekMetadata, type RentalWeekMetadata } from "../utils/rentalReportingWeeks";
 import { useGmeaRentalOperationsMutation } from "./useGmeaRentalOperationsMutation";
+import { buildRentalCutoffDefault } from "../utils/rentalCutoffDefaults";
 export type Scope = "rental" | "equipment" | "general";
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
-export function useGmeaRentalExpenseForm({ rental, equipment, categories, expense, weekContext, onClose, onSaved }: {
-  rental?: GmeaRental; equipment: RentalEquipment[]; categories: RentalExpenseCategory[]; expense?: RentalExpense;
+export function useGmeaRentalExpenseForm({ rental, incomeRecordId, equipment, categories, expense, weekContext, onClose, onSaved }: {
+  rental?: GmeaRental; incomeRecordId?: string; equipment: RentalEquipment[]; categories: RentalExpenseCategory[]; expense?: RentalExpense;
   weekContext?: RentalWeekMetadata; onClose: () => void; onSaved?: (week: RentalWeekMetadata) => void;
 }) {
   const [week, setWeek] = useState(() => expense ? rentalWeekMetadata(expense.notes) : weekContext || null);
-  const initialScope: Scope = expense?.rental_id
+  const initialScope: Scope = expense?.rental_id || rental
     ? "rental"
     : expense?.equipment_id || week?.section === "equipment"
       ? "equipment"
@@ -34,7 +35,7 @@ export function useGmeaRentalExpenseForm({ rental, equipment, categories, expens
     version: expense?.version ?? 1,
   });
   const { saveExpense, pending, error } =
-    useGmeaRentalOperationsMutation(rental);
+    useGmeaRentalOperationsMutation(rental, incomeRecordId);
   const rentalEquipment = equipment.filter((item) =>
     rental?.items.some((row) => row.equipment_id === item.id),
   );
@@ -67,8 +68,8 @@ export function useGmeaRentalExpenseForm({ rental, equipment, categories, expens
     if (week) {
       try {
         if (form.date < week.start || form.date > week.end) throw new Error("Expense date must be within the selected week.");
-        if (week.section === "equipment" && scope !== "equipment") throw new Error("Equipment expenses require related equipment.");
-        if (week.section !== "equipment" && scope !== "general") throw new Error("Cash advances and salaries use general operations scope.");
+        if (week.section === "equipment" && (scope === "general" || !form.equipment_id)) throw new Error("Equipment expenses require related equipment.");
+        if (week.section !== "equipment" && (scope === "equipment" || form.equipment_id)) throw new Error("Cash advances and salaries require a payee without equipment.");
         const original = expense ? rentalWeekMetadata(expense.notes) : null;
         const party = week.section === "equipment" ? original && expense?.equipment_id === form.equipment_id ? original.party : equipment.find(item => item.id === form.equipment_id)?.name || "" : form.supplier;
         notes = encodeRentalWeekNotes(form.notes, { ...week, party });
@@ -93,9 +94,20 @@ export function useGmeaRentalExpenseForm({ rental, equipment, categories, expens
   function changeWeek(next: RentalWeekMetadata) {
     setWeek(next);
     if (next.section !== week?.section) {
-      changeScope(next.section === "equipment" ? "equipment" : "general");
+      changeScope(rental ? "rental" : next.section === "equipment" ? "equipment" : "general");
       setForm(current => ({ ...current, description: next.section === "salary" ? "Salary" : next.section === "cash-advance" ? "Cash advance" : "", supplier: next.section === "equipment" ? "" : "Drivers", category_id: categories.find(item => item.name === (next.section === "salary" ? "Driver" : next.section === "cash-advance" ? "Cash Advance" : "Diesel/Fuel"))?.id || current.category_id }));
     }
   }
-  return { week, scope, form, choices, totals, pending, error: localError || error, set, changeScope, changeWeek, submit };
+  function toggleReportingCutoff(enabled: boolean) {
+    if (!enabled) { setWeek(null); return; }
+    try {
+      const name = categories.find(item => item.id === form.category_id)?.name || "";
+      const section = /cash advance/i.test(name) ? "cash-advance" : /driver|operator|salary/i.test(name) ? "salary" : "equipment";
+      const next = buildRentalCutoffDefault(form.date || today(), section);
+      setWeek(next);
+      changeScope(rental ? "rental" : section === "equipment" ? "equipment" : "general");
+      setForm(current => ({ ...current, supplier: current.supplier || (section === "equipment" ? "" : "Drivers") }));
+    } catch (cause) { setLocalError(cause instanceof Error ? cause.message : "Check the expense date."); }
+  }
+  return { week, scope, form, choices, totals, pending, error: localError || error, set, changeScope, changeWeek, toggleReportingCutoff, submit };
 }

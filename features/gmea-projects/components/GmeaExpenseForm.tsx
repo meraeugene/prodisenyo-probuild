@@ -8,7 +8,8 @@ import { formatMoney, vatBreakdown } from "../utils/gmeaCalculations";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import GmeaExpenseItemsField from "./GmeaExpenseItemsField";
-import { MoneyField, SearchableSelect, TextField } from "./GmeaFields";
+import { MoneyField, TextField } from "./GmeaFields";
+import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import GmeaExpenseWorkbookDetails from "./GmeaExpenseWorkbookDetails";
 
 export default function GmeaExpenseForm({
@@ -88,11 +89,11 @@ export default function GmeaExpenseForm({
               </div>
             </div>
 
-            <SearchableSelect label="Supplier / vendor" options={expenseOptions.suppliers} maxLength={200} value={form.supplier} onChange={(value) => update("supplier", value)} />
+            <GmeaSavedInput field="suppliers" label="Supplier / vendor" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" initialOptions={expenseOptions.suppliers} maxLength={200} readOnly={readOnly} value={form.supplier} onChange={(value) => update("supplier", value)} />
             <MoneyField label="Amount (PHP) *" required value={form.amount} onValueChange={(value) => update("amount", value)} />
-            <SearchableSelect label="Payment method *" options={expenseOptions.methods} placeholder="Type or choose a payment method" required maxLength={100} value={form.method} onChange={(value) => update("method", value)} />
+            <GmeaSavedInput field="methods" label="Payment method *" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" initialOptions={expenseOptions.methods} placeholder="Search or enter a payment method" readOnly={readOnly} required maxLength={100} value={form.method} onChange={(value) => update("method", value)} />
             <TextField label="OR / invoice number" maxLength={100} value={form.invoice_number} onChange={(event) => update("invoice_number", event.target.value)} />
-            <SearchableSelect label="Invoice issued to" options={expenseOptions.invoiceNames} maxLength={200} value={form.invoice_name} onChange={(value) => update("invoice_name", value)} />
+            <GmeaSavedInput field="invoiceNames" label="Invoice issued to" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" initialOptions={expenseOptions.invoiceNames} maxLength={200} readOnly={readOnly} value={form.invoice_name} onChange={(value) => update("invoice_name", value)} />
             <MoneyField label="Refunded Sir Edward (PHP)" value={form.refunded_amount} onValueChange={(value) => update("refunded_amount", value)} />
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">

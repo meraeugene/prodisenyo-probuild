@@ -3,10 +3,11 @@
 import { useState } from "react";
 import type { ContractPaymentTerm, GmeaProject } from "../types";
 import { formatMoney, paymentTermSummary } from "../utils/gmeaCalculations";
-import { today } from "../utils/gmeaConstants";
+import { today, inputClass } from "../utils/gmeaConstants";
 import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import { MoneyField, TextField } from "./GmeaFields";
+import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 
 export default function GmeaReceiptForm({
   project,
@@ -58,6 +59,7 @@ export default function GmeaReceiptForm({
         value={form.received_date}
         onChange={(event) => setForm((current) => ({ ...current, received_date: event.target.value }))}
       />
+      <GmeaSavedInput field="methods" label="Payment method" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={100} value={form.method} onChange={method => setForm(current => ({ ...current, method }))} />
       <TextField
         label="Reference or note (optional)"
         maxLength={1000}

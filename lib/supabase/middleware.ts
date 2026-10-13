@@ -12,7 +12,7 @@ const SUPABASE_AUTH_COOKIE_LIFETIME_SECONDS = 60 * 60 * 24 * 365;
 
 // CEO/GMEA protection includes rental income, expenses, bookings, equipment,
 // project metric pages, and legacy overview redirects.
-const GMEA_WORKSPACE_PREFIXES = ["/gmea-projects/summary", "/gmea-projects", "/gmea-rentals", "/gmea-overview"] as const;
+const GMEA_WORKSPACE_PREFIXES = ["/gmea-dashboard", "/gmea-projects/summary", "/gmea-projects", "/gmea-rentals", "/gmea-operation-expenses", "/gmea-overview"] as const;
 
 type CookieMutation = {
   name: string;
@@ -285,7 +285,7 @@ export async function updateSession(request: NextRequest) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname =
         currentRole === "gmea"
-          ? "/gmea-projects"
+          ? "/gmea-dashboard"
           : currentRole === "admin"
             ? ADMIN_REDIRECT_PATH
             : currentRole === "ceo"
@@ -382,7 +382,7 @@ export async function updateSession(request: NextRequest) {
       )
     ) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/gmea-projects";
+      redirectUrl.pathname = "/gmea-dashboard";
       redirectUrl.search = "";
       return redirect(redirectUrl);
     }

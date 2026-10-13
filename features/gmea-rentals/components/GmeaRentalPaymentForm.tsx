@@ -7,6 +7,7 @@ import { rentalCollectionSummary } from "../utils/collectionCalculations";
 import { formatRentalMoney, rentalInputClass } from "../utils/rentalUi";
 import { useGmeaRentalCollectionMutation } from "../hooks/useGmeaRentalCollectionMutation";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
+import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 
 function today() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
@@ -97,20 +98,7 @@ export default function GmeaRentalPaymentForm({
           />
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1.5 text-sm font-medium text-slate-700">
-            <span>Payment method</span>
-            <input
-              maxLength={100}
-              value={form.method}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  method: event.target.value,
-                }))
-              }
-              className={rentalInputClass}
-            />
-          </label>
+          <GmeaSavedInput field="methods" label="Payment method" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={100} disabled={pending} value={form.method} onChange={method => setForm(current => ({ ...current, method }))} />
           <label className="block space-y-1.5 text-sm font-medium text-slate-700">
             <span>Reference number</span>
             <input

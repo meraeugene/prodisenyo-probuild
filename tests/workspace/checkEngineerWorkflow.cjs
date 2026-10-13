@@ -36,6 +36,8 @@ module.exports = async function checkEngineerWorkflow(page, base, screenshots) {
   await page.getByRole("button", { name: "Back to cost estimator" }).click();
   await page.getByRole("button", { name: "Review returned BOQ for Project 04", exact: true }).first().click();
   await page.getByText("Revise material quantities.", { exact: true }).waitFor();
+  assert.equal(await page.getByRole("button", { name: "Edit BOQ", exact: true }).count(), 0, "Completed or unassigned projects cannot reopen BOQs");
+  await page.getByRole("status").filter({ hasText: "This BOQ can be revised only" }).waitFor();
   assert.equal(await page.getByRole("dialog").count(), 0);
   await page.getByRole("button", { name: "Back to cost estimator" }).click();
   await page.getByRole("button", { name: "Continue draft for Harbor Residences", exact: true }).first().click();
@@ -44,6 +46,7 @@ module.exports = async function checkEngineerWorkflow(page, base, screenshots) {
   await page.getByRole("button", { name: "Add Item", exact: true }).click();
   await page.getByRole("dialog", { name: "Add BOQ item", exact: true }).waitFor();
   await capture("add-boq-item", true);
+  await require("./checkBoqItemDialog.cjs")(page, screenshots);
   await page.keyboard.press("Tab");
   assert.equal(await page.getByRole("dialog").evaluate(element => element.contains(document.activeElement)), true);
   await dismiss();

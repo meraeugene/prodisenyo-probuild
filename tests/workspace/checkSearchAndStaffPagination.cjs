@@ -13,7 +13,7 @@ async function assertSearchIcon(search) {
 module.exports = async function checkSearchAndStaffPagination(page, base, screenshots) {
   for (const role of ["gmea", "ceo"]) {
     for (const [route, label] of [["gmea-projects", "Search projects"], ["gmea-projects/metrics/ongoing", "Search projects"],
-      ["gmea-rentals/income", "Search income"], ["gmea-rentals/expenses", "Search expenses"],
+      ["gmea-rentals/income", "Search rental records"], ["gmea-rentals/expenses", "Search expenses"],
       ["gmea-rentals/bookings", "Search rentals"], ["gmea-rentals/equipment", "Search equipment"]]) {
       await page.goto(base + "/" + route + "?role=" + role);
       if (route === "gmea-rentals/expenses") await page.getByRole("button", { name: "History", exact: true }).click();

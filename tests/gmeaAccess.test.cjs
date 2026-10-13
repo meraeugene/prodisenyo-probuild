@@ -33,7 +33,7 @@ test("GMEA role home and server access agree; CEO cannot mutate", async () => {
       },
     );
     if (role === "gmea") {
-      assert.equal(auth.getRoleHomePath(role), "/gmea-projects");
+      assert.equal(auth.getRoleHomePath(role), "/gmea-dashboard");
       await requireGmeaAccess(true);
     } else await assert.rejects(requireGmeaAccess(true), /REDIRECT/);
     if (["gmea", "ceo"].includes(role)) await requireGmeaAccess();
@@ -109,11 +109,11 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
   );
   assert.match(
     (await request("gmea", "/dashboard")).headers.get("location"),
-    /gmea-projects/,
+    /gmea-dashboard/,
   );
   assert.match(
     (await request("gmea", "/auth/login")).headers.get("location"),
-    /gmea-projects/,
+    /gmea-dashboard/,
   );
   for (const role of ["gmea", "ceo"])
     assert.equal(
@@ -122,6 +122,8 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
     );
   for (const role of ["gmea", "ceo"])
     for (const path of [
+      "/gmea-dashboard",
+      "/gmea-operation-expenses",
       "/gmea-rentals",
       "/gmea-rentals/income",
       "/gmea-rentals/expenses",
@@ -150,6 +152,11 @@ test("middleware redirects unauthenticated and unauthorized roles and allows GME
     assert.match((await request(null, `/gmea-rentals/${section}`)).headers.get("location"), /auth\/login/);
     for (const role of ["engineer", "admin", "employee", "payroll_manager", "purchaser"])
       assert.ok((await request(role, `/gmea-rentals/${section}`)).headers.get("location"));
+  }
+  for (const path of ["/gmea-dashboard", "/gmea-operation-expenses"]) {
+    assert.match((await request(null, path)).headers.get("location"), /auth\/login/);
+    for (const role of ["engineer", "admin", "employee", "payroll_manager", "purchaser"])
+      assert.ok((await request(role, path)).headers.get("location"));
   }
   assert.equal(
     (await request("gmea", "/settings")).headers.get("location"),

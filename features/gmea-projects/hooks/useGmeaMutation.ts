@@ -13,6 +13,8 @@ export function useGmeaMutation(project?: GmeaProject) {
       project?.version ?? null,
       command,
     );
+    await mutate("gmea-input-options");
+    await mutate("gmea-dashboard:overview");
     if (command.kind === "delete_project") {
       await mutate("gmea-projects:list");
       toast.success("Project deleted.");

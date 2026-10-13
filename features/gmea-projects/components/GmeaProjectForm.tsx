@@ -17,6 +17,8 @@ import { MoneyField, TextField } from "./GmeaFields";
 import GmeaPaymentTermsEditor from "./GmeaPaymentTermsEditor";
 import GmeaProjectColorField from "./GmeaProjectColorField";
 import GmeaContractTaxFields from "./GmeaContractTaxFields";
+import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
+import { inputClass } from "../utils/gmeaConstants";
 
 export default function GmeaProjectForm({
   project,
@@ -123,19 +125,8 @@ export default function GmeaProjectForm({
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
         />
-        <TextField
-          label="Client"
-          maxLength={200}
-          value={form.client}
-          onChange={(e) => update("client", e.target.value)}
-        />
-        <TextField
-          label="Address *"
-          required
-          maxLength={300}
-          value={form.location}
-          onChange={(e) => update("location", e.target.value)}
-        />
+        <GmeaSavedInput field="clients" label="Client" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={200} value={form.client} onChange={value => update("client", value)} />
+        <GmeaSavedInput field="locations" label="Address *" controlClassName={inputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" required maxLength={300} value={form.location} onChange={value => update("location", value)} />
         <TextField
           label="Duration"
           placeholder="e.g. 7 days"

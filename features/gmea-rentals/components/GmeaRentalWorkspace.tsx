@@ -20,6 +20,8 @@ import GmeaRentalCollectionsSection from "./GmeaRentalCollectionsSection";
 import GmeaRentalCrewSection from "./GmeaRentalCrewSection";
 import GmeaRentalExpensesSection from "./GmeaRentalExpensesSection";
 import GmeaRentalDeleteButton from "./GmeaRentalDeleteButton";
+import GmeaRentalFinancialSummary from "./GmeaRentalFinancialSummary";
+import { summarizeRentalPortfolio } from "../utils/rentalPortfolioSelectors";
 export default function GmeaRentalWorkspace({
   rental: initialRental,
   initialOperations,
@@ -31,7 +33,7 @@ export default function GmeaRentalWorkspace({
 }) {
   const [tab, setTab] = useState<
     "Equipment" | "Collections" | "Expenses" | "Drivers / Operators"
-  >("Equipment");
+  >("Collections");
   const { data: rental = initialRental, error: rentalError } = useSWR(
     ["gmea-rental", initialRental.id],
     ([, id]) => getGmeaRentalAction(id),
@@ -50,13 +52,14 @@ export default function GmeaRentalWorkspace({
       refreshInterval: canEdit ? 0 : 30000,
     },
   );
-  if (!rental) return <main className="p-6"><p role="status">This rental is no longer available.</p><Link href="/gmea-rentals/bookings" className="mt-4 inline-block text-teal-700">Back to rentals</Link></main>;
+  if (!rental) return <main className="p-6"><p role="status">This rental is no longer available.</p><Link href="/gmea-rentals/income" className="mt-4 inline-block text-teal-700">Back to rentals</Link></main>;
   const total = rental.items.reduce((sum, item) => sum + item.subtotal, 0);
+  const summary = summarizeRentalPortfolio([rental], operations.expenses.filter(expense => expense.rental_id === rental.id));
   return (
     <main className="min-h-full bg-white px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8">
       <div className="mx-auto max-w-[1440px] space-y-5">
         <Link
-          href="/gmea-rentals/bookings"
+          href="/gmea-rentals/income"
           prefetch={false}
           className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-teal-700"
         >
@@ -92,41 +95,7 @@ export default function GmeaRentalWorkspace({
           </div>
         </header>
         {(rentalError || operationsError) && <p role="alert" className="rounded bg-rose-50 p-3 text-sm text-rose-700">Unable to refresh this rental. Please reload to try again.</p>}
-        <section
-          aria-label="Rental summary"
-          className="grid gap-4 sm:grid-cols-3"
-        >
-          {[
-            {
-              label: "Rental amount",
-              value: formatRentalMoney(total),
-              caption: "Total of all equipment items",
-            },
-            {
-              label: "Equipment units",
-              value: String(rental.items.length),
-              caption: "Units assigned to this rental",
-            },
-            {
-              label: "Rental period",
-              value: `${formatRentalDate(rental.start_date)} – ${formatRentalDate(rental.end_date)}`,
-              caption: "Scheduled reservation window",
-            },
-          ].map(({ label, value, caption }) => (
-            <article
-              key={label}
-              className="min-h-28 min-w-0 rounded-2xl border border-transparent bg-white p-5 shadow-workspace"
-            >
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-slate-500">{label}</p>
-              </div>
-              <p className="mt-1 break-words text-xl font-semibold tracking-tight text-slate-950 tabular-nums xl:text-2xl">
-                {value}
-              </p>
-              <p className="mt-1 text-xs text-slate-400">{caption}</p>
-            </article>
-          ))}
-        </section>
+        <GmeaRentalFinancialSummary summary={summary} label="Rental summary" />
 
         <WorkspaceTabSwitch label="Rental sections" items={(["Equipment", "Collections", "Expenses", "Drivers / Operators"] as const).map((value) => ({ value, label: value }))}
           value={tab} onChange={setTab} />

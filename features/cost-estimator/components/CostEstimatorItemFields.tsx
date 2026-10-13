@@ -1,164 +1,68 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  formatBudgetNumberForInput,
-} from "@/features/cost-estimator/utils/costEstimatorFormatters";
-import type {
-  CostEstimatorItemModalProps,
-} from "@/features/cost-estimator/types";
-
+import type { CostEstimatorItemModalProps } from "../types";
 import MaterialFields from "./CostEstimatorMaterialFields";
+import styles from "./costEstimatorItemModal.module.css";
+import workspace from "@/components/workspace/workspace.module.css";
 
-type Props = Pick<
-  CostEstimatorItemModalProps,
-  | "form"
-  | "errors"
-  | "materials"
-  | "itemNumberLabel"
-  | "readOnly"
-  | "pending"
-  | "onFieldChange"
-  | "onSelectMaterial"
-  | "onSelectUnitType"
-  | "onMaterialRowFieldChange"
-  | "onAddMaterial"
-  | "onRemoveMaterial"
->;
+type Props = Pick<CostEstimatorItemModalProps, "form" | "errors" | "materials" | "itemNumberLabel" | "readOnly" | "pending" | "onFieldChange" | "onSelectMaterial" | "onSelectUnitType" | "onMaterialRowFieldChange" | "onRemoveMaterial"> & {
+  activeLineIndex: number;
+  onSelectLine: (index: number) => void;
+  onAddLine: () => void;
+};
 
 export default function CostEstimatorItemFields(props: Props) {
   const disabled = Boolean(props.readOnly || props.pending);
-  const allUnits = Array.from(
-    new Map(
-      props.materials
-        .flatMap((material) => material.units)
-        .map((unit) => [unit.unitType.toLowerCase(), unit]),
-    ).values(),
-  ).sort((left, right) => left.unitType.localeCompare(right.unitType));
-  return (
-    <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_190px]">
-        <label className="block text-sm font-semibold text-slate-800">
-          Section / Category <span className="text-rose-500">*</span>
-          <input
-            list="boq-section-options"
-            value={props.form.section}
-            onChange={(event) =>
-              props.onFieldChange("section", event.target.value)
-            }
-            disabled={disabled}
-            placeholder="e.g. Structural Works"
-            className={cn(
-              "mt-2 h-9 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
-              props.errors.section ? "border-rose-300" : "border-slate-200",
-            )}
-          />
-          <datalist id="boq-section-options">
-            <option value="General Requirements" />
-            <option value="Site Works" />
-            <option value="Structural Works" />
-            <option value="Architectural / Finishing" />
-            <option value="Mechanical Works" />
-            <option value="Electrical Works" />
-            <option value="Plumbing Works" />
-          </datalist>
-          {props.errors.section ? (
-            <span className="mt-1 block text-xs font-medium text-rose-600">
-              {props.errors.section}
-            </span>
-          ) : null}
+  const allUnits = Array.from(new Map(props.materials.flatMap(material => material.units)
+    .map(unit => [unit.unitType.toLowerCase(), unit])).values())
+    .sort((left, right) => left.unitType.localeCompare(right.unitType));
+  const active = props.form.materials[props.activeLineIndex];
+
+  return <>
+    <section className={styles.pane} data-panel="details" aria-label="Item details">
+      <h3 className={styles.paneTitle}>Item details</h3>
+      <div className={styles.details}>
+        <div className={styles.detailRow}>
+          <label className={styles.field}>Section / Category *
+            <input list="boq-section-options" value={props.form.section} onChange={event => props.onFieldChange("section", event.target.value)}
+              disabled={disabled} placeholder="e.g. Structural Works" aria-invalid={Boolean(props.errors.section)} />
+            <datalist id="boq-section-options">{["General Requirements", "Site Works", "Structural Works", "Architectural / Finishing", "Mechanical Works", "Electrical Works", "Plumbing Works"].map(section => <option key={section} value={section} />)}</datalist>
+            {props.errors.section && <span className={styles.error}>{props.errors.section}</span>}
+          </label>
+          <label className={styles.field}>Item No. *
+            <input value={props.form.itemNumber} onChange={event => props.onFieldChange("itemNumber", event.target.value)} disabled={disabled}
+              placeholder={props.itemNumberLabel} aria-invalid={Boolean(props.errors.itemNumber)} />
+            {props.errors.itemNumber && <span className={styles.error}>{props.errors.itemNumber}</span>}
+          </label>
+        </div>
+        <label className={styles.field}>Description *
+          <textarea value={props.form.displayName} onChange={event => props.onFieldChange("displayName", event.target.value)} disabled={disabled}
+            placeholder="Describe this BOQ item" rows={3} aria-invalid={Boolean(props.errors.displayName)} />
+          {props.errors.displayName && <span className={styles.error}>{props.errors.displayName}</span>}
         </label>
-        <label className="block text-sm font-semibold text-slate-800">
-          Item No. <span className="text-rose-500">*</span>
-          <input
-            value={props.form.itemNumber}
-            onChange={(event) =>
-              props.onFieldChange("itemNumber", event.target.value)
-            }
-            disabled={disabled}
-            placeholder={props.itemNumberLabel}
-            className={cn(
-              "mt-2 h-9 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
-              props.errors.itemNumber
-                ? "border-rose-300"
-                : "border-slate-200",
-            )}
-          />
-          {props.errors.itemNumber ? (
-            <span className="mt-1 block text-xs font-medium text-rose-600">
-              {props.errors.itemNumber}
-            </span>
-          ) : null}
+        <label className={styles.field}>Notes <span className={styles.optional}>(optional)</span>
+          <textarea value={props.form.notes} onChange={event => props.onFieldChange("notes", event.target.value)} disabled={disabled}
+            maxLength={500} rows={3} placeholder="Add details for this BOQ item" />
+          <span className={styles.hint}>{props.form.notes.length} / 500</span>
         </label>
       </div>
-
-      <label className="block text-sm font-semibold text-slate-800">
-        Description <span className="text-rose-500">*</span>
-        <input
-          value={props.form.displayName}
-          onChange={(event) =>
-            props.onFieldChange("displayName", event.target.value)
-          }
-          disabled={disabled}
-          placeholder="Describe this BOQ item"
-          className={cn(
-            "mt-2 h-9 w-full rounded-[9px] border bg-white px-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100",
-            props.errors.displayName ? "border-rose-300" : "border-slate-200",
-          )}
-        />
-        {props.errors.displayName ? (
-          <span className="mt-1 block text-xs font-medium text-rose-600">
-            {props.errors.displayName}
-          </span>
-        ) : null}
-      </label>
-
-      <div className="space-y-4">
-        {props.form.materials.map((material, index) => (
-          <MaterialFields
-            key={material.id}
-            material={material}
-            index={index}
-            canRemove={props.form.materials.length > 1}
-            materials={props.materials}
-            allUnits={allUnits}
-            errors={props.errors.materialRows[material.id] ?? {}}
-            disabled={disabled}
-            onSelectMaterial={props.onSelectMaterial}
-            onSelectUnitType={props.onSelectUnitType}
-            onFieldChange={props.onMaterialRowFieldChange}
-            onRemove={props.onRemoveMaterial}
-          />
-        ))}
+    </section>
+    <section className={styles.pane} data-panel="costs" aria-label="Material costs">
+      <h3 className={styles.paneTitle}>Material costs</h3>
+      <div className={styles.lineToolbar}>
+        <select className={styles.lineSelect} aria-label="Cost line" value={props.activeLineIndex} disabled={props.pending}
+          onChange={event => props.onSelectLine(Number(event.target.value))}>
+          {props.form.materials.map((row, index) => <option key={row.id} value={index}>Line {index + 1} of {props.form.materials.length}{row.searchInput ? ` · ${row.searchInput}` : " · New cost line"}</option>)}
+        </select>
+        {!props.readOnly && <button type="button" onClick={props.onAddLine} disabled={props.pending} className={workspace.button}>
+          <Plus size={14} aria-hidden="true" />Add cost line
+        </button>}
       </div>
-
-      {!props.readOnly ? (
-        <button
-          type="button"
-          onClick={props.onAddMaterial}
-          disabled={props.pending}
-          className="inline-flex h-10 items-center gap-2 rounded-[9px] border border-teal-700 px-4 text-sm font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-60"
-        >
-          <Plus aria-hidden="true" size={16} /> Add another cost line
-        </button>
-      ) : null}
-
-      <label className="block text-sm font-semibold text-slate-800">
-        Notes <span className="font-normal text-slate-500">(optional)</span>
-        <textarea
-          value={props.form.notes}
-          onChange={(event) => props.onFieldChange("notes", event.target.value)}
-          disabled={disabled}
-          maxLength={500}
-          rows={3}
-          placeholder="Add details for this BOQ item..."
-          className="mt-2 w-full resize-y rounded-[9px] border border-slate-200 bg-white p-3 text-sm font-normal outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-        />
-        <span className="mt-1 block text-right text-xs font-normal text-slate-500">
-          {props.form.notes.length} / 500
-        </span>
-      </label>
-    </div>
-  );
+      {active && <MaterialFields material={active} index={props.activeLineIndex} canRemove={props.form.materials.length > 1}
+        materials={props.materials} allUnits={allUnits} errors={props.errors.materialRows[active.id] ?? {}} disabled={disabled}
+        onSelectMaterial={props.onSelectMaterial} onSelectUnitType={props.onSelectUnitType}
+        onFieldChange={props.onMaterialRowFieldChange} onRemove={props.onRemoveMaterial} />}
+    </section>
+  </>;
 }

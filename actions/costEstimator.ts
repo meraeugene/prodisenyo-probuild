@@ -1,5 +1,6 @@
 "use server";
 
+import { EstimateMutationError, runEstimateMutation } from "./utils/estimateMutationResult";
 import { revalidatePath } from "next/cache";
 import { APP_ROLES, requireRole } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -131,16 +132,17 @@ async function requirePlanningEstimateAssignment(
   projectId: string | null,
   userId: string,
 ) {
-  if (!projectId) throw new Error("Estimate must be linked to a pending project.");
-  const { data: project } = await database
+  if (!projectId) throw new EstimateMutationError("Estimate must be linked to a pending project.");
+  const { data: project, error } = await database
     .from("projects")
     .select("id")
     .eq("id", projectId)
     .eq("assigned_estimate_engineer_id", userId)
     .eq("status", "planning")
     .maybeSingle();
+  if (error) throw new Error(`Failed to check estimate assignment. ${error.message}`);
   if (!project) {
-    throw new Error("Cost estimation is available only while the assigned project is pending.");
+    throw new EstimateMutationError("Cost estimation is available only while the assigned project is pending.");
   }
 }
 
@@ -318,7 +320,7 @@ async function loadEstimate(database: any, estimateId: string) {
     .single();
 
   if (error || !data) {
-    throw new Error("Estimate not found.");
+    throw new EstimateMutationError("Estimate not found.");
   }
 
   return data as Database["public"]["Tables"]["project_estimates"]["Row"];
@@ -608,14 +610,16 @@ export async function archiveCostCatalogItemAction(catalogItemId: string) {
   return { catalogItemId: normalizedId };
 }
 
-export async function saveProjectEstimateDraftAction(
-  input: SaveProjectEstimateDraftInput,
-) {
+export async function saveProjectEstimateDraftAction(input: SaveProjectEstimateDraftInput) {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
+  return runEstimateMutation("save-draft", "Unable to save this estimate. Please try again.", () => saveProjectEstimateDraftForUser(input, user));
+}
+
+async function saveProjectEstimateDraftForUser(input: SaveProjectEstimateDraftInput, user: { id: string }) {
   const database = createSupabaseAdminClient() as any;
   const estimateId = normalizeText(input.id);
   const requestedTotal = normalizeMoney(input.costEstimate);
-  const { data: linkedProject } = await database
+  const { data: linkedProject, error: linkedProjectError } = await database
     .from("projects")
     .select("id,name,location")
     .or(`assigned_engineer_id.eq.${user.id},assigned_estimate_engineer_id.eq.${user.id}`)
@@ -623,7 +627,8 @@ export async function saveProjectEstimateDraftAction(
     .eq("status", "planning")
     .limit(1)
     .maybeSingle();
-  if (!linkedProject) throw new Error("Select a project assigned to you before saving an estimate.");
+  if (linkedProjectError) throw new Error(`Failed to check assigned project. ${linkedProjectError.message}`);
+  if (!linkedProject) throw new EstimateMutationError("Select a project assigned to you before saving an estimate.");
   input = { ...input, projectId: linkedProject.id, projectName: linkedProject.name, location: linkedProject.location };
 
   let estimate: Database["public"]["Tables"]["project_estimates"]["Row"];
@@ -631,10 +636,10 @@ export async function saveProjectEstimateDraftAction(
   if (estimateId) {
     const existing = await loadEstimate(database, estimateId);
     if (existing.requested_by !== user.id) {
-      throw new Error("You can only edit your own estimates.");
+      throw new EstimateMutationError("You can only edit your own estimates.");
     }
     if (existing.status !== "draft") {
-      throw new Error("Only draft estimates can be edited.");
+      throw new EstimateMutationError("Only draft estimates can be edited.");
     }
 
     estimate = await updateProjectEstimateDraftRecord({
@@ -810,20 +815,24 @@ export async function submitProjectEstimateAction(estimateId: string) {
 
 export async function reopenRejectedEstimateAction(estimateId: string) {
   const { user } = await requireRole(APP_ROLES.ENGINEER);
+  return runEstimateMutation("reopen", "Unable to reopen this estimate. Please try again.", () => reopenRejectedEstimateForUser(estimateId, user));
+}
+
+async function reopenRejectedEstimateForUser(estimateId: string, user: { id: string }) {
   const database = createSupabaseAdminClient() as any;
   const normalizedId = normalizeText(estimateId);
 
   if (!normalizedId) {
-    throw new Error("Estimate is required.");
+    throw new EstimateMutationError("Estimate is required.");
   }
 
   const estimate = await loadEstimate(database, normalizedId);
   if (estimate.requested_by !== user.id) {
-    throw new Error("You can only reopen your own estimates.");
+    throw new EstimateMutationError("You can only reopen your own estimates.");
   }
   await requirePlanningEstimateAssignment(database, estimate.project_id, user.id);
   if (estimate.status !== "rejected") {
-    throw new Error("Only rejected estimates can be reopened.");
+    throw new EstimateMutationError("Only rejected estimates can be reopened.");
   }
 
   const { data: reopenedEstimate, error } = await database

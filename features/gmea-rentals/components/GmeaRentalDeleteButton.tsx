@@ -20,7 +20,7 @@ export default function GmeaRentalDeleteButton({ kind, id, version, name, detail
     try {
       await deleteGmeaRentalRecordAction(kind, id, version);
       setOpen(false);
-      if (detail) router.replace("/gmea-rentals/bookings");
+      if (detail) router.replace("/gmea-rentals/income");
       await Promise.all([mutate("gmea-rentals:list"), mutate("gmea-rentals:equipment"), mutate("gmea-rentals:operations")]);
       router.refresh();
     } catch (cause) {

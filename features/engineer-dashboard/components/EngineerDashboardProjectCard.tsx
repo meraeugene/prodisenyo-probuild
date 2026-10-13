@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import ProjectThumbnail from "@/features/projects/components/ProjectThumbnail";
 import styles from "@/components/workspace/workspace.module.css";
 import type { EngineerDashboardProject } from "../types";
 import { formatDashboardCurrency, formatDashboardDate } from "../utils/engineerDashboard";
@@ -12,7 +11,6 @@ export default function EngineerDashboardProjectCard({ project }: { project: Eng
   const tone = planning ? "bg-amber-50 text-amber-700" : project.status === "on_hold" ? "bg-rose-50 text-rose-700" : "bg-teal-50 text-teal-700";
   return <article className={`${styles.panel} flex flex-col`}>
     <div className="flex items-start gap-3 p-4">
-      <ProjectThumbnail src={project.imageUrl} name={project.name} className="h-11 w-12 shrink-0 rounded object-cover" />
       <div className="min-w-0 flex-1"><h3 className="break-words text-sm font-semibold text-slate-900">{project.name}</h3><p className="mt-1 text-xs text-slate-500">{project.location || "Location not set"}</p></div>
       <span className={`shrink-0 rounded px-2 py-1 text-[11px] font-medium ${tone}`}>{status}</span>
     </div>
