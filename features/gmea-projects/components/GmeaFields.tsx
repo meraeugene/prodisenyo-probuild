@@ -13,6 +13,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import type { VatMode } from "../types";
 import { inputClass } from "../utils/gmeaConstants";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 
 export function Field({
   label,
@@ -22,12 +23,13 @@ export function Field({
   children: ReactNode;
 }) {
   const id = useId();
+  const control = children as ReactElement<{ id: string; required?: boolean; "aria-label"?: string }>;
   return (
     <div className="space-y-1.5 text-sm font-medium text-slate-700">
       <label htmlFor={id} className="block">
-        {label}
+        {label}{!control.props.required && !label.includes("*") && <OptionalFieldIndicator />}
       </label>
-      {cloneElement(children as ReactElement<{ id: string }>, { id })}
+      {cloneElement(control, { id, required: control.props.required ?? label.includes("*"), "aria-label": control.props["aria-label"] ?? label })}
     </div>
   );
 }
@@ -39,14 +41,14 @@ export function TextField({
   const id = useId();
   return (
     <div className="space-y-1.5 text-sm font-medium text-slate-700">
-      <label htmlFor={id} className="block">{label}</label>
+      <label htmlFor={id} className="block">{label}{!props.required && !label.includes("optional") && <OptionalFieldIndicator />}</label>
       <div className="relative">
         {leadingIcon && (
           <span className="pointer-events-none absolute inset-y-px left-px grid w-12 place-items-center rounded-l-[11px] border-r border-slate-100 bg-slate-50 text-slate-500" aria-hidden="true">
             {leadingIcon}
           </span>
         )}
-        <input id={id} className={inputClass + (leadingIcon ? " pl-14" : "")} {...props} />
+        <input id={id} aria-label={label} className={inputClass + (leadingIcon ? " pl-14" : "")} {...props} />
       </div>
     </div>
   );
@@ -67,12 +69,18 @@ export function MoneyField({
   onValueChange,
   required,
   leadingIcon,
+  min = required ? 0.01 : 0,
+  max = 1e10,
+  validationMessage,
 }: {
   label: string;
   value: number;
   onValueChange: (value: number) => void;
   required?: boolean;
   leadingIcon?: ReactNode;
+  min?: number;
+  max?: number;
+  validationMessage?: string;
 }) {
   const [display, setDisplay] = useState(() => formatAmount(value));
   const focused = useRef(false);
@@ -103,6 +111,9 @@ export function MoneyField({
       required={required}
       leadingIcon={leadingIcon}
       inputMode="decimal"
+      data-min-value={min}
+      data-max-value={max}
+      data-validation-message={validationMessage}
       value={display}
       onFocus={() => {
         focused.current = true;
@@ -154,11 +165,12 @@ export function SearchableSelect({
       }}
     >
       <label htmlFor={id} className="block">
-        {label}
+        {label}{!required && <OptionalFieldIndicator />}
       </label>
       <div className="relative">
         <input
           id={id}
+          aria-label={label}
           role="combobox"
           aria-autocomplete="list"
           aria-controls={listId}
@@ -228,7 +240,7 @@ export function VatFields({
 }) {
   return (
     <div className="grid gap-4">
-      <Field label="VAT treatment">
+      <Field label="VAT treatment *">
         <select
           className={inputClass}
           value={mode}

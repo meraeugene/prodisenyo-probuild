@@ -6,6 +6,7 @@ import { rentalPaymentTypeLabels } from "../utils/rentalIncomeSelectors";
 import { rentalCollectionSummary } from "../utils/collectionCalculations";
 import { formatRentalMoney, rentalInputClass } from "../utils/rentalUi";
 import { useGmeaRentalCollectionMutation } from "../hooks/useGmeaRentalCollectionMutation";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 
@@ -54,7 +55,7 @@ export default function GmeaRentalPaymentForm({
       <div className="space-y-4">
         <label className="block space-y-1.5 text-sm font-medium text-slate-700">
           <span>Payment type *</span>
-          <select className={rentalInputClass} value={form.payment_type} onChange={event =>
+          <select required className={rentalInputClass} value={form.payment_type} onChange={event =>
             setForm(current => ({ ...current, payment_type: event.target.value as RentalPaymentType }))}>
             {(["down_payment", "full_payment", "partial_payment"] as const).map(type =>
               <option key={type} value={type}>{rentalPaymentTypeLabels[type]}</option>)}
@@ -100,8 +101,9 @@ export default function GmeaRentalPaymentForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <GmeaSavedInput field="methods" label="Payment method" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={100} disabled={pending} value={form.method} onChange={method => setForm(current => ({ ...current, method }))} />
           <label className="block space-y-1.5 text-sm font-medium text-slate-700">
-            <span>Reference number</span>
+            <span>Reference number<OptionalFieldIndicator /></span>
             <input
+              aria-label="Reference number"
               maxLength={100}
               value={form.reference_number}
               onChange={(event) =>
@@ -115,8 +117,9 @@ export default function GmeaRentalPaymentForm({
           </label>
         </div>
         <label className="block space-y-1.5 text-sm font-medium text-slate-700">
-          <span>Notes</span>
+          <span>Notes<OptionalFieldIndicator /></span>
           <textarea
+            aria-label="Notes"
             maxLength={1000}
             value={form.notes}
             onChange={(event) =>

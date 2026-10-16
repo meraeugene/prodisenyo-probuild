@@ -3,10 +3,11 @@ import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Popover } from "radix-ui";
 import { ChevronDown } from "lucide-react";
 import styles from "./workspace.module.css";
+import OptionalFieldIndicator from "./OptionalFieldIndicator";
 
-export default function WorkspaceSearchableInput({ label, value, options, onChange, placeholder = "Search or enter a value", required, maxLength, readOnly = false, disabled = false, leadingIcon, controlClassName, fieldClassName }: {
+export default function WorkspaceSearchableInput({ label, value, options, onChange, placeholder = "Search or enter a value", required, optional = false, maxLength, readOnly = false, disabled = false, leadingIcon, controlClassName, fieldClassName }: {
   label: string; value: string; options: string[]; onChange: (value: string) => void; placeholder?: string;
-  required?: boolean; maxLength?: number; readOnly?: boolean; disabled?: boolean; leadingIcon?: ReactNode; controlClassName?: string; fieldClassName?: string;
+  required?: boolean; optional?: boolean; maxLength?: number; readOnly?: boolean; disabled?: boolean; leadingIcon?: ReactNode; controlClassName?: string; fieldClassName?: string;
 }) {
   const id = useId(), listId = `${id}-options`, inputRef = useRef<HTMLInputElement>(null), rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false), [showAll, setShowAll] = useState(true), [active, setActive] = useState(-1);
@@ -14,10 +15,10 @@ export default function WorkspaceSearchableInput({ label, value, options, onChan
   const canOpen = !disabled && !readOnly;
   function choose(option: string) { onChange(option); setOpen(false); setActive(-1); }
   return <div ref={rootRef} className={fieldClassName || styles.field}>
-    <label htmlFor={id} className="block">{label}</label>
+    <label htmlFor={id} className="block">{label}{optional && <OptionalFieldIndicator />}</label>
     <Popover.Root open={open && canOpen} onOpenChange={setOpen}>
       <Popover.Anchor asChild><div className="relative">
-        <input ref={inputRef} id={id} role="combobox" aria-autocomplete="list" aria-controls={listId} aria-expanded={open && canOpen}
+        <input ref={inputRef} id={id} aria-label={label} role="combobox" aria-autocomplete="list" aria-controls={listId} aria-expanded={open && canOpen}
           aria-activedescendant={open && active >= 0 && visible[active] ? `${listId}-${active}` : undefined}
           className={`${controlClassName || styles.control} pr-9 ${leadingIcon ? "pl-12" : ""}`} value={value} placeholder={placeholder} required={required} maxLength={maxLength}
           readOnly={readOnly} disabled={disabled} autoComplete="off"

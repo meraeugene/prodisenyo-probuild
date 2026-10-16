@@ -2,6 +2,7 @@
 
 import { EQUIPMENT_STATUSES, RATE_UNITS, type RentalEquipment } from "../types";
 import { rentalInputClass, rentalLabel } from "../utils/rentalUi";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
 export type EquipmentFormState = {
@@ -72,8 +73,13 @@ export default function GmeaEquipmentFormDialog({
             key={key}
             className="space-y-1.5 text-sm font-medium text-slate-700"
           >
-            <span className="block">{label}</span>
+            <span className="block">{label}{!label.includes("*") && <OptionalFieldIndicator />}</span>
             <input
+              aria-label={label}
+              required={key === "name" || key === "equipment_type" || key === "code"}
+              maxLength={key === "name" ? 200 : 100}
+              step={key === "default_rate" ? "0.01" : undefined}
+              max={key === "default_rate" ? 1e10 : undefined}
               type={key === "default_rate" ? "number" : "text"}
               min={key === "default_rate" ? "0" : undefined}
               value={form[key]}
@@ -83,8 +89,9 @@ export default function GmeaEquipmentFormDialog({
           </label>
         ))}
         <label className="space-y-1.5 text-sm font-medium text-slate-700">
-          <span className="block">Default rate type</span>
+          <span className="block">Default rate type<OptionalFieldIndicator /></span>
           <select
+            aria-label="Default rate type"
             value={form.rate_unit}
             onChange={(event) => onChange("rate_unit", event.target.value)}
             className={rentalInputClass}
@@ -98,8 +105,9 @@ export default function GmeaEquipmentFormDialog({
           </select>
         </label>
         <label className="space-y-1.5 text-sm font-medium text-slate-700">
-          <span className="block">Status</span>
+          <span className="block">Status *</span>
           <select
+            required
             value={form.status}
             onChange={(event) => {
               onChange("status", event.target.value);
@@ -116,8 +124,9 @@ export default function GmeaEquipmentFormDialog({
           </select>
         </label>
         <label className="space-y-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
-          <span className="block">Notes</span>
-          <textarea
+          <span className="block">Notes<OptionalFieldIndicator /></span>
+          <textarea maxLength={2000}
+            aria-label="Notes"
             value={form.notes}
             onChange={(event) => onChange("notes", event.target.value)}
             className={rentalInputClass + " min-h-24 py-3"}
@@ -131,7 +140,7 @@ export default function GmeaEquipmentFormDialog({
             onChange={(event) => onChange("is_active", event.target.checked)}
             className="h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
           />
-          Active equipment
+          Active equipment<OptionalFieldIndicator />
         </label>
       </fieldset>
     </GmeaRentalsDialog>

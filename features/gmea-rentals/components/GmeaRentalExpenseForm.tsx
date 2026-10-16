@@ -13,6 +13,8 @@ import GmeaRentalExpenseTotals from "./GmeaRentalExpenseTotals";
 import { useGmeaRentalExpenseForm, type Scope } from "../hooks/useGmeaRentalExpenseForm";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
+import Field from "@/features/gmea-inputs/components/GmeaField";
 
 
 export default function GmeaRentalExpenseForm({
@@ -58,7 +60,7 @@ export default function GmeaRentalExpenseForm({
       {leadingContent}
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {allowReportingCutoff && !weekContext && <label className="flex items-center gap-2 text-sm sm:col-span-2 lg:col-span-3">
-          <input type="checkbox" checked={!!week} onChange={event => toggleReportingCutoff(event.target.checked)} />Add workbook reporting cutoff
+          <input type="checkbox" checked={!!week} onChange={event => toggleReportingCutoff(event.target.checked)} />Add workbook reporting cutoff<OptionalFieldIndicator />
         </label>}
         {week && <GmeaRentalWeekFields week={week} existing={!!expense || lockWeekDates} onChange={changeWeek} />}
         {!incomeRecordId && <Field label="Expense scope *">
@@ -77,7 +79,7 @@ export default function GmeaRentalExpenseForm({
             label={
               scope === "equipment"
                 ? "Related equipment *"
-                : "Related equipment"
+                : week?.section === "equipment" ? "Related equipment *" : "Related equipment"
             }
           >
             <select
@@ -131,7 +133,7 @@ export default function GmeaRentalExpenseForm({
             />
           </Field>
         </div>
-        <GmeaSavedInput field="suppliers" label="Supplier / payee" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={200} readOnly={readOnly} disabled={pending} value={form.supplier} onChange={value => set("supplier", value)} />
+        <GmeaSavedInput field="suppliers" label={week && week.section !== "equipment" ? "Supplier / payee *" : "Supplier / payee"} required={!!week && week.section !== "equipment"} controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={200} readOnly={readOnly} disabled={pending} value={form.supplier} onChange={value => set("supplier", value)} />
         <GmeaSavedInput field="methods" label="Payment method" controlClassName={rentalInputClass} fieldClassName="space-y-1.5 text-sm font-medium text-slate-700" maxLength={100} readOnly={readOnly} disabled={pending} value={form.method} onChange={value => set("method", value)} />
         <Field label="OR / invoice number">
           <input
@@ -141,7 +143,7 @@ export default function GmeaRentalExpenseForm({
             className={rentalInputClass}
           />
         </Field>
-        <Field label="VAT treatment">
+        <Field label="VAT treatment *">
           <select
             value={form.vat_mode}
             onChange={(event) =>
@@ -158,6 +160,7 @@ export default function GmeaRentalExpenseForm({
           <input
             type="number"
             min="0.01"
+            max={1e10}
             step="0.01"
             value={form.amount}
             onChange={(event) => set("amount", event.target.value)}
@@ -168,6 +171,7 @@ export default function GmeaRentalExpenseForm({
           <input
             type="number"
             min="0"
+            max={1e10}
             step="0.01"
             value={form.refunded_amount}
             onChange={(event) => set("refunded_amount", event.target.value)}
@@ -187,14 +191,5 @@ export default function GmeaRentalExpenseForm({
         </div>
       </fieldset>
     </GmeaRentalsDialog>
-  );
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <label className="block space-y-1.5 text-sm font-medium text-slate-700">
-      <span>{label}</span>
-      {children}
-    </label>
   );
 }

@@ -5,7 +5,7 @@ import type { SidebarNavigationGroup, SidebarNavigationItem } from "../types";
 const GMEA_ITEMS = [
   { href: "/gmea-dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/gmea-projects", label: "Projects", icon: FolderKanban },
-  { href: "/gmea-rentals/income", label: "Rentals", icon: CircleDollarSign, activePaths: ["/gmea-rentals/income", "/gmea-rentals/expenses"] },
+  { href: "/gmea-rentals/income", label: "Rentals", icon: CircleDollarSign, activePaths: ["/gmea-rentals"] },
   { href: "/gmea-operation-expenses", label: "Operation Expenses", icon: Receipt },
 ] as const satisfies readonly SidebarNavigationItem[];
 

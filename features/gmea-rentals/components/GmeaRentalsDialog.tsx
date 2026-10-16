@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { LoaderCircle, X } from "lucide-react";
 import styles from "@/components/workspace/workspace.module.css";
@@ -77,40 +78,41 @@ export default function GmeaRentalsDialog({
             </button>
           </header>
 
-          <div className={"min-h-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
-            <fieldset disabled={pending} className="min-w-0">{children}</fieldset>
-          </div>
-
-          <footer className={"shrink-0 space-y-3 border-t border-slate-200 bg-white px-5 py-4" + (compact ? "" : " sm:px-7")}>
-            {error && (
-              <p
-                role="alert"
-                className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700"
-              >
-                {error}
-              </p>
-            )}
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={onClose}
-                className={rentalSecondaryButtonClass}
-              >
-                {readOnly ? "Close" : "Cancel"}
-              </button>
-              {!readOnly && onSave && <button
-                type="button"
-                disabled={pending}
-                aria-busy={pending}
-                onClick={onSave}
-                className={rentalPrimaryButtonClass + (danger ? " !bg-rose-600 !text-white hover:!bg-rose-700" : "")}
-              >
-                {pending && <LoaderCircle size={16} className="shrink-0 animate-spin" aria-hidden="true" />}
-                {pending ? (pendingLabel ?? (danger ? "Deleting…" : "Saving…")) : saveLabel}
-              </button>}
+          <ValidatedForm onValidSubmit={() => { if (!pending && !readOnly) onSave?.(); }} className="flex min-h-0 flex-1 flex-col">
+            <div className={"min-h-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
+              <fieldset disabled={pending} className="min-w-0">{children}</fieldset>
             </div>
-          </footer>
+
+            <footer className={"shrink-0 space-y-3 border-t border-slate-200 bg-white px-5 py-4" + (compact ? "" : " sm:px-7")}>
+              {error && (
+                <p
+                  role="alert"
+                  className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700"
+                >
+                  {error}
+                </p>
+              )}
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={onClose}
+                  className={rentalSecondaryButtonClass}
+                >
+                  {readOnly ? "Close" : "Cancel"}
+                </button>
+                {!readOnly && onSave && <button
+                  type="submit"
+                  disabled={pending}
+                  aria-busy={pending}
+                  className={rentalPrimaryButtonClass + (danger ? " !bg-rose-600 !text-white hover:!bg-rose-700" : "")}
+                >
+                  {pending && <LoaderCircle size={16} className="shrink-0 animate-spin" aria-hidden="true" />}
+                  {pending ? (pendingLabel ?? (danger ? "Deleting…" : "Saving…")) : saveLabel}
+                </button>}
+              </div>
+            </footer>
+          </ValidatedForm>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { GmeaRental, RentalWorker } from "../types";
 import { rentalInputClass } from "../utils/rentalUi";
 import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperationsMutation";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
 export default function GmeaRentalAssignmentForm({
@@ -45,6 +46,7 @@ export default function GmeaRentalAssignmentForm({
         <label className="block space-y-1.5 text-sm font-medium text-slate-700">
           <span>Worker *</span>
           <select
+            required
             value={workerId}
             onChange={(event) => setWorkerId(event.target.value)}
             className={rentalInputClass}
@@ -60,8 +62,9 @@ export default function GmeaRentalAssignmentForm({
           </select>
         </label>
         <label className="block space-y-1.5 text-sm font-medium text-slate-700">
-          <span>Assignment scope</span>
+          <span>Assignment scope<OptionalFieldIndicator /></span>
           <select
+            aria-label="Assignment scope"
             value={equipmentId}
             onChange={(event) => setEquipmentId(event.target.value)}
             className={rentalInputClass}

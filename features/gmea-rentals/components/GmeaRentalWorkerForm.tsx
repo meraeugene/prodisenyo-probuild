@@ -8,6 +8,7 @@ import {
 } from "../types";
 import { rentalInputClass } from "../utils/rentalUi";
 import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperationsMutation";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
 export default function GmeaRentalWorkerForm({
@@ -49,6 +50,8 @@ export default function GmeaRentalWorkerForm({
         <label className="space-y-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
           <span>Name *</span>
           <input
+            required
+            maxLength={200}
             value={form.name}
             onChange={(event) =>
               setForm((current) => ({ ...current, name: event.target.value }))
@@ -59,6 +62,7 @@ export default function GmeaRentalWorkerForm({
         <label className="space-y-1.5 text-sm font-medium text-slate-700">
           <span>Role *</span>
           <select
+            required
             value={form.role}
             onChange={(event) =>
               setForm((current) => ({
@@ -74,8 +78,9 @@ export default function GmeaRentalWorkerForm({
           </select>
         </label>
         <label className="space-y-1.5 text-sm font-medium text-slate-700">
-          <span>Phone</span>
+          <span>Phone<OptionalFieldIndicator /></span>
           <input
+            aria-label="Phone"
             type="tel"
             maxLength={50}
             value={form.phone}
@@ -97,7 +102,7 @@ export default function GmeaRentalWorkerForm({
             }
             className="h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600"
           />
-          Active worker
+          Active worker<OptionalFieldIndicator />
         </label>
       </div>
     </GmeaRentalsDialog>

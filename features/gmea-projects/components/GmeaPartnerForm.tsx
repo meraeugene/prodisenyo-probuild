@@ -37,7 +37,7 @@ export default function GmeaPartnerForm({
           className="grid items-end gap-3 sm:grid-cols-[1fr_140px_auto]"
         >
           <TextField
-            label="Partner name"
+            label="Partner name *"
             required
             value={row.name}
             maxLength={200}
@@ -52,7 +52,8 @@ export default function GmeaPartnerForm({
             }
           />
           <TextField
-            label="Share (%)"
+            label="Share (%) *"
+            data-validation-message={total === 100 ? undefined : "Partner shares must total 100%."}
             required
             type="number"
             min="0"

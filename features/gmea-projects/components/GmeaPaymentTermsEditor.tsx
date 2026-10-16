@@ -57,16 +57,16 @@ export default function GmeaPaymentTermsEditor({ contractAmount, terms, protecte
               <TextField label={`Milestone ${index + 1} description *`} required maxLength={300} value={term.description} onChange={event => update(index, { description: event.target.value })} />
               <TextField label={`Milestone ${index + 1} notes`} maxLength={1000} value={term.notes} onChange={event => update(index, { notes: event.target.value })} />
             </td>
-            <td className="min-w-[120px] p-3"><TextField label={`Milestone ${index + 1} percentage`} type="number" min={term.value_mode === "percentage" ? "0.01" : "0"} max="100" step="0.01" required={term.value_mode === "percentage"} value={percentage ?? ""} onChange={event => {
+            <td className="min-w-[120px] p-3"><TextField label={`Milestone ${index + 1} percentage`} type="number" min={term.value_mode === "percentage" ? "0.01" : "0"} max="100" step="0.01" data-validation-message={Math.abs(difference) > 0.01 ? "Payment terms must total the contract amount including tax." : undefined} required={term.value_mode === "percentage"} value={percentage ?? ""} onChange={event => {
               const value = event.target.value === "" ? null : Number(event.target.value);
               update(index, term.value_mode === "percentage" ? { percentage: value } : { display_percentage: value });
             }} /></td>
             <td className="min-w-[190px] space-y-3 p-3">
-              <Field label={`Milestone ${index + 1} amount basis`}><select className={inputClass} value={term.value_mode} onChange={event => {
+              <Field label={`Milestone ${index + 1} amount basis *`}><select className={inputClass} value={term.value_mode} onChange={event => {
                 const mode = event.target.value as "fixed" | "percentage";
                 update(index, { value_mode: mode, percentage: mode === "percentage" ? percentage ?? 0 : null, display_percentage: mode === "fixed" ? percentage : undefined });
               }}><option value="fixed">Entered amount</option><option value="percentage">Calculate from %</option></select></Field>
-              {term.value_mode === "fixed" ? <MoneyField label={`Milestone ${index + 1} amount (PHP) *`} required value={term.amount} onValueChange={amount => update(index, { amount })} /> : <p className="py-3 font-semibold tabular-nums">{formatMoney(term.amount)}</p>}
+              {term.value_mode === "fixed" ? <MoneyField label={`Milestone ${index + 1} amount (PHP) *`} validationMessage={Math.abs(difference) > 0.01 ? "Payment terms must total the contract amount including tax." : undefined} min={Math.max(0.01, protectedAmounts[term.id] ?? 0)} required value={term.amount} onValueChange={amount => update(index, { amount })} /> : <p className="py-3 font-semibold tabular-nums">{formatMoney(term.amount)}</p>}
             </td>
             <td className="whitespace-nowrap p-3 tabular-nums">{formatMoney(Math.max(0, money(term.amount - received)))}</td>
             <td className="whitespace-nowrap p-3 tabular-nums">{formatMoney(received)}

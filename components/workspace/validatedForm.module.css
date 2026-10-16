@@ -1,0 +1,7 @@
+.form input[aria-invalid="true"],
+.form select[aria-invalid="true"],
+.form textarea[aria-invalid="true"] {
+  border: 1px solid #e11d48 !important;
+  outline-color: #e11d48 !important;
+  box-shadow: 0 0 0 1px #e11d48 !important;
+}

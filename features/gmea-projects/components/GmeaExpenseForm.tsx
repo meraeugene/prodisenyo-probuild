@@ -81,9 +81,9 @@ export default function GmeaExpenseForm({
             </div>
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
-              <label htmlFor={categoryId} className="block">Category</label>
+              <label htmlFor={categoryId} className="block">Category *</label>
               <div className="relative">
-                <select id={categoryId} className={inputClass} value={form.category} onChange={(event) => update("category", event.target.value)}>
+                <select required id={categoryId} className={inputClass} value={form.category} onChange={(event) => update("category", event.target.value)}>
                   {EXPENSE_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
                 </select>
               </div>
@@ -97,8 +97,9 @@ export default function GmeaExpenseForm({
             <MoneyField label="Refunded Sir Edward (PHP)" value={form.refunded_amount} onValueChange={(value) => update("refunded_amount", value)} />
 
             <div className="space-y-1.5 text-sm font-medium text-slate-700">
-              <label htmlFor={`${categoryId}-vat`} className="block">VAT treatment</label>
+              <label htmlFor={`${categoryId}-vat`} className="block">VAT treatment *</label>
               <select
+                required
                 id={`${categoryId}-vat`}
                 className={inputClass}
                 value={form.vat_mode}

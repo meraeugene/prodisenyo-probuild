@@ -48,6 +48,7 @@ export default function GmeaReceiptForm({
       <MoneyField
         label="Paid amount (PHP) *"
         required
+        max={balance}
         value={form.amount}
         onValueChange={(amount) => setForm((current) => ({ ...current, amount }))}
       />

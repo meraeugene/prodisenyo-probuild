@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
-import { APP_ROLES, requireRole } from "@/lib/auth";
+import GmeaRentalSectionPage from "@/features/gmea-rentals/components/GmeaRentalSectionPage";
 
-export default async function GmeaRentalsRoute() {
-  await requireRole([APP_ROLES.GMEA, APP_ROLES.CEO]);
-  redirect("/gmea-rentals/income");
+export default function GmeaRentalsRoute() {
+  return <GmeaRentalSectionPage section="income" />;
 }

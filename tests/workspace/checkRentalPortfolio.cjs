@@ -10,8 +10,8 @@ module.exports = async function checkRentalPortfolio(page, base, screenshots) {
   assert.equal(await page.locator("table").count(), 1);
   const card = (name) => totals.locator("article").filter({ has: page.getByText(name, { exact: true }) });
   assert.match(await card("Total down payment").innerText(), /15,000\.00/);
-  assert.match(await card("Total payment").innerText(), /10,000\.00/);
-  assert.match(await card("Total collected").innerText(), /28,000\.00/);
+  assert.match(await card("Total full payment").innerText(), /10,000\.00/);
+  assert.match(await card("Total income").innerText(), /28,000\.00/);
   assert.match(await card("Total expenses").innerText(), /3,580\.00/);
   const locations = page.getByRole("region", { name: "Rental records", exact: true });
   await locations.getByRole("button", { name: "Expense", exact: true }).click();

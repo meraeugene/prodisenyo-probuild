@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import GmeaModalValidationHarness from "./GmeaModalValidationHarness";
 import EngineerPagesHarness from "./EngineerPagesHarness";
 import ProjectsPageClient from "@/features/projects/components/ProjectsPageClient";
 import DashboardShell from "@/components/DashboardShell";
@@ -62,7 +63,7 @@ const homeRole = skeletonCase.startsWith("home-") ? skeletonCase.slice(5) as Sid
 const skeletonRole: SidebarProfile["role"] = homeRole || (skeletonCase.startsWith("engineer") ? "engineer" : ["admin", "reset"].includes(skeletonCase) ? "admin" : skeletonCase.startsWith("purchas") ? "purchaser" : skeletonCase === "overtime-request" ? "employee" : skeletonCase.startsWith("gmea") ? "gmea" : ["payroll-workspace", "generate-payroll", "upload-attendance", "review-attendance"].includes(skeletonCase) ? "payroll_manager" : "ceo");
 const role: SidebarProfile["role"] = path === "/request-overtime" ? (new URLSearchParams(window.location.search).get("role") as SidebarProfile["role"]) : new URLSearchParams(window.location.search).get("role") === "ceo" ? "ceo" : path === "/skeletons" ? skeletonRole : path === "/engineer" ? "engineer" : path === "/admin" ? "admin" : ["/payroll", "/generate-payroll", "/payroll-loading"].includes(path) ? "payroll_manager" : path === "/employee" ? "employee" : path === "/purchaser" ? "purchaser" : "gmea";
 createRoot(document.getElementById("root")!).render(path === "/loading-logo" ? <WorkspaceLoadingScreen /> : <DashboardShell profile={{ id: "project-01", full_name: "Maria Santos", username: "maria", role: path.startsWith("/engineer-pages/") ? "engineer" : role, avatar_path: null }}>
-  {path.startsWith("/engineer-pages/") ? <EngineerPagesHarness /> : path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
+  {path === "/gmea-modal-validation" ? <GmeaModalValidationHarness /> : path.startsWith("/engineer-pages/") ? <EngineerPagesHarness /> : path === "/admin" ? <UserManagementPageClient initialUsers={users} currentUserId="project-01" />
     : path === "/project-create" ? <ProjectsPageClient role="ceo" fullName="Maria Santos" projects={projects} engineers={[{ id: "engineer-1", name: "Engineer One" }]} />
     : path === "/engineer" ? <EngineerHarness />
     : path === "/generate-payroll" ? <><PayrollWorkflowNavigation current={3} /><PayrollHarness /></>

@@ -26,11 +26,17 @@ async function main() {
   try {
     await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
     const edgeInstalled = process.platform === "win32" && fs.existsSync("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe");
-    browser = await chromium.launch({ headless: true, ...(edgeInstalled ? { channel: "msedge" } : {}) });
+    browser = await chromium.launch({ headless: true, args: ["--disable-renderer-backgrounding", "--disable-background-timer-throttling", "--disable-backgrounding-occluded-windows"], ...(edgeInstalled ? { channel: "msedge" } : {}) });
     const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, reducedMotion: "reduce" });
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--gmea-modals")) {
+      await require("./checkGmeaModalValidation.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA modal validation passed: required fields, red borders, correction, optional fields, payment limits, dates, and mobile layout.");
+      return;
+    }
     if (process.argv.includes("--gmea-dashboard")) {
       await require("./checkGmeaDashboard.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);

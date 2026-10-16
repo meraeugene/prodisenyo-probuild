@@ -10,5 +10,5 @@ export default function GmeaSavedInput({ field, initialOptions = [], ...props }:
   controlClassName?: string; fieldClassName?: string;
 }) {
   const { options } = useGmeaInputOptions(!props.readOnly);
-  return <WorkspaceSearchableInput {...props} options={mergeGmeaInputValues(options[field], initialOptions)} />;
+  return <WorkspaceSearchableInput {...props} optional={!props.required} options={mergeGmeaInputValues(options[field], initialOptions)} />;
 }

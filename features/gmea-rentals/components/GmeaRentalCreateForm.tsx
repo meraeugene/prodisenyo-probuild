@@ -10,6 +10,7 @@ import {
   rentalLabel,
   rentalSecondaryButtonClass,
 } from "../utils/rentalUi";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
 type Item = {
@@ -118,6 +119,9 @@ export default function GmeaRentalCreateForm({
               >
                 <span className="block">{name}</span>
                 <input
+                  required
+                  min={key === "end_date" ? form.start_date : undefined}
+                  maxLength={key === "rental_number" ? 100 : key === "client" ? 200 : 300}
                   type={key.includes("date") ? "date" : "text"}
                   value={form[key]}
                   onChange={(event) =>
@@ -128,8 +132,9 @@ export default function GmeaRentalCreateForm({
               </label>
             ))}
             <label className="space-y-1.5 text-sm font-medium text-slate-700">
-              <span className="block">Status</span>
+              <span className="block">Status *</span>
               <select
+                required
                 value={form.status}
                 onChange={(event) =>
                   setForm({ ...form, status: event.target.value })
@@ -144,8 +149,9 @@ export default function GmeaRentalCreateForm({
               </select>
             </label>
             <label className="space-y-1.5 text-sm font-medium text-slate-700 sm:col-span-2">
-              <span className="block">Notes</span>
-              <textarea
+              <span className="block">Notes<OptionalFieldIndicator /></span>
+              <textarea maxLength={2000}
+                aria-label="Notes"
                 value={form.notes}
                 onChange={(event) =>
                   setForm({ ...form, notes: event.target.value })
@@ -199,8 +205,10 @@ export default function GmeaRentalCreateForm({
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   <label className="space-y-1.5 text-sm font-medium text-slate-700 md:col-span-2">
-                    <span className="block">Equipment</span>
+                    <span className="block">Equipment *</span>
                     <select
+                      required
+                      data-validation-message={item.equipment_id && items.filter(row => row.equipment_id === item.equipment_id).length > 1 ? "Select each equipment unit only once." : undefined}
                       value={item.equipment_id}
                       onChange={(event) => {
                         const chosen = equipment.find(
@@ -223,8 +231,9 @@ export default function GmeaRentalCreateForm({
                     </select>
                   </label>
                   <label className="space-y-1.5 text-sm font-medium text-slate-700">
-                    <span className="block">Rate type</span>
+                    <span className="block">Rate type *</span>
                     <select
+                      required
                       value={item.rate_type}
                       onChange={(event) =>
                         updateItem(item.id, {
@@ -245,11 +254,13 @@ export default function GmeaRentalCreateForm({
                     </select>
                   </label>
                   <label className="space-y-1.5 text-sm font-medium text-slate-700">
-                    <span className="block">Rate</span>
+                    <span className="block">Rate *</span>
                     <input
                       type="number"
                       min="0"
                       step=".01"
+                      required
+                      max={1e10}
                       value={item.unit_rate}
                       onChange={(event) =>
                         updateItem(item.id, { unit_rate: event.target.value })
@@ -258,12 +269,14 @@ export default function GmeaRentalCreateForm({
                     />
                   </label>
                   <label className="space-y-1.5 text-sm font-medium text-slate-700">
-                    <span className="block">Quantity</span>
+                    <span className="block">Quantity *</span>
                     <input
                       type="number"
                       min="0.01"
                       step=".01"
                       disabled={item.rate_type === "fixed"}
+                      required
+                      max={1e8}
                       value={item.rate_type === "fixed" ? "1" : item.quantity}
                       onChange={(event) =>
                         updateItem(item.id, { quantity: event.target.value })

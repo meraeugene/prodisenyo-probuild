@@ -1,6 +1,7 @@
 "use client";
 
 import { formatMoney, projectContractBreakdown } from "../utils/gmeaCalculations";
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { MoneyField } from "./GmeaFields";
 
 export default function GmeaContractTaxFields({
@@ -31,7 +32,7 @@ export default function GmeaContractTaxFields({
           onChange={(event) => onEnabledChange(event.target.checked)}
         />
         <span>
-          <span className="block text-sm font-semibold text-slate-800">Apply project tax</span>
+          <span className="block text-sm font-semibold text-slate-800">Apply project tax<OptionalFieldIndicator /></span>
           <span className="block text-xs leading-5 text-slate-500">
             Tax is added to the contract total, then deducted with project expenses when calculating profit.
           </span>
@@ -43,6 +44,8 @@ export default function GmeaContractTaxFields({
           <MoneyField
             label="Tax percentage (%) *"
             required
+            min={0}
+            max={100}
             value={taxRate}
             onValueChange={onTaxRateChange}
           />

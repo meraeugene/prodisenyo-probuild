@@ -1,5 +1,6 @@
 "use client";
 
+import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import {
   PROJECT_COLOR_OPTIONS,
@@ -18,7 +19,7 @@ export default function GmeaProjectColorField({
 
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-medium text-slate-700">Container color</legend>
+      <legend className="text-sm font-medium text-slate-700">Container color *</legend>
       <div className="flex flex-wrap items-center gap-2">
         {PROJECT_COLOR_OPTIONS.map((option) => {
           const selected = option.value === value;
@@ -46,7 +47,7 @@ export default function GmeaProjectColorField({
           );
         })}
         <label htmlFor={id} className="ml-1 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">
-          Custom
+          Custom<OptionalFieldIndicator />
           <input
             id={id}
             type="color"

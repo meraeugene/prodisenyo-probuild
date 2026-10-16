@@ -1,5 +1,6 @@
 ﻿"use client";
-import { useState, type ReactNode, type FormEvent } from "react";
+import { useState, type ReactNode } from "react";
+import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { LoaderCircle, X } from "lucide-react";
 import { buttonClass, secondaryClass } from "../utils/gmeaConstants";
@@ -34,8 +35,7 @@ export default function GmeaDialog({
 }) {
   const [pending, setPending] = useState(false),
     [error, setError] = useState("");
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function submit() {
     if (pending) return;
     if (onAdvance) {
       onAdvance();
@@ -104,8 +104,8 @@ export default function GmeaDialog({
               <X size={18} aria-hidden="true" />
             </button>
           </header>
-          <form
-            onSubmit={submit}
+          <ValidatedForm
+            onValidSubmit={submit}
             className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
             <div className={"min-h-0 min-w-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
@@ -148,7 +148,7 @@ export default function GmeaDialog({
                 </div>
               </footer>
             )}
-          </form>
+          </ValidatedForm>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
