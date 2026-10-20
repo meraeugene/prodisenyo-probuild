@@ -21,6 +21,7 @@ export default function GmeaRentalTransactionsTable({ rows, expenseOnly, onHisto
       return <tr key={row.id}>
         <th scope="row">{row.type === "expense" ? <button type="button" className={`${styles.recordLink} text-left`} onClick={() => onExpense(row.expense)}>{rental?.client || row.expense.description}</button>
           : <button type="button" className={`${styles.recordLink} text-left`} aria-label={`Payment history for ${row.rental.client}`} onClick={() => onHistory(row.rental)}>{row.rental.client}</button>}
+          {row.type === "expense" && rental && <p className="mt-1 text-xs font-normal text-slate-600">{row.expense.description}</p>}
           <p className="mt-1 text-xs font-normal text-slate-500">{rental && onLocation ? <button type="button" className="text-left text-teal-700 hover:underline" onClick={() => onLocation(rental)}>{rental.location || "Not recorded"}</button> : rental?.location || "General rental expense"}</p>
         </th>
         <td data-label="Type"><span className={row.type === "income" ? "font-medium text-teal-700" : "font-medium text-amber-700"}>{row.type === "income" ? "Income" : "Expense"}</span>

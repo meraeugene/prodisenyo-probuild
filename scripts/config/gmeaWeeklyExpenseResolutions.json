@@ -1,0 +1,19 @@
+{
+  "workbookSha256": "cd6bb829e2abe48cacbf3d41a1b0f5efcec59fae0b61d59e08aa0a41f76738ef",
+  "authorization": "User requested all weekly expenses, excluded all admin entries, selected weekly-sheet values, and delegated date interpretations on October 20, 2026.",
+  "rows": {
+    "JUN WEEKLY !I47:weekly-salary": { "date": "2025-06-28", "originalDate": "June 28/30,2025", "reason": "Use June 28, the end of the printed June 23-28 rental cutoff, from the two days written in the source." },
+    "JUN WEEKLY !I48:weekly-salary": { "date": "2025-06-28", "originalDate": "June 28/30,2025", "reason": "Use June 28, the end of the printed June 23-28 rental cutoff, from the two days written in the source." },
+    "AUG WEEKLY!D23:weekly-cash-advance": { "date": "2025-08-09", "section": "salary", "originalDate": "Aug 06,2025", "reason": "The second Drivers/Operators group has no heading. Treat it as salary at the end of the printed August 4-9 cutoff; keep the earlier explicitly headed cash advances on August 6." },
+    "AUG WEEKLY!D24:weekly-cash-advance": { "date": "2025-08-09", "section": "salary", "originalDate": "Aug 06,2025", "reason": "The second Drivers/Operators group has no heading. Treat it as salary at the end of the printed August 4-9 cutoff; keep the earlier explicitly headed cash advances on August 6." },
+    "DEC WEEKLY!C20:weekly-cash-advance": { "date": "2025-12-03", "originalDate": "", "reason": "Date is blank. Use Wednesday within the printed December 1-6 cutoff, following the workbook's usual cash-advance timing." },
+    "DEC WEEKLY!C21:weekly-cash-advance": { "date": "2025-12-03", "originalDate": "", "reason": "Date is blank. Use Wednesday within the printed December 1-6 cutoff, following the workbook's usual cash-advance timing." },
+    "DEC WEEKLY!C23:weekly-salary": { "date": "2025-12-06", "originalDate": "", "reason": "Date is blank. Use December 6, the end of the printed December 1-6 salary cutoff." },
+    "DEC WEEKLY!C24:weekly-salary": { "date": "2025-12-06", "originalDate": "", "reason": "Date is blank. Use December 6, the end of the printed December 1-6 salary cutoff." },
+    "JAN WEEKLY!C83:weekly-salary": { "date": "2026-01-31", "originalDate": "Feb 31,2026", "reason": "February 31 does not exist. Use January 31, the end of the printed January 26-31 cutoff." },
+    "JAN WEEKLY!C84:weekly-salary": { "date": "2026-01-31", "originalDate": "Feb 31,2026", "reason": "February 31 does not exist. Use January 31, the end of the printed January 26-31 cutoff." }
+  },
+  "ignored": {
+    "OCTOBER WEEKLY!I3:weekly-equipment": "Unfinished October template: no transaction day, a copied September cutoff, and copied September cash advances/salaries. No evidence of a completed October expense."
+  }
+}

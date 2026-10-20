@@ -1,5 +1,26 @@
 # GMEA rental expense workbook review
 
+## October 20, 2026: all weekly sheets reconciled
+
+The user requested all weekly expenses, excluded all admin entries, selected weekly-sheet values when equipment sheets disagreed, and delegated reasonable interpretations of malformed dates. This reconciliation supersedes the earlier import holds and pre-exclusion reporting totals below for weekly expenses. The current Rentals transaction table displays these records at `/gmea-rentals/income`; it no longer opens with the earlier Monthly/Weekly navigation described below.
+
+All 20 weekly sheets were inspected: 19 populated sheets and one empty November 2026 sheet. Every positive numeric money cell was accounted for as one of 1,083 itemized source rows or 231 subtotal/control cells. Of the source rows, 25 exact repeats were referenced once, 43 admin rows were excluded, and one unfinished October 2026 equipment template was excluded. The remaining **1,014 distinct weekly entries, totaling PHP 2,820,992.52**, are reconciled to saved expenses. One weekly aggregate of PHP 850 maps to its two already-saved maintenance components, PHP 180 and PHP 670, rather than another expense.
+
+The verified database changes were:
+
+- Added 82 missing expenses totaling PHP 280,880.26.
+- Corrected seven existing records to weekly-sheet values, including two category/description corrections and five amount corrections. The net amount correction was minus PHP 13,970.00. Exact matches across all sheets were reserved before resolving conflicts, so a separately represented cost was not overwritten.
+- Removed 40 source-verified admin entries from the earlier workbook import, totaling PHP 261,034.68. These include Admin/GMEA Admin and the named admin payees Mariegen/Maeiegen. Three other admin source rows had never been imported and remain excluded. Original records are retained in the backup.
+- Preserved unrelated expenses, equipment, categories, rental contracts, items, payments, workers, and assignments. After reconciliation, the rental expense table contains 1,353 rows with recorded amounts totaling PHP 3,271,895.83, including historical costs outside the weekly source set.
+
+The user-delegated date interpretations are preserved in the new expenses' notes and `scripts/config/gmeaWeeklyExpenseResolutions.json`: June 28 for the June 23-28 salaries marked June 28/30; August 9 salaries for the unheaded second payee group in the August 4-9 cutoff; December 3 cash advances and December 6 salaries for blank dates in the December 1-6 cutoff; and January 31 for the impossible February 31 salary date in the January 26-31 cutoff. The two January 3 partial 13th-month payments of PHP 500 were included. Valid source dates were otherwise preserved, including dates outside a printed cutoff.
+
+`OCTOBER WEEKLY!I3` remains excluded because it has no transaction day, an unfinished October date, and a copied September cutoff. Its four September cash advance/salary copies map to September's original entries. No October transaction date or expense was invented. There are no unresolved non-admin source rows apart from this explicitly excluded template. The Excel workbook and its SHA-256 remain unchanged.
+
+The reusable command is `node scripts/gmea-all-weekly-expenses-import.cjs --file <workbook> --admin-policy exclude-all --resolutions scripts/config/gmeaWeeklyExpenseResolutions.json --prefer-weekly --exclude-existing-admin`; it defaults to a dry run. Add `--apply` only to execute the reviewed plan. Mutations use active-GMEA role checks and existing version-checked RPCs. Admin exclusion also verifies the saved source, payee, and version. A backup and per-mutation journal are written before financial changes.
+
+Verification is in `tmp/design-preview/all-weekly-import-verified.json`. The October 20 backup and journal use timestamp `2026-10-20T08-51-33-519Z`. Every reconciled source date/amount was verified after writing, with correction categories/descriptions/notes checked separately. An immediate repeat plan found **zero new expenses and zero corrections**, with no unresolved held rows. Fourteen focused import tests and lint passed.
+
 Reviewed on October 9, 2026. Source: `C:\Users\Lenovo\Downloads\ALL EXPENSES (1).xlsx`.
 SHA-256: `cd6bb829e2abe48cacbf3d41a1b0f5efcec59fae0b61d59e08aa0a41f76738ef`.
 The workbook was read only and remains unchanged. The reviewed subset was imported into GMEA Rentals on October 9, 2026 after the user explicitly requested insertion; held rows were excluded.

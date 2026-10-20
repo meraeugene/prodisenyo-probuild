@@ -19,8 +19,8 @@ module.exports = async function checkGmeaFinance(page, base, screenshots) {
   await incomeTable.getByRole("button", { name: "Reset filters", exact: true }).click();
   assert.equal(await incomeTable.getByLabel("Filter rental records by location", { exact: true }).inputValue(), "");
   await incomeTable.getByRole("button", { name: "Expense", exact: true }).click();
-  assert.equal(await incomeTable.locator("tbody tr").count(), 0);
-  assert.match(await incomeTable.innerText(), /No rental expense records to show/);
+  assert.equal(await incomeTable.locator("tbody tr").count(), 4);
+  assert.match(await incomeTable.innerText(), /Driver salary|Diesel/);
   assert.equal(await page.evaluate(() => window.__rentalOperations.expenses.length), 4);
   await incomeTable.getByRole("button", { name: "Income", exact: true }).click();
   assert.equal(await incomeTable.locator("tbody tr").count(), 5);

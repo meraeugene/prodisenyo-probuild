@@ -1,0 +1,15 @@
+.filters { align-items: flex-end; }
+.filters > button { flex-shrink: 0; white-space: nowrap; }
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
+  .filters > label { min-width: 0; }
+  .filters > label:first-child { grid-column: 1 / -1; }
+  .filters > button { grid-column: -2 / -1; }
+}
+
+@media (min-width: 1280px) {
+  .filters { flex-wrap: nowrap; }
+  .filters > label { flex: 0 1 140px; min-width: 0; }
+  .filters > label:first-child { flex: 1 1 220px; min-width: 160px; }
+}

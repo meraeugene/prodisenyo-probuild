@@ -17,8 +17,7 @@ export default function GmeaRentalPortfolio({ rentals, historicalIncome, operati
   const summary = useMemo(() => summarizeRentalPortfolio(records, operations.expenses), [records, operations.expenses]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const selected = locations.find(location => location.key === selectedKey);
-  // Hide expense rows for now; financial summaries still use saved expenses.
-  const transactions = useRentalTransactions(records);
+  const transactions = useRentalTransactions(records, operations.expenses);
 
   if (selected) return <GmeaRentalLocationDetails key={selected.key} location={selected} operations={operations}
     rentals={rentals} canEdit={canEdit} onBack={() => setSelectedKey(null)} />;

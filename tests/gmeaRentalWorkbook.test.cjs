@@ -57,3 +57,31 @@ test("new reporting cutoff retains cross-month dates and linked salaries validat
   assert.throws(() => normalizeRentalExpenseMutation({ kind: "create", value: { ...value, equipment_id: uuid } }), /payee without equipment/);
   assert.throws(() => normalizeRentalExpenseMutation({ kind: "create", value: { ...value, date: "2026-10-05" } }), /within the selected week/);
 });
+
+test("month options preserve year boundaries and newest-first records keep undated entries last", () => {
+  const { selectRentalTransactions, rentalTransactionMonths } = load("features/gmea-rentals/utils/rentalTransactions.ts");
+  const row = (id, date) => ({ id, date, type: "expense", rental: null, expense: { description: "Fuel", supplier: "", method: "", invoice_number: "", notes: "" } });
+  const rows = [row("unknown", ""), row("jan", "2026-01-01"), row("dec", "2025-12-31"), row("later", "2026-01-31")];
+  assert.deepEqual(selectRentalTransactions(rows, "all", "all", "", "", "").map(row => row.id), ["later", "jan", "dec", "unknown"]);
+  assert.deepEqual(rows.map(row => row.id), ["unknown", "jan", "dec", "later"]);
+  assert.deepEqual(rentalTransactionMonths(rows), [
+    { value: "2026-01", label: "January 2026" }, { value: "2025-12", label: "December 2025" }, { value: "undated", label: "Undated records" },
+  ]);
+});
+
+test("month filtering uses receipt and expense dates, includes general expenses, and isolates undated income", () => {
+  const { buildRentalTransactions, selectRentalTransactions } = load("features/gmea-rentals/utils/rentalTransactions.ts");
+  const rental = { id: uuid, client: "Customer", location: "Gusa", rental_number: "Rental", items: [], payments: [
+    { id: "paid", status: "posted", payment_date: "2026-10-01", method: "Cash" },
+  ] };
+  const notes = encodeRentalWeekNotes("", buildRentalCutoffDefault("2026-10-01", "equipment"));
+  const expense = { id: "cost", rental_id: null, date: "2026-10-02", description: "Fuel", supplier: "Supplier", method: "Cash", invoice_number: "", notes };
+  const rows = buildRentalTransactions([rental, { ...rental, id: "undated", payments: [] }], [expense]);
+  const select = (type, month) => selectRentalTransactions(rows, type, "all", "", "", "", month);
+  assert.equal(select("all", "2026-10").length, 2);
+  assert.equal(select("expense", "2026-10")[0].expense.id, "cost");
+  assert.equal(select("income", "2026-10")[0].payment.id, "paid");
+  assert.equal(select("all", "2026-09").length, 0);
+  assert.equal(select("all", "undated")[0].rental.id, "undated");
+  assert.equal(select("expense", "undated").length, 0);
+});

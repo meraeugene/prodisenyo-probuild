@@ -14,9 +14,11 @@ Choices also include values from saved project, rental, and operation records. C
 
 ## Rental table and filters
 
-Rentals shows one transaction table below the overall cards. Its Type column and All records / Income / Expense filters support a shared income and expense view. Existing expense rows are temporarily omitted from the table; saved financial data and summary/dashboard calculations remain intact. Expense currently shows an empty view. Company, location, payment-type, search, and Reset filters share the same toolbar. Location names open that location's cards and single transaction table; returning preserves the main table filters.
+Rentals shows one transaction table below the overall cards. Its Type column and All records / Income / Expense filters support a shared income and expense view. All saved expenses, including imported workbook expenses without a linked rental, appear in the main table. Location details show only expenses linked to that location's rentals or income records. Company, location, payment-type, search, and Reset filters share the same toolbar. Location names open that location's cards and single transaction table; returning preserves the main table filters.
 
 The compact table has five columns: Company / Location, Type, Date, Amount, and Payment method. Company names open payment history; location names open location totals. History includes service, rental amount, collections, and balance. On smaller screens rows stack without horizontal scrolling. Rentals has no Monthly/Weekly report switch.
+
+The Month dropdown filters income by receipt date and expenses by transaction date, with separate month/year choices and an Undated records option for entries without a confirmed receipt date. Records retain newest-first ordering, with undated rows last. The same Month filter appears in location details and resets pagination when changed. Reset filters clears the month and aligns with the filter controls. Financial cards retain their labeled all-time totals.
 
 ## Rental income
 
@@ -26,7 +28,7 @@ Existing Excel archives retain their source evidence and confirmed/held receipts
 
 ## Rental expenses
 
-New rental expense entry has date, category, description, amount, supplier/payee, and payment method. Supplier/payee and payment method use shared searchable dropdowns that allow entering new values. Invoice and notes are optional Additional details. New entry has no related-rental, scope, equipment, cutoff, VAT, or refund controls and saves a general rental expense with no VAT/refund. Existing expense editors and workbook cutoff records retain their data and advanced controls. Saved expense rows remain temporarily hidden from the table but contribute to the financial totals.
+New rental expense entry has date, category, description, amount, supplier/payee, and payment method. Supplier/payee and payment method use shared searchable dropdowns that allow entering new values. Invoice and notes are optional Additional details. New entry has no related-rental, scope, equipment, cutoff, VAT, or refund controls and saves a general rental expense with no VAT/refund. Existing expense editors and workbook cutoff records retain their data and advanced controls. Saved expenses appear in the transaction table and contribute to the financial totals. Selecting an expense opens its details; CEO access is read-only.
 
 ## Operation expenses
 
