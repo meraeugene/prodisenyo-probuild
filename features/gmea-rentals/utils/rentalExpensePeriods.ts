@@ -1,6 +1,6 @@
 import type { RentalExpense } from "../types";
 import { rentalVatBreakdown } from "./expenseCalculations";
-import { rentalWeekMetadata } from "./rentalReportingWeeks";
+import { rentalExpenseWeekMetadata } from "./rentalReportingWeeks";
 
 export type RentalExpensePeriod = "month" | "week" | "all";
 export function rentalExpensePeriodRange(period: RentalExpensePeriod, anchor: string) {
@@ -27,7 +27,7 @@ export function selectRentalExpenseRows(expenses: RentalExpense[], range: { star
   return expenses.filter(expense => (!range || expense.date >= range.start && expense.date <= range.end)
     && (!category || expense.category_id === category)
     && (!equipment || (equipment === "general" ? !expense.equipment_id : expense.equipment_id === equipment))
-    && [expense.description, expense.supplier, expense.invoice_number, expense.method, rentalWeekMetadata(expense.notes)?.party || "", equipmentNames.get(expense.equipment_id || "") || ""].some(value => value.toLocaleLowerCase().includes(search)))
+    && [expense.description, expense.supplier, expense.invoice_number, expense.method, rentalExpenseWeekMetadata(expense.notes)?.party || "", equipmentNames.get(expense.equipment_id || "") || ""].some(value => value.toLocaleLowerCase().includes(search)))
     .sort((left, right) => right.date.localeCompare(left.date) || right.created_at.localeCompare(left.created_at) || left.id.localeCompare(right.id));
 }
 

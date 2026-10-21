@@ -4,6 +4,7 @@ import type { RentalExpense } from "../types";
 import { rentalPaymentTypeLabels } from "../utils/rentalIncomeSelectors";
 import { rentalVatBreakdown } from "../utils/expenseCalculations";
 import { formatRentalDate, formatRentalMoney } from "../utils/rentalUi";
+import GmeaRentalExpenseTransactionsTable from "./GmeaRentalExpenseTransactionsTable";
 import styles from "@/components/workspace/workspace.module.css";
 import tableStyles from "./rentalTransactionsTable.module.css";
 
@@ -11,6 +12,7 @@ export default function GmeaRentalTransactionsTable({ rows, expenseOnly, onHisto
   rows: RentalTransaction[]; expenseOnly: boolean; onHistory: (record: RentalIncomeRecord) => void;
   onExpense: (expense: RentalExpense) => void; onLocation?: (record: RentalIncomeRecord) => void;
 }) {
+  if (expenseOnly) return <GmeaRentalExpenseTransactionsTable expenses={rows.flatMap(row => row.type === "expense" ? [row.expense] : [])} onExpense={onExpense} />;
   return <div><table className={`${styles.table} ${tableStyles.table}`} style={{ minWidth: 0 }}>
     <caption className="sr-only">Rental income and expense records</caption>
     <thead><tr>{["Company / Location", "Type", "Date", "Amount", "Payment method"].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>

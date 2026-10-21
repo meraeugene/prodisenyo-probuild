@@ -8,6 +8,7 @@ import {
 import { validEquipmentId } from "./equipmentValidation";
 import { rentalVatBreakdown } from "./expenseCalculations";
 import { rentalWeekMetadata } from "./rentalReportingWeeks";
+import { rentalWorkbookWeekMetadata } from "./rentalWorkbookWeeks";
 
 function object(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -120,7 +121,8 @@ export function normalizeRentalExpenseMutation(
   const vatRate = vatMode === "off" ? 0 : 12;
   const amount = money(value.amount, "Expense amount", true);
   rentalVatBreakdown(amount, vatMode, vatRate);
-  const notes = text(value.notes, "Notes", false, 1000);
+  const notes = text(value.notes, "Notes", false, 4000);
+  if (notes.includes("@rental-workbook-week:") && !rentalWorkbookWeekMetadata(notes)) throw new Error("Invalid workbook reporting week.");
   const week = rentalWeekMetadata(notes);
   if (notes.startsWith("@rental-week:") && !week) throw new Error("Invalid weekly reporting dates or section.");
   if (week && (date < week.start || date > week.end)) throw new Error("Expense date must be within the selected week.");

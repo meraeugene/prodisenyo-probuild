@@ -8,6 +8,11 @@ function sameEvent(left, right) {
     && normalize(left.rawDescription) === normalize(right.rawDescription);
 }
 function directSource(expense, row) {
+  const workbookLine = String(expense.notes || '').split('\n').find(line => line.startsWith('@rental-workbook-week:'));
+  if (workbookLine) {
+    const metadata = JSON.parse(workbookLine.slice('@rental-workbook-week:'.length));
+    return metadata.source?.sheet === row.sheet && metadata.source?.cell === row.address;
+  }
   const first = String(expense.notes || '').split('\n')[0];
   if (first.startsWith('@rental-week:')) {
     const metadata = JSON.parse(first.slice('@rental-week:'.length));

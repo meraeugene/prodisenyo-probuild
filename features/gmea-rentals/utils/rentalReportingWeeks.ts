@@ -1,5 +1,6 @@
 import type { RentalExpense } from "../types";
 import { rentalVatBreakdown } from "./expenseCalculations";
+import { preserveRentalWorkbookWeekNotes, rentalWorkbookWeekMetadata, stripRentalWorkbookWeekNotes } from "./rentalWorkbookWeeks";
 
 export type RentalWeekSection = "equipment" | "cash-advance" | "salary";
 export type RentalWeekMetadata = {
@@ -26,16 +27,18 @@ export function rentalWeekMetadata(notes: string): RentalWeekMetadata | null {
   if (!notes.startsWith(prefix)) return null;
   try { return validateRentalWeekMetadata(JSON.parse(notes.slice(prefix.length).split("\n")[0])); } catch { return null; }
 }
-export function rentalExpenseUserNotes(notes: string) { return notes.startsWith(prefix) ? notes.includes("\n") ? notes.slice(notes.indexOf("\n") + 1) : "" : notes; }
+export function rentalExpenseWeekMetadata(notes: string) { return rentalWorkbookWeekMetadata(notes) || rentalWeekMetadata(notes); }
+export function rentalExpenseReportingMonth(expense: Pick<RentalExpense, "notes" | "date">) { return rentalExpenseWeekMetadata(expense.notes)?.month || expense.date.slice(0, 7); }
+export function rentalExpenseUserNotes(notes: string) { return stripRentalWorkbookWeekNotes(notes.startsWith(prefix) ? notes.includes("\n") ? notes.slice(notes.indexOf("\n") + 1) : "" : notes); }
 export function encodeRentalWeekNotes(notes: string, week: RentalWeekMetadata) {
-  return `${prefix}${JSON.stringify(validateRentalWeekMetadata(week))}\n${rentalExpenseUserNotes(notes)}`;
+  return preserveRentalWorkbookWeekNotes(notes, `${prefix}${JSON.stringify(validateRentalWeekMetadata(week))}\n${rentalExpenseUserNotes(notes)}`);
 }
 export const rentalReportingWeekId = (week: Pick<RentalWeekMetadata,"month"|"start"|"end">) => `${week.month}:${week.start}:${week.end}`;
 
 export function buildRentalReportingWeeks(expenses: RentalExpense[]) {
   const groups = new Map<string, RentalReportingWeek>();
   for (const expense of expenses) {
-    const metadata = rentalWeekMetadata(expense.notes);
+    const metadata = rentalExpenseWeekMetadata(expense.notes);
     if (!metadata) continue;
     const id = rentalReportingWeekId(metadata);
     const week = groups.get(id) || { id, month: metadata.month, start: metadata.start, end: metadata.end, expenses: [], equipment: 0, cashAdvance: 0, salary: 0, total: 0, pending: [] };
@@ -48,8 +51,8 @@ export function buildRentalReportingWeeks(expenses: RentalExpense[]) {
     groups.set(id,week);
   }
   return [...groups.values()].sort((left,right) => left.start.localeCompare(right.start)).map(week => {
-    week.pending = ["cash-advance", "salary"].filter(section => !week.expenses.some(expense => rentalWeekMetadata(expense.notes)?.section === section)) as RentalWeekSection[];
-    week.expenses.sort((left,right) => (rentalWeekMetadata(left.notes)?.order ?? Number.MAX_SAFE_INTEGER) - (rentalWeekMetadata(right.notes)?.order ?? Number.MAX_SAFE_INTEGER) || left.date.localeCompare(right.date) || left.id.localeCompare(right.id));
+    week.pending = ["cash-advance", "salary"].filter(section => !week.expenses.some(expense => rentalExpenseWeekMetadata(expense.notes)?.section === section)) as RentalWeekSection[];
+    week.expenses.sort((left,right) => (rentalExpenseWeekMetadata(left.notes)?.order ?? Number.MAX_SAFE_INTEGER) - (rentalExpenseWeekMetadata(right.notes)?.order ?? Number.MAX_SAFE_INTEGER) || left.date.localeCompare(right.date) || left.id.localeCompare(right.id));
     return { ...week, equipment: week.equipment/100, cashAdvance: week.cashAdvance/100, salary: week.salary/100, total: week.total/100 };
   });
 }

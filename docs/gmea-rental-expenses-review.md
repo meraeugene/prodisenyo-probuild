@@ -1,5 +1,48 @@
 # GMEA rental expense workbook review
 
+## October 21, 2026: source row order and weekly total verification
+
+The Expense tab retains the Income table design, inline Week range filter, and one complete week per page. Rows now follow the original worksheet order within each cutoff, including equipment before cash advances and salaries, rather than sorting by transaction date or database ID. Week choices remain earliest first. Search results preserve the relative source order and total only the matching rows.
+
+A fresh read-only database reconciliation found zero amount updates or removals. All 1,014 retained rows across 77 cutoffs were checked against their source cells, displayed table sequence, and cent-based weekly totals. The retained total remains PHP 2,820,992.52. Verification evidence is in `tmp/design-preview/weekly-source-order-verified.json`.
+
+For February 2-7, 2026, the first rows are Yellow Dump diesel PHP 3,000, Canter diesel PHP 2,000, Bongo diesel PHP 1,000, and Bongo maintenance PHP 3,910. All equipment rows precede drivers/operators cash advances, then drivers/operators salaries. `FEB WEEKLY!G25` is PHP 36,543.82, including the PHP 500 GMEA ADMIN advance at `E21`. Excluding admin as instructed leaves 15 rows totaling **PHP 36,043.82**. No admin expense was restored to force equality with the printed gross total.
+
+Four printed weekly totals differ from the sum of their source detail rows even before admin exclusions:
+
+| Source total cell | Cutoff | Printed total | Source detail sum including admin | Retained total excluding admin |
+| --- | --- | ---: | ---: | ---: |
+| DEC WEEKLY!E47 | December 8-13, 2025 | PHP 27,457.01 | PHP 30,457.01 | PHP 29,957.01 |
+| APR-WEEKLY!E48 | April 13-18, 2026 | PHP 55,069.06 | PHP 37,069.06 | PHP 29,114.50 |
+| SEPTEMBER WEEKLY!G79 | September 21-26, 2026 | PHP 6,000.00 | PHP 10,000.00 | PHP 10,000.00 |
+| SEPTEMBER WEEKLY!G96 | September 28-October 3, 2026 | PHP 11,360.00 | PHP 14,860.00 | PHP 14,860.00 |
+
+The app totals the retained source detail. The workbook remains unchanged, and this presentation fix makes no financial mutations.
+
+## October 21, 2026: weekly sources only and chronological workbook tables
+
+The user clarified that only months/sheets with weekly expense data should be imported, and that the Rentals expense table must follow the workbook's weekly layout from the earliest cutoff and date. This supersedes October 20's retention of unmatched equipment-sheet history and the earlier newest-first/transaction-month presentation.
+
+All 1,014 retained non-admin weekly rows now carry source-sheet reporting month, cutoff dates/label, equipment or payee, section, partial 13th-month kind, source order, block, cell, and workbook hash. They cover **77 cutoffs across 18 reporting months (April 2025-September 2026), totaling PHP 2,820,992.52**. There are no imported expenses for months without retained weekly source data. The unfinished October 2026 template and the empty November 2026 worksheet remain excluded. Admin exclusions and prior user-delegated date interpretations remain in force.
+
+The reconciliation removed 338 unmatched equipment-sheet-only imports. It also consolidated the April 24, 2025 Forward maintenance components (PHP 180 and PHP 670) into one PHP 850 weekly row, removing the redundant component record. The 339 removals totaled PHP 451,573.31, offset by a PHP 670 increase to the retained aggregate record. The database now contains exactly 1,014 rental expense rows totaling PHP 2,820,992.52. No manual expenses were removed; equipment, categories, contracts, rental items, receipts, workers, and assignments were verified unchanged.
+
+Expense renders one complete week per page using the same compact table design as Income, with source row order and a weekly total. The inline Week range selector and page controls navigate cutoffs earliest first without five-row pagination splitting a week. All records and Income retain ascending transaction-date order. Filtering a month uses the source reporting month for weekly costs, including cutoffs that cross month boundaries and actual expense dates outside the printed cutoff. Notes retain provenance without displaying the workbook metadata JSON in editable notes.
+
+January 2026 is verified as:
+
+| Cutoff | Total excluding admin |
+| --- | ---: |
+| January 5-10 | PHP 51,820.32 |
+| January 12-17 | PHP 23,960.13 |
+| January 19-24 | PHP 23,521.88 |
+| January 26-31 | PHP 27,557.75 |
+| January total | PHP 126,860.08 |
+
+The first January table matches the supplied screenshot, including the January 3 partial 13th-month payments placed below equipment in the January 5-10 source cutoff. No January 1 transaction was fabricated.
+
+`scripts/gmea-weekly-only-reconcile.cjs --file <workbook> --resolutions scripts/config/gmeaWeeklyExpenseResolutions.json` previews this reconciliation; `--apply` executes it through active-GMEA, version-checked RPCs. The backup and mutation journal use timestamp `2026-10-21T01-39-01-519Z`. `tmp/design-preview/weekly-only-verified.json` records the counts, monthly totals, unchanged workbook hash, unchanged unrelated records, and an immediate repeat check with zero updates and zero removals. Every retained source amount, actual date, reporting month, and cutoff was verified after writing.
+
 ## October 20, 2026: all weekly sheets reconciled
 
 The user requested all weekly expenses, excluded all admin entries, selected weekly-sheet values when equipment sheets disagreed, and delegated reasonable interpretations of malformed dates. This reconciliation supersedes the earlier import holds and pre-exclusion reporting totals below for weekly expenses. The current Rentals transaction table displays these records at `/gmea-rentals/income`; it no longer opens with the earlier Monthly/Weekly navigation described below.

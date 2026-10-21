@@ -31,6 +31,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--weekly-expense-format")) {
+      await require("./checkWeeklyRentalFormat.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("Weekly expense format passed: shared Income table, inline week filter, one week per page, Excel row order, totals, search, details, CEO access and mobile layout.");
+      return;
+    }
     if (process.argv.includes("--gmea-modals")) {
       await require("./checkGmeaModalValidation.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);

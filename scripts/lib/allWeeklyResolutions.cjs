@@ -18,6 +18,7 @@ function applyAllWeeklyResolutions(report, resolutions) {
       if (resolution.section !== 'salary') throw new Error('Only an explicitly reviewed salary heading may be supplied.');
       row.originalDescription = row.rawDescription;
       row.section = resolution.section;
+      row.kind = resolution.section;
       row.rawDescription = `Salary - ${row.party}`;
       row.category = categoryName(row.rawDescription, row.section, row.party);
     }

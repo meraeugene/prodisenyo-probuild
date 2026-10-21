@@ -1,5 +1,6 @@
 const fs = require('node:fs'), crypto = require('node:crypto'), X = require('xlsx');
 const { clean, normalize, parseDate, mergedValue, equipmentName, categoryName } = require('./allWeeklySourceValues.cjs');
+const { weeklySheetMonths, readWeeklyCutoff } = require('./allWeeklyCutoffs.cjs');
 const cents = value => Math.round(Number(value) * 100);
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 function sourceId(text) {
@@ -7,7 +8,8 @@ function sourceId(text) {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 }
 function parseAllWeeklyWorkbook(workbook, source) {
-  const records = [], controls = [], sheets = [], emptyRows = [];
+  const records = [], controls = [], sheets = [], emptyRows = [], cutoffs = [];
+  const sheetMonths = weeklySheetMonths(workbook);
   for (const name of workbook.SheetNames.filter(name => /WEEK/i.test(name))) {
     const sheet = workbook.Sheets[name], headers = [];
     if (!sheet['!ref']) { sheets.push({ name, blocks: 0, records: 0 }); continue; }
@@ -19,6 +21,8 @@ function parseAllWeeklyWorkbook(workbook, source) {
     for (const header of headers) {
       const last = headers.find(next => next.c === header.c && next.r > header.r)?.r ?? X.utils.decode_range(sheet['!ref']).e.r + 1;
       const col = header.c;
+      const cutoff = readWeeklyCutoff(sheet, header, last, sheetMonths[name]);
+      cutoffs.push({ sheet: name, block: X.utils.encode_cell(header), month: sheetMonths[name], cutoff });
       let section = 'equipment', rawDate, groupDate, party = '', thirteenth = false, partialBonus = false;
       let seenParties = new Set();
       for (let row = header.r + 1; row < last; row++) {
@@ -63,7 +67,8 @@ function parseAllWeeklyWorkbook(workbook, source) {
           const payload = { sheet: name, address: cell, block: X.utils.encode_cell(header), date, rawDate: clean(rawDate), amount: cents(rawAmount) / 100, section, party,
             equipment, category: categoryName(description, section, party), rawDescription: description, payee: section === 'equipment' ? '' : party, sourceLocator };
           const sourceFingerprint = sha(JSON.stringify(payload));
-          records.push({ ...payload, id: sourceId(`all-weekly:${source.sha256}:${sourceLocator}`), sourceFingerprint, issues });
+          records.push({ ...payload, id: sourceId(`all-weekly:${source.sha256}:${sourceLocator}`), sourceFingerprint, issues,
+            cutoff, kind: bonus || partialBonus ? '13th-month' : section, order: row * 100 + amountCol });
         };
         if (amount != null && amount !== '' && !party) emptyRows.push({ sheet: name, cell: amountCell });
         add(amount, amountCell);
@@ -76,7 +81,7 @@ function parseAllWeeklyWorkbook(workbook, source) {
     }
     sheets.push({ name, blocks: headers.length, records: records.length - countBefore });
   }
-  return { source, sheets, records, controls, emptyRows };
+  return { source, sheets, records, controls, emptyRows, cutoffs };
 }
 function readAllWeeklyWorkbook(file) {
   const bytes = fs.readFileSync(file);

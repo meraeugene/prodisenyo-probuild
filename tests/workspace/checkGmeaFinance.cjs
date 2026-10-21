@@ -19,7 +19,9 @@ module.exports = async function checkGmeaFinance(page, base, screenshots) {
   await incomeTable.getByRole("button", { name: "Reset filters", exact: true }).click();
   assert.equal(await incomeTable.getByLabel("Filter rental records by location", { exact: true }).inputValue(), "");
   await incomeTable.getByRole("button", { name: "Expense", exact: true }).click();
-  assert.equal(await incomeTable.locator("tbody tr").count(), 4);
+  assert.equal(await incomeTable.getByRole("button", { name: /^Expense details:/ }).count(), 1);
+  await incomeTable.getByLabel("Select expense week range", { exact: true }).selectOption("2026-10:2026-10-05:2026-10-10");
+  assert.equal(await incomeTable.getByRole("button", { name: /^Expense details:/ }).count(), 3);
   assert.match(await incomeTable.innerText(), /Driver salary|Diesel/);
   assert.equal(await page.evaluate(() => window.__rentalOperations.expenses.length), 4);
   await incomeTable.getByRole("button", { name: "Income", exact: true }).click();

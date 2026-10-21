@@ -5,6 +5,7 @@ import { rentalVatBreakdown } from "../utils/expenseCalculations";
 import { encodeRentalWeekNotes, rentalExpenseUserNotes, rentalWeekMetadata, type RentalWeekMetadata } from "../utils/rentalReportingWeeks";
 import { useGmeaRentalOperationsMutation } from "./useGmeaRentalOperationsMutation";
 import { buildRentalCutoffDefault } from "../utils/rentalCutoffDefaults";
+import { preserveRentalWorkbookWeekNotes } from "../utils/rentalWorkbookWeeks";
 export type Scope = "rental" | "equipment" | "general";
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 export function useGmeaRentalExpenseForm({ rental, incomeRecordId, equipment, categories, expense, weekContext, onClose, onSaved }: {
@@ -64,7 +65,7 @@ export function useGmeaRentalExpenseForm({ rental, incomeRecordId, equipment, ca
       setLocalError("Select equipment for an equipment-only expense.");
       return;
     }
-    let notes = form.notes;
+    let notes = preserveRentalWorkbookWeekNotes(expense?.notes ?? "", form.notes);
     if (week) {
       try {
         if (form.date < week.start || form.date > week.end) throw new Error("Expense date must be within the selected week.");
@@ -72,7 +73,7 @@ export function useGmeaRentalExpenseForm({ rental, incomeRecordId, equipment, ca
         if (week.section !== "equipment" && (scope === "equipment" || form.equipment_id)) throw new Error("Cash advances and salaries require a payee without equipment.");
         const original = expense ? rentalWeekMetadata(expense.notes) : null;
         const party = week.section === "equipment" ? original && expense?.equipment_id === form.equipment_id ? original.party : equipment.find(item => item.id === form.equipment_id)?.name || "" : form.supplier;
-        notes = encodeRentalWeekNotes(form.notes, { ...week, party });
+        notes = encodeRentalWeekNotes(notes, { ...week, party });
       } catch (cause) { setLocalError(cause instanceof Error ? cause.message : "Check the week dates and payee."); return; }
     }
     setLocalError("");

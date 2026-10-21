@@ -12,4 +12,5 @@
   .filters { flex-wrap: nowrap; }
   .filters > label { flex: 0 1 140px; min-width: 0; }
   .filters > label:first-child { flex: 1 1 220px; min-width: 160px; }
+  .filters > .weekRange { flex: 0 1 250px; min-width: 200px; }
 }

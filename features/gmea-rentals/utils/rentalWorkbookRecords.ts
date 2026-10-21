@@ -1,7 +1,7 @@
 import type { RentalIncomeRecord } from "../incomeTypes";
 import type { RentalPayment, RentalExpense } from "../types";
 import { rentalClientKey } from "./rentalIncomeSelectors";
-import { rentalWeekMetadata } from "./rentalReportingWeeks";
+import { rentalExpenseWeekMetadata } from "./rentalReportingWeeks";
 
 export type RentalIncomeRow = { rental: RentalIncomeRecord; payment: RentalPayment | null };
 export type RentalIncomeTab = "all" | "down_payment" | "full_payment" | "other";
@@ -23,7 +23,7 @@ export function selectRentalIncomeRows(rows: RentalIncomeRow[], tab: RentalIncom
     .sort((left, right) => (right.payment?.payment_date || "").localeCompare(left.payment?.payment_date || "") || left.rental.id.localeCompare(right.rental.id));
 }
 export function getRentalExpenseType(expense: RentalExpense, categories: Map<string, string>): Exclude<RentalExpenseTab, "all"> {
-  const week = rentalWeekMetadata(expense.notes);
+  const week = rentalExpenseWeekMetadata(expense.notes);
   if (week) return week.section;
   const category = rentalClientKey(categories.get(expense.category_id) || "");
   if (category.includes("cash advance")) return "cash-advance";
