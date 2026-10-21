@@ -1,7 +1,7 @@
 import type { HistoricalIncomeRecord, RentalIncomeRecord } from "../incomeTypes";
 
 export function mapHistoricalIncomeRecords(records: HistoricalIncomeRecord[], recordedAt: string, actor: string): RentalIncomeRecord[] {
-  return records.map(record => ({
+  return records.filter(record => !record.deleted).map(record => ({
     id: record.id, rental_number: record.source, client: record.client, location: record.location,
     status: "completed", start_date: record.receipts.filter(receipt => receipt.confirmed)
       .map(receipt => receipt.date!).sort()[0] || "",

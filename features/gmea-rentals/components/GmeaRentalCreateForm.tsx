@@ -1,5 +1,8 @@
 "use client";
-import { useState, useTransition } from "react";
+import { withGmeaEntrySession, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
+import { toast } from "sonner";
+import { mutate } from "swr";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { createGmeaRentalAction } from "@/actions/gmeaRentals";
@@ -27,15 +30,15 @@ const newItem = (): Item => ({
   unit_rate: "",
   quantity: "1",
 });
-export default function GmeaRentalCreateForm({
+function GmeaRentalCreateForm({
   equipment,
   onClose,
 }: {
   equipment: RentalEquipment[];
   onClose: () => void;
 }) {
-  const router = useRouter(),
-    [pending, startTransition] = useTransition();
+  const session = useGmeaEntrySession();
+  const router = useRouter(), [pending, setPending] = useState(false), saving = useRef(false);
   const [form, setForm] = useState({
     rental_number: "",
     client: "",
@@ -58,8 +61,10 @@ export default function GmeaRentalCreateForm({
   const subtotal = (item: Item) =>
     Number(item.unit_rate || 0) *
     Number(item.rate_type === "fixed" ? 1 : item.quantity || 0);
-  const submit = () =>
-    startTransition(async () => {
+  const submit = () => {
+    if (saving.current) return;
+    saving.current = true; setPending(true);
+    void (async () => {
       setError("");
       try {
         const id = await createGmeaRentalAction({
@@ -76,14 +81,17 @@ export default function GmeaRentalCreateForm({
             })),
           },
         });
-        router.push("/gmea-rentals/" + id);
+        toast.success("Rental added successfully.");
+        await Promise.allSettled([mutate("gmea-rentals:list"), mutate("gmea-dashboard:overview")]);
+        if (session?.addingAgain()) onClose(); else router.push("/gmea-rentals/" + id);
         router.refresh();
       } catch (cause) {
         setError(
           cause instanceof Error ? cause.message : "Unable to create rental.",
         );
-      }
-    });
+      } finally { saving.current = false; setPending(false); }
+    })();
+  };
   return (
     <GmeaRentalsDialog
       title="New GMEA rental"
@@ -309,3 +317,5 @@ export default function GmeaRentalCreateForm({
     </GmeaRentalsDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaRentalCreateForm, []);

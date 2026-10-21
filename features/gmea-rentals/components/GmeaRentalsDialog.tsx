@@ -5,6 +5,7 @@ import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { LoaderCircle, X } from "lucide-react";
 import styles from "@/components/workspace/workspace.module.css";
+import { SaveAndAddAgainButton, saveAndAddAgainClass, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import {
   rentalPrimaryButtonClass,
   rentalSecondaryButtonClass,
@@ -16,6 +17,7 @@ export default function GmeaRentalsDialog({
   children,
   onClose,
   onSave,
+  onSaveAgain,
   pending,
   pendingLabel,
   error,
@@ -30,6 +32,7 @@ export default function GmeaRentalsDialog({
   children: ReactNode;
   onClose: () => void;
   onSave?: () => void;
+  onSaveAgain?: () => void;
   pending: boolean;
   pendingLabel?: string;
   error?: string;
@@ -39,8 +42,10 @@ export default function GmeaRentalsDialog({
   readOnly?: boolean;
   danger?: boolean;
 }) {
+  const session = useGmeaEntrySession();
+  const cancel = session?.cancel || onClose;
   return (
-    <Dialog.Root open onOpenChange={(open) => !open && !pending && onClose()}>
+    <Dialog.Root open onOpenChange={(open) => !open && !pending && cancel()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[150] bg-slate-950/45 backdrop-blur-[2px]" />
         <Dialog.Content
@@ -71,14 +76,19 @@ export default function GmeaRentalsDialog({
               type="button"
               aria-label="Close dialog"
               disabled={pending}
-              onClick={onClose}
+              onClick={cancel}
               className={rentalSecondaryButtonClass + " !h-10 !px-3"}
             >
               <X size={18} aria-hidden="true" />
             </button>
           </header>
 
-          <ValidatedForm onValidSubmit={() => { if (!pending && !readOnly) onSave?.(); }} className="flex min-h-0 flex-1 flex-col">
+          <ValidatedForm onValidSubmit={event => {
+            if (pending || readOnly) return;
+            session?.prepare(event);
+            const again = ((event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value === "add-again";
+            if (again && onSaveAgain) onSaveAgain(); else onSave?.();
+          }} className="flex min-h-0 flex-1 flex-col">
             <div className={"min-h-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
               <fieldset disabled={pending} className="min-w-0">{children}</fieldset>
             </div>
@@ -92,11 +102,11 @@ export default function GmeaRentalsDialog({
                   {error}
                 </p>
               )}
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-wrap justify-end gap-3">
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={onClose}
+                  onClick={cancel}
                   className={rentalSecondaryButtonClass}
                 >
                   {readOnly ? "Close" : "Cancel"}
@@ -110,6 +120,7 @@ export default function GmeaRentalsDialog({
                   {pending && <LoaderCircle size={16} className="shrink-0 animate-spin" aria-hidden="true" />}
                   {pending ? (pendingLabel ?? (danger ? "Deleting…" : "Saving…")) : saveLabel}
                 </button>}
+                {!readOnly && !danger && onSave && (onSaveAgain ? <button type="submit" name="saveIntent" value="add-again" disabled={pending} className={saveAndAddAgainClass}>Save and add again</button> : <SaveAndAddAgainButton pending={pending} />)}
               </div>
             </footer>
           </ValidatedForm>

@@ -39,7 +39,7 @@ export default function GmeaModalValidationHarness() {
     case "rental-expense-entry": return <GmeaRentalExpenseEntry operations={operations} onClose={onClose} />;
     case "rental-expense": return <GmeaRentalExpenseForm equipment={equipment} categories={rentalExpenseCategories} onClose={onClose} />;
     case "rental-week-expense": return <GmeaRentalExpenseForm equipment={equipment} categories={rentalExpenseCategories} weekContext={{ month: "2026-10", start: "2026-10-01", end: "2026-10-07", section: "equipment", party: "Equipment" }} onClose={onClose} />;
-    case "equipment": return <GmeaEquipmentFormDialog equipment={null} form={form} onChange={(key, value) => setForm(current => ({ ...current, [key]: value }))} pending={false} error="" onClose={onClose} onSave={onClose} />;
+    case "equipment": return <GmeaEquipmentFormDialog equipment={null} form={form} onChange={(key, value) => setForm(current => ({ ...current, [key]: value }))} pending={false} error="" onClose={onClose} onSave={onClose} onSaveAgain={() => setForm(blankEquipmentForm())} />;
     case "booking": return <GmeaRentalCreateForm equipment={equipment} onClose={onClose} />;
     case "rental-payment": return <GmeaRentalPaymentForm rental={rental} onClose={onClose} />;
     case "rental-void": return <GmeaRentalVoidPaymentForm rental={rental} payment={rental.payments[0]} onClose={onClose} />;

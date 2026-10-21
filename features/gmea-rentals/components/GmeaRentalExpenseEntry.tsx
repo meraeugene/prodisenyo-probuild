@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession, SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import type { RentalOperationsData } from "../types";
 import { useRentalExpenseEntry } from "../hooks/useRentalExpenseEntry";
@@ -9,16 +10,18 @@ import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
 import styles from "@/components/workspace/workspace.module.css";
 
-export default function GmeaRentalExpenseEntry({ operations, onClose }: {
+function GmeaRentalExpenseEntry({ operations, onClose }: {
   operations: RentalOperationsData; onClose: () => void;
 }) {
+  const session = useGmeaEntrySession(), cancel = session?.cancel || onClose;
   const state = useRentalExpenseEntry(operations, onClose), { form, set } = state;
   const formId = useId();
-  return <WorkspaceDialog title="New rental expense" description="Record the expense date, amount, and payee." onClose={onClose} pending={state.pending}
+  return <WorkspaceDialog title="New rental expense" description="Record the expense date, amount, and payee." onClose={cancel} pending={state.pending}
     footer={<div className="w-full space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
-      <div className="flex justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={onClose}>Cancel</button>
-        <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Add expense"}</button></div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={() => { void state.submit(); }}>
+      <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>Cancel</button>
+        <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Add expense"}</button>
+        <SaveAndAddAgainButton pending={state.pending} form={formId} /></div></div>}>
+    <ValidatedForm id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
       <fieldset disabled={state.pending} className="grid gap-4 sm:grid-cols-2">
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category_id} onChange={event => set("category_id", event.target.value)}><option value="">Select category</option>{state.categories.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
@@ -34,3 +37,5 @@ export default function GmeaRentalExpenseEntry({ operations, onClose }: {
     </ValidatedForm>
   </WorkspaceDialog>;
 }
+
+export default withGmeaEntrySession(GmeaRentalExpenseEntry, []);

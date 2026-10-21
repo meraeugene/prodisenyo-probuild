@@ -1,6 +1,10 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useState } from "react";
+import { mutate } from "swr";
+import { deleteGmeaOperationExpenseAction } from "@/actions/gmeaOperationExpenses";
+import GmeaDeleteRecordDialog from "@/features/gmea-forms/components/GmeaDeleteRecordDialog";
 import DashboardPageHero from "@/components/DashboardPageHero";
 import WorkspaceSummaryCards from "@/components/WorkspaceSummaryCards";
 import WorkspaceTabSwitch from "@/components/workspace/WorkspaceTabSwitch";
@@ -15,7 +19,14 @@ import OperationExpenseFilters from "./OperationExpenseFilters";
 import styles from "@/components/workspace/workspace.module.css";
 
 export default function OperationExpensesPageClient({ initialExpenses, canEdit }: { initialExpenses: OperationExpense[]; canEdit: boolean }) {
-  const state = useOperationExpensesPage(initialExpenses, canEdit);
+  const state = useOperationExpensesPage(initialExpenses);
+  const [deleting, setDeleting] = useState<OperationExpense>();
+  async function deleteExpense() {
+    if (!deleting || !canEdit) return;
+    await deleteGmeaOperationExpenseAction(deleting.id, deleting.version);
+    await mutate("gmea-operation-expenses:list", (rows: OperationExpense[] = []) => rows.filter(row => row.id !== deleting.id), { revalidate: false });
+    await Promise.allSettled([mutate("gmea-operation-expenses:list"), mutate("gmea-dashboard:overview")]);
+  }
   return <main className="min-h-full px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8"><div className="mx-auto max-w-[1440px] space-y-4">
     <DashboardPageHero eyebrow="GMEA" title="Operation Expenses" description="Transportation, water, salary, and electricity spending."
       actions={canEdit && <button type="button" className={styles.primaryButton} onClick={() => state.setEditor(null)}><Plus size={16} aria-hidden="true" />New operation expense</button>} />
@@ -31,9 +42,10 @@ export default function OperationExpensesPageClient({ initialExpenses, canEdit }
       {state.range && <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{formatRentalDate(state.range.start)} – {formatRentalDate(state.range.end)}</p>}
       {!state.range && <p role="alert" className="px-5 py-3 text-sm text-rose-700">Choose a valid reporting period.</p>}
       {state.view === "analytics" ? <OperationExpenseCharts trend={state.trend} summary={state.summary} period={state.period} /> : <>
-        <OperationExpensesTable expenses={state.pagination.pageRows} canEdit={canEdit} onOpen={state.setEditor} />
+        <OperationExpensesTable expenses={state.pagination.pageRows} canEdit={canEdit} onOpen={state.setEditor} onDelete={setDeleting} />
         <WorkspaceListPagination {...state.pagination} total={state.visible.length} noun="expenses" label="Operation expenses" />
       </>}
     </section>
-  </div>{state.editor !== undefined && <OperationExpenseForm expense={state.editor ?? undefined} readOnly={!canEdit} onClose={() => state.setEditor(undefined)} />}</main>;
+  </div>{state.editor !== undefined && <OperationExpenseForm expense={state.editor ?? undefined} readOnly={!canEdit} onSaved={state.revealSavedExpense} onClose={() => state.setEditor(undefined)} />}
+  {deleting && canEdit && <GmeaDeleteRecordDialog title="Delete operation expense?" description={`Delete ${deleting.description} (${formatRentalMoney(deleting.amount)})? Expense totals will be updated.`} onDelete={deleteExpense} onClose={() => setDeleting(undefined)} successMessage="Operation expense deleted successfully." />}</main>;
 }

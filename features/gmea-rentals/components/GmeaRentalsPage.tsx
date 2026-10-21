@@ -1,7 +1,8 @@
 "use client";
 
 import { rentalSections, type RentalSection } from "../utils/rentalSections";
-import { useState, useTransition } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import { getHistoricalRentalIncomeAction } from "@/actions/gmeaRentalIncome";
 import type { RentalIncomeRecord } from "../incomeTypes";
@@ -64,7 +65,7 @@ export default function GmeaRentalsPage({
   const [form, setForm] = useState<EquipmentFormState>(blankEquipmentForm);
   const [error, setError] = useState("");
   const [entry, setEntry] = useState<"income" | "expense" | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false), saving = useRef(false);
 
   function updateForm<K extends keyof EquipmentFormState>(
     key: K,
@@ -93,8 +94,10 @@ export default function GmeaRentalsPage({
     );
   }
 
-  function saveEquipment() {
-    startTransition(async () => {
+  function saveEquipment(again = false) {
+    if (saving.current) return;
+    saving.current = true; setPending(true); setError("");
+    void (async () => {
       try {
         await saveGmeaRentalEquipmentAction(
           selected?.id ?? null,
@@ -112,18 +115,20 @@ export default function GmeaRentalsPage({
             },
           },
         );
-        await mutate();
-        setSelected(undefined);
+        toast.success(selected ? "Equipment updated successfully." : "Equipment added successfully.");
+        await Promise.allSettled([mutate()]);
+        if (again) openEquipment(); else setSelected(undefined);
       } catch (cause) {
         setError(
           cause instanceof Error ? cause.message : "Unable to save equipment.",
         );
-      }
-    });
+      } finally { saving.current = false; setPending(false); }
+    })();
   }
 
   async function deactivateEquipment(item: RentalEquipment) {
     await saveGmeaRentalEquipmentAction(item.id, item.version, { kind: "deactivate" });
+    toast.success("Equipment deactivated successfully.");
     await mutate();
   }
 
@@ -164,6 +169,7 @@ export default function GmeaRentalsPage({
           onChange={updateForm}
           onClose={() => setSelected(undefined)}
           onSave={saveEquipment}
+          onSaveAgain={() => saveEquipment(true)}
           pending={pending}
           error={error}
         />

@@ -35,6 +35,7 @@ export default function GmeaEquipmentFormDialog({
   onChange,
   onClose,
   onSave,
+  onSaveAgain,
   pending,
   error,
 }: {
@@ -46,6 +47,7 @@ export default function GmeaEquipmentFormDialog({
   ) => void;
   onClose: () => void;
   onSave: () => void;
+  onSaveAgain?: () => void;
   pending: boolean;
   error: string;
 }) {
@@ -63,6 +65,7 @@ export default function GmeaEquipmentFormDialog({
       description="Equipment details, default billing rate, and availability."
       onClose={onClose}
       onSave={onSave}
+      onSaveAgain={onSaveAgain}
       pending={pending}
       error={error}
       saveLabel={equipment ? "Save changes" : "Add equipment"}

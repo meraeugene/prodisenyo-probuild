@@ -1,26 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { mutate } from "swr";
 import { saveGmeaRentalCollectionAction } from "@/actions/gmeaRentals";
 import type { GmeaRental, RentalCollectionMutation } from "../types";
 
 export function useGmeaRentalCollectionMutation(rental: GmeaRental) {
   const router = useRouter();
+  const saving = useRef(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
   async function save(command: RentalCollectionMutation) {
-    if (pending) return;
+    if (saving.current) throw new Error("A save is already in progress.");
+    saving.current = true;
     setPending(true);
     setError("");
     try {
       await saveGmeaRentalCollectionAction(rental.id, rental.version, command);
-      await mutate(["gmea-rental", rental.id]);
-      await mutate("gmea-rentals:list");
-      await mutate("gmea-dashboard:overview");
-      await mutate("gmea-input-options");
+      toast.success(command.kind === "record_payment" ? "Rental payment added successfully." : "Rental payment voided successfully.");
+      await Promise.allSettled([mutate(["gmea-rental", rental.id]), mutate("gmea-rentals:list"), mutate("gmea-dashboard:overview"), mutate("gmea-input-options")]);
       router.refresh();
     } catch (cause) {
       const message =
@@ -28,6 +29,7 @@ export function useGmeaRentalCollectionMutation(rental: GmeaRental) {
       setError(message);
       throw cause;
     } finally {
+      saving.current = false;
       setPending(false);
     }
   }

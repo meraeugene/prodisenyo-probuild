@@ -7,15 +7,17 @@ import { formatRentalDate, formatRentalMoney } from "../utils/rentalUi";
 import GmeaRentalExpenseTransactionsTable from "./GmeaRentalExpenseTransactionsTable";
 import styles from "@/components/workspace/workspace.module.css";
 import tableStyles from "./rentalTransactionsTable.module.css";
+import RentalRecordRowActions from "./RentalRecordRowActions";
 
-export default function GmeaRentalTransactionsTable({ rows, expenseOnly, onHistory, onExpense, onLocation }: {
+export default function GmeaRentalTransactionsTable({ rows, expenseOnly, onHistory, onExpense, onLocation, canEdit = false, onEditIncome, onDeleteIncome, onDeleteExpense }: {
   rows: RentalTransaction[]; expenseOnly: boolean; onHistory: (record: RentalIncomeRecord) => void;
   onExpense: (expense: RentalExpense) => void; onLocation?: (record: RentalIncomeRecord) => void;
+  canEdit?: boolean; onEditIncome?: (record: RentalIncomeRecord) => void; onDeleteIncome?: (record: RentalIncomeRecord) => void; onDeleteExpense?: (expense: RentalExpense) => void;
 }) {
-  if (expenseOnly) return <GmeaRentalExpenseTransactionsTable expenses={rows.flatMap(row => row.type === "expense" ? [row.expense] : [])} onExpense={onExpense} />;
+  if (expenseOnly) return <GmeaRentalExpenseTransactionsTable expenses={rows.flatMap(row => row.type === "expense" ? [row.expense] : [])} onExpense={onExpense} canEdit={canEdit} onDelete={onDeleteExpense} />;
   return <div><table className={`${styles.table} ${tableStyles.table}`} style={{ minWidth: 0 }}>
     <caption className="sr-only">Rental income and expense records</caption>
-    <thead><tr>{["Company / Location", "Type", "Date", "Amount", "Payment method"].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
+    <thead><tr>{["Company / Location", "Type", "Date", "Amount", "Payment method", "Actions"].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
     <tbody>{rows.map(row => {
       const rental = row.rental;
       const payment = row.type === "income" ? row.payment : null;
@@ -31,6 +33,10 @@ export default function GmeaRentalTransactionsTable({ rows, expenseOnly, onHisto
         <td data-label="Date">{row.date ? formatRentalDate(row.date) : "—"}</td>
         <td data-label="Amount" className={tableStyles.amount}>{amount === undefined ? "—" : formatRentalMoney(amount)}</td>
         <td data-label="Payment method">{row.type === "expense" ? row.expense.method || "Not recorded" : payment?.method || "Not recorded"}</td>
+        <td data-label="Actions"><RentalRecordRowActions canEdit={canEdit}
+          onEdit={() => row.type === "expense" ? onExpense(row.expense) : onEditIncome?.(row.rental)}
+          onDelete={() => row.type === "expense" ? onDeleteExpense?.(row.expense) : onDeleteIncome?.(row.rental)}
+          onDetails={() => row.type === "expense" ? onExpense(row.expense) : onHistory(row.rental)} /></td>
       </tr>;
     })}</tbody>
   </table>{!rows.length && <p role="status" className={styles.empty}>{expenseOnly ? "No rental expense records to show." : "No rental records match these filters."}</p>}</div>;

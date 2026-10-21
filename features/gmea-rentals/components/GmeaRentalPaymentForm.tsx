@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import { useState } from "react";
 import type { GmeaRental, RentalPaymentType } from "../types";
@@ -14,7 +15,7 @@ function today() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 }
 
-export default function GmeaRentalPaymentForm({
+function GmeaRentalPaymentForm({
   rental,
   onClose,
 }: {
@@ -132,3 +133,5 @@ export default function GmeaRentalPaymentForm({
     </GmeaRentalsDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaRentalPaymentForm, []);

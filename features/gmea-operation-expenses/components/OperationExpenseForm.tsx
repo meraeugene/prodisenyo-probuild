@@ -1,26 +1,29 @@
 "use client";
+import { withGmeaEntrySession, SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
-import { OPERATION_EXPENSE_CATEGORIES, type OperationExpense } from "../types";
+import { OPERATION_EXPENSE_CATEGORIES, type OperationExpense, type OperationExpenseInput } from "../types";
 import { useOperationExpenseForm } from "../hooks/useOperationExpenseForm";
 import styles from "@/components/workspace/workspace.module.css";
 
-export default function OperationExpenseForm({ expense, readOnly = false, onClose }: {
-  expense?: OperationExpense; readOnly?: boolean; onClose: () => void;
+function OperationExpenseForm({ expense, readOnly = false, onClose, onSaved }: {
+  expense?: OperationExpense; readOnly?: boolean; onClose: () => void; onSaved?: (expense: OperationExpenseInput) => void;
 }) {
-  const state = useOperationExpenseForm(expense, onClose);
+  const session = useGmeaEntrySession(), cancel = session?.cancel || onClose;
+  const state = useOperationExpenseForm(expense, onClose, onSaved);
   const { form, set } = state;
   const formId = useId();
   return <WorkspaceDialog title={readOnly ? "Operation expense details" : expense ? "Edit operation expense" : "New operation expense"}
-    description="Transportation, water, salary, and electricity spending." onClose={onClose} pending={state.pending} size="md"
+    description="Transportation, water, salary, and electricity spending." onClose={cancel} pending={state.pending} size="md"
     footer={<div className="space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
-      <div className="flex justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={onClose}>{readOnly ? "Close" : "Cancel"}</button>
-        {!readOnly && <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Save expense"}</button>}</div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={() => { if (!readOnly) void state.submit(); }}>
+      <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>{readOnly ? "Close" : "Cancel"}</button>
+        {!readOnly && <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Save expense"}</button>}
+        <SaveAndAddAgainButton pending={state.pending} form={formId} enabled={!readOnly} /></div></div>}>
+    <ValidatedForm id={formId} onValidSubmit={event => { if (!readOnly) { session?.prepare(event); void state.submit(); } }}>
       <fieldset disabled={readOnly || state.pending} className="grid gap-4 sm:grid-cols-2">
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category} onChange={event => set("category", event.target.value)}>{OPERATION_EXPENSE_CATEGORIES.map(category => <option key={category}>{category}</option>)}</select></label>
@@ -34,3 +37,5 @@ export default function OperationExpenseForm({ expense, readOnly = false, onClos
     </ValidatedForm>
   </WorkspaceDialog>;
 }
+
+export default withGmeaEntrySession(OperationExpenseForm, ["expense"]);

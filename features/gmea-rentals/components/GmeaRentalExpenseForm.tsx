@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import type { ReactNode } from "react";
 import type {
   GmeaRental,
@@ -17,7 +18,7 @@ import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicato
 import Field from "@/features/gmea-inputs/components/GmeaField";
 
 
-export default function GmeaRentalExpenseForm({
+function GmeaRentalExpenseForm({
   rental,
   incomeRecordId,
   leadingContent,
@@ -193,3 +194,5 @@ export default function GmeaRentalExpenseForm({
     </GmeaRentalsDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaRentalExpenseForm, ["expense"]);

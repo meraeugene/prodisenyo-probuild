@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import { useState } from "react";
 import type { GmeaProject } from "../types";
 import { secondaryClass } from "../utils/gmeaConstants";
@@ -7,7 +8,7 @@ import { useGmeaMutation } from "../hooks/useGmeaMutation";
 import GmeaDialog from "./GmeaDialog";
 import { TextField } from "./GmeaFields";
 
-export default function GmeaPartnerForm({
+function GmeaPartnerForm({
   project,
   onClose,
 }: {
@@ -99,3 +100,5 @@ export default function GmeaPartnerForm({
     </GmeaDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaPartnerForm);

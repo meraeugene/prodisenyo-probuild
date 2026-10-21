@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import { useState } from "react";
 import {
@@ -11,7 +12,7 @@ import { useGmeaRentalOperationsMutation } from "../hooks/useGmeaRentalOperation
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
-export default function GmeaRentalWorkerForm({
+function GmeaRentalWorkerForm({
   rental,
   worker,
   onClose,
@@ -108,3 +109,5 @@ export default function GmeaRentalWorkerForm({
     </GmeaRentalsDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaRentalWorkerForm, ["worker"]);

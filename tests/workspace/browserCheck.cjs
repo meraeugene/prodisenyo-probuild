@@ -31,6 +31,18 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--gmea-record-actions")) {
+      await require("./checkGmeaRecordActions.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA record actions passed: blue repeat buttons, operation/rental edits and deletion, confirmations, updated totals, main table actions, CEO restrictions, and mobile layout.");
+      return;
+    }
+    if (process.argv.includes("--gmea-save-again")) {
+      await require("./checkGmeaSaveAgain.cjs")(page, base, screenshots);
+      assert.deepEqual(errors, []);
+      console.log("GMEA save-again checks passed: operation visibility, success toasts, distinct IDs, edit-to-create, failed saves, cancel, GMEA form coverage, read-only access, and mobile footer.");
+      return;
+    }
     if (process.argv.includes("--weekly-expense-format")) {
       await require("./checkWeeklyRentalFormat.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);

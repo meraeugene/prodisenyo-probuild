@@ -4,7 +4,7 @@ module.exports = async function checkWeeklyRentalFormat(page, base, screenshots)
   let records = page.getByRole('region', { name: 'Rental records', exact: true });
   await records.getByRole('button', { name: 'Income', exact: true }).click();
   const incomeTableClass = await records.locator('table').getAttribute('class');
-  assert.deepEqual(await records.locator('thead').getByRole('columnheader').allTextContents(), ['Company / Location', 'Type', 'Date', 'Amount', 'Payment method']);
+  assert.deepEqual(await records.locator('thead').getByRole('columnheader').allTextContents(), ['Company / Location', 'Type', 'Date', 'Amount', 'Payment method', 'Actions']);
   await records.getByRole('button', { name: 'Expense', exact: true }).click();
   const month = records.getByLabel('Filter rental records by month', { exact: true });
   assert.deepEqual(await month.locator('option').allTextContents(), ['All months', 'January 2026']);
@@ -19,11 +19,11 @@ module.exports = async function checkWeeklyRentalFormat(page, base, screenshots)
   assert.equal(await navigation.getByRole('button', { name: 'Previous page', exact: true }).isDisabled(), true);
   assert.equal(await records.getByLabel('Weekly date range', { exact: true }).count(), 0, 'No yellow worksheet panel');
   assert.ok((await first.locator('table').getAttribute('class')).startsWith(incomeTableClass), 'Expense reuses the Income table styling');
-  assert.deepEqual(await first.locator('thead').getByRole('columnheader').allTextContents(), ['Date', 'Vehicle / Payee', 'Description', 'Amount']);
+  assert.deepEqual(await first.locator('thead').getByRole('columnheader').allTextContents(), ['Date', 'Vehicle / Payee', 'Description', 'Amount', 'Actions']);
   assert.equal(await first.locator('[data-label="Payment method"], [data-label="Type"]').count(), 0);
   assert.match(await first.getByRole('heading', { level: 3 }).innerText(), /Jan 5, 2026/);
   assert.match(await first.locator('tbody tr').first().innerText(), /Jan 5, 2026.*Canter.*Diesel.*2,000/s);
-  assert.deepEqual(await first.locator('tbody tr').first().locator('td, th').allTextContents(), ['Jan 5, 2026', 'Canter', 'Diesel', '₱2,000.00']);
+  assert.deepEqual((await first.locator('tbody tr').first().locator('td, th').allTextContents()).slice(0, 4), ['Jan 5, 2026', 'Canter', 'Diesel', '₱2,000.00']);
   assert.deepEqual(await first.locator('tbody tr th button').allTextContents(), ['Canter', 'Bongo', 'Yellow Dump', 'Backhoe XCMG', 'Backhoe Volvo', 'Canter', 'Bongo', 'Canter', 'Backhoe XCMG', 'Bongo', 'REMARK', 'RICHIE', 'DRIVERS', 'OPERATORS', 'DRIVERS', 'OPERATORS']);
   const displayedTotal = (await first.locator('tbody [data-label="Amount"]').allTextContents()).reduce((sum, amount) => sum + Math.round(Number(amount.replace(/[^\d.-]/g, '')) * 100), 0);
   assert.equal(displayedTotal, 5182032, 'The displayed weekly total equals every displayed source row');

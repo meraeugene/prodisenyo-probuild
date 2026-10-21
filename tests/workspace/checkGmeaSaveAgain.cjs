@@ -1,0 +1,131 @@
+const assert = require('node:assert/strict'), path = require('node:path');
+module.exports = async function checkGmeaSaveAgain(page, base, screenshots) {
+  const modal = page.getByRole('dialog');
+  const toast = text => page.locator('[data-sonner-toast]').filter({ hasText: text });
+  await page.goto(base + '/gmea-operation-expenses');
+  const report = page.getByRole('region', { name: 'Operation expense reporting', exact: true });
+  const totals = page.getByRole('region', { name: 'Operation expense totals', exact: true });
+  await report.getByLabel('Operation expense category', { exact: true }).selectOption('Salary');
+  await report.getByRole('searchbox', { name: 'Search operation expenses', exact: true }).fill('unrelated search');
+  const originalCount = await page.evaluate(() => window.__operationExpenses.length);
+  await page.getByRole('button', { name: 'New operation expense', exact: true }).click();
+  await modal.getByLabel('Date *', { exact: true }).fill('2026-04-01');
+  await modal.getByLabel('Description *', { exact: true }).fill('April office travel');
+  await modal.getByLabel('Amount *', { exact: true }).fill('100');
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await toast('Operation expense added successfully.').first().waitFor();
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  assert.equal(await modal.isVisible(), true);
+  assert.equal(await modal.getByLabel('Description *', { exact: true }).inputValue(), '');
+  const firstId = await page.evaluate(() => window.__savedOperationExpense.id);
+  assert.equal(await page.evaluate(() => window.__operationExpenses.length), originalCount + 1);
+  await modal.getByLabel('Date *', { exact: true }).fill('2026-04-02');
+  await modal.getByLabel('Description *', { exact: true }).fill('April water bill');
+  await modal.getByLabel('Category *', { exact: true }).selectOption('Water');
+  await modal.getByLabel('Amount *', { exact: true }).fill('50');
+  await modal.getByLabel('Amount *', { exact: true }).press('Enter');
+  await modal.waitFor({ state: 'hidden' });
+  assert.notEqual(await page.evaluate(() => window.__savedOperationExpense.id), firstId, 'Repeat entry uses a new record ID');
+  assert.equal(await page.evaluate(() => window.__operationExpenses.length), originalCount + 2);
+  assert.equal(await report.getByLabel('Operation expense month', { exact: true }).inputValue(), '2026-04');
+  assert.equal(await report.getByLabel('Operation expense category', { exact: true }).inputValue(), '');
+  assert.equal(await report.getByRole('searchbox', { name: 'Search operation expenses', exact: true }).inputValue(), '');
+  assert.match(await totals.innerText(), /150\.00/);
+  assert.equal(await report.locator('tbody tr').count(), 2);
+
+  // Editing and adding again must start a new expense, preserving the saved edit.
+  await report.getByRole('button', { name: 'Edit', exact: true }).first().click();
+  const editedId = await page.evaluate(() => window.__savedOperationExpense.id);
+  await modal.getByLabel('Amount *', { exact: true }).fill('60');
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await toast('Operation expense updated successfully.').waitFor();
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  assert.match(await modal.getByRole('heading').innerText(), /New operation expense/);
+  assert.equal(await page.evaluate(id => window.__operationExpenses.find(row => row.id === id).amount, editedId), 60);
+  await modal.getByLabel('Description *', { exact: true }).fill('Do not save this');
+  await modal.getByLabel('Amount *', { exact: true }).fill('25');
+  await page.evaluate(() => { window.__failOperationSave = true; });
+  const successCount = await page.locator('[data-sonner-toast][data-type="success"]').count();
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await modal.getByText('Operation expense could not be saved.', { exact: true }).waitFor();
+  assert.equal(await modal.getByLabel('Description *', { exact: true }).inputValue(), 'Do not save this');
+  assert.ok(await page.locator('[data-sonner-toast][data-type="success"]').count() <= successCount, 'A failed save adds no success toast');
+  assert.equal(await page.evaluate(() => window.__operationExpenses.length), originalCount + 2);
+  await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await modal.waitFor({ state: 'hidden' });
+  await page.screenshot({ path: path.join(screenshots, 'operation-expense-save-again-desktop.png'), fullPage: true });
+
+  // Rental expense and income also create distinct entries and reset after success.
+  await page.goto(base + '/gmea-rentals/income');
+  await page.getByRole('button', { name: 'Rental expense', exact: true }).click();
+  await modal.getByLabel('Description *', { exact: true }).fill('Fuel batch one');
+  await modal.getByLabel('Amount *', { exact: true }).fill('20');
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await toast('Rental expense added successfully.').waitFor();
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  const expenseId = await page.evaluate(() => window.__savedRentalExpense.id);
+  await modal.getByLabel('Description *', { exact: true }).fill('Fuel batch two');
+  await modal.getByLabel('Amount *', { exact: true }).fill('30');
+  await modal.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await modal.waitFor({ state: 'hidden' });
+  assert.notEqual(await page.evaluate(() => window.__savedRentalExpense.id), expenseId);
+
+  await page.getByRole('button', { name: 'Rental income', exact: true }).click();
+  await modal.getByLabel('Company name *', { exact: true }).fill('Repeat customer');
+  await modal.getByLabel('Location *', { exact: true }).fill('Manila');
+  await modal.getByLabel('Total amount *', { exact: true }).fill('1000');
+  await modal.getByLabel('Down payment', { exact: true }).fill('100');
+  await modal.getByLabel('Down payment date', { exact: true }).fill('2026-04-01');
+  await modal.getByLabel('Mode of payment *', { exact: true }).fill('Cash');
+  await page.getByRole('option', { name: 'Cash', exact: true }).click();
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await toast('Rental income added successfully.').waitFor();
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[role="combobox"]')?.value === '');
+  assert.equal(await modal.getByLabel('Company name *', { exact: true }).inputValue(), '');
+  assert.equal(await modal.getByLabel('Total amount *', { exact: true }).inputValue(), '');
+  await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+  await page.goto(base + '/gmea-modal-validation?case=project-expense');
+  await modal.getByLabel('Description / items *', { exact: true }).fill('Copper wire');
+  await modal.getByLabel('Amount (PHP) *', { exact: true }).fill('100');
+  await modal.getByLabel('Payment method *', { exact: true }).fill('Cash');
+  await page.getByRole('option', { name: 'Cash', exact: true }).click();
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await toast('Saved successfully.').waitFor();
+  await page.waitForFunction(() => document.getElementById('expense-item-0')?.value === '');
+  const projectExpenseId = await page.evaluate(() => window.__savedProjectCommands[0].value.id);
+  await modal.getByLabel('Description / items *', { exact: true }).fill('Cement');
+  await modal.getByLabel('Amount (PHP) *', { exact: true }).fill('200');
+  await modal.getByLabel('Payment method *', { exact: true }).fill('Cash');
+  await page.getByRole('option', { name: 'Cash', exact: true }).click();
+  await modal.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await modal.waitFor({ state: 'hidden' });
+  assert.notEqual(await page.evaluate(() => window.__savedProjectCommands[1].value.id), projectExpenseId);
+
+  await page.goto(base + '/gmea-modal-validation?case=project-create');
+  await modal.getByLabel('Name *', { exact: true }).fill('Repeat project');
+  await modal.getByLabel('Project name *', { exact: true }).fill('Warehouse');
+  await modal.getByLabel('Address *', { exact: true }).fill('Manila');
+  await modal.getByRole('button', { name: 'Continue', exact: true }).click();
+  await modal.getByLabel('Contract amount (PHP) *', { exact: true }).fill('1000');
+  await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
+  await modal.getByLabel('Name *', { exact: true }).waitFor();
+  assert.equal(await modal.getByLabel('Name *', { exact: true }).inputValue(), '');
+  assert.equal(await page.evaluate(() => window.__savedProjectCommands[0].kind), 'create_project');
+  await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+  // All editable GMEA record/configuration dialogs offer the same action.
+  for (const name of ['project-edit', 'project-expense', 'project-contract', 'project-payment', 'project-partners', 'rental-income', 'rental-expense-entry', 'rental-expense', 'rental-week-expense', 'equipment', 'booking', 'rental-payment', 'worker', 'assignment', 'operation-expense']) {
+    await page.goto(`${base}/gmea-modal-validation?case=${name}`);
+    await modal.waitFor();
+    assert.equal(await modal.getByRole('button', { name: 'Save and add again', exact: true }).isVisible(), true, `${name} supports repeat entry`);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await modal.evaluate(element => element.scrollWidth <= element.clientWidth), true);
+  assert.equal(await modal.getByRole('button', { name: 'Save and add again', exact: true }).isVisible(), true);
+  await page.screenshot({ path: path.join(screenshots, 'operation-expense-save-again-mobile.png'), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.goto(base + '/gmea-operation-expenses?role=ceo');
+  await page.getByRole('button', { name: 'Details', exact: true }).first().click();
+  assert.equal(await modal.getByRole('button', { name: 'Save and add again', exact: true }).count(), 0);
+};

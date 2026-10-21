@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSWRConfig } from "swr";
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { deleteGmeaRentalRecordAction } from "@/actions/gmeaRentalDeletion";
+import { toast } from "sonner";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
 
 export default function GmeaRentalDeleteButton({ kind, id, version, name, detail = false }: {
@@ -19,9 +20,10 @@ export default function GmeaRentalDeleteButton({ kind, id, version, name, detail
     setError("");
     try {
       await deleteGmeaRentalRecordAction(kind, id, version);
+      toast.success(kind === "rental" ? "Rental deleted successfully." : "Equipment deleted successfully.");
       setOpen(false);
       if (detail) router.replace("/gmea-rentals/income");
-      await Promise.all([mutate("gmea-rentals:list"), mutate("gmea-rentals:equipment"), mutate("gmea-rentals:operations")]);
+      await Promise.allSettled([mutate("gmea-rentals:list"), mutate("gmea-rentals:equipment"), mutate("gmea-rentals:operations")]);
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to delete this record.");

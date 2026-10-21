@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession, SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import type { RentalIncomeRecord } from "../incomeTypes";
 import { useCustomerIncomeForm } from "../hooks/useCustomerIncomeForm";
@@ -11,7 +12,8 @@ import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
 import styles from "@/components/workspace/workspace.module.css";
 const rentalInputClass = styles.control;
 
-export default function GmeaCustomerIncomeForm({ record, onClose }: { record?: RentalIncomeRecord; onClose: () => void }) {
+function GmeaCustomerIncomeForm({ record, onClose }: { record?: RentalIncomeRecord; onClose: () => void }) {
+  const session = useGmeaEntrySession(), cancel = session?.cancel || onClose;
   const state = useCustomerIncomeForm(record, onClose);
   const { form, set, existing } = state;
   const formId = useId();
@@ -20,10 +22,11 @@ export default function GmeaCustomerIncomeForm({ record, onClose }: { record?: R
   const remaining = Math.round((Number(form.total_amount || 0) - state.collected) * 100) / 100;
   const paymentError = down + full <= 0 ? "Enter at least one payment received." : Math.round((down + full) * 100) > Math.round(remaining * 100) ? "Payments cannot exceed the remaining rental balance." : undefined;
   return <WorkspaceDialog title={existing ? "Add rental payment" : "Rental income"} description="Record customer payments, company, location, and total rental amount."
-    onClose={onClose} pending={state.pending} footer={<div className="w-full space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
-      <div className="flex justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={onClose}>Cancel</button>
-        <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Save income"}</button></div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={() => { void state.submit(); }}>
+    onClose={cancel} pending={state.pending} footer={<div className="w-full space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
+      <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>Cancel</button>
+        <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Save income"}</button>
+        <SaveAndAddAgainButton pending={state.pending} form={formId} /></div></div>}>
+    <ValidatedForm id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
       <fieldset disabled={state.pending} className="space-y-4">
         <p className="text-sm text-slate-500">Enter at least one down payment or full payment. A date is required for each payment entered.</p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -42,3 +45,5 @@ export default function GmeaCustomerIncomeForm({ record, onClose }: { record?: R
     </ValidatedForm>
   </WorkspaceDialog>;
 }
+
+export default withGmeaEntrySession(GmeaCustomerIncomeForm, ["record"]);

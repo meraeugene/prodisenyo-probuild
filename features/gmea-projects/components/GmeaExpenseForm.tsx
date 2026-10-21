@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import { useId, useState } from "react";
 
@@ -12,7 +13,7 @@ import { MoneyField, TextField } from "./GmeaFields";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import GmeaExpenseWorkbookDetails from "./GmeaExpenseWorkbookDetails";
 
-export default function GmeaExpenseForm({
+function GmeaExpenseForm({
   project,
   expenseOptions,
   expense,
@@ -131,3 +132,5 @@ export default function GmeaExpenseForm({
     </GmeaDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaExpenseForm, ["expense"]);

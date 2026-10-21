@@ -12,7 +12,7 @@ module.exports = async function checkGmeaModalValidation(page, base, screenshots
   const submit = async () => {
     const expanded = modal.getByRole("combobox", { expanded: true });
     if (await expanded.count()) await expanded.first().press("Escape");
-    const button = modal.locator('button[type="submit"]').last();
+    const button = modal.locator('button[type="submit"]:not([value="add-again"])').last();
     assert.equal(await button.isVisible(), true);
     // This suite checks submission behavior; avoid animation-frame stability
     // waits that can stall in a background Windows browser.

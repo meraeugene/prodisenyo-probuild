@@ -1,4 +1,5 @@
 "use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import { useState } from "react";
 import type { ContractPaymentTerm, GmeaProject } from "../types";
@@ -9,7 +10,7 @@ import GmeaDialog from "./GmeaDialog";
 import { MoneyField, TextField } from "./GmeaFields";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 
-export default function GmeaReceiptForm({
+function GmeaReceiptForm({
   project,
   term,
   onClose,
@@ -71,3 +72,5 @@ export default function GmeaReceiptForm({
     </GmeaDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaReceiptForm, []);

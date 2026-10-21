@@ -7,9 +7,10 @@ import { sumRentalWorkbookExpenses } from "../utils/rentalWorkbookTable";
 import GmeaRentalTransactionsTable from "./GmeaRentalTransactionsTable";
 import workspace from "@/components/workspace/workspace.module.css";
 
-export default function GmeaRentalExpenseWeeks({ state, onExpense, onLocation }: {
+export default function GmeaRentalExpenseWeeks({ state, onExpense, onLocation, canEdit, onDelete }: {
   state: ReturnType<typeof useRentalExpensePages>; onExpense: (expense: RentalExpense) => void;
   onLocation?: (record: RentalIncomeRecord) => void;
+  canEdit: boolean; onDelete: (expense: RentalExpense) => void;
 }) {
   const { selected, index, pages, pageRows } = state;
   if (!selected) return <p role="status" className={workspace.empty}>No rental expenses for this month or these filters.</p>;
@@ -18,7 +19,7 @@ export default function GmeaRentalExpenseWeeks({ state, onExpense, onLocation }:
       <h3 className={workspace.sectionTitle}>{selected.label}</h3>
       <p className="text-sm text-slate-600">{selected.week ? "Weekly total" : "Total expenses"}: <strong className="tabular-nums">{formatRentalMoney(sumRentalWorkbookExpenses(selected.expenses))}</strong></p>
     </header>
-    <GmeaRentalTransactionsTable rows={pageRows} expenseOnly onHistory={() => {}} onExpense={onExpense} onLocation={onLocation} />
+    <GmeaRentalTransactionsTable rows={pageRows} expenseOnly onHistory={() => {}} onExpense={onExpense} onLocation={onLocation} canEdit={canEdit} onDeleteExpense={onDelete} />
     <div className={workspace.footer}>
       <p aria-live="polite">Page {index + 1} of {pages.length} · {selected.week ? "1 week per page" : "Expenses without a reporting week"}</p>
       <TablePagination page={index + 1} totalPages={pages.length} onChange={state.onPageChange} label="Expense week pages" appearance="compact" />

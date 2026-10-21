@@ -1,4 +1,5 @@
 ﻿"use client";
+import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import { useState } from "react";
 import type {
   ContractPaymentTermInput,
@@ -20,7 +21,7 @@ import GmeaContractTaxFields from "./GmeaContractTaxFields";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import { inputClass } from "../utils/gmeaConstants";
 
-export default function GmeaProjectForm({
+function GmeaProjectForm({
   project,
   onClose,
 }: {
@@ -177,3 +178,5 @@ export default function GmeaProjectForm({
     </GmeaDialog>
   );
 }
+
+export default withGmeaEntrySession(GmeaProjectForm, ["project"]);

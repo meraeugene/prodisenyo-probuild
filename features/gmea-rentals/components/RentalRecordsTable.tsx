@@ -1,12 +1,16 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
 import type { GmeaRental } from "../types";
 import { formatRentalDate, formatRentalMoney } from "../utils/rentalUi";
 import { buildRentalAmounts } from "../utils/rentalRecordSelectors";
 import RentalStatusBadge from "./RentalStatusBadge";
 import GmeaRentalDeleteButton from "./GmeaRentalDeleteButton";
 import styles from "@/components/workspace/workspace.module.css";
+import GmeaRentalIncomeEditForm from "./GmeaRentalIncomeEditForm";
 
 export default function RentalRecordsTable({ rentals, canEdit = false, hasRentals = rentals.length > 0 }: { rentals: GmeaRental[]; canEdit?: boolean; hasRentals?: boolean }) {
+  const [editing, setEditing] = useState<GmeaRental>();
   return <div className="overflow-x-auto">
     <table className={styles.table}>
       <caption className="sr-only">Rental schedules, customers, and collections</caption>
@@ -21,10 +25,11 @@ export default function RentalRecordsTable({ rentals, canEdit = false, hasRental
           <td className="whitespace-nowrap tabular-nums">{formatRentalMoney(amounts.collected)}</td>
           <td className="whitespace-nowrap tabular-nums">{formatRentalMoney(amounts.outstanding)}</td>
           <td><RentalStatusBadge status={rental.status} /></td>
-          <td><div className="flex flex-wrap gap-2"><Link href={`/gmea-rentals/${rental.id}`} aria-label={`View ${rental.rental_number}`} className={`${styles.button} whitespace-nowrap`}>View details</Link>{canEdit && <GmeaRentalDeleteButton kind="rental" id={rental.id} version={rental.version} name={rental.rental_number} />}</div></td>
+          <td><div className="flex flex-wrap gap-2"><Link href={`/gmea-rentals/${rental.id}`} aria-label={`View ${rental.rental_number}`} className={`${styles.button} whitespace-nowrap`}>View details</Link>{canEdit && <><button type="button" className={styles.recordLink} onClick={() => setEditing(rental)}>Edit</button><GmeaRentalDeleteButton kind="rental" id={rental.id} version={rental.version} name={rental.rental_number} /></>}</div></td>
         </tr>;
       })}</tbody>
     </table>
     {!rentals.length && <p role="status" className={styles.empty}>{hasRentals ? "No matching rentals. Try another search or reset the filters." : canEdit ? "No rental bookings yet. Choose New rental to add a client, dates, equipment, rate, and quantity." : "No rental bookings yet. Bookings will appear here once GMEA creates them."}</p>}
+    {editing && canEdit && <GmeaRentalIncomeEditForm record={editing} onClose={() => setEditing(undefined)} />}
   </div>;
 }

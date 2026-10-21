@@ -5,6 +5,7 @@ import { Dialog } from "radix-ui";
 import { LoaderCircle, X } from "lucide-react";
 import { buttonClass, secondaryClass } from "../utils/gmeaConstants";
 import styles from "@/components/workspace/workspace.module.css";
+import { SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 export default function GmeaDialog({
   title,
@@ -33,6 +34,8 @@ export default function GmeaDialog({
   wide?: boolean;
   danger?: boolean;
 }) {
+  const session = useGmeaEntrySession();
+  const cancel = session?.cancel || onClose;
   const [pending, setPending] = useState(false),
     [error, setError] = useState("");
   async function submit() {
@@ -59,7 +62,7 @@ export default function GmeaDialog({
     <Dialog.Root
       open
       onOpenChange={(open) => {
-        if (!open && !pending) onClose();
+        if (!open && !pending) cancel();
       }}
     >
       <Dialog.Portal>
@@ -98,14 +101,14 @@ export default function GmeaDialog({
               type="button"
               aria-label="Close dialog"
               disabled={pending}
-              onClick={onClose}
+              onClick={cancel}
               className={secondaryClass}
             >
               <X size={18} aria-hidden="true" />
             </button>
           </header>
           <ValidatedForm
-            onValidSubmit={submit}
+            onValidSubmit={event => { session?.prepare(event); return submit(); }}
             className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
             <div className={"min-h-0 min-w-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
@@ -123,12 +126,12 @@ export default function GmeaDialog({
                     {error}
                   </p>
                 )}
-                <div className="flex justify-end gap-3">
+                <div className="flex flex-wrap justify-end gap-3">
                   <button
                     type="button"
                     disabled={pending}
                     className={secondaryClass}
-                    onClick={onSecondary ?? onClose}
+                    onClick={onSecondary ?? cancel}
                   >
                     {secondaryLabel}
                   </button>
@@ -145,6 +148,7 @@ export default function GmeaDialog({
                     {pending && <LoaderCircle className="animate-spin" size={16} aria-hidden="true" />}
                     {pending ? (danger ? "Deleting…" : "Saving…") : saveLabel}
                   </button>
+                  {onSave && !danger && <SaveAndAddAgainButton pending={pending} />}
                 </div>
               </footer>
             )}

@@ -7,7 +7,7 @@ module.exports = async function checkGmeaFinance(page, base, screenshots) {
   assert.equal(await page.getByRole("button", { name: /^(Monthly|Weekly)$/ }).count(), 0);
   const incomeTable = page.getByRole("region", { name: "Rental records", exact: true });
   assert.equal(await page.locator("table").count(), 1);
-  assert.equal(await incomeTable.getByRole("columnheader").count(), 5);
+  assert.equal(await incomeTable.getByRole("columnheader").count(), 6);
   assert.equal(await incomeTable.locator("table").evaluate(element => element.scrollWidth <= element.clientWidth), true);
   assert.doesNotMatch(await incomeTable.innerText(), /Receipts appear separately/);
   for (const name of ["Company / Location", "Type", "Date", "Amount", "Payment method"])
@@ -141,8 +141,9 @@ module.exports = async function checkGmeaFinance(page, base, screenshots) {
   await dialog.getByLabel("Amount *", { exact: true }).fill("30");
   await dialog.getByRole("button", { name: "Save expense", exact: true }).click();
   await dialog.waitFor({ state: "hidden" });
-  assert.match(await totals.innerText(), /30\.00/);
-  await report.getByRole("button", { name: "Reset filters", exact: true }).click();
+  assert.match(await totals.innerText(), /580\.25/);
+  assert.equal(await report.getByRole("searchbox", { name: "Search operation expenses", exact: true }).inputValue(), "");
+  assert.equal(await report.getByRole("button", { name: "Reset filters", exact: true }).isDisabled(), true);
   await page.screenshot({ path: path.join(screenshots, "operation-expenses-desktop.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
