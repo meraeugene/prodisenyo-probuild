@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, type ComponentType, type FormEvent } from "react";
+import { LoaderCircle } from "lucide-react";
 import styles from "@/components/workspace/workspace.module.css";
 import actionStyles from "./gmeaFormActions.module.css";
 export const saveAndAddAgainClass = `${styles.button} ${actionStyles.saveAgain}`;
@@ -13,9 +14,13 @@ type EntrySession = {
 const EntryContext = createContext<EntrySession | null>(null);
 export const useGmeaEntrySession = () => useContext(EntryContext);
 
-export function SaveAndAddAgainButton({ pending, form, enabled = true }: { pending: boolean; form?: string; enabled?: boolean }) {
+export function SaveAndAddAgainButton({ pending, form, enabled = true, addingAgain }: { pending: boolean; form?: string; enabled?: boolean; addingAgain?: boolean }) {
   const session = useGmeaEntrySession();
-  return session && enabled ? <button type="submit" name="saveIntent" value="add-again" form={form} disabled={pending} className={saveAndAddAgainClass}>Save and add again</button> : null;
+  const busy = pending && (addingAgain ?? session?.addingAgain() ?? false);
+  return (session || addingAgain !== undefined) && enabled ? <button type="submit" name="saveIntent" value="add-again" form={form} disabled={pending} aria-busy={busy} className={saveAndAddAgainClass}>
+    {busy && <LoaderCircle size={16} className="shrink-0 animate-spin" aria-hidden="true" />}
+    {busy ? "Saving and adding again…" : "Save and add again"}
+  </button> : null;
 }
 
 /** Remount after a successful save so defaults, validation, and record IDs reset together. */

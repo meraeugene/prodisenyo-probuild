@@ -2,16 +2,17 @@
 import { withGmeaEntrySession, SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 
 import ValidatedForm from "@/components/workspace/ValidatedForm";
+import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
-import { OPERATION_EXPENSE_CATEGORIES, type OperationExpense, type OperationExpenseInput } from "../types";
+import { OPERATION_EXPENSE_CATEGORIES, type OperationExpense } from "../types";
 import { useOperationExpenseForm } from "../hooks/useOperationExpenseForm";
 import styles from "@/components/workspace/workspace.module.css";
 
 function OperationExpenseForm({ expense, readOnly = false, onClose, onSaved }: {
-  expense?: OperationExpense; readOnly?: boolean; onClose: () => void; onSaved?: (expense: OperationExpenseInput) => void;
+  expense?: OperationExpense; readOnly?: boolean; onClose: () => void; onSaved?: (expense: OperationExpense) => void | Promise<void>;
 }) {
   const session = useGmeaEntrySession(), cancel = session?.cancel || onClose;
   const state = useOperationExpenseForm(expense, onClose, onSaved);
@@ -21,7 +22,7 @@ function OperationExpenseForm({ expense, readOnly = false, onClose, onSaved }: {
     description="Transportation, water, salary, and electricity spending." onClose={cancel} pending={state.pending} size="md"
     footer={<div className="space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
       <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>{readOnly ? "Close" : "Cancel"}</button>
-        {!readOnly && <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Save expense"}</button>}
+        {!readOnly && <GmeaSubmitButton form={formId} className={styles.primaryButton} pending={state.pending}>Save expense</GmeaSubmitButton>}
         <SaveAndAddAgainButton pending={state.pending} form={formId} enabled={!readOnly} /></div></div>}>
     <ValidatedForm id={formId} onValidSubmit={event => { if (!readOnly) { session?.prepare(event); void state.submit(); } }}>
       <fieldset disabled={readOnly || state.pending} className="grid gap-4 sm:grid-cols-2">

@@ -3,14 +3,14 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { getGmeaOperationExpensesAction } from "@/actions/gmeaOperationExpenses";
-import type { OperationExpense, OperationExpenseInput } from "../types";
+import type { OperationExpense } from "../types";
 import { selectOperationExpenses, summarizeOperationExpenses } from "../utils/operationExpenseSelectors";
 import { rentalExpensePeriodRange } from "@/features/gmea-rentals/utils/rentalExpensePeriods";
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
 import { buildOperationExpenseTrend } from "../utils/operationExpenseCharts";
 
 export function useOperationExpensesPage(initialExpenses: OperationExpense[]) {
-  const { data: expenses = initialExpenses, error } = useSWR("gmea-operation-expenses:list", getGmeaOperationExpensesAction,
+  const { data: expenses = initialExpenses, error, mutate } = useSWR("gmea-operation-expenses:list", getGmeaOperationExpensesAction,
     { fallbackData: initialExpenses, refreshInterval: 30000 });
   const [period, setPeriod] = useState<"month" | "week">("month");
   const [view, setView] = useState<"records" | "analytics">("records");
@@ -26,6 +26,14 @@ export function useOperationExpensesPage(initialExpenses: OperationExpense[]) {
   const pagination = useTablePagination(visible, JSON.stringify([period, anchor, query, category]));
   const hasFilters = Boolean(query || category || period !== "month" || anchor.slice(0, 7) !== defaultAnchor.slice(0, 7));
   function resetFilters() { setPeriod("month"); setAnchor(defaultAnchor); setQuery(""); setCategory(""); }
-  function revealSavedExpense(expense: OperationExpenseInput) { setView("records"); setPeriod("month"); setAnchor(expense.date); setQuery(""); setCategory(""); pagination.onPageChange(1); }
-  return { view, setView, period, setPeriod, anchor, setAnchor, query, setQuery, category, setCategory, editor, setEditor, visible, summary, trend, range, pagination, error, hasFilters, resetFilters, revealSavedExpense };
+  async function revealSavedExpense(expense: OperationExpense) {
+    // SWR fallbackData is rendered before it is necessarily present in the cache.
+    await mutate((current = expenses) => [expense, ...current.filter(row => row.id !== expense.id)], { revalidate: false });
+    setView("records"); setPeriod("month"); setAnchor(expense.date); setQuery(""); setCategory(""); pagination.onPageChange(1);
+  }
+  async function removeExpense(id: string) {
+    await mutate((current = expenses) => current.filter(row => row.id !== id), { revalidate: false });
+    await mutate();
+  }
+  return { view, setView, period, setPeriod, anchor, setAnchor, query, setQuery, category, setCategory, editor, setEditor, visible, summary, trend, range, pagination, error, hasFilters, resetFilters, revealSavedExpense, removeExpense };
 }

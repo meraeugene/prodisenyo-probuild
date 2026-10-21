@@ -2,7 +2,8 @@
 import { useState, type ReactNode } from "react";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
-import { LoaderCircle, X } from "lucide-react";
+import { X } from "lucide-react";
+import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
 import { buttonClass, secondaryClass } from "../utils/gmeaConstants";
 import styles from "@/components/workspace/workspace.module.css";
 import { SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
@@ -135,19 +136,17 @@ export default function GmeaDialog({
                   >
                     {secondaryLabel}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={pending}
-                    aria-busy={pending}
+                  <GmeaSubmitButton
+                    pending={pending}
+                    pendingLabel={danger ? "Deleting…" : "Saving…"}
                     className={
                       danger
                         ? "inline-flex items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-800 disabled:opacity-50"
                         : buttonClass
                     }
                   >
-                    {pending && <LoaderCircle className="animate-spin" size={16} aria-hidden="true" />}
-                    {pending ? (danger ? "Deleting…" : "Saving…") : saveLabel}
-                  </button>
+                    {saveLabel}
+                  </GmeaSubmitButton>
                   {onSave && !danger && <SaveAndAddAgainButton pending={pending} />}
                 </div>
               </footer>

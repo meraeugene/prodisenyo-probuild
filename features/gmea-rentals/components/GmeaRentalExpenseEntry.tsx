@@ -5,6 +5,7 @@ import type { RentalOperationsData } from "../types";
 import { useRentalExpenseEntry } from "../hooks/useRentalExpenseEntry";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
+import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
@@ -19,7 +20,7 @@ function GmeaRentalExpenseEntry({ operations, onClose }: {
   return <WorkspaceDialog title="New rental expense" description="Record the expense date, amount, and payee." onClose={cancel} pending={state.pending}
     footer={<div className="w-full space-y-3">{state.error && <p role="alert" className="text-sm text-rose-700">{state.error}</p>}
       <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>Cancel</button>
-        <button type="submit" form={formId} className={styles.primaryButton} disabled={state.pending}>{state.pending ? "Saving…" : "Add expense"}</button>
+        <GmeaSubmitButton form={formId} className={styles.primaryButton} pending={state.pending}>Add expense</GmeaSubmitButton>
         <SaveAndAddAgainButton pending={state.pending} form={formId} /></div></div>}>
     <ValidatedForm id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
       <fieldset disabled={state.pending} className="grid gap-4 sm:grid-cols-2">

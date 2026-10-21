@@ -31,6 +31,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--gmea-operation-persistence")) {
+      await require("./checkOperationExpensePersistence.cjs")(page, base);
+      assert.deepEqual(errors, []);
+      console.log("Operation expenses passed: initial rows survive consecutive saves, distinct record IDs, refresh, failed saves, and separate save/repeat/delete spinners.");
+      return;
+    }
     if (process.argv.includes("--gmea-record-actions")) {
       await require("./checkGmeaRecordActions.cjs")(page, base, screenshots);
       assert.deepEqual(errors, []);

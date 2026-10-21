@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { mutate } from "swr";
+import { useSWRConfig } from "swr";
 import { deleteGmeaOperationExpenseAction } from "@/actions/gmeaOperationExpenses";
 import GmeaDeleteRecordDialog from "@/features/gmea-forms/components/GmeaDeleteRecordDialog";
 import DashboardPageHero from "@/components/DashboardPageHero";
@@ -20,12 +20,12 @@ import styles from "@/components/workspace/workspace.module.css";
 
 export default function OperationExpensesPageClient({ initialExpenses, canEdit }: { initialExpenses: OperationExpense[]; canEdit: boolean }) {
   const state = useOperationExpensesPage(initialExpenses);
+  const { mutate } = useSWRConfig();
   const [deleting, setDeleting] = useState<OperationExpense>();
   async function deleteExpense() {
     if (!deleting || !canEdit) return;
     await deleteGmeaOperationExpenseAction(deleting.id, deleting.version);
-    await mutate("gmea-operation-expenses:list", (rows: OperationExpense[] = []) => rows.filter(row => row.id !== deleting.id), { revalidate: false });
-    await Promise.allSettled([mutate("gmea-operation-expenses:list"), mutate("gmea-dashboard:overview")]);
+    await Promise.allSettled([state.removeExpense(deleting.id), mutate("gmea-dashboard:overview")]);
   }
   return <main className="min-h-full px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8"><div className="mx-auto max-w-[1440px] space-y-4">
     <DashboardPageHero eyebrow="GMEA" title="Operation Expenses" description="Transportation, water, salary, and electricity spending."

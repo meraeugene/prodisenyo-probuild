@@ -53,7 +53,7 @@ module.exports = {
       };
       approvalMocks.getGmeaInputOptionsAction = `window.__savedInputOptions=JSON.parse(sessionStorage.getItem('gmea-saved-input-options')||'{"methods":[],"suppliers":[]}');return ${reads.getGmeaInputOptionsAction};`;
       const contents = [...source.matchAll(/export\s+(?:async\s+)?function\s+(\w+)/g)].map((match) =>
-        `export async function ${match[1]}(...args){${match[1].startsWith("get") ? "" : "window.__gmeaMutationCalls=(window.__gmeaMutationCalls||0)+1;"}${approvalMocks[match[1]] || (reads[match[1]] ? `return ${reads[match[1]]}` : 'throw new Error("Mutation disabled in offline UI check")')}}`,
+        `export async function ${match[1]}(...args){await window.__gmeaActionGate?.('${match[1]}');${match[1].startsWith("get") ? "" : "window.__gmeaMutationCalls=(window.__gmeaMutationCalls||0)+1;"}${approvalMocks[match[1]] || (reads[match[1]] ? `return ${reads[match[1]]}` : 'throw new Error("Mutation disabled in offline UI check")')}}`,
       ).join("\n");
       const persistedChoices = `function rememberOfflineChoices(method,payee){const choices=JSON.parse(sessionStorage.getItem('gmea-saved-input-options')||'{"methods":[],"suppliers":[]}');if(method)choices.methods=[...new Set([...choices.methods,method])];if(payee)choices.suppliers=[...new Set([...choices.suppliers,payee])];sessionStorage.setItem('gmea-saved-input-options',JSON.stringify(choices));window.__savedInputOptions=choices;}`;
       return { loader: "js", contents: persistedChoices + contents

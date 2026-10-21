@@ -36,6 +36,17 @@ function harness() {
 }
 const value = () => ({ id: randomUUID(), date: '2026-04-01', category: 'Transportation', description: 'Office travel', amount: 5800, payee: 'Driver', method: 'Cash', reference: '', notes: '' });
 
+test('adding consecutive operation expenses preserves all previous records, including the same date and category', async () => {
+  const api = harness(), first = value(), second = { ...value(), description: 'Another office trip', amount: 250 };
+  const { alreadyAdded, ...savedFirst } = await api.saveGmeaOperationExpenseAction(null, first);
+  assert.equal(alreadyAdded, false);
+  await api.saveGmeaOperationExpenseAction(null, second);
+  const rows = await api.getGmeaOperationExpensesAction();
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows.find(row => row.id === first.id), savedFirst);
+  assert.equal(rows.find(row => row.id === second.id).amount, 250);
+});
+
 test('operation expense saves persist, return the saved row, and retry the same id without adding it twice', async () => {
   const api = harness(), input = value();
   const first = await api.saveGmeaOperationExpenseAction(null, input);

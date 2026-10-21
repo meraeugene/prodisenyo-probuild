@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
-import { LoaderCircle, X } from "lucide-react";
+import { X } from "lucide-react";
+import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
 import styles from "@/components/workspace/workspace.module.css";
-import { SaveAndAddAgainButton, saveAndAddAgainClass, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
+import { SaveAndAddAgainButton, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import {
   rentalPrimaryButtonClass,
   rentalSecondaryButtonClass,
@@ -43,6 +44,7 @@ export default function GmeaRentalsDialog({
   danger?: boolean;
 }) {
   const session = useGmeaEntrySession();
+  const [addingAgain, setAddingAgain] = useState(false);
   const cancel = session?.cancel || onClose;
   return (
     <Dialog.Root open onOpenChange={(open) => !open && !pending && cancel()}>
@@ -87,6 +89,7 @@ export default function GmeaRentalsDialog({
             if (pending || readOnly) return;
             session?.prepare(event);
             const again = ((event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value === "add-again";
+            setAddingAgain(again);
             if (again && onSaveAgain) onSaveAgain(); else onSave?.();
           }} className="flex min-h-0 flex-1 flex-col">
             <div className={"min-h-0 flex-1 overflow-y-auto p-5" + (compact ? "" : " sm:p-7")}>
@@ -111,16 +114,15 @@ export default function GmeaRentalsDialog({
                 >
                   {readOnly ? "Close" : "Cancel"}
                 </button>
-                {!readOnly && onSave && <button
-                  type="submit"
-                  disabled={pending}
-                  aria-busy={pending}
+                {!readOnly && onSave && <GmeaSubmitButton
+                  pending={pending}
+                  addingAgain={addingAgain}
+                  pendingLabel={pendingLabel ?? (danger ? "Deleting…" : "Saving…")}
                   className={rentalPrimaryButtonClass + (danger ? " !bg-rose-600 !text-white hover:!bg-rose-700" : "")}
                 >
-                  {pending && <LoaderCircle size={16} className="shrink-0 animate-spin" aria-hidden="true" />}
-                  {pending ? (pendingLabel ?? (danger ? "Deleting…" : "Saving…")) : saveLabel}
-                </button>}
-                {!readOnly && !danger && onSave && (onSaveAgain ? <button type="submit" name="saveIntent" value="add-again" disabled={pending} className={saveAndAddAgainClass}>Save and add again</button> : <SaveAndAddAgainButton pending={pending} />)}
+                  {saveLabel}
+                </GmeaSubmitButton>}
+                {!readOnly && !danger && onSave && <SaveAndAddAgainButton pending={pending} addingAgain={onSaveAgain ? addingAgain : undefined} />}
               </div>
             </footer>
           </ValidatedForm>
