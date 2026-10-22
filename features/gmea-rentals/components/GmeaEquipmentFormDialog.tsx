@@ -4,6 +4,7 @@ import { EQUIPMENT_STATUSES, RATE_UNITS, type RentalEquipment } from "../types";
 import { rentalInputClass, rentalLabel } from "../utils/rentalUi";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import GmeaRentalsDialog from "./GmeaRentalsDialog";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 
 export type EquipmentFormState = {
   code: string;
@@ -77,18 +78,16 @@ export default function GmeaEquipmentFormDialog({
             className="space-y-1.5 text-sm font-medium text-slate-700"
           >
             <span className="block">{label}{!label.includes("*") && <OptionalFieldIndicator />}</span>
-            <input
+            {key === "default_rate" ? <GmeaMoneyInput aria-label={label} value={form.default_rate}
+              onValueChange={value => onChange("default_rate", value)} className={rentalInputClass} /> : <input
               aria-label={label}
               required={key === "name" || key === "equipment_type" || key === "code"}
               maxLength={key === "name" ? 200 : 100}
-              step={key === "default_rate" ? "0.01" : undefined}
-              max={key === "default_rate" ? 1e10 : undefined}
-              type={key === "default_rate" ? "number" : "text"}
-              min={key === "default_rate" ? "0" : undefined}
+              type="text"
               value={form[key]}
               onChange={(event) => onChange(key, event.target.value)}
               className={rentalInputClass}
-            />
+            />}
           </label>
         ))}
         <label className="space-y-1.5 text-sm font-medium text-slate-700">

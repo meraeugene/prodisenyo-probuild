@@ -14,7 +14,7 @@ module.exports = async function checkGmeaSaveAgain(page, base, screenshots) {
   await modal.getByLabel('Amount *', { exact: true }).fill('100');
   await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
   await toast('Operation expense added successfully.').first().waitFor();
-  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[data-money-input]')?.value === '');
   assert.equal(await modal.isVisible(), true);
   assert.equal(await modal.getByLabel('Description *', { exact: true }).inputValue(), '');
   const firstId = await page.evaluate(() => window.__savedOperationExpense.id);
@@ -39,7 +39,7 @@ module.exports = async function checkGmeaSaveAgain(page, base, screenshots) {
   await modal.getByLabel('Amount *', { exact: true }).fill('60');
   await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
   await toast('Operation expense updated successfully.').waitFor();
-  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[data-money-input]')?.value === '');
   assert.match(await modal.getByRole('heading').innerText(), /New operation expense/);
   assert.equal(await page.evaluate(id => window.__operationExpenses.find(row => row.id === id).amount, editedId), 60);
   await modal.getByLabel('Description *', { exact: true }).fill('Do not save this');
@@ -62,7 +62,7 @@ module.exports = async function checkGmeaSaveAgain(page, base, screenshots) {
   await modal.getByLabel('Amount *', { exact: true }).fill('20');
   await modal.getByRole('button', { name: 'Save and add again', exact: true }).click();
   await toast('Rental expense added successfully.').waitFor();
-  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[data-money-input]')?.value === '');
   const expenseId = await page.evaluate(() => window.__savedRentalExpense.id);
   await modal.getByLabel('Description *', { exact: true }).fill('Fuel batch two');
   await modal.getByLabel('Amount *', { exact: true }).fill('30');

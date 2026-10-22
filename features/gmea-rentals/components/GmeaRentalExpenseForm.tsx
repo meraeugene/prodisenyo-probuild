@@ -1,5 +1,6 @@
 "use client";
 import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 import type { ReactNode } from "react";
 import type {
   GmeaRental,
@@ -158,24 +159,20 @@ function GmeaRentalExpenseForm({
           </select>
         </Field>
         <Field label="Amount *">
-          <input
-            type="number"
+          <GmeaMoneyInput
             min="0.01"
             max={1e10}
-            step="0.01"
             value={form.amount}
-            onChange={(event) => set("amount", event.target.value)}
+            onValueChange={value => set("amount", value)}
             className={rentalInputClass}
           />
         </Field>
         <Field label="Refunded amount">
-          <input
-            type="number"
+          <GmeaMoneyInput
             min="0"
             max={1e10}
-            step="0.01"
             value={form.refunded_amount}
-            onChange={(event) => set("refunded_amount", event.target.value)}
+            onValueChange={value => set("refunded_amount", value)}
             className={rentalInputClass}
           />
         </Field>

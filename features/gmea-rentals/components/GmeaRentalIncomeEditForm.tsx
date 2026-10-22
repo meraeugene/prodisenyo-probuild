@@ -9,6 +9,7 @@ import GmeaDialog from "@/features/gmea-projects/components/GmeaDialog";
 import styles from "@/components/workspace/workspace.module.css";
 import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import GmeaCustomerIncomeForm from "./GmeaCustomerIncomeForm";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 
 function GmeaRentalIncomeEditForm({ record, onClose }: { record: RentalIncomeRecord; onClose: () => void }) {
   const initial = rentalIncomeRecordEdit(record);
@@ -26,7 +27,7 @@ function GmeaRentalIncomeEditForm({ record, onClose }: { record: RentalIncomeRec
       <label className={styles.field}>Company *<input required maxLength={200} className={styles.control} value={form.client} onChange={event => setForm({ ...form, client: event.target.value })} /></label>
       <label className={styles.field}>Location<input required={initial.origin === "customer"} maxLength={200} className={styles.control} value={form.location} onChange={event => setForm({ ...form, location: event.target.value })} /></label>
       <label className={styles.field}>Rental service<input readOnly={initial.origin === "booking"} maxLength={200} className={styles.control} value={form.service} onChange={event => setForm({ ...form, service: event.target.value })} /></label>
-      <label className={styles.field}>Rental amount<input type="number" required={initial.origin === "customer"} readOnly={initial.origin === "booking"} min={initial.origin === "customer" ? "0.01" : "0"} max="10000000000" step="0.01" className={styles.control} value={form.amount} onChange={event => setForm({ ...form, amount: event.target.value })} /></label>
+      <label className={styles.field}>Rental amount<GmeaMoneyInput required={initial.origin === "customer"} readOnly={initial.origin === "booking"} min={initial.origin === "customer" ? "0.01" : "0"} className={styles.control} value={form.amount} onValueChange={amount => setForm({ ...form, amount })} /></label>
     </div>
   </GmeaDialog>;
 }

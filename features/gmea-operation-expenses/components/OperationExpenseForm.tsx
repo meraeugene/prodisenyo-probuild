@@ -3,6 +3,7 @@ import { withGmeaEntrySession, SaveAndAddAgainButton, useGmeaEntrySession } from
 
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
@@ -29,7 +30,7 @@ function OperationExpenseForm({ expense, readOnly = false, onClose, onSaved }: {
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category} onChange={event => set("category", event.target.value)}>{OPERATION_EXPENSE_CATEGORIES.map(category => <option key={category}>{category}</option>)}</select></label>
         <label className={`${styles.field} sm:col-span-2`}>Description *<input required maxLength={1000} className={styles.control} value={form.description} onChange={event => set("description", event.target.value)} /></label>
-        <label className={styles.field}>Amount *<input required type="number" max="10000000000" min="0.01" step="0.01" className={styles.control} value={form.amount} onChange={event => set("amount", event.target.value)} /></label>
+        <label className={styles.field}>Amount *<GmeaMoneyInput required min="0.01" className={styles.control} value={form.amount} onValueChange={value => set("amount", value)} /></label>
         <GmeaSavedInput field="suppliers" label="Payee / supplier" maxLength={200} value={form.payee} readOnly={readOnly} disabled={state.pending} onChange={value => set("payee", value)} />
         <GmeaSavedInput field="methods" label="Mode of payment" maxLength={100} value={form.method} readOnly={readOnly} disabled={state.pending} onChange={value => set("method", value)} />
         <label className={styles.field}><span>OR / reference<OptionalFieldIndicator /></span><input aria-label="OR / reference" maxLength={100} className={styles.control} value={form.reference} onChange={event => set("reference", event.target.value)} /></label>

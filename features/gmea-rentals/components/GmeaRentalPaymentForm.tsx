@@ -1,5 +1,6 @@
 "use client";
 import { withGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 
 import { useState } from "react";
 import type { GmeaRental, RentalPaymentType } from "../types";
@@ -70,15 +71,13 @@ function GmeaRentalPaymentForm({
         </div>
         <label className="block space-y-1.5 text-sm font-medium text-slate-700">
           <span>Amount received (PHP) *</span>
-          <input
-            type="number"
+          <GmeaMoneyInput
             min="0.01"
             max={balance}
-            step="0.01"
             required
             value={form.amount}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, amount: event.target.value }))
+            onValueChange={amount =>
+              setForm((current) => ({ ...current, amount }))
             }
             className={rentalInputClass}
           />

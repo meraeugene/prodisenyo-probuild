@@ -1,10 +1,8 @@
 "use client";
 import {
   cloneElement,
-  useEffect,
   useId,
   useMemo,
-  useRef,
   useState,
   type ReactElement,
   type ReactNode,
@@ -14,6 +12,7 @@ import { ChevronDown } from "lucide-react";
 import type { VatMode } from "../types";
 import { inputClass } from "../utils/gmeaConstants";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 
 export function Field({
   label,
@@ -54,15 +53,6 @@ export function TextField({
   );
 }
 
-function formatAmount(value: number) {
-  return value
-    ? new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value)
-    : "";
-}
-
 export function MoneyField({
   label,
   value,
@@ -82,49 +72,16 @@ export function MoneyField({
   max?: number;
   validationMessage?: string;
 }) {
-  const [display, setDisplay] = useState(() => formatAmount(value));
-  const focused = useRef(false);
-  useEffect(() => {
-    if (!focused.current) setDisplay(formatAmount(value));
-  }, [value]);
-
-  function update(raw: string) {
-    const plain = raw.replace(/,/g, "").trim();
-    if (!plain) {
-      setDisplay("");
-      onValueChange(0);
-      return;
-    }
-    if (!/^\d*(?:\.\d{0,2})?$/.test(plain)) return;
-    const [whole = "", decimal] = plain.split(".");
-    const grouped = (whole.replace(/^0+(?=\d)/, "") || "0").replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ",",
-    );
-    setDisplay(decimal === undefined ? grouped : grouped + "." + decimal);
-    onValueChange(Number(plain));
-  }
-
-  return (
-    <TextField
-      label={label}
-      required={required}
-      leadingIcon={leadingIcon}
-      inputMode="decimal"
-      data-min-value={min}
-      data-max-value={max}
-      data-validation-message={validationMessage}
-      value={display}
-      onFocus={() => {
-        focused.current = true;
-      }}
-      onBlur={() => {
-        focused.current = false;
-        setDisplay(formatAmount(value));
-      }}
-      onChange={(event) => update(event.target.value)}
-    />
-  );
+  const id = useId();
+  return <div className="space-y-1.5 text-sm font-medium text-slate-700">
+    <label htmlFor={id} className="block">{label}{!required && <OptionalFieldIndicator />}</label>
+    <div className="relative">
+      {leadingIcon && <span className="pointer-events-none absolute inset-y-px left-px grid w-12 place-items-center rounded-l-[11px] border-r border-slate-100 bg-slate-50 text-slate-500" aria-hidden="true">{leadingIcon}</span>}
+      <GmeaMoneyInput id={id} aria-label={label} required={required} min={min} max={max}
+        className={inputClass + (leadingIcon ? " pl-14" : "")} data-validation-message={validationMessage}
+        value={value || ""} onValueChange={plain => onValueChange(Number(plain))} />
+    </div>
+  </div>;
 }
 
 export function SearchableSelect({

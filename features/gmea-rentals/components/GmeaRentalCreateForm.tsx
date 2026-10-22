@@ -1,5 +1,6 @@
 "use client";
 import { withGmeaEntrySession, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 import { toast } from "sonner";
 import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { useRef, useState } from "react";
@@ -263,15 +264,13 @@ function GmeaRentalCreateForm({
                   </label>
                   <label className="space-y-1.5 text-sm font-medium text-slate-700">
                     <span className="block">Rate *</span>
-                    <input
-                      type="number"
+                    <GmeaMoneyInput
                       min="0"
-                      step=".01"
                       required
                       max={1e10}
                       value={item.unit_rate}
-                      onChange={(event) =>
-                        updateItem(item.id, { unit_rate: event.target.value })
+                      onValueChange={unit_rate =>
+                        updateItem(item.id, { unit_rate })
                       }
                       className={rentalInputClass}
                     />

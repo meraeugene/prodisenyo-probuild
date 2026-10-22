@@ -31,6 +31,12 @@ async function main() {
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const base = `http://127.0.0.1:${server.address().port}`;
+    if (process.argv.includes("--gmea-accessibility")) {
+      await require("./checkGmeaAccessibility.cjs")(page, base);
+      assert.deepEqual(errors, []);
+      console.log("GMEA accessibility passed: labeled dialogs and controls, Escape, focus trapping/return, repeat entry, comma-formatted money, raw numeric saves, and mobile layout.");
+      return;
+    }
     if (process.argv.includes("--gmea-operation-persistence")) {
       await require("./checkOperationExpensePersistence.cjs")(page, base);
       assert.deepEqual(errors, []);

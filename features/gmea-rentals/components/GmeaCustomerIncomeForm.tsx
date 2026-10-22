@@ -7,6 +7,7 @@ import { formatRentalMoney } from "../utils/rentalUi";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
@@ -34,10 +35,10 @@ function GmeaCustomerIncomeForm({ record, onClose }: { record?: RentalIncomeReco
           <GmeaSavedInput field="clients" label="Company name *" maxLength={200} value={form.client} readOnly={!!existing} disabled={state.pending} required onChange={value => set("client", value)} />
           <GmeaSavedInput field="locations" label="Location *" maxLength={200} value={form.location} readOnly={!!existing} disabled={state.pending} required onChange={value => set("location", value)} />
           <GmeaSavedInput field="services" label="Rental service" maxLength={200} value={form.service} readOnly={!!existing} disabled={state.pending} onChange={value => set("service", value)} placeholder="Backhoe rental or truck delivery" />
-          <label className="block space-y-1.5 text-sm font-medium">Total amount *<input required max="10000000000" className={rentalInputClass} type="number" min="0.01" step="0.01" value={form.total_amount} readOnly={!!existing} onChange={event => set("total_amount", event.target.value)} /></label>
-          <label className="block space-y-1.5 text-sm font-medium">Down payment<OptionalFieldIndicator /><input aria-label="Down payment" data-validation-message={paymentError} max={Math.max(0, remaining)} className={rentalInputClass} type="number" min="0" step="0.01" value={form.down_payment} onChange={event => set("down_payment", event.target.value)} /></label>
+          <label className="block space-y-1.5 text-sm font-medium">Total amount *<GmeaMoneyInput required className={rentalInputClass} min="0.01" value={form.total_amount} readOnly={!!existing} onValueChange={value => set("total_amount", value)} /></label>
+          <label className="block space-y-1.5 text-sm font-medium">Down payment<OptionalFieldIndicator /><GmeaMoneyInput aria-label="Down payment" data-validation-message={paymentError} max={Math.max(0, remaining)} className={rentalInputClass} value={form.down_payment} onValueChange={value => set("down_payment", value)} /></label>
           <label className="block space-y-1.5 text-sm font-medium">Down payment date{down > 0 ? " *" : <OptionalFieldIndicator />}<input aria-label="Down payment date" required={down > 0} max={today} className={rentalInputClass} type="date" value={form.down_payment_date} onChange={event => set("down_payment_date", event.target.value)} /></label>
-          <label className="block space-y-1.5 text-sm font-medium">Full payment<OptionalFieldIndicator /><input aria-label="Full payment" data-validation-message={paymentError} max={Math.max(0, remaining)} className={rentalInputClass} type="number" min="0" step="0.01" value={form.full_payment} onChange={event => set("full_payment", event.target.value)} /></label>
+          <label className="block space-y-1.5 text-sm font-medium">Full payment<OptionalFieldIndicator /><GmeaMoneyInput aria-label="Full payment" data-validation-message={paymentError} max={Math.max(0, remaining)} className={rentalInputClass} value={form.full_payment} onValueChange={value => set("full_payment", value)} /></label>
           <label className="block space-y-1.5 text-sm font-medium">Full payment date{full > 0 ? " *" : <OptionalFieldIndicator />}<input aria-label="Full payment date" required={full > 0} max={today} className={rentalInputClass} type="date" value={form.full_payment_date} onChange={event => set("full_payment_date", event.target.value)} /></label>
           <div className="sm:col-span-2"><GmeaSavedInput field="methods" label="Mode of payment *" value={form.method} maxLength={100} required disabled={state.pending} onChange={value => set("method", value)} /></div>
         </div>

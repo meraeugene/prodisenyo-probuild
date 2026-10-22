@@ -6,6 +6,7 @@ import { useRentalExpenseEntry } from "../hooks/useRentalExpenseEntry";
 import GmeaSavedInput from "@/features/gmea-inputs/components/GmeaSavedInput";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import GmeaSubmitButton from "@/features/gmea-forms/components/GmeaSubmitButton";
+import GmeaMoneyInput from "@/features/gmea-forms/components/GmeaMoneyInput";
 import OptionalFieldIndicator from "@/components/workspace/OptionalFieldIndicator";
 import { useId } from "react";
 import WorkspaceDialog from "@/components/workspace/WorkspaceDialog";
@@ -27,7 +28,7 @@ function GmeaRentalExpenseEntry({ operations, onClose }: {
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category_id} onChange={event => set("category_id", event.target.value)}><option value="">Select category</option>{state.categories.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
         <label className={`${styles.field} sm:col-span-2`}>Description *<input required maxLength={1000} className={styles.control} value={form.description} onChange={event => set("description", event.target.value)} /></label>
-        <label className={styles.field}>Amount *<input required type="number" max="10000000000" min="0.01" step="0.01" className={styles.control} value={form.amount} onChange={event => set("amount", event.target.value)} /></label>
+        <label className={styles.field}>Amount *<GmeaMoneyInput required min="0.01" className={styles.control} value={form.amount} onValueChange={value => set("amount", value)} /></label>
         <GmeaSavedInput field="suppliers" label="Supplier / payee" initialOptions={state.payees} maxLength={200} disabled={state.pending} value={form.supplier} onChange={value => set("supplier", value)} />
         <div className="sm:col-span-2"><GmeaSavedInput field="methods" label="Payment method" value={form.method} maxLength={100} disabled={state.pending} onChange={value => set("method", value)} /></div>
         <div className="sm:col-span-2 grid gap-4">

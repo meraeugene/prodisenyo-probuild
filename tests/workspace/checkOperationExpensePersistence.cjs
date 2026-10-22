@@ -22,6 +22,8 @@ module.exports = async function checkOperationExpensePersistence(page, base) {
     assert.equal(await active.getAttribute('aria-busy'), 'true');
     assert.equal(await modal.locator('button svg.animate-spin').count(), 1);
     assert.equal(await modal.getByRole('button', { name: 'Cancel', exact: true }).isDisabled(), true);
+    await page.keyboard.press('Escape');
+    assert.equal(await modal.isVisible(), true, 'An in-flight write cannot be dismissed');
   }
   async function fill(description, amount) {
     await dialog.getByLabel('Date *', { exact: true }).fill('2026-10-06');
@@ -42,7 +44,7 @@ module.exports = async function checkOperationExpensePersistence(page, base) {
   for (const original of originals) assert.ok((await report.innerText()).includes(original), 'Saving before the initial fetch completes preserves existing expenses');
   const firstId = await page.evaluate(() => window.__savedOperationExpense.id);
   // A repeat entry must be ready even while the initial list read is still held.
-  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input[data-money-input]')?.value === '');
   await releaseReads();
 
   await fill('Second additional expense', '50');

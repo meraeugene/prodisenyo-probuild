@@ -55,6 +55,7 @@ function GmeaCollectionForm({
   return (
     <GmeaDialog
       title={readOnly ? "Payment schedule" : "Edit contract and payment schedule"}
+      description="Contract amount, tax, and scheduled payment milestones."
       onClose={onClose}
       onSave={
         readOnly

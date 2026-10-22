@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { useDialogFocusReturn } from "@/features/shared/hooks/useDialogFocusReturn";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { X } from "lucide-react";
@@ -44,6 +45,8 @@ export default function GmeaRentalsDialog({
   danger?: boolean;
 }) {
   const session = useGmeaEntrySession();
+  const descriptionId = useId();
+  const returnFocus = useDialogFocusReturn();
   const [addingAgain, setAddingAgain] = useState(false);
   const cancel = session?.cancel || onClose;
   return (
@@ -51,7 +54,9 @@ export default function GmeaRentalsDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[150] bg-slate-950/45 backdrop-blur-[2px]" />
         <Dialog.Content
-          aria-describedby="gmea-rentals-dialog-description"
+          aria-describedby={descriptionId}
+          aria-busy={pending}
+          onCloseAutoFocus={returnFocus}
           onEscapeKeyDown={(event) => pending && event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
           className={
@@ -68,7 +73,7 @@ export default function GmeaRentalsDialog({
                 {title}
               </Dialog.Title>
               <Dialog.Description
-                id="gmea-rentals-dialog-description"
+                  id={descriptionId}
                 className="mt-1 text-sm text-slate-500"
               >
                 {description}

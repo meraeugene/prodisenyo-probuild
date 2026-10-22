@@ -1,5 +1,6 @@
 ﻿"use client";
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
+import { useDialogFocusReturn } from "@/features/shared/hooks/useDialogFocusReturn";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { X } from "lucide-react";
@@ -36,6 +37,8 @@ export default function GmeaDialog({
   danger?: boolean;
 }) {
   const session = useGmeaEntrySession();
+  const descriptionId = useId();
+  const returnFocus = useDialogFocusReturn();
   const saving = useRef(false);
   const cancel = session?.cancel || onClose;
   const [pending, setPending] = useState(false),
@@ -72,7 +75,9 @@ export default function GmeaDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[150] bg-slate-950/45 backdrop-blur-[2px]" />
         <Dialog.Content
-          aria-describedby={description ? "gmea-dialog-description" : undefined}
+          aria-describedby={description ? descriptionId : undefined}
+          aria-busy={pending}
+          onCloseAutoFocus={returnFocus}
           onEscapeKeyDown={(e) => {
             if (pending) e.preventDefault();
           }}
@@ -94,7 +99,7 @@ export default function GmeaDialog({
               </Dialog.Title>
               {description && (
                 <Dialog.Description
-                  id="gmea-dialog-description"
+                  id={descriptionId}
                   className="mt-1 text-sm text-slate-500"
                 >
                   {description}

@@ -4,6 +4,7 @@ import { createContext, useContext, useRef, useState, type ComponentType, type F
 import { LoaderCircle } from "lucide-react";
 import styles from "@/components/workspace/workspace.module.css";
 import actionStyles from "./gmeaFormActions.module.css";
+import WorkspaceDialogFocusScope from "@/components/workspace/WorkspaceDialogFocusScope";
 export const saveAndAddAgainClass = `${styles.button} ${actionStyles.saveAgain}`;
 
 type EntrySession = {
@@ -39,7 +40,7 @@ export function withGmeaEntrySession<P extends { onClose: () => void }>(Form: Co
       if (again.current) { again.current = false; setGeneration(value => value + 1); }
       else props.onClose();
     }
-    return <EntryContext.Provider value={session}><Form {...next} key={generation} onClose={complete} /></EntryContext.Provider>;
+    return <WorkspaceDialogFocusScope><EntryContext.Provider value={session}><Form {...next} key={generation} onClose={complete} /></EntryContext.Provider></WorkspaceDialogFocusScope>;
   }
   RepeatableEntry.displayName = `Repeatable${Form.displayName || Form.name || "GmeaEntry"}`;
   return RepeatableEntry;

@@ -20,13 +20,16 @@ import GmeaRentalAssignmentForm from "@/features/gmea-rentals/components/GmeaRen
 import OperationExpenseForm from "@/features/gmea-operation-expenses/components/OperationExpenseForm";
 
 export default function GmeaModalValidationHarness() {
-  const [closed, setClosed] = useState(false);
+  const [open, setOpen] = useState(() => !new URLSearchParams(window.location.search).has("launch"));
+  return <><button type="button" onClick={() => setOpen(true)}>Open test dialog</button>
+    {open ? <GmeaModalContents onClose={() => setOpen(false)} /> : <p>Closed</p>}</>;
+}
+
+function GmeaModalContents({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState(blankEquipmentForm);
   const name = new URLSearchParams(window.location.search).get("case");
-  const onClose = () => setClosed(true);
   const project = gmeaProjects[0], rental = incomeRentals[0];
   const operations = { equipment, categories: rentalExpenseCategories, expenses: rentalExpenses, workers: [] };
-  if (closed) return <p>Closed</p>;
   switch (name) {
     case "project-create": return <GmeaProjectForm onClose={onClose} />;
     case "project-edit": return <GmeaProjectForm project={project} onClose={onClose} />;
