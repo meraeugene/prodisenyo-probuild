@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useSWRConfig } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { deleteGmeaOperationExpenseAction } from "@/actions/gmeaOperationExpenses";
 import GmeaDeleteRecordDialog from "@/features/gmea-forms/components/GmeaDeleteRecordDialog";
 import DashboardPageHero from "@/components/DashboardPageHero";
@@ -20,12 +20,13 @@ import styles from "@/components/workspace/workspace.module.css";
 
 export default function OperationExpensesPageClient({ initialExpenses, canEdit }: { initialExpenses: OperationExpense[]; canEdit: boolean }) {
   const state = useOperationExpensesPage(initialExpenses);
-  const { mutate } = useSWRConfig();
+  const refresh = useGmeaCacheRefresh();
   const [deleting, setDeleting] = useState<OperationExpense>();
   async function deleteExpense() {
     if (!deleting || !canEdit) return;
     await deleteGmeaOperationExpenseAction(deleting.id, deleting.version);
-    await Promise.allSettled([state.removeExpense(deleting.id), mutate("gmea-dashboard:overview")]);
+    await state.removeExpense(deleting.id);
+    refresh(["gmea-dashboard:overview"]);
   }
   return <main className="min-h-full px-4 py-5 sm:px-6 sm:py-6 lg:px-7 xl:px-8"><div className="mx-auto max-w-[1440px] space-y-4">
     <DashboardPageHero eyebrow="GMEA" title="Operation Expenses" description="Transportation, water, salary, and electricity spending."

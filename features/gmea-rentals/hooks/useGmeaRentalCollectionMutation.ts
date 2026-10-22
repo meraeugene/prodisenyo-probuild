@@ -1,14 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { saveGmeaRentalCollectionAction } from "@/actions/gmeaRentals";
 import type { GmeaRental, RentalCollectionMutation } from "../types";
 
 export function useGmeaRentalCollectionMutation(rental: GmeaRental) {
-  const router = useRouter();
+  const refresh = useGmeaCacheRefresh();
   const saving = useRef(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -21,8 +20,8 @@ export function useGmeaRentalCollectionMutation(rental: GmeaRental) {
     try {
       await saveGmeaRentalCollectionAction(rental.id, rental.version, command);
       toast.success(command.kind === "record_payment" ? "Rental payment added successfully." : "Rental payment voided successfully.");
-      await Promise.allSettled([mutate(["gmea-rental", rental.id]), mutate("gmea-rentals:list"), mutate("gmea-dashboard:overview"), mutate("gmea-input-options")]);
-      router.refresh();
+      refresh([["gmea-rental", rental.id], "gmea-rentals:list", "gmea-rentals:income-history", "gmea-dashboard:overview"],
+        command.kind === "record_payment" ? { methods: command.value.method } : undefined);
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : "Unable to save payment.";

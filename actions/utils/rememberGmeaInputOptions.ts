@@ -9,9 +9,9 @@ export async function rememberGmeaInputOptions(input: Partial<Record<GmeaSavedOp
   const options = normalizeGmeaSavedOptions(input);
   if (!options.length) return;
   const db = gmeaWriter();
-  for (const option of options) {
+  await Promise.all(options.map(async option => {
     const { error } = await db.from("gmea_expense_options").insert(option);
     // The existing unique index deduplicates field/value without case sensitivity.
     if (error && error.code !== "23505") throw new Error("Unable to save the reusable input value. Please try again.");
-  }
+  }));
 }

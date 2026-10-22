@@ -1,7 +1,7 @@
 "use client";
 import { withGmeaEntrySession, useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
@@ -38,6 +38,7 @@ function GmeaRentalCreateForm({
   onClose: () => void;
 }) {
   const session = useGmeaEntrySession();
+  const refresh = useGmeaCacheRefresh();
   const router = useRouter(), [pending, setPending] = useState(false), saving = useRef(false);
   const [form, setForm] = useState({
     rental_number: "",
@@ -82,9 +83,8 @@ function GmeaRentalCreateForm({
           },
         });
         toast.success("Rental added successfully.");
-        await Promise.allSettled([mutate("gmea-rentals:list"), mutate("gmea-dashboard:overview")]);
+        refresh(["gmea-rentals:list", "gmea-dashboard:overview"], { clients: form.client, locations: form.location });
         if (session?.addingAgain()) onClose(); else router.push("/gmea-rentals/" + id);
-        router.refresh();
       } catch (cause) {
         setError(
           cause instanceof Error ? cause.message : "Unable to create rental.",

@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import ValidatedForm from "@/components/workspace/ValidatedForm";
 import { Dialog } from "radix-ui";
 import { X } from "lucide-react";
@@ -36,16 +36,18 @@ export default function GmeaDialog({
   danger?: boolean;
 }) {
   const session = useGmeaEntrySession();
+  const saving = useRef(false);
   const cancel = session?.cancel || onClose;
   const [pending, setPending] = useState(false),
     [error, setError] = useState("");
   async function submit() {
-    if (pending) return;
+    if (saving.current) return;
     if (onAdvance) {
       onAdvance();
       return;
     }
     if (!onSave) return;
+    saving.current = true;
     setPending(true);
     setError("");
     try {
@@ -56,6 +58,7 @@ export default function GmeaDialog({
         cause instanceof Error ? cause.message : "Unable to save. Try again.",
       );
     } finally {
+      saving.current = false;
       setPending(false);
     }
   }

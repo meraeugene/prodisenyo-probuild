@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { mutate } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { toast } from "sonner";
 import { editGmeaRentalIncomeRecordAction } from "@/actions/gmeaRentalRecords";
 import type { RentalIncomeRecord } from "../incomeTypes";
@@ -14,13 +13,13 @@ import GmeaCustomerIncomeForm from "./GmeaCustomerIncomeForm";
 function GmeaRentalIncomeEditForm({ record, onClose }: { record: RentalIncomeRecord; onClose: () => void }) {
   const initial = rentalIncomeRecordEdit(record);
   const [form, setForm] = useState({ ...initial, amount: initial.charge?.toString() ?? "" });
-  const router = useRouter();
+  const refresh = useGmeaCacheRefresh();
   async function save() {
     const value = normalizeRentalIncomeRecordEdit({ ...form, charge: form.amount === "" ? null : Number(form.amount) });
     await editGmeaRentalIncomeRecordAction(value);
     toast.success("Rental income updated successfully.");
-    await Promise.allSettled([mutate("gmea-rentals:income-history"), mutate("gmea-rentals:list"), mutate("gmea-dashboard:overview"), mutate(["gmea-rental", record.id])]);
-    router.refresh();
+    refresh([["gmea-rental", record.id], "gmea-rentals:income-history", "gmea-rentals:list", "gmea-dashboard:overview"],
+      { clients: value.client, locations: value.location, services: value.service });
   }
   return <GmeaDialog title="Edit rental income" description="Update the company, location, service, and rental amount." onClose={onClose} onSave={save} compact>
     <div className="grid gap-4">

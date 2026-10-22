@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
+import type { GmeaInputValues } from "@/features/gmea-inputs/types";
 import { createCustomerRentalExpenseAction } from "@/actions/gmeaCustomerIncome";
 import {
   saveGmeaRentalAssignmentAction,
@@ -20,12 +20,12 @@ import type {
 } from "../types";
 
 export function useGmeaRentalOperationsMutation(rental?: GmeaRental, incomeRecordId?: string) {
-  const router = useRouter();
+  const refresh = useGmeaCacheRefresh();
   const saving = useRef(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
-  async function run(operation: () => Promise<unknown>, message: string) {
+  async function run(operation: () => Promise<unknown>, message: string, savedInputs?: GmeaInputValues) {
     if (saving.current) throw new Error("A save is already in progress.");
     saving.current = true;
     setPending(true);
@@ -33,8 +33,7 @@ export function useGmeaRentalOperationsMutation(rental?: GmeaRental, incomeRecor
     try {
       await operation();
       toast.success(message);
-      await Promise.allSettled([mutate("gmea-rentals:operations"), mutate("gmea-dashboard:overview"), mutate("gmea-input-options"), ...(rental ? [mutate(["gmea-rental", rental.id])] : [])]);
-      router.refresh();
+      refresh([...(rental ? [["gmea-rental", rental.id]] : []), "gmea-rentals:operations", "gmea-dashboard:overview"], savedInputs);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Unable to save changes.",
@@ -74,6 +73,7 @@ export function useGmeaRentalOperationsMutation(rental?: GmeaRental, incomeRecor
           expense?.version ?? null,
           input,
         ), input.kind === "create" ? "Rental expense added successfully." : input.kind === "delete" ? "Rental expense deleted." : "Rental expense updated successfully.",
+        input.kind === "delete" ? undefined : { suppliers: input.value.supplier, methods: input.value.method },
       ),
   };
 }

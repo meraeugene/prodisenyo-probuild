@@ -41,8 +41,9 @@ module.exports = async function checkOperationExpensePersistence(page, base) {
   await report.locator('tbody th').filter({ hasText: 'First additional expense' }).waitFor();
   for (const original of originals) assert.ok((await report.innerText()).includes(original), 'Saving before the initial fetch completes preserves existing expenses');
   const firstId = await page.evaluate(() => window.__savedOperationExpense.id);
-  await releaseReads();
+  // A repeat entry must be ready even while the initial list read is still held.
   await page.waitForFunction(() => document.querySelector('[role="dialog"] input[type="number"]')?.value === '');
+  await releaseReads();
 
   await fill('Second additional expense', '50');
   await dialog.getByRole('button', { name: 'Save expense', exact: true }).click();

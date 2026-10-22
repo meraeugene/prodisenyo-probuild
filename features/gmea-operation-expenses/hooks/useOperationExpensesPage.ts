@@ -33,7 +33,6 @@ export function useOperationExpensesPage(initialExpenses: OperationExpense[]) {
   }
   async function removeExpense(id: string) {
     await mutate((current = expenses) => current.filter(row => row.id !== id), { revalidate: false });
-    await mutate();
   }
   return { view, setView, period, setPeriod, anchor, setAnchor, query, setQuery, category, setCategory, editor, setEditor, visible, summary, trend, range, pagination, error, hasFilters, resetFilters, revealSavedExpense, removeExpense };
 }

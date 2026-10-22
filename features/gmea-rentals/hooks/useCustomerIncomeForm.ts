@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { mutate } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { saveCustomerRentalIncomeAction } from "@/actions/gmeaCustomerIncome";
 import type { RentalIncomeRecord } from "../incomeTypes";
 import { rentalIncomeCharge } from "../utils/historicalIncomeMappers";
@@ -14,7 +13,7 @@ function blankIncomeForm() {
     down_payment_date: "", full_payment: "", full_payment_date: "", method: "" };
 }
 export function useCustomerIncomeForm(record: RentalIncomeRecord | undefined, onClose: () => void) {
-  const router = useRouter();
+  const refresh = useGmeaCacheRefresh();
   const saving = useRef(false);
   const existing = record?.customerIncome ? record : undefined;
   const [form, setForm] = useState(() => existing ? { ...blankIncomeForm(), id: existing.id, client: existing.client, location: existing.location,
@@ -30,8 +29,9 @@ export function useCustomerIncomeForm(record: RentalIncomeRecord | undefined, on
         total_amount: Number(form.total_amount), down_payment: Number(form.down_payment || 0), full_payment: Number(form.full_payment || 0) });
       await saveCustomerRentalIncomeAction(input);
       toast.success(existing ? "Rental payment added successfully." : "Rental income added successfully.");
-      await Promise.allSettled([mutate("gmea-rentals:income-history"), mutate("gmea-dashboard:overview"), mutate("gmea-input-options")]);
-      router.refresh(); onClose();
+      refresh(["gmea-rentals:income-history", "gmea-dashboard:overview"],
+        { clients: input.client, locations: input.location, services: input.service, methods: input.method });
+      onClose();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to save rental income."); }
     finally { saving.current = false; setPending(false); }
   }

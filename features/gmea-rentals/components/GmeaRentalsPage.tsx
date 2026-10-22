@@ -4,6 +4,7 @@ import { rentalSections, type RentalSection } from "../utils/rentalSections";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { getHistoricalRentalIncomeAction } from "@/actions/gmeaRentalIncome";
 import type { RentalIncomeRecord } from "../incomeTypes";
 import {
@@ -42,7 +43,8 @@ export default function GmeaRentalsPage({
 }) {
   const {data: historicalRows = historicalIncome, error: historicalError} = useSWR("gmea-rentals:income-history", getHistoricalRentalIncomeAction,
     {fallbackData: historicalIncome, refreshInterval: canEdit ? 0 : 30000});
-  const { data: items = equipment, mutate } = useSWR(
+  const refresh = useGmeaCacheRefresh();
+  const { data: items = equipment } = useSWR(
     "gmea-rentals:equipment",
     getGmeaRentalEquipmentAction,
     {
@@ -116,7 +118,7 @@ export default function GmeaRentalsPage({
           },
         );
         toast.success(selected ? "Equipment updated successfully." : "Equipment added successfully.");
-        await Promise.allSettled([mutate()]);
+        refresh(["gmea-rentals:equipment", "gmea-rentals:operations"]);
         if (again) openEquipment(); else setSelected(undefined);
       } catch (cause) {
         setError(
@@ -129,7 +131,7 @@ export default function GmeaRentalsPage({
   async function deactivateEquipment(item: RentalEquipment) {
     await saveGmeaRentalEquipmentAction(item.id, item.version, { kind: "deactivate" });
     toast.success("Equipment deactivated successfully.");
-    await mutate();
+    refresh(["gmea-rentals:equipment", "gmea-rentals:operations"]);
   }
 
   const { title, description } = rentalSections[section];

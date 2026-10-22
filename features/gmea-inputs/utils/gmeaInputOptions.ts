@@ -1,4 +1,4 @@
-import type { GmeaInputOptions, GmeaSavedOptionField } from "../types";
+import type { GmeaInputOptions, GmeaInputValues, GmeaSavedOptionField } from "../types";
 
 export const defaultGmeaInputOptions: GmeaInputOptions = {
   methods: ["Cash", "GCash", "Cheque", "Bank transfer", "Online transfer"],
@@ -13,6 +13,11 @@ export function mergeGmeaInputValues(...lists: string[][]) {
     if (normalized && !values.has(normalized.toLocaleLowerCase())) values.set(normalized.toLocaleLowerCase(), normalized);
   }
   return [...values.values()].sort((left, right) => left.localeCompare(right));
+}
+export function addGmeaInputValues(options: GmeaInputOptions, saved: GmeaInputValues): GmeaInputOptions {
+  return Object.fromEntries(Object.entries(options).map(([field, values]) => [field,
+    mergeGmeaInputValues(values, [saved[field as keyof GmeaInputOptions] ?? ""]),
+  ])) as GmeaInputOptions;
 }
 export function normalizeGmeaSavedOptions(input: Partial<Record<GmeaSavedOptionField, string>>) {
   return Object.entries(input).map(([field, value]) => {

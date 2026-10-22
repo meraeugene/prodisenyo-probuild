@@ -1,13 +1,13 @@
 ﻿"use client";
 import { useRouter } from "next/navigation";
-import { useSWRConfig } from "swr";
+import { useGmeaCacheRefresh } from "@/features/gmea-forms/hooks/useGmeaCacheRefresh";
 import { toast } from "sonner";
 import { saveGmeaProjectAction } from "@/actions/gmeaProjects";
 import type { GmeaMutation, GmeaProject } from "../types";
 import { useGmeaEntrySession } from "@/features/gmea-forms/components/GmeaEntrySession";
 export function useGmeaMutation(project?: GmeaProject) {
   const router = useRouter();
-  const { mutate } = useSWRConfig();
+  const refresh = useGmeaCacheRefresh();
   const session = useGmeaEntrySession();
   return async (command: GmeaMutation) => {
     const id = await saveGmeaProjectAction(
@@ -15,15 +15,19 @@ export function useGmeaMutation(project?: GmeaProject) {
       project?.version ?? null,
       command,
     );
-    await Promise.allSettled([mutate("gmea-input-options"), mutate("gmea-dashboard:overview")]);
+    // Server actions already revalidate affected routes; avoid another route refresh.
+    const details = command.kind === "create_project" ? command.value.details : command.kind === "project_details" ? command.value : undefined;
+    const savedInputs = command.kind === "expense"
+      ? { suppliers: command.value.supplier, methods: command.value.method, invoiceNames: command.value.invoice_name }
+      : command.kind === "record_receipt" ? { methods: command.value.method }
+      : details ? { clients: details.client, locations: details.location } : undefined;
+    refresh([...(project && command.kind !== "delete_project" ? [["gmea-project", project.id]] : []),
+      "gmea-projects:list", "gmea-dashboard:overview"], savedInputs);
     if (command.kind === "delete_project") {
-      await Promise.allSettled([mutate("gmea-projects:list")]);
       toast.success("Project deleted.");
       router.push("/gmea-projects");
-      router.refresh();
       return id;
     }
-    await Promise.allSettled([...(project ? [mutate(["gmea-project", project.id])] : []), mutate("gmea-projects:list")]);
     toast.success(
       command.kind === "project_status"
         ? command.value.status === "completed"
@@ -32,7 +36,6 @@ export function useGmeaMutation(project?: GmeaProject) {
         : "Saved successfully.",
     );
     if (!project && !session?.addingAgain()) router.push("/gmea-projects/" + id);
-    router.refresh();
     return id;
   };
 }
