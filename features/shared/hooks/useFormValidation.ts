@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { validateFormControls } from "../utils/formValidation";
 
-export function useFormValidation() {
+export function useFormValidation({ compactErrors = false }: { compactErrors?: boolean } = {}) {
   const formRef = useRef<HTMLFormElement>(null);
   const attempted = useRef(false);
   const frame = useRef<number | null>(null);
@@ -13,7 +13,11 @@ export function useFormValidation() {
     const form = formRef.current;
     if (!form) return false;
     const invalid = validateFormControls(form);
-    setError(invalid.length ? "Check the highlighted fields. " + invalid[0].validationMessage : "");
+    setError(invalid.length ? compactErrors
+      ? invalid.every(control => control.required && !control.value.trim())
+        ? "Complete the required fields."
+        : invalid[0].validationMessage
+      : "Check the highlighted fields. " + invalid[0].validationMessage : "");
     if (focus && invalid[0]) {
       invalid[0].focus();
       invalid[0].scrollIntoView({ block: "nearest" });

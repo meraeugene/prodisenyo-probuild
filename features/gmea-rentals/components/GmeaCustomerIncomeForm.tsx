@@ -28,7 +28,7 @@ function GmeaCustomerIncomeForm({ record, onClose }: { record?: RentalIncomeReco
       <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>Cancel</button>
         <GmeaSubmitButton form={formId} className={styles.primaryButton} pending={state.pending}>Save income</GmeaSubmitButton>
         <SaveAndAddAgainButton pending={state.pending} form={formId} /></div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
+    <ValidatedForm compactErrors id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
       <fieldset disabled={state.pending} className="space-y-4">
         <p className="text-sm text-slate-500">Enter at least one down payment or full payment. A date is required for each payment entered.</p>
         <div className="grid gap-4 sm:grid-cols-2">

@@ -21,13 +21,22 @@ module.exports = async function checkGmeaModalValidation(page, base, screenshots
   for (const name of cases) {
     await open(name);
     assert.equal(await modal.locator("details").count(), 0, `${name} has no hidden form fields`);
+    assert.equal(await modal.locator('[aria-invalid="true"]').count(), 0, `${name} starts without errors`);
     const required = modal.locator('input[required]:not([readonly]):not(:disabled), textarea[required]:not(:disabled)');
     for (const field of await required.all()) await field.fill("");
+    for (const field of await modal.locator('select[required]:not(:disabled):has(option[value=""])').all()) await field.selectOption("");
     await submit();
     await modal.getByRole("alert").first().waitFor();
     const invalid = modal.locator('[aria-invalid="true"]');
     assert.ok(await invalid.count() > 0, `${name} highlights invalid fields`);
-    assert.equal(await invalid.first().evaluate(element => getComputedStyle(element).borderColor), "rgb(225, 29, 72)", `${name} uses a red border`);
+    for (const field of await invalid.all()) {
+      assert.equal(await field.evaluate(element => getComputedStyle(element).borderColor), "rgb(225, 29, 72)", `${name} uses a red border for every invalid field`);
+    }
+    assert.deepEqual(await modal.locator("input[required], select[required], textarea[required]").evaluateAll(fields => fields.filter(field => field.willValidate && !field.value.trim() && field.getAttribute("aria-invalid") !== "true").map(field => field.getAttribute("aria-label") || field.name)), [], `${name} highlights every missing required field`);
+    const alert = modal.getByRole("alert").first();
+    assert.equal(await alert.evaluate(element => getComputedStyle(element).fontSize), "12px", `${name} uses compact error text`);
+    assert.equal(await alert.evaluate(element => getComputedStyle(element).paddingTop), "6px", `${name} uses compact error spacing`);
+    assert.doesNotMatch(await alert.innerText(), /Check the highlighted fields\./, `${name} avoids repetitive error text`);
     assert.equal(await modal.evaluate(element => element.querySelector('[aria-invalid="true"]') === document.activeElement), true, `${name} focuses the first error`);
     assert.equal(await page.evaluate(() => window.__gmeaMutationCalls || 0), 0, `${name} blocks invalid writes`);
     console.log(`Validated GMEA modal: ${name}`);
@@ -77,6 +86,8 @@ module.exports = async function checkGmeaModalValidation(page, base, screenshots
     assert.match(await modal.innerText(), /Notes\s*\(optional\)/);
     await submit();
     await modal.getByRole("alert").waitFor();
+    assert.equal(await modal.getByRole("alert").innerText(), "Complete the required fields.");
+    assert.ok((await modal.getByRole("alert").boundingBox()).height <= 32, "Required-field message stays compact on desktop and mobile");
     assert.equal(await modal.evaluate(element => element.scrollWidth <= element.clientWidth), true);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await page.screenshot({ path: path.join(screenshots, `gmea-modal-validation-${viewport.width}.png`), fullPage: true });

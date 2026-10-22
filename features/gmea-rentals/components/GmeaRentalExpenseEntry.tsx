@@ -23,7 +23,7 @@ function GmeaRentalExpenseEntry({ operations, onClose }: {
       <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>Cancel</button>
         <GmeaSubmitButton form={formId} className={styles.primaryButton} pending={state.pending}>Add expense</GmeaSubmitButton>
         <SaveAndAddAgainButton pending={state.pending} form={formId} /></div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
+    <ValidatedForm compactErrors id={formId} onValidSubmit={event => { session?.prepare(event); void state.submit(); }}>
       <fieldset disabled={state.pending} className="grid gap-4 sm:grid-cols-2">
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category_id} onChange={event => set("category_id", event.target.value)}><option value="">Select category</option>{state.categories.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>

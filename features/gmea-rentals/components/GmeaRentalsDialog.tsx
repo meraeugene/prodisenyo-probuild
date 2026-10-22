@@ -90,7 +90,7 @@ export default function GmeaRentalsDialog({
             </button>
           </header>
 
-          <ValidatedForm onValidSubmit={event => {
+          <ValidatedForm compactErrors onValidSubmit={event => {
             if (pending || readOnly) return;
             session?.prepare(event);
             const again = ((event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value === "add-again";

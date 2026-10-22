@@ -25,7 +25,7 @@ function OperationExpenseForm({ expense, readOnly = false, onClose, onSaved }: {
       <div className="flex flex-wrap justify-end gap-3"><button type="button" className={styles.button} disabled={state.pending} onClick={cancel}>{readOnly ? "Close" : "Cancel"}</button>
         {!readOnly && <GmeaSubmitButton form={formId} className={styles.primaryButton} pending={state.pending}>Save expense</GmeaSubmitButton>}
         <SaveAndAddAgainButton pending={state.pending} form={formId} enabled={!readOnly} /></div></div>}>
-    <ValidatedForm id={formId} onValidSubmit={event => { if (!readOnly) { session?.prepare(event); void state.submit(); } }}>
+    <ValidatedForm compactErrors id={formId} onValidSubmit={event => { if (!readOnly) { session?.prepare(event); void state.submit(); } }}>
       <fieldset disabled={readOnly || state.pending} className="grid gap-4 sm:grid-cols-2">
         <label className={styles.field}>Date *<input required type="date" className={styles.control} value={form.date} onChange={event => set("date", event.target.value)} /></label>
         <label className={styles.field}>Category *<select required aria-label="Category *" className={styles.control} value={form.category} onChange={event => set("category", event.target.value)}>{OPERATION_EXPENSE_CATEGORIES.map(category => <option key={category}>{category}</option>)}</select></label>
