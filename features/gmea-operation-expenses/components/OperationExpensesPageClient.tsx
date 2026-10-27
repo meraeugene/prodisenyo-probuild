@@ -41,7 +41,8 @@ export default function OperationExpensesPageClient({ initialExpenses, canEdit }
     <section aria-label="Operation expense reporting" className={styles.panel}>
       <OperationExpenseFilters state={state} />
       {state.range && <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">{formatRentalDate(state.range.start)} – {formatRentalDate(state.range.end)}</p>}
-      {!state.range && <p role="alert" className="px-5 py-3 text-sm text-rose-700">Choose a valid reporting period.</p>}
+      {state.period === "all" && <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">All dates</p>}
+      {state.period !== "all" && !state.range && <p role="alert" className="px-5 py-3 text-sm text-rose-700">Choose a valid reporting period.</p>}
       {state.view === "analytics" ? <OperationExpenseCharts trend={state.trend} summary={state.summary} period={state.period} /> : <>
         <OperationExpensesTable expenses={state.pagination.pageRows} canEdit={canEdit} onOpen={state.setEditor} onDelete={setDeleting} />
         <WorkspaceListPagination {...state.pagination} total={state.visible.length} noun="expenses" label="Operation expenses" />

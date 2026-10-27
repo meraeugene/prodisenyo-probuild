@@ -1,10 +1,23 @@
-import type { OperationExpense } from "../types";
+import type { OperationExpense, OperationExpensePeriod } from "../types";
 import { rentalExpensePeriodRange } from "@/features/gmea-rentals/utils/rentalExpensePeriods";
 
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 const dayLabel = (date: string) => new Date(`${date}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" });
 
-export function buildOperationExpenseTrend(rows: OperationExpense[], period: "month" | "week", anchor: string) {
+export function buildOperationExpenseTrend(rows: OperationExpense[], period: OperationExpensePeriod, anchor: string) {
+  if (period === "all") {
+    const totals = new Map<string, number>();
+    for (const row of rows) {
+      const month = row.date.slice(0, 7);
+      totals.set(month, (totals.get(month) ?? 0) + Math.round(row.amount * 100));
+    }
+    return [...totals.keys()].sort().map(month => {
+      const start = `${month}-01`;
+      const range = rentalExpensePeriodRange("month", start)!;
+      const label = new Date(`${start}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", year: "numeric", timeZone: "UTC" });
+      return { ...range, label, amount: totals.get(month)! / 100 };
+    });
+  }
   const range = rentalExpensePeriodRange(period, anchor);
   if (!range) return [];
   const buckets: { start: string; end: string; label: string; amount: number }[] = [];

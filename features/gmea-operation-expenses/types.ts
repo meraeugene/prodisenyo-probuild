@@ -1,5 +1,6 @@
 export const OPERATION_EXPENSE_CATEGORIES = ["Transportation", "Water", "Salary", "Electricity"] as const;
 export type OperationExpenseCategory = (typeof OPERATION_EXPENSE_CATEGORIES)[number];
+export type OperationExpensePeriod = "month" | "week" | "all";
 export type OperationExpenseInput = {
   id: string; date: string; category: OperationExpenseCategory; description: string;
   amount: number; payee: string; method: string; reference: string; notes: string;

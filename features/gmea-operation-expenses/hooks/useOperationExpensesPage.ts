@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { getGmeaOperationExpensesAction } from "@/actions/gmeaOperationExpenses";
-import type { OperationExpense } from "../types";
+import type { OperationExpense, OperationExpensePeriod } from "../types";
 import { selectOperationExpenses, summarizeOperationExpenses } from "../utils/operationExpenseSelectors";
 import { rentalExpensePeriodRange } from "@/features/gmea-rentals/utils/rentalExpensePeriods";
 import { useTablePagination } from "@/features/shared/hooks/useTablePagination";
@@ -12,7 +12,7 @@ import { buildOperationExpenseTrend } from "../utils/operationExpenseCharts";
 export function useOperationExpensesPage(initialExpenses: OperationExpense[]) {
   const { data: expenses = initialExpenses, error, mutate } = useSWR("gmea-operation-expenses:list", getGmeaOperationExpensesAction,
     { fallbackData: initialExpenses, refreshInterval: 30000 });
-  const [period, setPeriod] = useState<"month" | "week">("month");
+  const [period, setPeriod] = useState<OperationExpensePeriod>("month");
   const [view, setView] = useState<"records" | "analytics">("records");
   const defaultAnchor = expenses.map(row => row.date).sort().at(-1) || new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
   const [chosenAnchor, setAnchor] = useState<string | null>(null);
